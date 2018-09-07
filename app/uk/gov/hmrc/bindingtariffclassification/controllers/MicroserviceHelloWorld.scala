@@ -16,6 +16,12 @@
 
 package uk.gov.hmrc.bindingtariffclassification.controllers
 
+import javax.inject.Singleton
+
+import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import play.api.mvc._
+
 import scala.concurrent.Future
 
 @Singleton()
