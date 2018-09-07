@@ -27,7 +27,7 @@ import scala.concurrent.Future
 @Singleton()
 class MicroserviceHelloWorld extends BaseController {
 
-	def hello() = Action.async { implicit request =>
+	def hello(): Action[AnyContent] = Action.async { implicit request =>
 		Future.successful(Ok("Hello world"))
 	}
 
