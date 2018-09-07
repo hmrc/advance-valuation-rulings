@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.controllers
+package unit.uk.gov.hmrc.bindingtariffclassification.controllers
 
 import play.api.http.Status
 import play.api.test.FakeRequest
-import play.api.http.Status
-import play.api.test.FakeRequest
-import uk.gov.hmrc.play.test.UnitSpec
-import uk.gov.hmrc.play.test.WithFakeApplication
+import uk.gov.hmrc.bindingtariffclassification.controllers.MicroserviceHelloWorld
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 
