@@ -48,7 +48,9 @@ lazy val microservice = (project in file("."))
     routesGenerator := StaticRoutesGenerator
   )
   .settings(inConfig(TemplateTest)(Defaults.testSettings): _*)
-  .settings(testOptions in Test := Seq(Tests.Filter(unitFilter)),
+  .settings(
+    testOptions in Test := Seq(Tests.Filter(unitFilter)),
+    unmanagedSourceDirectories in Test := Seq((baseDirectory in Test).value / "test/unit" ),
     addTestReportOption(Test, "test-reports")
   )
   .configs(IntegrationTest)
@@ -56,7 +58,6 @@ lazy val microservice = (project in file("."))
   .settings(
     Keys.fork in IntegrationTest := false,
     unmanagedSourceDirectories in IntegrationTest := Seq((baseDirectory in IntegrationTest).value / "test/it" ),
-    unmanagedSourceDirectories in Test := Seq((baseDirectory in Test).value / "test/unit" ),
     addTestReportOption(IntegrationTest, "int-test-reports"),
     testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
     parallelExecution in IntegrationTest := false)
