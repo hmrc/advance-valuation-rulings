@@ -1,12 +1,14 @@
-import _root_.play.sbt.PlayScala
 import play.core.PlayVersion
 import play.routes.compiler.StaticRoutesGenerator
 import play.sbt.PlayImport._
+import play.sbt.PlayScala
 import play.sbt.routes.RoutesKeys.routesGenerator
 import sbt.Tests
 import sbt.Tests.{Group, SubProcess}
 import uk.gov.hmrc.DefaultBuildSettings._
+import uk.gov.hmrc.SbtArtifactory
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
+
 
 val appName = "binding-tariff-classification"
 
@@ -27,7 +29,7 @@ lazy val test = Seq(
   "com.typesafe.play" %% "play-test" % PlayVersion.current % scope
 )
 
-lazy val plugins: Seq[Plugins] = Seq(PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin)
+lazy val plugins: Seq[Plugins] = Seq(PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory)
 lazy val playSettings: Seq[Setting[_]] = Seq.empty
 
 lazy val microservice = (project in file("."))
@@ -36,6 +38,7 @@ lazy val microservice = (project in file("."))
   .settings(scalaSettings: _*)
   .settings(publishingSettings: _*)
   .settings(defaultSettings(): _*)
+  .settings(majorVersion := 0)
   .settings(
     name := appName,
     scalaVersion := "2.11.11",
