@@ -17,7 +17,6 @@
 package uk.gov.hmrc.bindingtariffclassification.controllers
 
 import javax.inject.Singleton
-
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import play.api.mvc._
@@ -29,7 +28,7 @@ class MicroserviceHelloWorld extends BaseController {
 
   def hello(): Action[AnyContent] = Action.async { implicit request =>
 
-    request.headers.toMap.get(USER_AGENT) match {
+    request.headers.toMap.get(LOCATION) match {
       case Some(Seq(_: String)) => Future.successful(Ok("{}"))
       case _ => Future.successful(BadRequest("{}"))
     }
