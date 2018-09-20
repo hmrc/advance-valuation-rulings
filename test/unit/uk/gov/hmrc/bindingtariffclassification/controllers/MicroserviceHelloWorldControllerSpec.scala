@@ -22,25 +22,25 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.bindingtariffclassification.controllers.MicroserviceHelloWorld
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
-class MicroserviceHelloWorldControllerSpec extends UnitSpec with WithFakeApplication{
+class MicroserviceHelloWorldControllerSpec extends UnitSpec with WithFakeApplication {
 
   val fakeRequest = FakeRequest("GET", "/hello")
-  val controller = new MicroserviceHelloWorld()
+  val controller = new MicroserviceHelloWorld
 
   "GET /hello" should {
 
-    "return 400 when the User-Agent header is not sent" in {
+    "return 200 when the Location header has a unique value" in {
+      val result = controller.hello()(fakeRequest.withHeaders(LOCATION -> "CANARY ISLANDS"))
+      status(result) shouldBe Status.OK
+    }
+
+    "return 400 when the Location header is not sent" in {
       val result = controller.hello()(fakeRequest.withHeaders(CACHE_CONTROL -> "Y"))
       status(result) shouldBe Status.BAD_REQUEST
     }
 
-    "return 200 when the User-Agent header has a unique value" in {
-      val result = controller.hello()(fakeRequest.withHeaders(LOCATION -> "unit test"))
-      status(result) shouldBe Status.OK
-    }
-
-    "return 400 when the User-Agent header has multiple values" in {
-      val headers = Seq(LOCATION -> "unit test 1", LOCATION -> "unit test 2", CACHE_CONTROL -> "Y")
+    "return 400 when the Location header has multiple values" in {
+      val headers = Seq(LOCATION -> "ICELAND", LOCATION -> "ISLE OF MAN", CACHE_CONTROL -> "Y")
       val result = controller.hello()(fakeRequest.withHeaders(headers: _*))
       status(result) shouldBe Status.BAD_REQUEST
     }
