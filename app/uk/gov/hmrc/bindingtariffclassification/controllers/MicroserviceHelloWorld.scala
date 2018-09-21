@@ -33,7 +33,7 @@ class MicroserviceHelloWorld extends BaseController {
 
     lazy val execution = request.headers.toMap.get(LOCATION) match {
       case Some(Seq(_: String)) => Future.successful(Ok("{}"))
-      case _ => Future.successful(BadRequest("{}"))
+      case _ => Future.successful(InternalServerError("{}"))
     }
 
     val delay = FiniteDuration(RandomNumberGenerator.next(), MILLISECONDS)

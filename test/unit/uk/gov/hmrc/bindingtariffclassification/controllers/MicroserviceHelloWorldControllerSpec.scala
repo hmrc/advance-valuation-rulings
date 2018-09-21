@@ -34,15 +34,15 @@ class MicroserviceHelloWorldControllerSpec extends UnitSpec with WithFakeApplica
       status(result) shouldBe Status.OK
     }
 
-    "return 400 when the Location header is not sent" in {
+    "return 500 when the Location header is not sent" in {
       val result = controller.hello()(fakeRequest.withHeaders(CACHE_CONTROL -> "Y"))
-      status(result) shouldBe Status.BAD_REQUEST
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
-    "return 400 when the Location header has multiple values" in {
+    "return 500 when the Location header has multiple values" in {
       val headers = Seq(LOCATION -> "ICELAND", LOCATION -> "ISLE OF MAN", CACHE_CONTROL -> "Y")
       val result = controller.hello()(fakeRequest.withHeaders(headers: _*))
-      status(result) shouldBe Status.BAD_REQUEST
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
   }
 
