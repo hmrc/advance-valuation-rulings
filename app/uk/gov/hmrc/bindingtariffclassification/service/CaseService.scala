@@ -14,17 +14,27 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.utils
+package uk.gov.hmrc.bindingtariffclassification.service
 
-import scala.util.Random
+import javax.inject._
+import uk.gov.hmrc.bindingtariffclassification.model.{Case, IsInsert}
+import uk.gov.hmrc.bindingtariffclassification.repository.CaseRepository
 
-object RandomNumberGenerator {
+import scala.concurrent.Future
 
-  private val random = Random
-  private val maxDelayInMillis = 3000
+@Singleton
+class CaseService @Inject()(repository: CaseRepository) {
 
-  def next(): Int = {
-    random.nextInt(maxDelayInMillis)
+  def save(c: Case): Future[(IsInsert, Case)] = {
+    repository.insertOrUpdate(c)
+  }
+
+  def getByReference(reference: String): Future[Option[Case]] = {
+    repository.getByReference(reference)
+  }
+
+  def getAll: Future[Seq[Case]] = {
+    repository.getAll
   }
 
 }

@@ -1,0 +1,75 @@
+/*
+ * Copyright 2018 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package uk.gov.hmrc.bindingtariffclassification.repository
+
+import javax.inject.{Inject, Singleton}
+import com.google.inject.ImplementedBy
+import play.api.libs.json._
+import reactivemongo.bson.BSONObjectID
+import reactivemongo.play.json.collection.JSONCollection
+import uk.gov.hmrc.bindingtariffclassification.model.{Event, JsonFormatters}
+import uk.gov.hmrc.bindingtariffclassification.model.JsonFormatters.formatEvent
+import uk.gov.hmrc.mongo.ReactiveRepository
+import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
+
+import scala.concurrent.Future
+
+@ImplementedBy(classOf[EventMongoRepository])
+trait EventRepository {
+
+  def insert(e: Event): Future[Event]
+  def getById(id: String): Future[Option[Event]]
+  def getByCaseReference(caseReference: String): Future[Seq[Event]]
+}
+
+@Singleton
+class EventMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
+  extends ReactiveRepository[Event, BSONObjectID](
+    collectionName = "events",
+    mongo = mongoDbProvider.mongo,
+    domainFormat = JsonFormatters.formatEvent,
+    idFormat = ReactiveMongoFormats.objectIdFormats) with EventRepository with MongoCrudHelper[Event] {
+
+  override val mongoCollection: JSONCollection = collection
+
+  override def indexes = Seq(
+    // TODO: We need to create an index (composed by a single or multiple fields) considering all possible searches needed by the UI.
+    createSingleFieldAscendingIndex(indexFieldKey = "id", isUnique = true),
+    createSingleFieldAscendingIndex(indexFieldKey = "caseReference", isUnique = false)
+  )
+
+  override def insert(e: Event): Future[Event] = {
+    create(e)
+  }
+
+  private def selectorById(id: String): JsObject = {
+    Json.obj("id" -> id)
+  }
+
+  private def selectorByCaseReference(caseReference: String): JsObject = {
+    Json.obj("caseReference" -> caseReference)
+  }
+
+  override def getById(id: String): Future[Option[Event]] = {
+    getOne(selectorById(id))
+  }
+
+  override def getByCaseReference(caseReference: String): Future[Seq[Event]] = {
+    getMany(selectorByCaseReference(caseReference))
+  }
+
+}

@@ -15,18 +15,21 @@ val appName = "binding-tariff-classification"
 lazy val appDependencies: Seq[ModuleID] = compile ++ test
 
 lazy val compile = Seq(
+  "uk.gov.hmrc" %% "bootstrap-play-25" % "3.3.0",
+  "uk.gov.hmrc" %% "play-json-union-formatter" % "1.3.0",
   "uk.gov.hmrc" %% "play-reactivemongo" % "6.2.0",
-  ws,
-  "uk.gov.hmrc" %% "bootstrap-play-25" % "3.7.0"
+  ws
 )
 
 lazy val scope: String = "test,it"
 
 lazy val test = Seq(
-  "uk.gov.hmrc" %% "hmrctest" % "3.1.0" % scope,
-  "org.scalatest" %% "scalatest" % "3.0.4" % scope,
+  "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
+  "org.mockito" % "mockito-core" % "2.13.0" % scope,
   "org.pegdown" % "pegdown" % "1.6.0" % scope,
-  "com.typesafe.play" %% "play-test" % PlayVersion.current % scope
+  "org.scalatest" %% "scalatest" % "3.0.4" % scope,
+  "uk.gov.hmrc" %% "hmrctest" % "3.0.0" % scope,
+  "uk.gov.hmrc" %% "reactivemongo-test" % "3.0.0" % scope
 )
 
 lazy val plugins: Seq[Plugins] = Seq(PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory)
@@ -53,14 +56,14 @@ lazy val microservice = (project in file("."))
   .settings(inConfig(TemplateTest)(Defaults.testSettings): _*)
   .settings(
     testOptions in Test := Seq(Tests.Filter(unitFilter)),
-    unmanagedSourceDirectories in Test := Seq((baseDirectory in Test).value / "test/unit" ),
+    unmanagedSourceDirectories in Test := Seq((baseDirectory in Test).value / "test/unit"),
     addTestReportOption(Test, "test-reports")
   )
   .configs(IntegrationTest)
   .settings(inConfig(TemplateItTest)(Defaults.itSettings): _*)
   .settings(
     Keys.fork in IntegrationTest := false,
-    unmanagedSourceDirectories in IntegrationTest := Seq((baseDirectory in IntegrationTest).value / "test/it" ),
+    unmanagedSourceDirectories in IntegrationTest := Seq((baseDirectory in IntegrationTest).value / "test/it"),
     addTestReportOption(IntegrationTest, "int-test-reports"),
     testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
     parallelExecution in IntegrationTest := false)
