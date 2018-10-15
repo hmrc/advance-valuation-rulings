@@ -15,7 +15,7 @@ val appName = "binding-tariff-classification"
 lazy val appDependencies: Seq[ModuleID] = compile ++ test
 
 lazy val compile = Seq(
-  "uk.gov.hmrc" %% "bootstrap-play-25" % "3.3.0",
+  "uk.gov.hmrc" %% "bootstrap-play-25" % "3.10.0",
   "uk.gov.hmrc" %% "play-json-union-formatter" % "1.3.0",
   "uk.gov.hmrc" %% "play-reactivemongo" % "6.2.0",
   ws
@@ -28,7 +28,7 @@ lazy val test = Seq(
   "org.mockito" % "mockito-core" % "2.13.0" % scope,
   "org.pegdown" % "pegdown" % "1.6.0" % scope,
   "org.scalatest" %% "scalatest" % "3.0.4" % scope,
-  "uk.gov.hmrc" %% "hmrctest" % "3.0.0" % scope,
+  "uk.gov.hmrc" %% "hmrctest" % "3.0.1" % scope,
   "uk.gov.hmrc" %% "reactivemongo-test" % "3.0.0" % scope
 )
 
