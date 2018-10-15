@@ -16,31 +16,30 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
-import play.api.libs.json.{JsObject, OWrites, Reads}
+import play.api.libs.json._
 import reactivemongo.api.Cursor
-import reactivemongo.api.commands.{UpdateWriteResult, WriteResult}
 import reactivemongo.play.json.ImplicitBSONHandlers._
 import reactivemongo.play.json.collection.JSONCollection
-import uk.gov.hmrc.bindingtariffclassification.model.IsInsert
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-trait MongoCrudHelper[T] extends MongoIndexCreator with MongoErrorHandler {
+trait MongoCrudHelper[T] extends MongoIndexCreator {
 
   protected val mongoCollection: JSONCollection
 
-  def create(document: T)(implicit w: OWrites[T]): Future[T] = {
-    mongoCollection.insert(document).map { wResult: WriteResult =>
-      handleUpsertError(wResult, "Cannot insert document")
-      document
-    }
+  def createOne(document: T)(implicit w: OWrites[T]): Future[T] = {
+    mongoCollection.insert(document).map { _ => document }
   }
 
-  def createOrUpdate(document: T, selector: JsObject)(implicit w: OWrites[T]): Future[(IsInsert, T)] = {
-    mongoCollection.update(selector, document, upsert = true).map { wResult: UpdateWriteResult =>
-      val isInserted = handleUpsertError(wResult, "Cannot insert or update document")
-      (isInserted, document)
+  def atomicUpdate(selector: JsObject, newDocument: T)(implicit w: OFormat[T]): Future[Option[T]] = {
+    val modifier = mongoCollection.updateModifier(
+      update = newDocument,
+      fetchNewObject = true,
+      upsert = false)
+
+    mongoCollection.findAndModify(selector, modifier).map {
+      _.value.map(_.as[T])
     }
   }
 
