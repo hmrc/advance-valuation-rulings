@@ -25,10 +25,10 @@ lazy val scope: String = "test,it"
 
 lazy val test = Seq(
   "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
-  "org.mockito" % "mockito-core" % "2.13.0" % scope,
+  "org.mockito" % "mockito-core" % "2.23.0" % scope,
   "org.pegdown" % "pegdown" % "1.6.0" % scope,
   "org.scalatest" %% "scalatest" % "3.0.4" % scope,
-  "uk.gov.hmrc" %% "hmrctest" % "3.0.1" % scope,
+  "uk.gov.hmrc" %% "hmrctest" % "3.1.0" % scope,
   "uk.gov.hmrc" %% "reactivemongo-test" % "3.0.0" % scope
 )
 
