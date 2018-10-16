@@ -25,24 +25,27 @@ trait BaseMongoIndexSpec extends UnitSpec {
 
   protected implicit val ordering: Ordering[Index] = Ordering.by { i: Index => i.name }
 
-  protected def assertIndex(expectedIndexes: List[Index], actualIndexes: List[Index]): Unit = {
+  protected def assertIndexes(expectedIndexes: List[Index], actualIndexes: List[Index]): Unit = {
     actualIndexes.size shouldBe expectedIndexes.size
 
     for (i <- actualIndexes.size) {
       val expectedIndex = expectedIndexes(i)
       val actualIndex = actualIndexes(i)
 
-      actualIndex.key shouldBe expectedIndex.key
-      actualIndex.name shouldBe expectedIndex.name
-      actualIndex.unique shouldBe expectedIndex.unique
-      actualIndex.background shouldBe expectedIndex.background
-      actualIndex.dropDups shouldBe expectedIndex.dropDups
-      actualIndex.sparse shouldBe expectedIndex.sparse
-      actualIndex.partialFilter shouldBe expectedIndex.partialFilter
-      actualIndex.options shouldBe expectedIndex.options
-      actualIndex.eventualName shouldBe expectedIndex.eventualName
+      assertIndex(expectedIndex, actualIndex)
     }
+  }
 
+  private def assertIndex(expectedIndex: Index, actualIndex: Index): Unit = {
+    actualIndex.key shouldBe expectedIndex.key
+    actualIndex.name shouldBe expectedIndex.name
+    actualIndex.unique shouldBe expectedIndex.unique
+    actualIndex.background shouldBe expectedIndex.background
+    actualIndex.dropDups shouldBe expectedIndex.dropDups
+    actualIndex.sparse shouldBe expectedIndex.sparse
+    actualIndex.partialFilter shouldBe expectedIndex.partialFilter
+    actualIndex.options shouldBe expectedIndex.options
+    actualIndex.eventualName shouldBe expectedIndex.eventualName
   }
 
 }

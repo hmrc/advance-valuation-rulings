@@ -180,7 +180,7 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
       val repo = new CaseMongoRepository(mongoDbProvider)
 
       eventually(timeout(5.seconds), interval(100.milliseconds)) {
-        assertIndex(expectedIndexes.sorted, getIndexes(repo).sorted)
+        assertIndexes(expectedIndexes.sorted, getIndexes(repo).sorted)
       }
     }
   }
