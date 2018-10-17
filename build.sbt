@@ -1,6 +1,4 @@
-import play.core.PlayVersion
 import play.routes.compiler.StaticRoutesGenerator
-import play.sbt.PlayImport._
 import play.sbt.PlayScala
 import play.sbt.routes.RoutesKeys.routesGenerator
 import sbt.Tests
