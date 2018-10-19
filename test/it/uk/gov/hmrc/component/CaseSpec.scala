@@ -21,6 +21,7 @@ import play.api.http.HeaderNames.CONTENT_TYPE
 import play.api.http.ContentTypes.JSON
 import play.api.http.Status.{CREATED, INTERNAL_SERVER_ERROR, NOT_FOUND, OK}
 import play.api.libs.json.Json
+import uk.gov.hmrc.bindingtariffclassification.model.{Case, CaseStatus}
 import uk.gov.hmrc.bindingtariffclassification.model.JsonFormatters._
 import uk.gov.hmrc.bindingtariffclassification.todelete.CaseData
 
@@ -28,8 +29,14 @@ class CaseSpec extends BaseFeatureSpec {
 
   override lazy val port = 14681
 
-  private val c = CaseData.createCase(CaseData.createBTIApplication)
-  private val expectedCaseBody = Json.toJson(c)
+  private val c1 = CaseData.createCase(CaseData.createBTIApplication)
+  private val c1_updated = c1.copy(status = CaseStatus.CANCELLED)
+  private val c2 = CaseData.createCase(CaseData.createBTIApplication)
+
+  private val json1 = Json.toJson(c1)
+  private val json1_updated = Json.toJson(c1_updated)
+  private val json2 = Json.toJson(c2)
+
 
   feature("Create Case") {
 
@@ -39,25 +46,25 @@ class CaseSpec extends BaseFeatureSpec {
       val result = Http(s"$serviceUrl/cases")
         .headers(Seq(CONTENT_TYPE -> JSON))
         .timeout(5000, 10000)
-        .postData(expectedCaseBody.toString()).asString
+        .postData(json1.toString()).asString
 
-      Then("The case body is returned")
-      Json.parse(result.body) shouldBe expectedCaseBody
+      Then("The case is returned")
+      Json.parse(result.body) shouldBe json1
 
       And("The response code should be created")
       result.code shouldEqual CREATED
     }
 
-    scenario("Create an existing reference case") {
+    scenario("Create an existing case") {
 
       Given("There is a case in the database")
-      store(c)
+      store(c1)
 
       When("I create a case that already exist")
       val result = Http(s"$serviceUrl/cases")
         .headers(Seq(CONTENT_TYPE -> JSON))
         .timeout(5000, 10000)
-        .postData(expectedCaseBody.toString()).asString
+        .postData(json1.toString()).asString
 
       // TODO This should not return an internal server error. Instead it should return a 422
       // requires a code change to the application but is not currently blocking us so the test has been left
@@ -69,30 +76,63 @@ class CaseSpec extends BaseFeatureSpec {
   }
 
 
-  feature("Get case") {
+  feature("Update Case") {
+
+    scenario("Update an non-existing case") {
+
+      When("I update a non-existing case")
+      val result = Http(s"$serviceUrl/cases/${c1.reference}")
+        .headers(Seq(CONTENT_TYPE -> JSON))
+        .timeout(5000, 10000)
+        .put(json1.toString()).asString
+
+      Then("The response code should be NOT FOUND")
+      result.code shouldEqual NOT_FOUND
+    }
+
+    scenario("Update an existing case") {
+
+      Given("There is a case in the database")
+      store(c1)
+
+      When("I update an existing case")
+      val result = Http(s"$serviceUrl/cases/${c1.reference}")
+        .headers(Seq(CONTENT_TYPE -> JSON))
+        .timeout(5000, 10000)
+        .put(json1_updated.toString()).asString
+
+      And("The response code should be OK")
+      result.code shouldEqual OK
+
+      Then("The case is returned")
+      Json.parse(result.body) shouldBe json1_updated
+    }
+
+  }
+
+
+  feature("Get Case") {
 
     scenario("Get existing case") {
 
       Given("There is a case in the database")
-      store(c)
+      store(c1)
 
       When("I get a case")
-      val result = Http(s"$serviceUrl/cases/${c.reference}")
-        .headers(Seq(CONTENT_TYPE -> JSON))
+      val result = Http(s"$serviceUrl/cases/${c1.reference}")
         .timeout(5000, 10000).asString
 
       Then("The response code should be OK")
       result.code shouldEqual OK
 
       Then("The case body is returned")
-      Json.parse(result.body) shouldBe expectedCaseBody
+      Json.parse(result.body) shouldBe json1
     }
 
     scenario("Get a non-existing case") {
 
       When("I get a case")
-      val result = Http(s"$serviceUrl/cases/${c.reference}")
-        .headers(Seq(CONTENT_TYPE -> JSON))
+      val result = Http(s"$serviceUrl/cases/${c1.reference}")
         .timeout(5000, 10000).asString
 
       Then("The response code should be NOT FOUND")
@@ -101,5 +141,41 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
-  // TODO: add tests for other routes
+
+  feature("Get All Cases") {
+
+    scenario("Get cases") {
+
+      Given("There are few cases in the database")
+      store(c1)
+      store(c2)
+
+      When("I get all cases")
+      val result = Http(s"$serviceUrl/cases")
+        .timeout(5000, 10000).asString
+
+      Then("The response code should be OK")
+      result.code shouldEqual OK
+
+      Then("The cases are returned")
+      Json.parse(result.body) shouldBe Json.toJson(Seq(c1, c2))
+    }
+
+    scenario("Get no cases") {
+
+      Given("There are no cases in the database")
+
+      When("I get all cases")
+      val result = Http(s"$serviceUrl/cases")
+        .timeout(5000, 10000).asString
+
+      Then("The response code should be OK")
+      result.code shouldEqual OK
+
+      Then("No cases are returned")
+      Json.parse(result.body) shouldBe Json.toJson(Seq.empty[Case])
+    }
+
+  }
+
 }
