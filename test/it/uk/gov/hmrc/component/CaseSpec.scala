@@ -35,7 +35,6 @@ class CaseSpec extends BaseFeatureSpec {
 
   private val json1 = Json.toJson(c1)
   private val json1_updated = Json.toJson(c1_updated)
-  private val json2 = Json.toJson(c2)
 
 
   feature("Create Case") {
@@ -48,7 +47,7 @@ class CaseSpec extends BaseFeatureSpec {
         .timeout(5000, 10000)
         .postData(json1.toString()).asString
 
-      Then("The case is returned")
+      Then("The case is returned in the JSON response")
       Json.parse(result.body) shouldBe json1
 
       And("The response code should be created")
@@ -69,7 +68,7 @@ class CaseSpec extends BaseFeatureSpec {
       // TODO This should not return an internal server error. Instead it should return a 422
       // requires a code change to the application but is not currently blocking us so the test has been left
       // testing for a 500 internal server error.
-      And("The response code should be internal server error")
+      Then("The response code should be internal server error")
       result.code shouldEqual INTERNAL_SERVER_ERROR
     }
 
@@ -101,10 +100,10 @@ class CaseSpec extends BaseFeatureSpec {
         .timeout(5000, 10000)
         .put(json1_updated.toString()).asString
 
-      And("The response code should be OK")
+      Then("The response code should be OK")
       result.code shouldEqual OK
 
-      Then("The case is returned")
+      And("The case is returned in the JSON response")
       Json.parse(result.body) shouldBe json1_updated
     }
 
@@ -125,7 +124,7 @@ class CaseSpec extends BaseFeatureSpec {
       Then("The response code should be OK")
       result.code shouldEqual OK
 
-      Then("The case body is returned")
+      And("The case is returned in the JSON response")
       Json.parse(result.body) shouldBe json1
     }
 
@@ -157,7 +156,7 @@ class CaseSpec extends BaseFeatureSpec {
       Then("The response code should be OK")
       result.code shouldEqual OK
 
-      Then("The cases are returned")
+      And("The cases are returned in the JSON response")
       Json.parse(result.body) shouldBe Json.toJson(Seq(c1, c2))
     }
 
@@ -172,7 +171,7 @@ class CaseSpec extends BaseFeatureSpec {
       Then("The response code should be OK")
       result.code shouldEqual OK
 
-      Then("No cases are returned")
+      And("No cases are returned in the JSON response")
       Json.parse(result.body) shouldBe Json.toJson(Seq.empty[Case])
     }
 
