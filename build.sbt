@@ -7,7 +7,6 @@ import uk.gov.hmrc.DefaultBuildSettings._
 import uk.gov.hmrc.SbtArtifactory
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 
-
 val appName = "binding-tariff-classification"
 
 lazy val plugins: Seq[Plugins] = Seq(PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory)
