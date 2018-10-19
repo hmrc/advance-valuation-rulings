@@ -22,7 +22,7 @@ import play.api.mvc._
 import uk.gov.hmrc.bindingtariffclassification.model.{Case, ErrorCode, JsErrorResponse, JsonFormatters}
 import uk.gov.hmrc.bindingtariffclassification.service.CaseService
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
 
 @Singleton()
@@ -38,12 +38,12 @@ class CaseController @Inject()(caseService: CaseService) extends CommonControlle
 
   def update(reference: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[Case] { caseRequest: Case =>
-      // TODO: require (reference == caseRequest.reference)
-      // TODO (if `caseRequest` does not contain the reference): val updatedCase = caseRequest.copy(reference = reference)
-      caseService.update(caseRequest) map {
-        case None => NotFound(JsErrorResponse(ErrorCode.NOT_FOUND, "Case not found"))
-        case Some(c: Case) => Ok(Json.toJson(c))
-      }
+      if (caseRequest.reference == reference) {
+        caseService.update(caseRequest) map {
+          case None => NotFound(JsErrorResponse(ErrorCode.NOT_FOUND, "Case not found"))
+          case Some(c: Case) => Ok(Json.toJson(c))
+        }
+      } else Future.successful(BadRequest(JsErrorResponse(ErrorCode.INVALID_REQUEST_PAYLOAD, "Invalid case reference")))
     } recover recovery
   }
 
@@ -57,4 +57,5 @@ class CaseController @Inject()(caseService: CaseService) extends CommonControlle
       case Some(c: Case) => Ok(Json.toJson(c))
     } recover recovery
   }
+
 }

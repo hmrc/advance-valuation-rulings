@@ -76,6 +76,7 @@ class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoS
       val result = await(controller.create()(fakeRequest.withBody(toJson(c1))))
 
       status(result) shouldEqual INTERNAL_SERVER_ERROR
+      jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
     }
 
   }
@@ -98,12 +99,20 @@ class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoS
       status(result) shouldEqual BAD_REQUEST
     }
 
+    "return 400 when the case reference path parameter does not match the JSON request payload" in {
+      val result = await(controller.update("ABC")(fakeRequest.withBody(toJson(c1))))
+
+      status(result) shouldEqual BAD_REQUEST
+      jsonBodyOf(result).toString() shouldEqual """{"code":"INVALID_REQUEST_PAYLOAD","message":"Invalid case reference"}"""
+    }
+
     "return 404 when there are no cases with the provided reference" in {
       when(mockCaseService.update(c1)).thenReturn(successful(None))
 
       val result = await(controller.update(c1.reference)(fakeRequest.withBody(toJson(c1))))
 
       status(result) shouldEqual NOT_FOUND
+      jsonBodyOf(result).toString() shouldEqual """{"code":"NOT_FOUND","message":"Case not found"}"""
     }
 
     "return 500 when an error occurred" in {
@@ -111,9 +120,10 @@ class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoS
 
       when(mockCaseService.update(c1)).thenReturn(failed(error))
 
-      val result = await(controller.update("")(fakeRequest.withBody(toJson(c1))))
+      val result = await(controller.update(c1.reference)(fakeRequest.withBody(toJson(c1))))
 
       status(result) shouldEqual INTERNAL_SERVER_ERROR
+      jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
     }
 
   }
@@ -135,7 +145,7 @@ class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoS
       val result = await(controller.getAll(fakeRequest))
 
       status(result) shouldEqual OK
-      jsonBodyOf(result) shouldEqual toJson(Seq[Case]())
+      jsonBodyOf(result) shouldEqual toJson(Seq.empty[Case])
     }
 
     "return 500 when an error occurred" in {
@@ -146,6 +156,7 @@ class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoS
       val result = await(controller.getAll(fakeRequest))
 
       status(result) shouldEqual INTERNAL_SERVER_ERROR
+      jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
     }
 
   }
@@ -167,6 +178,7 @@ class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoS
       val result = await(controller.getByReference(c1.reference)(fakeRequest))
 
       status(result) shouldEqual NOT_FOUND
+      jsonBodyOf(result).toString() shouldEqual """{"code":"NOT_FOUND","message":"Case not found"}"""
     }
 
     "return 500 when an error occurred" in {
@@ -177,6 +189,7 @@ class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoS
       val result = await(controller.getByReference(c1.reference)(fakeRequest))
 
       status(result) shouldEqual INTERNAL_SERVER_ERROR
+      jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
     }
 
   }

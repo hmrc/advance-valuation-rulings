@@ -37,9 +37,7 @@ trait CommonController extends BaseController {
   }
 
   private[controllers] def recovery: PartialFunction[Throwable, Result] = {
-    case e: Throwable =>
-      Logger.error(s"Error occurred: ${e.getMessage}", e)
-      handleException(e)
+    case e: Throwable => handleException(e)
   }
 
   private[controllers] def handleException(e: Throwable) = {
