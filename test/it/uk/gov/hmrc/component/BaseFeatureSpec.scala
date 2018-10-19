@@ -17,7 +17,7 @@
 package it.uk.gov.hmrc.component
 
 import org.scalatest._
-import org.scalatestplus.play.OneServerPerSuite
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import uk.gov.hmrc.bindingtariffclassification.model.Case
 import uk.gov.hmrc.bindingtariffclassification.repository.CaseMongoRepository
 
@@ -26,7 +26,7 @@ import scala.concurrent.Await.result
 import scala.concurrent.ExecutionContext.Implicits.global
 
 abstract class BaseFeatureSpec extends FeatureSpec
-  with Matchers with GivenWhenThen with OneServerPerSuite
+  with Matchers with GivenWhenThen with GuiceOneServerPerSuite
   with BeforeAndAfterEach with BeforeAndAfterAll {
 
   protected val serviceUrl = s"http://localhost:$port"
