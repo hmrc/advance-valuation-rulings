@@ -17,7 +17,9 @@
 package unit.uk.gov.hmrc.bindingtariffclassification.controllers
 
 import akka.stream.Materializer
+import org.mockito.ArgumentMatchers.{any, refEq}
 import org.mockito.Mockito.when
+import org.scalatest.Matchers
 import org.scalatest.mockito.MockitoSugar
 import play.api.http.Status.{BAD_REQUEST, CREATED, INTERNAL_SERVER_ERROR, NOT_FOUND, OK}
 import play.api.libs.json.Json.toJson
@@ -27,13 +29,14 @@ import reactivemongo.core.errors.DatabaseException
 import uk.gov.hmrc.bindingtariffclassification.controllers.CaseController
 import uk.gov.hmrc.bindingtariffclassification.model.Case
 import uk.gov.hmrc.bindingtariffclassification.model.JsonFormatters._
+import uk.gov.hmrc.bindingtariffclassification.model.search.{SearchCase, SearchCaseBuilder, SortCase}
 import uk.gov.hmrc.bindingtariffclassification.service.CaseService
 import uk.gov.hmrc.bindingtariffclassification.todelete.CaseData
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 import scala.concurrent.Future._
 
-class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoSugar {
+class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoSugar with Matchers {
 
   private implicit val mat: Materializer = fakeApplication.materializer
 
@@ -67,7 +70,9 @@ class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoS
     "return 500 when an error occurred" in {
       val error = new DatabaseException {
         override def originalDocument: Option[BSONDocument] = None
+
         override def code: Option[Int] = Some(11000)
+
         override def message: String = "duplicate value for db index"
       }
 
@@ -128,21 +133,23 @@ class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoS
 
   }
 
-  "getAll()" should {
+  "get()" should {
+
+    // TODO: test all possible combinations
 
     "return 200 with the all cases" in {
-      when(mockCaseService.getAll).thenReturn(successful(Seq(c1, c2)))
+      when(mockCaseService.get(any[Some[SearchCase]], refEq(Some(SortCase(Seq.empty))))).thenReturn(successful(Seq(c1, c2)))
 
-      val result = await(controller.getAll(fakeRequest))
+      val result = await(controller.get(None, None, None)(fakeRequest))
 
       status(result) shouldEqual OK
       jsonBodyOf(result) shouldEqual toJson(Seq(c1, c2))
     }
 
     "return 200 with an empty sequence if there are no cases" in {
-      when(mockCaseService.getAll).thenReturn(successful(Nil))
+      when(mockCaseService.get(any[Some[SearchCase]], refEq(Some(SortCase(Seq.empty))))).thenReturn(successful(Seq.empty))
 
-      val result = await(controller.getAll(fakeRequest))
+      val result = await(controller.get(None, None, None)(fakeRequest))
 
       status(result) shouldEqual OK
       jsonBodyOf(result) shouldEqual toJson(Seq.empty[Case])
@@ -151,9 +158,9 @@ class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoS
     "return 500 when an error occurred" in {
       val error = new RuntimeException
 
-      when(mockCaseService.getAll).thenReturn(failed(error))
+      when(mockCaseService.get(any[Some[SearchCase]], refEq(Some(SortCase(Seq.empty))))).thenReturn(failed(error))
 
-      val result = await(controller.getAll(fakeRequest))
+      val result = await(controller.get(None, None, None)(fakeRequest))
 
       status(result) shouldEqual INTERNAL_SERVER_ERROR
       jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
