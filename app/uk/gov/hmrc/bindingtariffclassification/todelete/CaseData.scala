@@ -38,6 +38,7 @@ object CaseData {
       bindingCommodityCode = "GB1234567",
       effectiveStartDate = ZonedDateTime.now(),
       effectiveEndDate = ZonedDateTime.now().plusYears(3),
+      methodSearch = Some("bike spanner"),
       justification = "Found precedent case",
       goodsDescription = "Bike tool",
       keywords = Seq("bike", "tool")
