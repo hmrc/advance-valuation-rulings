@@ -27,8 +27,9 @@ object CaseData {
     BTIApplication(
       holder = createEORIDetails,
       contact = Contact("Marisa", "marisa@me.com", "0123456789"),
-      goodDescription = "this is a BTI application for mobile phones",
-      goodName = "mobile phones"
+      goodDescription = "this is a BTI application for HTC Wildfire mobile phones",
+      goodName = "HTC Wildfire smartphone",
+      envisagedCommodityCode = Some("AS12345LG")
     )
   }
 
