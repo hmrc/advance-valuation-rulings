@@ -16,14 +16,5 @@
 
 package uk.gov.hmrc.bindingtariffclassification.model.search
 
-import play.api.libs.json.Json
-import uk.gov.hmrc.play.test.UnitSpec
-
-class SortCaseSpec extends UnitSpec {
-
-
-  "covert to Json with no filters" in {
-    SortCase().buildJson shouldBe Json.obj()
-  }
-
-}
+case class CaseParamsFilter(queueId: Option[String] = None,
+                            assigneeId: Option[String] = None)

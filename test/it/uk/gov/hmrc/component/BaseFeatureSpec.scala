@@ -21,29 +21,28 @@ import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import uk.gov.hmrc.bindingtariffclassification.model.Case
 import uk.gov.hmrc.bindingtariffclassification.repository.CaseMongoRepository
 
-import scala.concurrent.duration._
 import scala.concurrent.Await.result
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 
 abstract class BaseFeatureSpec extends FeatureSpec
   with Matchers with GivenWhenThen with GuiceOneServerPerSuite
   with BeforeAndAfterEach with BeforeAndAfterAll {
 
-  protected val serviceUrl = s"http://localhost:$port"
   private val timeout = 2.seconds
 
+  protected def repository: CaseMongoRepository = app.injector.instanceOf[CaseMongoRepository]
+
   override protected def beforeEach(): Unit = {
-    result(mongoRepository.ensureIndexes, timeout)
+    result(repository.drop, timeout)
+    result(repository.ensureIndexes, timeout)
   }
 
-  override protected def afterEach(): Unit = {
-    result(mongoRepository.drop, timeout)
+  override protected def afterAll(): Unit = {
+    result(repository.drop, timeout)
   }
 
-  protected def mongoRepository: CaseMongoRepository = app.injector.instanceOf[CaseMongoRepository]
-
-  protected def store(c: Case): Case = {
-    result(mongoRepository.insert(c), timeout)
+  protected def store(cases: Case*): Seq[Case] = {
+    cases.map(c => result(repository.insert(c), timeout))
   }
-
 }

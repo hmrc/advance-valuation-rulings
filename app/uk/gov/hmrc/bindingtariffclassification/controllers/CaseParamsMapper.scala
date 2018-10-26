@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.model.search
+package uk.gov.hmrc.bindingtariffclassification.controllers
 
-import play.api.libs.json.{JsObject, JsString, JsValue, Json}
+import javax.inject.Singleton
+import uk.gov.hmrc.bindingtariffclassification.model.search.CaseParamsFilter
 
-case class SortCase(
-                     sortBy: Seq[String] = Seq.empty
-                   ) {
+@Singleton
+class CaseParamsMapper {
 
-  def buildJson: JsObject = {
-    // TODO : implement Sort case
-    Json.obj()
+  def from(queueId: Option[String], assigneeId: Option[String]): CaseParamsFilter = {
+    CaseParamsFilter(queueId = queueId, assigneeId = assigneeId)
   }
+
 }

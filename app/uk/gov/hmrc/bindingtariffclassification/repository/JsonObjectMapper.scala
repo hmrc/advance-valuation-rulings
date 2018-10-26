@@ -16,17 +16,32 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
-import com.google.inject.ImplementedBy
 import javax.inject.Singleton
-import play.modules.reactivemongo.MongoDbConnection
-import reactivemongo.api.DB
-
-@ImplementedBy(classOf[MongoDb])
-trait MongoDbProvider {
-  def mongo: () => DB
-}
+import play.api.libs.json._
+import uk.gov.hmrc.bindingtariffclassification.model.search.CaseParamsFilter
 
 @Singleton
-class MongoDb extends MongoDbConnection with MongoDbProvider {
-  override val mongo: () => DB = db
+class JsonObjectMapper {
+
+  private def nullifyNoneValues: String => JsValue = { v: String =>
+    v match {
+      case "none" => JsNull
+      case _ => JsString(v)
+    }
+  }
+
+  def from: CaseParamsFilter => JsObject = searchCase => {
+
+    JsObject(
+      Seq[(String, JsValue)]() ++
+        searchCase.queueId.map("queueId" -> nullifyNoneValues(_)) ++
+        searchCase.assigneeId.map("assigneeId" -> nullifyNoneValues(_))
+    )
+  }
+
+  def fromReference(reference: String): JsObject = {
+    Json.obj("reference" -> reference)
+  }
+
+
 }

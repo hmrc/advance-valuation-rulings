@@ -19,17 +19,16 @@ package uk.gov.hmrc.bindingtariffclassification.controllers
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
-import uk.gov.hmrc.bindingtariffclassification.model.search.{SearchCase, SearchCaseBuilder, SortCase}
 import uk.gov.hmrc.bindingtariffclassification.model.{Case, ErrorCode, JsErrorResponse, JsonFormatters}
 import uk.gov.hmrc.bindingtariffclassification.service.CaseService
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
-import ExecutionContext.Implicits.global
 
 @Singleton()
-class CaseController @Inject()(caseService: CaseService) extends CommonController {
+class CaseController @Inject()(caseService: CaseService, caseParamsMapper: CaseParamsMapper) extends CommonController {
 
-  import JsonFormatters._
+  import JsonFormatters.formatCase
 
   def create: Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[Case] { caseRequest: Case =>
@@ -49,12 +48,7 @@ class CaseController @Inject()(caseService: CaseService) extends CommonControlle
   }
 
   def get(queue_id: Option[String], assignee_id: Option[String], sort_by: Option[String]): Action[AnyContent] = Action.async { implicit request =>
-
-    val searchBy = SearchCaseBuilder.withQueueId(queue_id).withAssigneeId(assignee_id).build()
-    //TODO : Implement Sort by
-    val sortBy = SortCase(Seq.empty)
-
-    caseService.get(Some(searchBy), Some(sortBy)) map (cases => Ok(Json.toJson(cases))) recover recovery
+    caseService.get(caseParamsMapper.from(queue_id, assignee_id), sort_by) map (cases => Ok(Json.toJson(cases))) recover recovery
   }
 
   def getByReference(reference: String): Action[AnyContent] = Action.async { implicit request =>
