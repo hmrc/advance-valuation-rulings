@@ -32,6 +32,17 @@ object CaseData {
     )
   }
 
+  def createDecision: Decision = {
+    Decision(
+      bindingCommodityCode = "GB1234567",
+      effectiveStartDate = ZonedDateTime.now(),
+      effectiveEndDate = ZonedDateTime.now().plusYears(3),
+      justification = "Found precedent case",
+      goodsDescription = "Bike tool",
+      keywords = Seq("bike", "tool")
+    )
+  }
+
   def createLiabilityOrder: LiabilityOrder = {
     LiabilityOrder(
       holder = createEORIDetails,
@@ -51,18 +62,19 @@ object CaseData {
       "GB")
   }
 
-  def createCase(a: Application = createBTIApplication, attachments: Seq[Attachment] = Seq.empty): Case = {
+  def createCase(a: Application = createBTIApplication, d: Option[Decision] = None, attachments: Seq[Attachment] = Seq.empty): Case = {
     Case(
       reference = RandomGenerator.randomUUID(),
       status = CaseStatus.NEW,
       queueId = Some(RandomGenerator.randomUUID()),
       assigneeId = Some(RandomGenerator.randomUUID()),
       application = a,
+      decision = d,
       attachments = attachments
     )
   }
 
-  def createAttachment(): Attachment = {
+  def createAttachment: Attachment = {
     Attachment(
       application = false,
       public = true,
