@@ -48,7 +48,7 @@ class CaseServiceSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach
     reset(repository)
   }
 
-  "insert" should {
+  "insert()" should {
 
     "return the case after it is inserted in the database collection" in {
       when(repository.insert(c1)).thenReturn(successful(c1))
@@ -67,7 +67,7 @@ class CaseServiceSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach
 
   }
 
-  "update" should {
+  "update()" should {
 
     "return the case after it is updated in the database collection" in {
       when(repository.update(c1)).thenReturn(successful(Some(c1)))
@@ -92,7 +92,7 @@ class CaseServiceSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach
 
   }
 
-  "updateStatus" should {
+  "updateStatus()" should {
 
     "return None if there are no cases with the specified reference or if the case has already the status updated" in {
       when(repository.updateStatus(anyString, any[CaseStatus])).thenReturn(successful(None))
@@ -118,13 +118,12 @@ class CaseServiceSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach
       val newStatus = CaseStatus.OPEN
 
       when(c1.reference).thenReturn(reference)
-      when(c1.assigneeId).thenReturn(Some("user-plato"))
       when(c1.status).thenReturn(CaseStatus.NEW)
 
       val e = Event(
         id = UUID.randomUUID().toString,
         details = CaseStatusChange(from = c1.status, to = newStatus),
-        userId = c1.assigneeId.getOrElse(""),
+        userId = "0", // TODO: this needs to be the currently loggedIn user
         caseReference = c1.reference)
 
       val eventFieldsToExcludeInTheInsertion = List("timestamp", "id")
@@ -140,7 +139,7 @@ class CaseServiceSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach
 
   }
 
-  "getByReference" should {
+  "getByReference()" should {
 
     "return the expected case" in {
       when(repository.getByReference(c1.reference)).thenReturn(successful(Some(c1)))
@@ -165,7 +164,7 @@ class CaseServiceSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach
 
   }
 
-  "get" should {
+  "get()" should {
 
     // TODO: test all possible combinations
     val nofilters = CaseParamsFilter()

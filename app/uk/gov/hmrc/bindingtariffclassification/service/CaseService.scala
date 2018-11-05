@@ -38,7 +38,7 @@ class CaseService @Inject()(repository: CaseRepository, eventService: EventServi
     val changeStatusEvent = Event(
       id = UUID.randomUUID().toString,
       details = CaseStatusChange(from = originalCase.status, to = newStatus),
-      userId = originalCase.assigneeId.getOrElse(""),
+      userId = "0", // this should be the currently loggedIn user. See DIT-311
       caseReference = originalCase.reference)
 
     eventService.insert(changeStatusEvent)
