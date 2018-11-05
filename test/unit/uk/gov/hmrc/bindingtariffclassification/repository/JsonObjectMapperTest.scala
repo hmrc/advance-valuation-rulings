@@ -16,56 +16,120 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
+import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model.search.CaseParamsFilter
 import uk.gov.hmrc.play.test.UnitSpec
 
 class JsonObjectMapperTest extends UnitSpec {
 
-  val test = new JsonObjectMapper
+  private val jsonMapper = new JsonObjectMapper
 
-  "covert to Json queueId and assigneeId" in {
+  "from()" should {
 
-    val filter = CaseParamsFilter(queueId = Some("valid_queue"), assigneeId = Some("valid_assignee"))
+    "convert to Json with fields status, queueId and assigneeId" in {
 
-    mapFrom(filter) shouldBe
-      """{
-        | "queueId": "valid_queue",
-        | "assigneeId": "valid_assignee"
-        |}
-      """.stripMargin.replaceAll(" ", "").replaceAll("\n", "")
+      val filter = CaseParamsFilter(
+        queueId = Some("valid_queue"),
+        assigneeId = Some("valid_assignee"),
+        status = Some(Seq("S1", "S2"))
+      )
+
+      mapFrom(filter) shouldBe
+        """{
+          | "queueId": "valid_queue",
+          | "assigneeId": "valid_assignee",
+          | "status": {
+          |   "$in": [ "S1", "S2" ]
+          |  }
+          |}
+        """.stripMargin.replaceAll(" ", "").replaceAll("\n", "")
+    }
+
+    "convert to Json with fields queueId and assigneeId" in {
+
+      val filter = CaseParamsFilter(
+        queueId = Some("valid_queue"),
+        assigneeId = Some("valid_assignee")
+      )
+
+      mapFrom(filter) shouldBe
+        """{
+          | "queueId": "valid_queue",
+          | "assigneeId": "valid_assignee"
+          |}
+        """.stripMargin.replaceAll(" ", "").replaceAll("\n", "")
+    }
+
+    "convert to Json with fields queueId and assigneeId using `none` value " in {
+
+      val filter = CaseParamsFilter(queueId = Some("none"), assigneeId = Some("none"))
+
+      mapFrom(filter) shouldBe
+        """{
+          | "queueId": null,
+          | "assigneeId": null
+          |}
+        """.stripMargin.replaceAll(" ", "").replaceAll("\n", "")
+
+    }
+
+    "convert to Json with no filters" in {
+      mapFrom(CaseParamsFilter()) shouldBe "{}"
+    }
+
   }
 
-  "covert to Json queueId and assigneeId with none value " in {
+  "fromReference()" should {
 
-    val filter = CaseParamsFilter(queueId = Some("none"), assigneeId = Some("none"))
+    "convert to Json from a valid reference" in {
 
-    mapFrom(filter) shouldBe
-      """{
-        | "queueId": null,
-        | "assigneeId": null
-        |}
-      """.stripMargin.replaceAll(" ", "").replaceAll("\n", "")
+      val validRef = "valid_reference"
+
+      jsonMapper.fromReference(validRef).toString() shouldBe
+        s"""{
+          | "reference": "$validRef"
+          |}
+        """.stripMargin.replaceAll(" ", "").replaceAll("\n", "")
+    }
 
   }
 
-  "covert to Json with no filters" in {
-    mapFrom(CaseParamsFilter()) shouldBe "{}"
+  "fromReferenceAndStatus()" should {
+
+    "convert to Json from a valid reference and status" in {
+
+      val validRef = "valid_reference"
+      val notAllowedStatus = CaseStatus.REFERRED
+
+      jsonMapper.fromReferenceAndStatus(validRef, notAllowedStatus).toString() shouldBe
+        s"""{
+           | "reference": "$validRef",
+           | "status": { "$$ne": "$notAllowedStatus" }
+           |}
+        """.stripMargin.replaceAll(" ", "").replaceAll("\n", "")
+    }
+
   }
 
-  "map reference with a valid reference returns valid json" in {
-    val validRef = "valid_reference"
+  "updateField()" should {
 
-    test.fromReference(validRef).toString() shouldBe
-      """{
-        | "reference": "valid_reference"
-        |}
-      """.stripMargin.replaceAll(" ", "").replaceAll("\n", "")
+    "convert to Json" in {
+
+      val fieldName = "employee"
+      val fieldValue = "Alex"
+
+      jsonMapper.updateField(fieldName, fieldValue).toString() shouldBe
+        s"""{
+           | "$$set": { "$fieldName": "$fieldValue" }
+           |}
+        """.stripMargin.replaceAll(" ", "").replaceAll("\n", "")
+
+    }
 
   }
 
   private def mapFrom(filter: CaseParamsFilter): String = {
-    test.from(filter).toString()
+    jsonMapper.from(filter).toString()
   }
-
 
 }

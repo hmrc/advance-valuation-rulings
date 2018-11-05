@@ -28,27 +28,43 @@ trait MongoCrudHelper[T] extends MongoIndexCreator {
 
   protected val mongoCollection: JSONCollection
 
-  def createOne(document: T)(implicit w: OWrites[T]): Future[T] = {
-    mongoCollection.insert(document).map { _ => document }
-  }
-
-  def atomicUpdate(selector: JsObject, newDocument: T)(implicit w: OFormat[T]): Future[Option[T]] = {
-    val modifier = mongoCollection.updateModifier(
-      update = newDocument,
-      fetchNewObject = true,
-      upsert = false)
-
-    mongoCollection.findAndModify(selector, modifier).map {
-      _.value.map(_.as[T])
-    }
-  }
-
   def getOne(selector: JsObject)(implicit r: Reads[T]): Future[Option[T]] = {
     mongoCollection.find(selector).one[T]
   }
 
   def getMany(filterBy: JsObject, sortBy: JsObject)(implicit r: Reads[T]): Future[List[T]] = {
     mongoCollection.find(filterBy).sort(sortBy).cursor[T]().collect[List](Int.MaxValue, Cursor.FailOnError[List[T]]())
+  }
+
+  def createOne(document: T)(implicit w: OWrites[T]): Future[T] = {
+    mongoCollection.insert(document).map ( _ => document )
+  }
+
+  // TODO: create a single `updateAtomically` method that can update a whole mongo document or a part of it.
+  // Remember the D.R.Y. principle
+
+  def updateDocument(selector: JsObject, newDocument: T)
+                    (implicit returnFormat: OFormat[T]): Future[Option[T]] = {
+
+    mongoCollection.findAndUpdate(
+      selector = selector,
+      update = newDocument,
+      fetchNewObject = true, // returns the new document
+      upsert = false
+    ).map( _.value.map(_.as[T]) )
+
+  }
+
+  def updateField[U](selector: JsObject, updatedField: JsObject)
+                    (implicit returnFormat: OFormat[T]): Future[Option[T]] = {
+
+    mongoCollection.findAndUpdate(
+      selector = selector,
+      update = updatedField,
+      fetchNewObject = false, // returns the original document
+      upsert = false
+    ).map( _.value.map(_.as[T]) )
+
   }
 
 }
