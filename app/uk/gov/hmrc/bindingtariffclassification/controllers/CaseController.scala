@@ -48,21 +48,12 @@ class CaseController @Inject()(caseService: CaseService, caseParamsMapper: CaseP
     } recover recovery
   }
 
-//  TODO: DIT-290
-//  def updateDecision(reference: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
-//    withJsonBody[Decision] { decisionRequest: Decision =>
-//      caseService.updateDecision(reference, decisionRequest.decision) map {
-//        TODO
-//      } recover recovery
-//    }
-//  }
-
   def updateStatus(reference: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[StatusOfTheCase] { statusRequest: StatusOfTheCase =>
       caseService.updateStatus(reference, statusRequest.status) map {
         case Some((_: Case, updated: Case)) => Ok(Json.toJson(updated))
         case _ =>
-          // TODO: discuss if this 404 code is appropriate
+          // TODO: DIT-246 - discuss if this 404 code is appropriate
           // it is returned in 2 cases:
           // - case not found
           // - case found, but with status already set to the desired status

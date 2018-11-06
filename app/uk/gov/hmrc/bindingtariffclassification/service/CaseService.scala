@@ -44,11 +44,6 @@ class CaseService @Inject()(repository: CaseRepository, eventService: EventServi
     eventService.insert(changeStatusEvent)
   }
 
-//  TODO: DIT-290
-//  def updateDecision(reference: String, decision: Decision): Future[Option[(Case, Case)]] = {
-//    TODO
-//  }
-
   def updateStatus(reference: String, status: CaseStatus): Future[Option[(Case, Case)]] = {
 
     // TODO: use OptionT ?

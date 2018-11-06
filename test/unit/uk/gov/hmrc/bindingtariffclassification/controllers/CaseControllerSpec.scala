@@ -154,7 +154,7 @@ class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoS
     }
 
     "return 404 when there are no cases with the provided reference or with a status different from CANCELLED" in {
-      // TODO: this behaviour needs to be reviewed
+      // TODO: DIT-246 - this behaviour needs to be reviewed
       when(mockCaseService.updateStatus(c1.reference, CaseStatus.CANCELLED)).thenReturn(successful(None))
 
       val result = await(controller.updateStatus(c1.reference)(fakeRequest.withBody(toJson(Status(CaseStatus.CANCELLED)))))
