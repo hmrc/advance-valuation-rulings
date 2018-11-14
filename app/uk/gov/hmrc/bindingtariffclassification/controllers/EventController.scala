@@ -20,7 +20,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
-import uk.gov.hmrc.bindingtariffclassification.model.{ErrorCode, Event, JsErrorResponse, JsonFormatters}
+import uk.gov.hmrc.bindingtariffclassification.model.JsonFormatters
 import uk.gov.hmrc.bindingtariffclassification.service.EventService
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -36,12 +36,12 @@ class EventController @Inject()(appConfig: AppConfig, eventService: EventService
     eventService.deleteAll map ( _ => NoContent ) recover recovery
   }
 
-  def getById(id: String): Action[AnyContent] = Action.async { implicit request =>
-    eventService.getById(id) map {
-      case None => NotFound(JsErrorResponse(ErrorCode.NOT_FOUND, "Event not found"))
-      case Some(e: Event) => Ok(Json.toJson(e))
-    } recover recovery
-  }
+//  def getById(id: String): Action[AnyContent] = Action.async { implicit request =>
+//    eventService.getById(id) map {
+//      case None => NotFound(JsErrorResponse(ErrorCode.NOT_FOUND, "Event not found"))
+//      case Some(e: Event) => Ok(Json.toJson(e))
+//    } recover recovery
+//  }
 
   def getByCaseReference(case_reference: String): Action[AnyContent] = Action.async { implicit request =>
     eventService.getByCaseReference(case_reference) map {

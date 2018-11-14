@@ -18,11 +18,12 @@ package uk.gov.hmrc.component
 
 import java.util.UUID
 
-import play.api.libs.json.Json
 import play.api.http.HttpVerbs
-import play.api.http.Status.{NO_CONTENT, NOT_FOUND, OK}
+import play.api.http.Status.{NO_CONTENT, OK}
+import play.api.libs.json.Json
 import scalaj.http.Http
 import uk.gov.hmrc.bindingtariffclassification.model.JsonFormatters.formatEvent
+import uk.gov.hmrc.bindingtariffclassification.todelete.CaseData
 import uk.gov.hmrc.bindingtariffclassification.todelete.EventData._
 
 class EventSpec extends BaseFeatureSpec {
@@ -31,6 +32,7 @@ class EventSpec extends BaseFeatureSpec {
   protected val serviceUrl = s"http://localhost:$port"
 
   private val caseRef = UUID.randomUUID().toString
+  private val c1 = CaseData.createCase(r = caseRef)
   private val e1 = createCaseStatusChangeEvent(caseReference = caseRef)
   private val e2 = createNoteEvent(caseReference = caseRef)
 
@@ -60,40 +62,42 @@ class EventSpec extends BaseFeatureSpec {
   }
 
 
-  feature("Get Event by Id") {
-
-    scenario("Get existing event") {
-
-      Given("There is an event in the database")
-      storeEvents(e1)
-
-      When("I get an event")
-      val result = Http(s"$serviceUrl/events/${e1.id}").asString
-
-      Then("The response code should be OK")
-      result.code shouldEqual OK
-
-      And("The expected event is returned in the JSON response")
-      Json.parse(result.body) shouldBe Json.toJson(e1)
-    }
-
-    scenario("Get a non-existing event") {
-
-      When("I get an event")
-      val result = Http(s"$serviceUrl/events/${e1.id}").asString
-
-      Then("The response code should be NOT FOUND")
-      result.code shouldEqual NOT_FOUND
-    }
-
-  }
+//  feature("Get Event by Id") {
+//
+//    scenario("Get existing event") {
+//
+//      Given("There is an event in the database")
+//      storeEvents(e1)
+//
+//      When("I get an event")
+//      val result = Http(s"$serviceUrl/events/${e1.id}").asString
+//
+//      Then("The response code should be OK")
+//      result.code shouldEqual OK
+//
+//      And("The expected event is returned in the JSON response")
+//      Json.parse(result.body) shouldBe Json.toJson(e1)
+//    }
+//
+//    scenario("Get a non-existing event") {
+//
+//      When("I get an event")
+//      val result = Http(s"$serviceUrl/events/${e1.id}").asString
+//
+//      Then("The response code should be NOT FOUND")
+//      result.code shouldEqual NOT_FOUND
+//    }
+//
+//  }
 
   feature("Get Events by case reference") {
 
     scenario("No events found") {
+      Given("There is a case")
+      storeCases(c1)
 
       When("I get the events for a specific case reference")
-      val result = Http(s"$serviceUrl/events/case-reference/$caseRef").asString
+      val result = Http(s"$serviceUrl/cases/$caseRef/events").asString
 
       Then("The response code should be OK")
       result.code shouldEqual OK
@@ -104,11 +108,12 @@ class EventSpec extends BaseFeatureSpec {
 
     scenario("Events found") {
 
-      Given("There are some events for a specific case")
+      Given("There is a case with events")
+      storeCases(c1)
       storeEvents(e1, e2)
 
       When("I get the events for that specific case")
-      val result = Http(s"$serviceUrl/events/case-reference/$caseRef").asString
+      val result = Http(s"$serviceUrl/cases/$caseRef/events").asString
 
       Then("The response code should be OK")
       result.code shouldEqual OK

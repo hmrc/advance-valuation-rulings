@@ -17,9 +17,9 @@
 package uk.gov.hmrc.component
 
 import play.api.http.ContentTypes.JSON
-import play.api.http.HttpVerbs
-import play.api.http.Status.{CREATED, INTERNAL_SERVER_ERROR, NOT_FOUND, NO_CONTENT, OK}
 import play.api.http.HeaderNames.CONTENT_TYPE
+import play.api.http.HttpVerbs
+import play.api.http.Status._
 import play.api.libs.json.Json
 import scalaj.http.{Http, HttpResponse}
 import uk.gov.hmrc.bindingtariffclassification.model.JsonFormatters._
@@ -169,7 +169,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(caseResult.body) shouldBe c1UpdatedJson
 
       And("A case status change event has been created")
-      val eventResult = Http(s"$serviceUrl/events/case-reference/${c1.reference}")
+      val eventResult = Http(s"$serviceUrl/cases/${c1.reference}/events")
         .headers(Seq(CONTENT_TYPE -> JSON))
         .asString
 

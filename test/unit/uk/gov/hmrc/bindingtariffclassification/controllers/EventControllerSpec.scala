@@ -84,38 +84,38 @@ class EventControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
   }
 
-  "getById()" should {
-
-    "return 200 with the expected event" in {
-      when(mockEventService.getById(id)).thenReturn(successful(Some(e1)))
-
-      val result = await(controller.getById(id)(fakeRequest))
-
-      status(result) shouldEqual OK
-      jsonBodyOf(result) shouldEqual toJson(Some(e1))
-    }
-
-    "return 404 if there are no events for the specific id" in {
-      when(mockEventService.getById(id)).thenReturn(successful(None))
-
-      val result = await(controller.getById(id)(fakeRequest))
-
-      status(result) shouldEqual NOT_FOUND
-      jsonBodyOf(result).toString() shouldEqual """{"code":"NOT_FOUND","message":"Event not found"}"""
-    }
-
-    "return 500 when an error occurred" in {
-      val error = new RuntimeException
-
-      when(mockEventService.getById(id)).thenReturn(failed(error))
-
-      val result = await(controller.getById(id)(fakeRequest))
-
-      status(result) shouldEqual INTERNAL_SERVER_ERROR
-      jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
-    }
-
-  }
+//  "getById()" should {
+//
+//    "return 200 with the expected event" in {
+//      when(mockEventService.getById(id)).thenReturn(successful(Some(e1)))
+//
+//      val result = await(controller.getById(id)(fakeRequest))
+//
+//      status(result) shouldEqual OK
+//      jsonBodyOf(result) shouldEqual toJson(Some(e1))
+//    }
+//
+//    "return 404 if there are no events for the specific id" in {
+//      when(mockEventService.getById(id)).thenReturn(successful(None))
+//
+//      val result = await(controller.getById(id)(fakeRequest))
+//
+//      status(result) shouldEqual NOT_FOUND
+//      jsonBodyOf(result).toString() shouldEqual """{"code":"NOT_FOUND","message":"Event not found"}"""
+//    }
+//
+//    "return 500 when an error occurred" in {
+//      val error = new RuntimeException
+//
+//      when(mockEventService.getById(id)).thenReturn(failed(error))
+//
+//      val result = await(controller.getById(id)(fakeRequest))
+//
+//      status(result) shouldEqual INTERNAL_SERVER_ERROR
+//      jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
+//    }
+//
+//  }
 
   "getByCaseReference()" should {
 
