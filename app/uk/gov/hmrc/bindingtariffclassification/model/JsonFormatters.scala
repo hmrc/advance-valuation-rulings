@@ -21,10 +21,12 @@ import uk.gov.hmrc.play.json.Union
 
 object JsonFormatters {
 
+
+  implicit val formatSequence = Json.format[Sequence]
   // `Case` formatters
-  implicit val formatCaseStatus = EnumJson.enumFormat(CaseStatus)
-  implicit val formatApplicationType = EnumJson.enumFormat(ApplicationType)
-  implicit val formatLiabilityStatus = EnumJson.enumFormat(LiabilityStatus)
+  implicit val formatCaseStatus = EnumJson.format(CaseStatus)
+  implicit val formatApplicationType = EnumJson.format(ApplicationType)
+  implicit val formatLiabilityStatus = EnumJson.format(LiabilityStatus)
 
   implicit val formatEORIDetails = Json.format[EORIDetails]
   implicit val formatContact = Json.format[Contact]
@@ -41,6 +43,7 @@ object JsonFormatters {
 
   implicit val formatAttachment = Json.format[Attachment]
   implicit val formatCase = Json.format[Case]
+  implicit val formatNewCase = Json.format[NewCaseRequest]
 
   implicit val formatStatus = Json.format[Status]
 

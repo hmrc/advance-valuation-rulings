@@ -28,47 +28,36 @@ trait MongoCrudHelper[T] extends MongoIndexCreator {
 
   protected val mongoCollection: JSONCollection
 
-  def clearCollection: Future[Unit] = {
-    mongoCollection.remove(selector = Json.obj()).map(_ => ())
+  protected def getOne(selector: JsObject)(implicit r: OFormat[T]): Future[Option[T]] = {
+    mongoCollection.find[JsObject, T](selector).one[T]
   }
 
-  def getOne(selector: JsObject)(implicit r: Reads[T]): Future[Option[T]] = {
-    mongoCollection.find(selector).one[T]
+  protected def getMany(filterBy: JsObject, sortBy: JsObject)(implicit r: OFormat[T]): Future[List[T]] = {
+    mongoCollection.find[JsObject, T](filterBy).sort(sortBy).cursor[T]().collect[List](Int.MaxValue, Cursor.FailOnError[List[T]]())
   }
 
-  def getMany(filterBy: JsObject, sortBy: JsObject)(implicit r: Reads[T]): Future[List[T]] = {
-    mongoCollection.find(filterBy).sort(sortBy).cursor[T]().collect[List](Int.MaxValue, Cursor.FailOnError[List[T]]())
+  protected def createOne(document: T)(implicit w: OWrites[T]): Future[T] = {
+    mongoCollection.insert(document).map(_ => document)
   }
 
-  def createOne(document: T)(implicit w: OWrites[T]): Future[T] = {
-    mongoCollection.insert(document).map ( _ => document )
+  protected def updateDocument(selector: JsObject, update: T, fetchNew: Boolean = true)
+                              (implicit returnFormat: OFormat[T]): Future[Option[T]] = {
+    updateInternal(selector, Json.toJson(update).as[JsObject], fetchNew)
   }
 
-  // TODO: create a single `updateAtomically` method that can update a whole mongo document or a part of it.
-  // Remember the D.R.Y. principle
+  protected def update(selector: JsObject, update: JsObject, fetchNew: Boolean)
+                      (implicit returnFormat: OFormat[T]): Future[Option[T]] = {
+    updateInternal(selector, update, fetchNew)
+  }
 
-  def updateDocument(selector: JsObject, newDocument: T)
-                    (implicit returnFormat: OFormat[T]): Future[Option[T]] = {
-
+  private def updateInternal(selector: JsObject, update: JsObject, fetchNew: Boolean)
+                            (implicit returnFormat: OFormat[T]): Future[Option[T]] = {
     mongoCollection.findAndUpdate(
       selector = selector,
-      update = newDocument,
-      fetchNewObject = true, // returns the new document
+      update = update,
+      fetchNewObject = fetchNew,
       upsert = false
-    ).map( _.value.map(_.as[T]) )
-
-  }
-
-  def updateField[U](selector: JsObject, updatedField: JsObject)
-                    (implicit returnFormat: OFormat[T]): Future[Option[T]] = {
-
-    mongoCollection.findAndUpdate(
-      selector = selector,
-      update = updatedField,
-      fetchNewObject = false, // returns the original document
-      upsert = false
-    ).map( _.value.map(_.as[T]) )
-
+    ).map(_.value.map(_.as[T]))
   }
 
 }

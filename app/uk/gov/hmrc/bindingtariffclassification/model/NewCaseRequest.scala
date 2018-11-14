@@ -16,12 +16,17 @@
 
 package uk.gov.hmrc.bindingtariffclassification.model
 
-import play.api.libs.json._
+case class NewCaseRequest
+(
+  application: Application,
+  attachments: Seq[Attachment] = Seq.empty
+) {
 
-object EnumJson {
-
-  implicit def format[E <: Enumeration](enum: E): Format[E#Value] = {
-    Format(Reads.enumNameReads(enum), Writes.enumNameWrites)
-  }
+  def toCase(reference: String) = Case(
+    reference = reference,
+    status = CaseStatus.NEW,
+    application = application,
+    attachments = attachments
+  )
 
 }

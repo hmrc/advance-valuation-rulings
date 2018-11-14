@@ -20,7 +20,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
-import uk.gov.hmrc.bindingtariffclassification.model.{Case, ErrorCode, JsErrorResponse, JsonFormatters, Status => StatusOfTheCase}
+import uk.gov.hmrc.bindingtariffclassification.model.{Case, ErrorCode, JsErrorResponse, JsonFormatters, NewCaseRequest, Status => StatusOfTheCase}
 import uk.gov.hmrc.bindingtariffclassification.service.CaseService
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -29,8 +29,7 @@ import scala.concurrent.Future
 @Singleton
 class CaseController @Inject()(appConfig: AppConfig, caseService: CaseService, caseParamsMapper: CaseParamsMapper) extends CommonController {
 
-  import JsonFormatters.formatCase
-  import JsonFormatters.formatStatus
+  import JsonFormatters.{formatCase, formatNewCase, formatStatus}
 
   lazy private val deleteModeFilter = DeleteMode.actionFilter(appConfig)
 
@@ -39,8 +38,11 @@ class CaseController @Inject()(appConfig: AppConfig, caseService: CaseService, c
   }
 
   def create: Action[JsValue] = Action.async(parse.json) { implicit request =>
-    withJsonBody[Case] { caseRequest: Case =>
-      caseService.insert(caseRequest) map { c => Created(Json.toJson(c)) }
+    withJsonBody[NewCaseRequest] { caseRequest: NewCaseRequest =>
+      for {
+        r <- caseService.nextCaseReference
+        c <- caseService.insert(caseRequest.toCase(r))
+      } yield Created(Json.toJson(c))
     } recover recovery
   }
 

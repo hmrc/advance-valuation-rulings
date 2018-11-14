@@ -16,12 +16,4 @@
 
 package uk.gov.hmrc.bindingtariffclassification.model
 
-import play.api.libs.json._
-
-object EnumJson {
-
-  implicit def format[E <: Enumeration](enum: E): Format[E#Value] = {
-    Format(Reads.enumNameReads(enum), Writes.enumNameWrites)
-  }
-
-}
+case class Sequence(name: String, value: Long)

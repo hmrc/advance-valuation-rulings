@@ -18,8 +18,8 @@ package uk.gov.hmrc.bindingtariffclassification.repository
 
 import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
-import reactivemongo.api.indexes.Index
 import play.api.libs.json.Json
+import reactivemongo.api.indexes.Index
 import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.collection.JSONCollection
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
@@ -29,6 +29,7 @@ import uk.gov.hmrc.bindingtariffclassification.model.{Case, JsonFormatters}
 import uk.gov.hmrc.mongo.ReactiveRepository
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 @ImplementedBy(classOf[CaseMongoRepository])
@@ -76,13 +77,14 @@ class CaseMongoRepository @Inject()(mongoDbProvider: MongoDbProvider, jsonMapper
   }
 
   override def update(c: Case): Future[Option[Case]] = {
-    updateDocument(jsonMapper.fromReference(c.reference), c)
+    updateDocument(selector = jsonMapper.fromReference(c.reference), update = c)
   }
 
   override def updateStatus(reference: String, status: CaseStatus): Future[Option[Case]] = {
-    updateField(
-      jsonMapper.fromReferenceAndStatus(reference = reference, notAllowedStatus = status),
-      jsonMapper.updateField("status", status.toString)
+    update(
+      selector = jsonMapper.fromReferenceAndStatus(reference = reference, notAllowedStatus = status),
+      update = jsonMapper.updateField("status", status.toString),
+      fetchNew = false
     )
   }
 
@@ -101,7 +103,7 @@ class CaseMongoRepository @Inject()(mongoDbProvider: MongoDbProvider, jsonMapper
   }
 
   override def deleteAll: Future[Unit] = {
-    clearCollection
+    removeAll().map(_ => ())
   }
 
 }
