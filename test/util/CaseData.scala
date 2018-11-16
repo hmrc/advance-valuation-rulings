@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.todelete
+package util
 
 import java.time.ZonedDateTime
 
@@ -23,13 +23,29 @@ import uk.gov.hmrc.bindingtariffclassification.utils.RandomGenerator
 
 object CaseData {
 
-  def createBTIApplication: BTIApplication = {
+  def createBasicBTIApplication: BTIApplication = {
+    BTIApplication(
+      holder = createEORIDetails,
+      contact = Contact("Marisa", "marisa@me.com", "0123456789"),
+      goodDescription = "this is a BTI application for HTC Wildfire mobile phones",
+      goodName = "HTC Wildfire smartphone"
+    )
+  }
+
+  def createBTIApplicationWithAllFields: BTIApplication = {
     BTIApplication(
       holder = createEORIDetails,
       contact = Contact("Marisa", "marisa@me.com", "0123456789"),
       goodDescription = "this is a BTI application for HTC Wildfire mobile phones",
       goodName = "HTC Wildfire smartphone",
-      envisagedCommodityCode = Some("AS12345LG")
+      confidentialInformation = Some("This phone has a secret processor."),
+      otherInformation = Some("The phone comes in multiple colors"),
+      reissuedBTIReference = Some("BTI123"),
+      relatedBTIReference = Some("BTI987"),
+      knownLegalProceedings = Some("Someone is suing me!"),
+      envisagedCommodityCode = Some("AS12345LG"),
+      sampleToBeProvided = true,
+      sampleToBeReturned = true
     )
   }
 
@@ -64,7 +80,7 @@ object CaseData {
       "GB")
   }
 
-  def createNewCase(app: Application = createBTIApplication,
+  def createNewCase(app: Application = createBasicBTIApplication,
                     attachments: Seq[Attachment] = Seq.empty): NewCaseRequest = {
     NewCaseRequest(
       application = app,
@@ -72,7 +88,21 @@ object CaseData {
     )
   }
 
-  def createCase(app: Application = createBTIApplication,
+  def createNewCaseWithExtraFields(): Case = {
+    Case(
+      reference = "9999999999",
+      status = CaseStatus.OPEN,
+      createdDate = ZonedDateTime.now.minusYears(1),
+      queueId = Some("3"),
+      assigneeId = Some("0"),
+      application = createBasicBTIApplication,
+      decision = Some(createDecision),
+      closedDate = Some(ZonedDateTime.now().minusYears(1)),
+      attachments = Seq.empty
+    )
+  }
+
+  def createCase(app: Application = createBasicBTIApplication,
                  r: String = RandomGenerator.randomUUID(),
                  decision: Option[Decision] = None,
                  queue: Option[String] = None,

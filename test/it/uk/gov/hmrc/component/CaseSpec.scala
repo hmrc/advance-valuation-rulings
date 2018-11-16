@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.component
 
+import java.time.ZonedDateTime
+
 import play.api.http.ContentTypes.JSON
 import play.api.http.HeaderNames.CONTENT_TYPE
 import play.api.http.HttpVerbs
@@ -24,7 +26,8 @@ import play.api.libs.json.Json
 import scalaj.http.{Http, HttpResponse}
 import uk.gov.hmrc.bindingtariffclassification.model.JsonFormatters._
 import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.bindingtariffclassification.todelete.CaseData._
+import util.CaseData._
+import util.Matchers.roughlyBe
 
 class CaseSpec extends BaseFeatureSpec {
 
@@ -33,17 +36,21 @@ class CaseSpec extends BaseFeatureSpec {
 
   private val q1 = "queue1"
   private val u1 = "user1"
-  private val c0 = createNewCase(app = createBTIApplication)
-  private val c1 = createCase(app = createBTIApplication, queue = Some(q1), assignee = Some(u1))
+  private val c0 = createNewCase(app = createBasicBTIApplication)
+  private val c1 = createCase(app = createBasicBTIApplication, queue = Some(q1), assignee = Some(u1))
   private val status = CaseStatus.CANCELLED
   private val c1_updated = c1.copy(status = status)
   private val c2 = createCase(app = createLiabilityOrder,
     decision = Some(createDecision),
     attachments = Seq(createAttachment))
+  private val c3 = createNewCaseWithExtraFields()
+  private val c4 = createNewCase(app = createBTIApplicationWithAllFields)
 
   private val c0Json = Json.toJson(c0)
   private val c1Json = Json.toJson(c1)
   private val c1UpdatedJson = Json.toJson(c1_updated)
+  private val c3Json = Json.toJson(c3)
+  private val c4Json = Json.toJson(c4)
 
 
   feature("Delete All") {
@@ -89,6 +96,42 @@ class CaseSpec extends BaseFeatureSpec {
       responseCase.status shouldBe CaseStatus.NEW
     }
 
+    scenario("Extra fields are ignored when creating a case") {
+      When("I create a new case with extra fields")
+      val result: HttpResponse[String] = Http(s"$serviceUrl/cases")
+        .headers(Seq(CONTENT_TYPE -> JSON))
+        .postData(c3Json.toString()).asString
+
+      Then("The response code should be created")
+      result.code shouldEqual CREATED
+
+      And("The case is returned in the JSON response")
+      val responseCase = Json.parse(result.body).as[Case]
+      responseCase.reference shouldBe "1"
+      responseCase.status shouldBe CaseStatus.NEW
+      responseCase.createdDate should roughlyBe(ZonedDateTime.now())
+      responseCase.assigneeId shouldBe None
+      responseCase.queueId shouldBe None
+      responseCase.decision shouldBe None
+      responseCase.closedDate shouldBe None
+    }
+
+    scenario("Create a new case with all fields") {
+
+      When("I create a new case")
+      val result: HttpResponse[String] = Http(s"$serviceUrl/cases")
+        .headers(Seq(CONTENT_TYPE -> JSON))
+        .postData(c4Json.toString()).asString
+
+      Then("The response code should be created")
+      result.code shouldEqual CREATED
+
+      And("The case is returned in the JSON response")
+      val responseCase = Json.parse(result.body).as[Case]
+      responseCase.reference shouldBe "1"
+      responseCase.status shouldBe CaseStatus.NEW
+    }
+
   }
 
 
@@ -123,7 +166,6 @@ class CaseSpec extends BaseFeatureSpec {
     }
 
   }
-
 
   feature ("Update Case Status") {
 
