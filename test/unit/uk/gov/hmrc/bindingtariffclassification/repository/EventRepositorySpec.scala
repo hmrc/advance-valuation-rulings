@@ -42,12 +42,11 @@ class EventRepositorySpec extends BaseMongoIndexSpec
     override val mongo: () => DB = self.mongo
   }
 
-  private def getIndexes(repo: EventMongoRepository): List[Index] = {
-    val indexesFuture = repo.collection.indexesManager.list()
-    await(indexesFuture)
-  }
+  private val repository = createMongoRepo
 
-  private val repository = new EventMongoRepository(mongoDbProvider)
+  private def createMongoRepo = {
+    new EventMongoRepository(mongoDbProvider)
+  }
 
   private val e: Event = createNoteEvent("")
 
@@ -179,11 +178,11 @@ class EventRepositorySpec extends BaseMongoIndexSpec
         Index(key = Seq("_id" -> Ascending), name = Some("_id_"))
       )
 
-      val repo = new EventMongoRepository(mongoDbProvider)
+      val repo = createMongoRepo
       await(repo.ensureIndexes)
 
       eventually(timeout(5.seconds), interval(100.milliseconds)) {
-        assertIndexes(expectedIndexes.sorted, getIndexes(repo).sorted)
+        assertIndexes(expectedIndexes.sorted, getIndexes(repo.collection).sorted)
       }
 
       await(repo.drop)

@@ -46,12 +46,11 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
   private val jsonMapper = new JsonObjectMapper
 
-  private def getIndexes(repo: CaseMongoRepository): List[Index] = {
-    val indexesFuture = repo.collection.indexesManager.list()
-    await(indexesFuture)
-  }
+  private val repository = createMongoRepo
 
-  private val repository = new CaseMongoRepository(mongoDbProvider, jsonMapper)
+  private def createMongoRepo = {
+    new CaseMongoRepository(mongoDbProvider, jsonMapper)
+  }
 
   private val case1: Case = createCase()
   private val case2: Case = createCase()
@@ -378,11 +377,11 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
         Index(key = Seq("_id" -> Ascending), name = Some("_id_"))
       )
 
-      val repo = new CaseMongoRepository(mongoDbProvider, jsonMapper)
+      val repo = createMongoRepo
       await(repo.ensureIndexes)
 
       eventually(timeout(5.seconds), interval(100.milliseconds)) {
-        assertIndexes(expectedIndexes.sorted, getIndexes(repo).sorted)
+        assertIndexes(expectedIndexes.sorted, getIndexes(repo.collection).sorted)
       }
 
       await(repo.drop)

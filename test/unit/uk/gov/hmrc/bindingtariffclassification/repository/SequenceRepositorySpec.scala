@@ -40,12 +40,11 @@ class SequenceRepositorySpec extends BaseMongoIndexSpec
     override val mongo: () => DB = self.mongo
   }
 
-  private def getIndexes(repo: SequenceMongoRepository): List[Index] = {
-    val indexesFuture = repo.collection.indexesManager.list()
-    await(indexesFuture)
-  }
+  private val repository = createMongoRepo
 
-  private val repository = new SequenceMongoRepository(mongoDbProvider)
+  private def createMongoRepo: SequenceMongoRepository = {
+    new SequenceMongoRepository(mongoDbProvider)
+  }
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -124,18 +123,18 @@ class SequenceRepositorySpec extends BaseMongoIndexSpec
 
     "have all expected indexes" in {
 
-      import scala.concurrent.duration._
-
       val expectedIndexes = List(
         Index(key = Seq("name" -> Ascending), name = Some("name_Index"), unique = true, background = true),
         Index(key = Seq("_id" -> Ascending), name = Some("_id_"))
       )
 
-      val repo = new SequenceMongoRepository(mongoDbProvider)
+      val repo = createMongoRepo
       await(repo.ensureIndexes)
 
+      import scala.concurrent.duration._
+
       eventually(timeout(5.seconds), interval(100.milliseconds)) {
-        assertIndexes(expectedIndexes.sorted, getIndexes(repo).sorted)
+        assertIndexes(expectedIndexes.sorted, getIndexes(repo.collection).sorted)
       }
 
       await(repo.drop)

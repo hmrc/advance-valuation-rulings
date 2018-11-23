@@ -17,11 +17,16 @@
 package uk.gov.hmrc.bindingtariffclassification.repository
 
 import reactivemongo.api.indexes.Index
+import reactivemongo.play.json.collection.JSONCollection
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait BaseMongoIndexSpec extends UnitSpec {
+
+  protected def getIndexes(collection: JSONCollection): List[Index] = {
+    await(collection.indexesManager.list())
+  }
 
   protected implicit val ordering: Ordering[Index] = Ordering.by { i: Index => i.name }
 
