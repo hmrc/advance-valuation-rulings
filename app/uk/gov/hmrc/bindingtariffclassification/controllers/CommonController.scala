@@ -19,7 +19,7 @@ package uk.gov.hmrc.bindingtariffclassification.controllers
 import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc.{Request, Result}
-import uk.gov.hmrc.bindingtariffclassification.model._
+import uk.gov.hmrc.bindingtariffclassification.model.{ErrorCode, JsErrorResponse}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
 import scala.concurrent.Future
