@@ -167,65 +167,6 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
-  feature ("Update Case Status") {
-
-    scenario("Update the status for an non-existing case") {
-
-      When("I update the status for a non-existing case")
-      val result = Http(s"$serviceUrl/cases/${c1.reference}/status")
-        .headers(Seq(CONTENT_TYPE -> JSON))
-        .put(Json.toJson(Status(status)).toString()).asString
-
-      Then("The response code should be NOT FOUND")
-      result.code shouldEqual NOT_FOUND
-    }
-
-    scenario("Update the status of an existing case, but without setting a new value for the status") {
-
-      Given("There is a case in the database")
-      storeCases(c1)
-
-      When("I update the status setting it to its current value")
-      val result = Http(s"$serviceUrl/cases/${c1.reference}/status")
-        .headers(Seq(CONTENT_TYPE -> JSON))
-        .put(Json.toJson(Status(c1.status)).toString()).asString
-
-      Then("The response code should be NOT FOUND")
-      result.code shouldEqual NOT_FOUND
-    }
-
-    scenario("Update the status of an existing case, setting its value to a different status") {
-
-      Given("There is a case in the database")
-      storeCases(c1)
-
-      When("I update the status")
-      val caseResult = Http(s"$serviceUrl/cases/${c1.reference}/status")
-        .headers(Seq(CONTENT_TYPE -> JSON))
-        .put(Json.toJson(Status(status)).toString()).asString
-
-      Then("The response code should be NOT FOUND")
-      caseResult.code shouldEqual OK
-
-      And("The updated case is returned in the JSON response")
-      Json.parse(caseResult.body) shouldBe c1UpdatedJson
-
-      And("A case status change event has been created")
-      val eventResult = Http(s"$serviceUrl/cases/${c1.reference}/events")
-        .headers(Seq(CONTENT_TYPE -> JSON))
-        .asString
-
-      eventResult.code shouldEqual OK
-      val events = Json.parse(eventResult.body).as[Seq[Event]]
-      events.size shouldBe 1
-      val event = events.head
-      event.details shouldBe CaseStatusChange(from = CaseStatus.NEW, to = CaseStatus.CANCELLED)
-      event.userId shouldBe "0" // TODO: this needs to be the currently loggedIn user
-      event.caseReference shouldBe c1.reference
-    }
-
-  }
-
   feature("Get Case") {
 
     scenario("Get existing case") {

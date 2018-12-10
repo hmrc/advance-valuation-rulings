@@ -17,16 +17,18 @@
 package uk.gov.hmrc.bindingtariffclassification.controllers
 
 import javax.inject.{Inject, Singleton}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
-import uk.gov.hmrc.bindingtariffclassification.model.JsonFormatters
-import uk.gov.hmrc.bindingtariffclassification.service.EventService
+import uk.gov.hmrc.bindingtariffclassification.model.JsonFormatters.formatNewEventRequest
+import uk.gov.hmrc.bindingtariffclassification.model._
+import uk.gov.hmrc.bindingtariffclassification.service.{CaseService, EventService}
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 @Singleton
-class EventController @Inject()(appConfig: AppConfig, eventService: EventService) extends CommonController {
+class EventController @Inject()(appConfig: AppConfig, eventService: EventService, caseService: CaseService) extends CommonController {
 
   import JsonFormatters.formatEvent
 
@@ -36,17 +38,19 @@ class EventController @Inject()(appConfig: AppConfig, eventService: EventService
     eventService.deleteAll map ( _ => NoContent ) recover recovery
   }
 
-//  def getById(id: String): Action[AnyContent] = Action.async { implicit request =>
-//    eventService.getById(id) map {
-//      case None => NotFound(JsErrorResponse(ErrorCode.NOT_FOUND, "Event not found"))
-//      case Some(e: Event) => Ok(Json.toJson(e))
-//    } recover recovery
-//  }
-
-  def getByCaseReference(case_reference: String): Action[AnyContent] = Action.async { implicit request =>
-    eventService.getByCaseReference(case_reference) map {
+  def getByCaseReference(caseRef: String): Action[AnyContent] = Action.async { implicit request =>
+    eventService.getByCaseReference(caseRef) map {
       events => Ok(Json.toJson(events))
     } recover recovery
+  }
+
+  def create(caseRef: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
+    withJsonBody[NewEventRequest] { request =>
+      caseService.getByReference(caseRef).flatMap {
+        case Some(c: Case) => eventService.insert(request.toEvent(c.reference)).map(e => Created(Json.toJson(e)))
+        case _ => Future.successful(NotFound(JsErrorResponse(ErrorCode.NOT_FOUND, "Case not found")))
+      }
+    }
   }
 
 }

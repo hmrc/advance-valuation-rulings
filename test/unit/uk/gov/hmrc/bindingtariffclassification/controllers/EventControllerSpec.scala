@@ -16,25 +16,28 @@
 
 package uk.gov.hmrc.bindingtariffclassification.controllers
 
+import java.time.{Instant, ZoneId, ZonedDateTime}
 import java.util.UUID
 
 import akka.stream.Materializer
-import org.mockito.Mockito.when
-import org.scalatest.Matchers
+import org.mockito.Mockito.{verifyNoMoreInteractions, when}
+import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.mockito.MockitoSugar
+import org.scalatest.{BeforeAndAfterEach, Matchers}
 import play.api.http.Status._
 import play.api.libs.json.Json.toJson
+import play.api.mvc.Result
 import play.api.test.FakeRequest
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
-import uk.gov.hmrc.bindingtariffclassification.model.Event
 import uk.gov.hmrc.bindingtariffclassification.model.JsonFormatters._
-import uk.gov.hmrc.bindingtariffclassification.service.EventService
+import uk.gov.hmrc.bindingtariffclassification.model._
+import uk.gov.hmrc.bindingtariffclassification.service.{CaseService, EventService}
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 import util.EventData
 
 import scala.concurrent.Future._
 
-class EventControllerSpec extends UnitSpec with WithFakeApplication with MockitoSugar with Matchers {
+class EventControllerSpec extends UnitSpec with WithFakeApplication with MockitoSugar with Matchers with BeforeAndAfterEach {
 
   private implicit val mat: Materializer = fakeApplication.materializer
 
@@ -44,12 +47,18 @@ class EventControllerSpec extends UnitSpec with WithFakeApplication with Mockito
   private val e1: Event = EventData.createCaseStatusChangeEvent(caseReference)
   private val e2: Event = EventData.createNoteEvent(caseReference)
 
-  private val mockEventService = mock[EventService]
+  private val eventService = mock[EventService]
+  private val casesService = mock[CaseService]
 
   private val fakeRequest = FakeRequest()
   private val appConfig = mock[AppConfig]
 
-  private val controller = new EventController(appConfig, mockEventService)
+  private val controller = new EventController(appConfig, eventService, casesService)
+
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    Mockito.reset(casesService, eventService)
+  }
 
   "deleteAll()" should {
 
@@ -63,7 +72,7 @@ class EventControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
     "return 204 if the delete mode is enabled" in {
       when(appConfig.isDeleteEnabled).thenReturn(true)
-      when(mockEventService.deleteAll).thenReturn(successful(()))
+      when(eventService.deleteAll).thenReturn(successful(()))
 
       val result = await(controller.deleteAll()(fakeRequest))
 
@@ -74,7 +83,7 @@ class EventControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       val error = new RuntimeException
 
       when(appConfig.isDeleteEnabled).thenReturn(true)
-      when(mockEventService.deleteAll).thenReturn(failed(error))
+      when(eventService.deleteAll).thenReturn(failed(error))
 
       val result = await(controller.deleteAll()(fakeRequest))
 
@@ -84,43 +93,10 @@ class EventControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
   }
 
-//  "getById()" should {
-//
-//    "return 200 with the expected event" in {
-//      when(mockEventService.getById(id)).thenReturn(successful(Some(e1)))
-//
-//      val result = await(controller.getById(id)(fakeRequest))
-//
-//      status(result) shouldEqual OK
-//      jsonBodyOf(result) shouldEqual toJson(Some(e1))
-//    }
-//
-//    "return 404 if there are no events for the specific id" in {
-//      when(mockEventService.getById(id)).thenReturn(successful(None))
-//
-//      val result = await(controller.getById(id)(fakeRequest))
-//
-//      status(result) shouldEqual NOT_FOUND
-//      jsonBodyOf(result).toString() shouldEqual """{"code":"NOT_FOUND","message":"Event not found"}"""
-//    }
-//
-//    "return 500 when an error occurred" in {
-//      val error = new RuntimeException
-//
-//      when(mockEventService.getById(id)).thenReturn(failed(error))
-//
-//      val result = await(controller.getById(id)(fakeRequest))
-//
-//      status(result) shouldEqual INTERNAL_SERVER_ERROR
-//      jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
-//    }
-//
-//  }
-
   "getByCaseReference()" should {
 
     "return 200 with the expected events" in {
-      when(mockEventService.getByCaseReference(caseReference)).thenReturn(successful(Seq(e1, e2)))
+      when(eventService.getByCaseReference(caseReference)).thenReturn(successful(Seq(e1, e2)))
 
       val result = await(controller.getByCaseReference(caseReference)(fakeRequest))
 
@@ -129,7 +105,7 @@ class EventControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     }
 
     "return 200 with an empty sequence when there are no events for a specific case" in {
-      when(mockEventService.getByCaseReference(caseReference)).thenReturn(successful(Seq.empty))
+      when(eventService.getByCaseReference(caseReference)).thenReturn(successful(Seq.empty))
 
       val result = await(controller.getByCaseReference(caseReference)(fakeRequest))
 
@@ -140,7 +116,7 @@ class EventControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     "return 500 when an error occurred" in {
       val error = new RuntimeException
 
-      when(mockEventService.getByCaseReference(caseReference)).thenReturn(failed(error))
+      when(eventService.getByCaseReference(caseReference)).thenReturn(failed(error))
 
       val result = await(controller.getByCaseReference(caseReference)(fakeRequest))
 
@@ -148,6 +124,38 @@ class EventControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
     }
 
+  }
+
+  "create" should {
+    val note = Note(Some("note"))
+    val timestamp = ZonedDateTime.ofInstant(Instant.EPOCH, ZoneId.of("UTC"))
+    val userId = "user-id"
+    val newEvent = NewEventRequest(note, userId, timestamp)
+    val event = Event(id = "id", details = note, userId = userId, caseReference = caseReference, timestamp = timestamp)
+
+    "return 201 Created" in {
+      val aCase = mock[Case]
+      when(aCase.reference).thenReturn(caseReference)
+      when(casesService.getByReference(caseReference)).thenReturn(successful(Some(aCase)))
+      when(eventService.insert(ArgumentMatchers.any[Event])).thenReturn(successful(event))
+
+      val request = fakeRequest.withBody(toJson(newEvent))
+      val result: Result = await(controller.create(caseReference)(request))
+
+      status(result) shouldEqual CREATED
+      jsonBodyOf(result) shouldEqual toJson(event)
+    }
+
+    "return 404 Not Found for invalid Reference" in {
+      when(casesService.getByReference(caseReference)).thenReturn(successful(None))
+
+      val request = fakeRequest.withBody(toJson(newEvent))
+      val result: Result = await(controller.create(caseReference)(request))
+
+      verifyNoMoreInteractions(eventService)
+      status(result) shouldEqual NOT_FOUND
+      jsonBodyOf(result).toString() shouldEqual "{\"code\":\"NOT_FOUND\",\"message\":\"Case not found\"}"
+    }
   }
 
 }

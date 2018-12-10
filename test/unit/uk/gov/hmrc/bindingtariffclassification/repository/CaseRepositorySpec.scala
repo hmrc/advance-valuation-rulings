@@ -129,35 +129,6 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
     }
   }
 
-  "updateStatus" should {
-
-    "modify the status of the existing document and return the original document" in {
-      await(repository.insert(case1)) shouldBe case1
-      val size = collectionSize
-
-      val updated: Case = case1.copy(status = CaseStatus.CANCELLED)
-      await(repository.updateStatus(case1.reference, CaseStatus.CANCELLED)) shouldBe Some(case1)
-      collectionSize shouldBe size
-
-      await(repository.collection.find(selectorByReference(updated)).one[Case]) shouldBe Some(updated)
-    }
-
-    "do nothing when trying to set the status to the current value" in {
-      await(repository.insert(case1)) shouldBe case1
-      val size = collectionSize
-
-      await(repository.updateStatus(case1.reference, case1.status)) shouldBe None
-      collectionSize shouldBe size
-    }
-
-    "do nothing when trying to update a non existing document in the collection" in {
-      val size = collectionSize
-
-      await(repository.updateStatus(case1.reference, CaseStatus.CANCELLED)) shouldBe None
-      collectionSize shouldBe size
-    }
-  }
-
   // TODO: test all possible combinations
   // TODO: the test scenarios titles need to be written and grouped properly
 

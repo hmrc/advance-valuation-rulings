@@ -38,7 +38,7 @@ trait EventRepository {
 
   def getByCaseReference(caseReference: String): Future[Seq[Event]]
 
-  def deleteAll: Future[Unit]
+  def deleteAll(): Future[Unit]
 }
 
 @Singleton
