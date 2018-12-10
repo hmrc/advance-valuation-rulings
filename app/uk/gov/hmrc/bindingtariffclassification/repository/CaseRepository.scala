@@ -22,7 +22,6 @@ import play.api.libs.json.Json
 import reactivemongo.api.indexes.Index
 import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.collection.JSONCollection
-import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model.JsonFormatters.formatCase
 import uk.gov.hmrc.bindingtariffclassification.model.search.CaseParamsFilter
 import uk.gov.hmrc.bindingtariffclassification.model.{Case, JsonFormatters}
@@ -39,13 +38,11 @@ trait CaseRepository {
 
   def update(c: Case): Future[Option[Case]]
 
-  def updateStatus(reference: String, status: CaseStatus): Future[Option[Case]]
-
   def getByReference(reference: String): Future[Option[Case]]
 
   def get(searchBy: CaseParamsFilter, sortedBy: Option[String]): Future[Seq[Case]]
 
-  def deleteAll: Future[Unit]
+  def deleteAll(): Future[Unit]
 }
 
 @Singleton
@@ -78,14 +75,6 @@ class CaseMongoRepository @Inject()(mongoDbProvider: MongoDbProvider, jsonMapper
 
   override def update(c: Case): Future[Option[Case]] = {
     updateDocument(selector = jsonMapper.fromReference(c.reference), update = c)
-  }
-
-  override def updateStatus(reference: String, status: CaseStatus): Future[Option[Case]] = {
-    update(
-      selector = jsonMapper.fromReferenceAndStatus(reference = reference, notAllowedStatus = status),
-      update = jsonMapper.updateField("status", status.toString),
-      fetchNew = false
-    )
   }
 
   override def getByReference(reference: String): Future[Option[Case]] = {

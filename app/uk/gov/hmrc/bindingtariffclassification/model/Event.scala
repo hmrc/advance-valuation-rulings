@@ -17,13 +17,14 @@
 package uk.gov.hmrc.bindingtariffclassification.model
 
 import java.time.ZonedDateTime
+import java.util.UUID
 
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model.EventType.EventType
 
 case class Event
 (
-  id: String,
+  id: String = UUID.randomUUID().toString,
   details: Details,
   userId: String,
   caseReference: String,

@@ -57,4 +57,5 @@ object JsonFormatters {
     .format
 
   implicit val formatEvent = Json.format[Event]
+  implicit val formatNewEventRequest = Json.format[NewEventRequest]
 }

@@ -20,7 +20,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
-import uk.gov.hmrc.bindingtariffclassification.model.{Case, ErrorCode, JsErrorResponse, JsonFormatters, NewCaseRequest, Status => StatusOfTheCase}
+import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.service.CaseService
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -29,7 +29,7 @@ import scala.concurrent.Future
 @Singleton
 class CaseController @Inject()(appConfig: AppConfig, caseService: CaseService, caseParamsMapper: CaseParamsMapper) extends CommonController {
 
-  import JsonFormatters.{formatCase, formatNewCase, formatStatus}
+  import JsonFormatters.{formatCase, formatNewCase}
 
   lazy private val deleteModeFilter = DeleteMode.actionFilter(appConfig)
 
@@ -54,25 +54,6 @@ class CaseController @Inject()(appConfig: AppConfig, caseService: CaseService, c
           case Some(c: Case) => Ok(Json.toJson(c))
         }
       } else Future.successful(BadRequest(JsErrorResponse(ErrorCode.INVALID_REQUEST_PAYLOAD, "Invalid case reference")))
-    } recover recovery
-  }
-
-  def updateStatus(reference: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
-    withJsonBody[StatusOfTheCase] { statusRequest: StatusOfTheCase =>
-      caseService.updateStatus(reference, statusRequest.status) map {
-        case Some((_: Case, updated: Case)) => Ok(Json.toJson(updated))
-        case _ =>
-          // TODO: DIT-246 - discuss if this 404 code is appropriate
-          // it is returned in 2 cases:
-          // - case not found
-          // - case found, but with status already set to the desired status
-          NotFound(
-            JsErrorResponse(
-              errorCode = ErrorCode.NOT_FOUND,
-              message = s"Case not found or with status already set to ${statusRequest.status}"
-            )
-          )
-      }
     } recover recovery
   }
 

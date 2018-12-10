@@ -18,11 +18,9 @@ package uk.gov.hmrc.bindingtariffclassification.service
 
 import java.util.UUID
 
-import org.mockito.ArgumentMatchers.{any, anyString, refEq}
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mockito.MockitoSugar
-import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.model.search.CaseParamsFilter
 import uk.gov.hmrc.bindingtariffclassification.repository.{CaseRepository, SequenceRepository}
@@ -112,52 +110,7 @@ class CaseServiceSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach
 
   }
 
-  "updateStatus()" should {
 
-    "return None if there are no cases with the specified reference or if the case has already the status updated" in {
-      when(caseRepository.updateStatus(anyString, any[CaseStatus])).thenReturn(successful(None))
-
-      val result = await(service.updateStatus(reference, CaseStatus.CANCELLED))
-      result shouldBe None
-
-      verify(eventService, never).insert(any[Event])
-    }
-
-    "propagate any error" in {
-      when(caseRepository.updateStatus(anyString, any[CaseStatus])).thenThrow(emulatedFailure)
-
-      val caught = intercept[RuntimeException] {
-        await(service.updateStatus(reference, CaseStatus.CANCELLED))
-      }
-      caught shouldBe emulatedFailure
-
-      verify(eventService, never).insert(any[Event])
-    }
-
-    "return the original and the new cases after the status update" in {
-      val newStatus = CaseStatus.OPEN
-
-      when(c1.reference).thenReturn(reference)
-      when(c1.status).thenReturn(CaseStatus.NEW)
-
-      val e = Event(
-        id = UUID.randomUUID().toString,
-        details = CaseStatusChange(from = c1.status, to = newStatus),
-        userId = "0", // TODO: this needs to be the currently loggedIn user
-        caseReference = c1.reference)
-
-      val eventFieldsToExcludeInTheInsertion = List("timestamp", "id")
-      when(eventService.insert(refEq(e, eventFieldsToExcludeInTheInsertion: _*))).thenReturn(successful(e))
-
-      when(caseRepository.updateStatus(reference, newStatus)).thenReturn(successful(Some(c1)))
-
-      val result = await(service.updateStatus(reference, newStatus))
-      result shouldBe Some((c1, c1.copy(status = newStatus)))
-
-      verify(eventService, times(1)).insert(any[Event])
-    }
-
-  }
 
   "getByReference()" should {
 

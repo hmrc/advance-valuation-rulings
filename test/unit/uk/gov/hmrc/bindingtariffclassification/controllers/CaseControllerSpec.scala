@@ -29,7 +29,7 @@ import reactivemongo.core.errors.DatabaseException
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.JsonFormatters._
 import uk.gov.hmrc.bindingtariffclassification.model.search.CaseParamsFilter
-import uk.gov.hmrc.bindingtariffclassification.model.{Case, CaseStatus, NewCaseRequest, Status}
+import uk.gov.hmrc.bindingtariffclassification.model.{Case, NewCaseRequest}
 import uk.gov.hmrc.bindingtariffclassification.service.CaseService
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 import util.CaseData
@@ -165,48 +165,6 @@ class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoS
       when(caseService.update(c1)).thenReturn(failed(error))
 
       val result = await(controller.update(c1.reference)(fakeRequest.withBody(toJson(c1))))
-
-      status(result) shouldEqual INTERNAL_SERVER_ERROR
-      jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
-    }
-
-  }
-
-  "updateStatus()" should {
-
-    "return 200 when the case has been updated successfully" in {
-      val updated: Case = c1.copy(status = CaseStatus.CANCELLED)
-      when(caseService.updateStatus(c1.reference, updated.status)).thenReturn(successful(Some((c1, updated))))
-
-      val result = await(controller.updateStatus(c1.reference)(fakeRequest.withBody(toJson(Status(updated.status)))))
-
-      status(result) shouldEqual OK
-      jsonBodyOf(result) shouldEqual toJson(updated)
-    }
-
-    "return 400 when the JSON request payload is not a status" in {
-      val body = """{"a":"b"}"""
-      val result = await(controller.updateStatus("")(fakeRequest.withBody(toJson(body))))
-
-      status(result) shouldEqual BAD_REQUEST
-    }
-
-    "return 404 when there are no cases with the provided reference or with a status different from CANCELLED" in {
-      // TODO: DIT-246 - this behaviour needs to be reviewed
-      when(caseService.updateStatus(c1.reference, CaseStatus.CANCELLED)).thenReturn(successful(None))
-
-      val result = await(controller.updateStatus(c1.reference)(fakeRequest.withBody(toJson(Status(CaseStatus.CANCELLED)))))
-
-      status(result) shouldEqual NOT_FOUND
-      jsonBodyOf(result).toString() shouldEqual """{"code":"NOT_FOUND","message":"Case not found or with status already set to CANCELLED"}"""
-    }
-
-    "return 500 when an error occurred" in {
-      val error = new RuntimeException
-
-      when(caseService.updateStatus(c1.reference, CaseStatus.CANCELLED)).thenReturn(failed(error))
-
-      val result = await(controller.updateStatus(c1.reference)(fakeRequest.withBody(toJson(Status(CaseStatus.CANCELLED)))))
 
       status(result) shouldEqual INTERNAL_SERVER_ERROR
       jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""

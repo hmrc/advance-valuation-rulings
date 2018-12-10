@@ -18,11 +18,13 @@ package uk.gov.hmrc.component
 
 import java.util.UUID
 
-import play.api.http.HttpVerbs
+import play.api.http.HeaderNames.CONTENT_TYPE
 import play.api.http.Status.{NO_CONTENT, OK}
+import play.api.http.{HttpVerbs, Status}
 import play.api.libs.json.Json
 import scalaj.http.Http
-import uk.gov.hmrc.bindingtariffclassification.model.JsonFormatters.formatEvent
+import uk.gov.hmrc.bindingtariffclassification.model.JsonFormatters.{formatEvent, formatNewEventRequest}
+import uk.gov.hmrc.bindingtariffclassification.model.{Event, NewEventRequest, Note}
 import util.CaseData.createCase
 import util.EventData._
 
@@ -61,35 +63,6 @@ class EventSpec extends BaseFeatureSpec {
 
   }
 
-
-//  feature("Get Event by Id") {
-//
-//    scenario("Get existing event") {
-//
-//      Given("There is an event in the database")
-//      storeEvents(e1)
-//
-//      When("I get an event")
-//      val result = Http(s"$serviceUrl/events/${e1.id}").asString
-//
-//      Then("The response code should be OK")
-//      result.code shouldEqual OK
-//
-//      And("The expected event is returned in the JSON response")
-//      Json.parse(result.body) shouldBe Json.toJson(e1)
-//    }
-//
-//    scenario("Get a non-existing event") {
-//
-//      When("I get an event")
-//      val result = Http(s"$serviceUrl/events/${e1.id}").asString
-//
-//      Then("The response code should be NOT FOUND")
-//      result.code shouldEqual NOT_FOUND
-//    }
-//
-//  }
-
   feature("Get Events by case reference") {
 
     scenario("No events found") {
@@ -103,7 +76,7 @@ class EventSpec extends BaseFeatureSpec {
       result.code shouldEqual OK
 
       And("An empty sequence is returned in the JSON response")
-      Json.parse(result.body) shouldBe Json.toJson(Seq.empty)
+      Json.parse(result.body).toString() shouldBe "[]"
     }
 
     scenario("Events found") {
@@ -122,6 +95,26 @@ class EventSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Seq(e1, e2))
     }
 
+  }
+
+  feature("Create Event by case reference") {
+    scenario("Create new event") {
+      Given("An existing Case")
+      storeCases(c1)
+
+      When("I create an Event")
+      val payload = NewEventRequest(Note(Some("Note")), "user")
+      val result = Http(s"$serviceUrl/cases/$caseRef/events")
+        .headers(Seq(CONTENT_TYPE -> "application/json"))
+        .postData(Json.toJson(payload).toString()).asString
+
+      Then("The response code should be created")
+      result.code shouldEqual Status.CREATED
+
+      And("The event is returned in the JSON response")
+      val responseEvent = Json.parse(result.body).as[Event]
+      responseEvent.caseReference shouldBe caseRef
+    }
   }
 
 }
