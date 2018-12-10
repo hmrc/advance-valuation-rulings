@@ -28,7 +28,7 @@ case class Event
   details: Details,
   userId: String,
   caseReference: String,
-  timestamp: ZonedDateTime = ZonedDateTime.now()
+  timestamp: ZonedDateTime
 )
 
 sealed trait Details {

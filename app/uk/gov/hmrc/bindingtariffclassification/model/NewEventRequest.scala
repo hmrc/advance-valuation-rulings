@@ -26,6 +26,6 @@ case class NewEventRequest
   timestamp: ZonedDateTime = ZonedDateTime.now()
 ) {
   def toEvent(caseRef: String): Event = {
-    Event(UUID.randomUUID().toString, details, userId, caseRef)
+    Event(UUID.randomUUID().toString, details, userId, caseRef, timestamp)
   }
 }

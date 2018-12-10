@@ -16,6 +16,8 @@
 
 package util
 
+import java.time.ZonedDateTime
+
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.utils.RandomGenerator
 
@@ -26,7 +28,8 @@ object EventData {
       id = RandomGenerator.randomUUID(),
       details = Note(Some("This is a note")),
       userId = RandomGenerator.randomUUID(),
-      caseReference
+      caseReference = caseReference,
+      timestamp = ZonedDateTime.now()
     )
   }
 
@@ -35,7 +38,8 @@ object EventData {
       id = RandomGenerator.randomUUID(),
       details = CaseStatusChange(from = CaseStatus.DRAFT, to = CaseStatus.NEW),
       userId = RandomGenerator.randomUUID(),
-      caseReference
+      caseReference = caseReference,
+      timestamp = ZonedDateTime.now()
     )
   }
 
