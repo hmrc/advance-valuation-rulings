@@ -37,7 +37,7 @@ case class Case
 
 object CaseStatus extends Enumeration {
   type CaseStatus = Value
-  val DRAFT, NEW, OPEN, SUPPRESSED, REFERRED, REJECTED, CANCELLED, SUSPENDED, DECISION_MADE, REVOKED, ANNULLED = Value
+  val DRAFT, NEW, OPEN, SUPPRESSED, REFERRED, REJECTED, CANCELLED, SUSPENDED, COMPLETED, REVOKED, ANNULLED = Value
 }
 
 case class Status
