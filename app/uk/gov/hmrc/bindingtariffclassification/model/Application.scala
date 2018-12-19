@@ -29,7 +29,7 @@ case class BTIApplication
 (
   holder: EORIDetails,
   contact: Contact,
-  agent: Option[EORIDetails] = None,
+  agent: Option[AgentDetails] = None,
   offline: Boolean = false,
   goodName: String,
   goodDescription: String,
@@ -61,12 +61,18 @@ case class LiabilityOrder
 case class EORIDetails
 (
   eori: String,
-  traderName: String,
+  traderName: String, // TODO: change to `name` because it is the name of the application holder (trader) or the name of the agent
   addressLine1: String,
   addressLine2: String,
   addressLine3: String,
   postcode: String,
   country: String
+)
+
+case class AgentDetails
+(
+  eoriDetails: EORIDetails,
+  letterOfAuthorisation: Attachment
 )
 
 case class Contact
