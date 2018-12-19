@@ -79,7 +79,7 @@ object CaseData {
 
   private def createAgentDetails: AgentDetails = {
     AgentDetails(
-      eoriDetails = createEORIDetails.copy(traderName = "Frank Agent-Smith"),
+      eoriDetails = createEORIDetails.copy(businessName = "Frank Agent-Smith"),
       letterOfAuthorisation = createAttachment.copy(application = true, public = false)
     )
   }
