@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.service.CaseService
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -29,6 +30,8 @@ import scala.concurrent.duration.FiniteDuration
 
 @Singleton
 class DaysElapsedJob @Inject()(appConfig: AppConfig, caseService: CaseService) extends ScheduledJob {
+
+  private implicit val carrier: HeaderCarrier = HeaderCarrier()
 
   private lazy val jobConfig = appConfig.daysElapsed
 
