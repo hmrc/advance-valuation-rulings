@@ -14,19 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.repository
+package uk.gov.hmrc.bindingtariffclassification.model
 
-import com.google.inject.ImplementedBy
-import javax.inject.{Inject, Singleton}
-import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.api.DB
+import java.time.Instant
 
-@ImplementedBy(classOf[MongoDb])
-trait MongoDbProvider {
-  def mongo: () => DB
-}
-
-@Singleton
-class MongoDb @Inject()(component: ReactiveMongoComponent) extends MongoDbProvider {
-  override val mongo: () => DB = component.mongoConnector.db
-}
+case class SchedulerRunEvent(name: String, runDate: Instant)
