@@ -29,7 +29,7 @@ abstract class BaseFeatureSpec extends FeatureSpec
   with Matchers with GivenWhenThen with GuiceOneServerPerSuite
   with BeforeAndAfterEach with BeforeAndAfterAll {
 
-  private val timeout = 2.seconds
+  protected val timeout: FiniteDuration = 2.seconds
 
   private lazy val caseStore: CaseMongoRepository = app.injector.instanceOf[CaseMongoRepository]
   private lazy val eventStore: EventMongoRepository = app.injector.instanceOf[EventMongoRepository]
@@ -74,6 +74,10 @@ abstract class BaseFeatureSpec extends FeatureSpec
 
   protected def eventStoreSize: Int = {
     result(eventStore.mongoCollection.count(), timeout)
+  }
+
+  protected def getCase(ref: String): Option[Case] = {
+    result(caseStore.getByReference(ref), timeout)
   }
 
 }
