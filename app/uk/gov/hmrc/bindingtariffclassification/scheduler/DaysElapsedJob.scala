@@ -41,14 +41,6 @@ class DaysElapsedJob @Inject()(appConfig: AppConfig, caseService: CaseService, b
 
   private lazy val weekendDays = Seq(SATURDAY, SUNDAY)
 
-  private def isWeekend(date: LocalDate): Boolean = {
-    weekendDays.contains(date.getDayOfWeek)
-  }
-
-  private def isBankHoliday(date: LocalDate): Future[Boolean] = {
-    bankHolidaysConnector.get().map(_.contains(date))
-  }
-
   override val name: String = "DaysElapsed"
 
   override val interval: FiniteDuration = FiniteDuration(jobConfig.intervalDays, TimeUnit.DAYS)
@@ -62,6 +54,14 @@ class DaysElapsedJob @Inject()(appConfig: AppConfig, caseService: CaseService, b
     val today = LocalDate.now(appConfig.clock)
 
     lazy val msgPrefix = s"Scheduled Job [$name] run for day $today:"
+
+    def isWeekend: LocalDate => Boolean = { d: LocalDate =>
+      weekendDays.contains(d.getDayOfWeek)
+    }
+
+    def isBankHoliday: LocalDate => Future[Boolean] = { d: LocalDate =>
+      bankHolidaysConnector.get().map(_.contains(d))
+    }
 
     if (isWeekend(today)) {
       Logger.info(s"$msgPrefix Skipped as it is a Weekend")
