@@ -45,25 +45,28 @@ class DaysElapsedJob @Inject()(appConfig: AppConfig, caseService: CaseService, b
   override def execute(): Future[Unit] = {
 
     val today = LocalDate.now(appConfig.clock)
+    lazy val msgPrefix = s"Scheduled Job [$name] run for day $today:"
+
     val dayOfTheWeek = today.getDayOfWeek
     if (dayOfTheWeek == DayOfWeek.SATURDAY || dayOfTheWeek == DayOfWeek.SUNDAY) {
-      Logger.info(s"$today - Scheduled Job [$name]: Skipping as it is a Weekend")
+      Logger.info(s"$msgPrefix Skipped as it is a Weekend")
       successful(())
     } else {
       bankHolidaysConnector.get()
         .map(_.contains(today))
         .flatMap {
           case true =>
-            Logger.info(s"$today - Scheduled Job [$name]: Skipping as it is a Bank Holiday")
+            Logger.info(s"$msgPrefix Skipped as it is a Bank Holiday")
             successful(())
           case false =>
             caseService.incrementDaysElapsed(jobConfig.intervalDays)
               .map { modified: Int =>
-                Logger.info(s"$today - Scheduled Job [$name]: Incremented the Days Elapsed for [$modified] cases.")
+                Logger.info(s"$msgPrefix Incremented the Days Elapsed for [$modified] cases")
                 ()
               }
         }
     }
+
   }
 
   override def firstRunTime: LocalTime = {

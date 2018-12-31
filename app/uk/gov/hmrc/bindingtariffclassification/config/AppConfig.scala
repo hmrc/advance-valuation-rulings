@@ -44,7 +44,7 @@ class AppConfig @Inject()(val runModeConfiguration: Configuration, environment: 
   def bankHolidaysUrl: String = {
     val protocol = getString("microservice.services.bank-holidays.protocol")
     val host = getString("microservice.services.bank-holidays.host")
-    val port = runModeConfiguration.getString("microservice.services.bank-holidays.port")
+    val port = runModeConfiguration.getInt("microservice.services.bank-holidays.port")
     s"$protocol://$host${port.map(p => s":$p").getOrElse("")}"
   }
 
