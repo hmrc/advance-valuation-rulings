@@ -39,7 +39,7 @@ import scala.concurrent.Future.successful
 
 class SchedulerTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach with BeforeAndAfterAll {
 
-  private val zone = ZoneOffset.UTC
+  private val zone: ZoneId = ZoneOffset.UTC
   private val schedulerRepository = mock[SchedulerLockRepository]
   private val job = mock[ScheduledJob]
   private val actorSystem = mock[ActorSystem]
@@ -71,7 +71,7 @@ class SchedulerTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach w
     captor.getValue
   }
 
-  private def runTheJobImmediately: Answer[Cancellable] = new Answer[Cancellable]{
+  private def runTheJobImmediately: Answer[Cancellable] = new Answer[Cancellable] {
     override def answer(invocation: InvocationOnMock): Cancellable = {
       val arg: Runnable = invocation.getArgument(2)
       if (arg != null) {
@@ -82,6 +82,7 @@ class SchedulerTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach w
   }
 
   override protected def beforeEach(): Unit = {
+    super.beforeEach()
     given(config.clock).willReturn(clock)
     given(actorSystem.scheduler).willReturn(internalScheduler)
     given(internalScheduler.schedule(any[FiniteDuration], any[FiniteDuration], any[Runnable])(any[ExecutionContext])).will(runTheJobImmediately)

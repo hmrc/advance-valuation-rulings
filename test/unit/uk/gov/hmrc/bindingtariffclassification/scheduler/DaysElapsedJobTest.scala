@@ -41,6 +41,7 @@ class DaysElapsedJobTest extends UnitSpec with MockitoSugar with BeforeAndAfterE
   private val appConfig = mock[AppConfig]
 
   override def afterEach(): Unit = {
+    super.afterEach()
     reset(appConfig, caseService)
   }
 
@@ -104,7 +105,7 @@ class DaysElapsedJobTest extends UnitSpec with MockitoSugar with BeforeAndAfterE
   }
 
   private def givenTheDateIsFixedAt(date: String) : Unit = {
-    val zone = ZoneId.of("UTC")
+    val zone: ZoneId = ZoneOffset.UTC
     val instant = LocalDateTime.parse(date).atZone(zone).toInstant
     given(appConfig.clock).willReturn(Clock.fixed(instant, zone))
   }
