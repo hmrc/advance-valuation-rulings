@@ -26,18 +26,19 @@ import org.mockito.BDDMockito.given
 import org.mockito.Mockito.{never, reset, verify}
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
+import org.scalatest.concurrent.Eventually
 import org.scalatest.mockito.MockitoSugar
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+import org.scalatest.BeforeAndAfterEach
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.SchedulerRunEvent
 import uk.gov.hmrc.bindingtariffclassification.repository.SchedulerLockRepository
 import uk.gov.hmrc.play.test.UnitSpec
 
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future.successful
 
-class SchedulerTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach with BeforeAndAfterAll {
+class SchedulerTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach with Eventually {
 
   private val zone: ZoneId = ZoneOffset.UTC
   private val schedulerRepository = mock[SchedulerLockRepository]
@@ -112,9 +113,11 @@ class SchedulerTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach w
       new Scheduler(actorSystem, config, schedulerRepository, job)
 
       // Then
-      val schedule = theSchedule
-      schedule.interval shouldBe FiniteDuration(1, TimeUnit.SECONDS)
-      schedule.initialDelay shouldBe FiniteDuration(0, TimeUnit.SECONDS)
+      eventually(timeout(5.seconds), interval(100.milliseconds)) {
+        val schedule = theSchedule
+        schedule.interval shouldBe FiniteDuration(1, TimeUnit.SECONDS)
+        schedule.initialDelay shouldBe FiniteDuration(0, TimeUnit.SECONDS)
+      }
     }
 
     "Run job starting in the future" in {
@@ -127,9 +130,11 @@ class SchedulerTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach w
       new Scheduler(actorSystem, config, schedulerRepository, job)
 
       // Then
-      val schedule = theSchedule
-      schedule.interval shouldBe FiniteDuration(1, TimeUnit.SECONDS)
-      schedule.initialDelay shouldBe FiniteDuration(1, TimeUnit.SECONDS)
+      eventually(timeout(5.seconds), interval(100.milliseconds)) {
+        val schedule = theSchedule
+        schedule.interval shouldBe FiniteDuration(1, TimeUnit.SECONDS)
+        schedule.initialDelay shouldBe FiniteDuration(1, TimeUnit.SECONDS)
+      }
     }
 
     "Run job starting in the past" in {
@@ -142,9 +147,11 @@ class SchedulerTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach w
       new Scheduler(actorSystem, config, schedulerRepository, job)
 
       // Then
-      val schedule = theSchedule
-      schedule.interval shouldBe FiniteDuration(1, TimeUnit.SECONDS)
-      schedule.initialDelay shouldBe FiniteDuration(86399, TimeUnit.SECONDS)
+      eventually(timeout(5.seconds), interval(100.milliseconds)) {
+        val schedule = theSchedule
+        schedule.interval shouldBe FiniteDuration(1, TimeUnit.SECONDS)
+        schedule.initialDelay shouldBe FiniteDuration(86399, TimeUnit.SECONDS)
+      }
     }
 
     "Create the lock event with the intended run time" in {
@@ -158,9 +165,11 @@ class SchedulerTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach w
       new Scheduler(actorSystem, config, schedulerRepository, job)
 
       // Then
-      val event = theLockEvent
-      event.name shouldBe "name"
-      event.runDate shouldBe now.plusSeconds(1)
+      eventually(timeout(5.seconds), interval(100.milliseconds)) {
+        val event = theLockEvent
+        event.name shouldBe "name"
+        event.runDate shouldBe now.plusSeconds(1)
+      }
     }
 
     "Not execute the job if the lock fails" in {
