@@ -62,6 +62,7 @@ class Scheduler @Inject()(actorSystem: ActorSystem, appConfig: AppConfig, schedu
     val now = Instant.now(appConfig.clock)
 
     val firstRunDate = nextDateWithTime(job.firstRunTime)
+
     if (firstRunDate.isBefore(now)) {
       val intervals: Long = Math.floor((now.toEpochMilli - firstRunDate.toEpochMilli) / job.interval.toMillis).toLong
       firstRunDate.plusMillis(intervals * job.interval.toMillis)
@@ -75,7 +76,11 @@ class Scheduler @Inject()(actorSystem: ActorSystem, appConfig: AppConfig, schedu
     lazy val nextRunDateTimeToday = nextRunTime.atDate(LocalDate.now(appConfig.clock))
     lazy val nextRunDateTimeTomorrow = nextRunTime.atDate(LocalDate.now(appConfig.clock).plusDays(1))
 
-    val nextRunDateTime = if (nextRunDateTimeToday.isBefore(currentTime)) nextRunDateTimeTomorrow else nextRunDateTimeToday
+    def nextRunDateTime: LocalDateTime = {
+      if (nextRunDateTimeToday.isBefore(currentTime)) nextRunDateTimeTomorrow
+      else nextRunDateTimeToday
+    }
+
     nextRunDateTime.atZone(appConfig.clock.getZone).toInstant
   }
 
