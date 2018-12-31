@@ -19,7 +19,7 @@ package uk.gov.hmrc.bindingtariffclassification.scheduler
 import java.time._
 import java.util.concurrent.TimeUnit.DAYS
 
-import org.mockito.{ArgumentMatchers, Mockito}
+import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers._
 import org.mockito.BDDMockito.given
 import org.mockito.Mockito.{reset, verify, verifyZeroInteractions, when}
@@ -55,18 +55,11 @@ class DaysElapsedJobTest extends UnitSpec with MockitoSugar with BeforeAndAfterE
       new DaysElapsedJob(appConfig, caseService, bankHolidaysConnector).name shouldBe "DaysElapsed"
     }
 
-    "Configure 'initialDelay' with first run today" in {
-      givenTheDateIsFixedAt("2018-12-25T12:00:00")
-      given(appConfig.daysElapsed).willReturn(DaysElapsedConfig(LocalTime.of(14,0), 1))
+    "Configure 'firstRunTime'" in {
+      val runTime = LocalTime.of(14, 0)
+      given(appConfig.daysElapsed).willReturn(DaysElapsedConfig(runTime, 1))
 
-      new DaysElapsedJob(appConfig, caseService, bankHolidaysConnector).firstRunDate shouldBe instantOf("2018-12-25T14:00:00")
-    }
-
-    "Configure 'initialDelay' with first run tomorrow" in {
-      givenTheDateIsFixedAt("2018-12-25T12:00:00")
-      given(appConfig.daysElapsed).willReturn(DaysElapsedConfig(LocalTime.of(10,0), 1))
-
-      new DaysElapsedJob(appConfig, caseService, bankHolidaysConnector).firstRunDate shouldBe instantOf("2018-12-26T10:00:00")
+      new DaysElapsedJob(appConfig, caseService, bankHolidaysConnector).firstRunTime shouldBe runTime
     }
 
     "Configure 'interval'" in {

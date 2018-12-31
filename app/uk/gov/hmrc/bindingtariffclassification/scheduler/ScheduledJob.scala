@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.bindingtariffclassification.scheduler
 
-import java.time.Instant
+import java.time.LocalTime
 
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
@@ -24,6 +24,6 @@ import scala.concurrent.duration.FiniteDuration
 trait ScheduledJob {
   def name: String
   def execute(): Future[Unit]
-  def firstRunDate: Instant
+  def firstRunTime: LocalTime
   def interval: FiniteDuration
 }

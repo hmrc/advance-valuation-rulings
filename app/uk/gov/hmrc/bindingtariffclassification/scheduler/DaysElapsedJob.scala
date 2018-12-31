@@ -67,14 +67,8 @@ class DaysElapsedJob @Inject()(appConfig: AppConfig, caseService: CaseService, b
     }
   }
 
-  override def firstRunDate: Instant = {
-    val currentTime = LocalDateTime.now(appConfig.clock)
-
-    val nextRunTime: LocalTime = jobConfig.elapseTime
-    val nextRunDateTimeToday = nextRunTime.atDate(LocalDate.now(appConfig.clock))
-    val nextRunDateTimeTomorrow = nextRunTime.atDate(LocalDate.now(appConfig.clock).plusDays(1))
-    val nextRunDateTime = if (nextRunDateTimeToday.isAfter(currentTime)) nextRunDateTimeToday else nextRunDateTimeTomorrow
-    nextRunDateTime.atZone(appConfig.clock.getZone).toInstant
+  override def firstRunTime: LocalTime = {
+    jobConfig.elapseTime
   }
 
 }

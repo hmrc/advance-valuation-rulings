@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.bindingtariffclassification.scheduler
 
-import java.time.{Clock, Instant, LocalDateTime, ZoneId}
+import java.time._
 import java.util.concurrent.TimeUnit
 
 import akka.actor.{ActorSystem, Cancellable}
@@ -44,11 +44,16 @@ class SchedulerTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach w
   private val actorSystem = mock[ActorSystem]
   private val internalScheduler = mock[akka.actor.Scheduler]
   private val config = mock[AppConfig]
+  private val midday: LocalTime = timeOf("12:00:00")
   private val now: Instant = instantOf("2018-12-25T12:00:00")
   private val clock = Clock.fixed(now, zone)
 
   private def instantOf(datetime: String): Instant = {
     LocalDateTime.parse(datetime).atZone(zone).toInstant
+  }
+
+  private def timeOf(time:String): LocalTime = {
+    LocalTime.parse(time)
   }
 
   private def givenTheLockSucceeds(): Unit = {
@@ -95,11 +100,11 @@ class SchedulerTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach w
 
   "Scheduler" should {
 
-    "Run job with starting now" in {
+    "Run job starting now" in {
       // Given
       givenTheLockSucceeds()
       given(job.interval) willReturn FiniteDuration(1, TimeUnit.SECONDS)
-      given(job.firstRunDate) willReturn now
+      given(job.firstRunTime) willReturn midday
 
       // When
       new Scheduler(actorSystem, config, schedulerRepository, job)
@@ -110,11 +115,11 @@ class SchedulerTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach w
       schedule.initialDelay shouldBe FiniteDuration(0, TimeUnit.SECONDS)
     }
 
-    "Run job with starting in the future" in {
+    "Run job starting in the future" in {
       // Given
       givenTheLockSucceeds()
       given(job.interval) willReturn FiniteDuration(1, TimeUnit.SECONDS)
-      given(job.firstRunDate) willReturn now.plusSeconds(1)
+      given(job.firstRunTime) willReturn midday.plusSeconds(1)
 
       // When
       new Scheduler(actorSystem, config, schedulerRepository, job)
@@ -125,11 +130,11 @@ class SchedulerTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach w
       schedule.initialDelay shouldBe FiniteDuration(1, TimeUnit.SECONDS)
     }
 
-    "Run job with starting in the past" in {
+    "Run job starting in the past" in {
       // Given
       givenTheLockSucceeds()
       given(job.interval) willReturn FiniteDuration(1, TimeUnit.SECONDS)
-      given(job.firstRunDate) willReturn now.minusSeconds(1)
+      given(job.firstRunTime) willReturn midday.minusSeconds(1)
 
       // When
       new Scheduler(actorSystem, config, schedulerRepository, job)
@@ -137,14 +142,14 @@ class SchedulerTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach w
       // Then
       val schedule = theSchedule
       schedule.interval shouldBe FiniteDuration(1, TimeUnit.SECONDS)
-      schedule.initialDelay shouldBe FiniteDuration(0, TimeUnit.SECONDS)
+      schedule.initialDelay shouldBe FiniteDuration(86399, TimeUnit.SECONDS)
     }
 
     "Create the lock event with the intended run time" in {
       // Given
       givenTheLockSucceeds()
       given(job.interval) willReturn FiniteDuration(1, TimeUnit.SECONDS)
-      given(job.firstRunDate) willReturn now.plusSeconds(1)
+      given(job.firstRunTime) willReturn midday.plusSeconds(1)
       given(job.name) willReturn "name"
 
       // When
@@ -160,7 +165,7 @@ class SchedulerTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach w
       // Given
       givenTheLockFails()
       given(job.interval) willReturn FiniteDuration(1, TimeUnit.SECONDS)
-      given(job.firstRunDate) willReturn now
+      given(job.firstRunTime) willReturn midday
 
       // When
       new Scheduler(actorSystem, config, schedulerRepository, job)
