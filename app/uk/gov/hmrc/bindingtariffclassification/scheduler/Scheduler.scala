@@ -32,7 +32,7 @@ import scala.concurrent.duration.FiniteDuration
 
 class Scheduler @Inject()(actorSystem: ActorSystem, appConfig: AppConfig, schedulerLockRepository: SchedulerLockRepository, job: ScheduledJob) {
 
-  Logger.info(s"Scheduled Job [${job.name}]: Scheduling to run at [${job.firstRunTime}] with interval [${job.interval.length} ${job.interval.unit}]")
+  Logger.info(s"Scheduling job [${job.name}] to run periodically at [${job.firstRunTime}] with interval [${job.interval.length} ${job.interval.unit}]")
   actorSystem.scheduler.schedule(durationUntil(nextDateWithTime(job.firstRunTime)), job.interval, new Runnable() {
 
     override def run(): Unit = {
