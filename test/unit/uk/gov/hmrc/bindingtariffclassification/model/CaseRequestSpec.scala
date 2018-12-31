@@ -45,4 +45,3 @@ class CaseRequestSpec extends UnitSpec with MockitoSugar {
   }
 
 }
-

@@ -34,11 +34,12 @@ import uk.gov.hmrc.bindingtariffclassification.repository.SchedulerLockRepositor
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future.successful
 
 class SchedulerTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach with BeforeAndAfterAll {
 
-  private val zone = ZoneId.of("UTC")
+  private val zone = ZoneOffset.UTC
   private val schedulerRepository = mock[SchedulerLockRepository]
   private val job = mock[ScheduledJob]
   private val actorSystem = mock[ActorSystem]
@@ -52,16 +53,16 @@ class SchedulerTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach w
     LocalDateTime.parse(datetime).atZone(zone).toInstant
   }
 
-  private def timeOf(time:String): LocalTime = {
+  private def timeOf(time: String): LocalTime = {
     LocalTime.parse(time)
   }
 
   private def givenTheLockSucceeds(): Unit = {
-    given(schedulerRepository.lock(any[SchedulerRunEvent])).willReturn(Future.successful(true))
+    given(schedulerRepository.lock(any[SchedulerRunEvent])).willReturn(successful(true))
   }
 
   private def givenTheLockFails(): Unit = {
-    given(schedulerRepository.lock(any[SchedulerRunEvent])).willReturn(Future.successful(false))
+    given(schedulerRepository.lock(any[SchedulerRunEvent])).willReturn(successful(false))
   }
 
   private def theLockEvent: SchedulerRunEvent = {
@@ -73,7 +74,7 @@ class SchedulerTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach w
   private def runTheJobImmediately: Answer[Cancellable] = new Answer[Cancellable]{
     override def answer(invocation: InvocationOnMock): Cancellable = {
       val arg: Runnable = invocation.getArgument(2)
-      if(arg != null) {
+      if (arg != null) {
         arg.run()
       }
       Cancellable.alreadyCancelled

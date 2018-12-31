@@ -36,14 +36,9 @@ import scala.concurrent.duration.FiniteDuration
 
 class DaysElapsedJobTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach {
 
-  private val zone = ZoneId.of("UTC")
   private val caseService = mock[CaseService]
   private val bankHolidaysConnector = mock[BankHolidaysConnector]
   private val appConfig = mock[AppConfig]
-
-  private def instantOf(datetime: String): Instant = {
-    LocalDateTime.parse(datetime).atZone(zone).toInstant
-  }
 
   override def afterEach(): Unit = {
     reset(appConfig, caseService)

@@ -17,7 +17,7 @@
 package uk.gov.hmrc.bindingtariffclassification.scheduler
 
 import java.time.{Instant, LocalDate, LocalDateTime, LocalTime}
-import java.time.temporal.{ChronoUnit, Temporal}
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 
 import akka.actor.ActorSystem
@@ -33,8 +33,10 @@ import scala.concurrent.duration.FiniteDuration
 class Scheduler @Inject()(actorSystem: ActorSystem, appConfig: AppConfig, schedulerLockRepository: SchedulerLockRepository, job: ScheduledJob) {
 
   Logger.info(s"Scheduled Job [${job.name}]: Scheduling to run at [${job.firstRunTime}] with interval [${job.interval.length} ${job.interval.unit}]")
-  actorSystem.scheduler.schedule(durationUntil(nextDateWithTime(job.firstRunTime)), job.interval, new Runnable(){
+  actorSystem.scheduler.schedule(durationUntil(nextDateWithTime(job.firstRunTime)), job.interval, new Runnable() {
+
     override def run(): Unit = {
+
       val event = SchedulerRunEvent(job.name, expectedRunDate)
 
       Logger.info(s"Scheduled Job [${job.name}]: Acquiring Lock")
@@ -60,30 +62,28 @@ class Scheduler @Inject()(actorSystem: ActorSystem, appConfig: AppConfig, schedu
     val now = Instant.now(appConfig.clock)
 
     val firstRunDate = nextDateWithTime(job.firstRunTime)
-    if(!firstRunDate.isBefore(now)) {
-      firstRunDate
-    } else {
+    if (firstRunDate.isBefore(now)) {
       val intervals: Long = Math.floor((now.toEpochMilli - firstRunDate.toEpochMilli) / job.interval.toMillis).toLong
       firstRunDate.plusMillis(intervals * job.interval.toMillis)
+    } else {
+      firstRunDate
     }
   }
 
   private def nextDateWithTime(nextRunTime: LocalTime): Instant = {
     val currentTime = LocalDateTime.now(appConfig.clock)
+    lazy val nextRunDateTimeToday = nextRunTime.atDate(LocalDate.now(appConfig.clock))
+    lazy val nextRunDateTimeTomorrow = nextRunTime.atDate(LocalDate.now(appConfig.clock).plusDays(1))
 
-    val nextRunDateTimeToday = nextRunTime.atDate(LocalDate.now(appConfig.clock))
-    val nextRunDateTimeTomorrow = nextRunTime.atDate(LocalDate.now(appConfig.clock).plusDays(1))
-    val nextRunDateTime = if (!nextRunDateTimeToday.isBefore(currentTime)) nextRunDateTimeToday else nextRunDateTimeTomorrow
+    val nextRunDateTime = if (nextRunDateTimeToday.isBefore(currentTime)) nextRunDateTimeTomorrow else nextRunDateTimeToday
     nextRunDateTime.atZone(appConfig.clock.getZone).toInstant
   }
 
-  def durationUntil(date: Instant): FiniteDuration = {
+  private def durationUntil(date: Instant): FiniteDuration = {
     val now = Instant.now(appConfig.clock)
-    if(now.isBefore(date)) {
-      FiniteDuration(now.until(date, ChronoUnit.SECONDS), TimeUnit.SECONDS)
-    } else {
-      FiniteDuration(0, TimeUnit.SECONDS)
-    }
+
+    if (now.isBefore(date)) FiniteDuration(now.until(date, ChronoUnit.SECONDS), TimeUnit.SECONDS)
+    else FiniteDuration(0, TimeUnit.SECONDS)
   }
 
 }

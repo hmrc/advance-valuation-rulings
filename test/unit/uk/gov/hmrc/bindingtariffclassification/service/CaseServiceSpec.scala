@@ -16,14 +16,11 @@
 
 package uk.gov.hmrc.bindingtariffclassification.service
 
-import java.time.{Clock, LocalDate, ZoneId}
 import java.util.UUID
 
-import org.mockito.{ArgumentMatcher, ArgumentMatchers, Mockito}
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mockito.MockitoSugar
-import uk.gov.hmrc.bindingtariffclassification.connector.BankHolidaysConnector
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.model.search.CaseParamsFilter
 import uk.gov.hmrc.bindingtariffclassification.repository.{CaseRepository, SequenceRepository}
