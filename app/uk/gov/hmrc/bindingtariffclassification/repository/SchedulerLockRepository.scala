@@ -51,12 +51,12 @@ class SchedulerLockMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
   )
 
   override def lock(e: SchedulerRunEvent): Future[Boolean] = {
-    createOne(e) map {
-      _ => Logger.debug(s"Took Lock for [${e.name}] at [${e.runDate}]")
-        true
-    } recover {
-      case t: Throwable => Logger.debug(s"Unable to take Lock for [${e.name}] at [${e.runDate}]", t)
-        false
+    createOne(e) map { _ =>
+      Logger.debug(s"Took Lock for [${e.name}] at [${e.runDate}]")
+      true
+    } recover { case t: Throwable =>
+      Logger.debug(s"Unable to take Lock for [${e.name}] at [${e.runDate}]", t)
+      false
     }
   }
 

@@ -21,12 +21,12 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.bindingtariffclassification.scheduler.{DaysElapsedJob, ScheduledJob, Scheduler}
 
 class Module extends play.api.inject.Module {
+
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
     Seq(
       bind[ScheduledJob].to[DaysElapsedJob],
       bind[Scheduler].toSelf.eagerly()
     )
   }
+
 }
-
-

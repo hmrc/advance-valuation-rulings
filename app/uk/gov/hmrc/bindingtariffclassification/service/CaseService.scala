@@ -16,15 +16,11 @@
 
 package uk.gov.hmrc.bindingtariffclassification.service
 
-import java.time.{Clock, DayOfWeek, LocalDate}
-
 import javax.inject._
-import uk.gov.hmrc.bindingtariffclassification.connector.BankHolidaysConnector
 import uk.gov.hmrc.bindingtariffclassification.model.Case
 import uk.gov.hmrc.bindingtariffclassification.model.search.CaseParamsFilter
 import uk.gov.hmrc.bindingtariffclassification.model.sort.CaseSort
 import uk.gov.hmrc.bindingtariffclassification.repository.{CaseRepository, SequenceRepository}
-import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
