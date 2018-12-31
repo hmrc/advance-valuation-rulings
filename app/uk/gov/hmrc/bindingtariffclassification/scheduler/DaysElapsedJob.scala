@@ -43,7 +43,7 @@ class DaysElapsedJob @Inject()(appConfig: AppConfig, caseService: CaseService, b
 
   override val name: String = "DaysElapsed"
 
-  override val interval: FiniteDuration = FiniteDuration(jobConfig.intervalDays, TimeUnit.DAYS)
+  override def interval: FiniteDuration = FiniteDuration(jobConfig.intervalDays, TimeUnit.DAYS)
 
   override def firstRunTime: LocalTime = {
     jobConfig.elapseTime
