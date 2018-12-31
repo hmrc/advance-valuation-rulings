@@ -47,19 +47,20 @@ class DaysElapsedJob @Inject()(appConfig: AppConfig, caseService: CaseService, b
     val today = LocalDate.now(appConfig.clock)
     val dayOfTheWeek = today.getDayOfWeek
     if (dayOfTheWeek == DayOfWeek.SATURDAY || dayOfTheWeek == DayOfWeek.SUNDAY) {
-      Logger.info(s"Scheduled Job [$name]: Skipping today as it is a Weekend")
+      Logger.info(s"$today - Scheduled Job [$name]: Skipping as it is a Weekend")
       successful(())
     } else {
       bankHolidaysConnector.get()
         .map(_.contains(today))
         .flatMap {
           case true =>
-            Logger.info(s"Scheduled Job [$name]: Skipping today as it is a Bank Holiday")
+            Logger.info(s"$today - Scheduled Job [$name]: Skipping as it is a Bank Holiday")
             successful(())
           case false =>
             caseService.incrementDaysElapsed(jobConfig.intervalDays)
               .map { modified: Int =>
-                Logger.info(s"Scheduled Job [$name]: Incremented the Days Elapsed for [$modified] cases.")
+                Logger.info(s"$today - Scheduled Job [$name]: Incremented the Days Elapsed for [$modified] cases.")
+                ()
               }
         }
     }

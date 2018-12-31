@@ -19,7 +19,6 @@ package uk.gov.hmrc.bindingtariffclassification.connector
 import java.time.LocalDate
 
 import javax.inject.{Inject, Singleton}
-import play.api.libs.json.OFormat
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.{BankHolidaysResponse, JsonFormatters}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -32,7 +31,8 @@ class BankHolidaysConnector @Inject()(appConfig: AppConfig, http: HttpClient)(
   implicit executionContext: ExecutionContext) {
 
   def get()(implicit headerCarrier: HeaderCarrier): Future[Seq[LocalDate]] = {
-    implicit val format: OFormat[BankHolidaysResponse] = JsonFormatters.formatBankHolidaysResponse
+    import JsonFormatters.formatBankHolidaysResponse
+
     http.GET[BankHolidaysResponse](s"${appConfig.bankHolidaysUrl}/bank-holidays.json")
       .map(_.`england-and-wales`.events.map(_.date))
   }
