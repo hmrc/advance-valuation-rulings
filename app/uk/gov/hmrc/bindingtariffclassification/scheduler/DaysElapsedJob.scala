@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.bindingtariffclassification.scheduler
 
-import java.time._
+import java.time.DayOfWeek.{SATURDAY, SUNDAY}
+import java.time.{LocalDate, LocalTime}
 import java.util.concurrent.TimeUnit
 
 import javax.inject.{Inject, Singleton}
@@ -38,39 +39,46 @@ class DaysElapsedJob @Inject()(appConfig: AppConfig, caseService: CaseService, b
 
   private lazy val jobConfig = appConfig.daysElapsed
 
-  override def name: String = "DaysElapsed"
+  private lazy val weekendDays = Seq(SATURDAY, SUNDAY)
 
-  override def interval: FiniteDuration = FiniteDuration(jobConfig.intervalDays, TimeUnit.DAYS)
+  private def isWeekend(date: LocalDate): Boolean = {
+    weekendDays.contains(date.getDayOfWeek)
+  }
+
+  private def isBankHoliday(date: LocalDate): Future[Boolean] = {
+    bankHolidaysConnector.get().map(_.contains(date))
+  }
+
+  override val name: String = "DaysElapsed"
+
+  override val interval: FiniteDuration = FiniteDuration(jobConfig.intervalDays, TimeUnit.DAYS)
+
+  override def firstRunTime: LocalTime = {
+    jobConfig.elapseTime
+  }
 
   override def execute(): Future[Unit] = {
 
     val today = LocalDate.now(appConfig.clock)
+
     lazy val msgPrefix = s"Scheduled Job [$name] run for day $today:"
 
-    val dayOfTheWeek = today.getDayOfWeek
-    if (dayOfTheWeek == DayOfWeek.SATURDAY || dayOfTheWeek == DayOfWeek.SUNDAY) {
+    if (isWeekend(today)) {
       Logger.info(s"$msgPrefix Skipped as it is a Weekend")
       successful(())
     } else {
-      bankHolidaysConnector.get()
-        .map(_.contains(today))
-        .flatMap {
-          case true =>
-            Logger.info(s"$msgPrefix Skipped as it is a Bank Holiday")
-            successful(())
-          case false =>
-            caseService.incrementDaysElapsed(jobConfig.intervalDays)
-              .map { modified: Int =>
-                Logger.info(s"$msgPrefix Incremented the Days Elapsed for [$modified] cases")
-                ()
-              }
-        }
+      isBankHoliday(today).flatMap {
+        case true =>
+          Logger.info(s"$msgPrefix Skipped as it is a Bank Holiday")
+          successful(())
+        case false =>
+          caseService.incrementDaysElapsed(jobConfig.intervalDays).map { modified: Int =>
+            Logger.info(s"$msgPrefix Incremented the Days Elapsed for [$modified] cases")
+            ()
+          }
+      }
     }
 
-  }
-
-  override def firstRunTime: LocalTime = {
-    jobConfig.elapseTime
   }
 
 }
