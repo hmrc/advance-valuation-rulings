@@ -72,13 +72,15 @@ class Scheduler @Inject()(actorSystem: ActorSystem, appConfig: AppConfig, schedu
   }
 
   private def nextDateWithTime(nextRunTime: LocalTime): Instant = {
-    val currentTime = LocalDateTime.now(appConfig.clock)
-    lazy val nextRunDateTimeToday = nextRunTime.atDate(LocalDate.now(appConfig.clock))
-    lazy val nextRunDateTimeTomorrow = nextRunTime.atDate(LocalDate.now(appConfig.clock).plusDays(1))
+    val currentDateTime = LocalDateTime.now(appConfig.clock)
+    val currentTime = currentDateTime.toLocalTime
 
     def nextRunDateTime: LocalDateTime = {
-      if (nextRunDateTimeToday.isBefore(currentTime)) nextRunDateTimeTomorrow
-      else nextRunDateTimeToday
+      if (nextRunTime.isBefore(currentTime)) {
+        nextRunTime.atDate(LocalDate.now(appConfig.clock).plusDays(1))
+      } else {
+        nextRunTime.atDate(LocalDate.now(appConfig.clock))
+      }
     }
 
     nextRunDateTime.atZone(appConfig.clock.getZone).toInstant
