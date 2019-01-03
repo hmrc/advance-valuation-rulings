@@ -57,7 +57,7 @@ class SchedulerDateUtil @Inject()(appConfig: AppConfig) {
     val intervalRemainder: Long = deltaSeconds % intervalSeconds
 
     val intervalRemaining: Long = if(intervalRemainder < 0) intervalRemainder + intervalSeconds else intervalRemainder
-    val intervalElapsed: Long = if(intervalRemaining < 0) -intervalRemaining else intervalSeconds - intervalRemaining
+    val intervalElapsed: Long = intervalSeconds - intervalRemaining
     if(intervalRemaining == 0) {
       LocalDate.now(clock).atTime(time).atZone(clock.getZone).toInstant
     } else if(intervalRemaining < intervalElapsed){
