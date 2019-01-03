@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.bindingtariffclassification.scheduler
 
-import java.time.{Clock, Instant, LocalDate, LocalTime}
+import java.time.{Instant, LocalDate, LocalTime}
 
 import javax.inject.Inject
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig

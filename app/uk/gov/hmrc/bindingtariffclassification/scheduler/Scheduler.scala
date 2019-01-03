@@ -28,6 +28,7 @@ import uk.gov.hmrc.bindingtariffclassification.model.SchedulerRunEvent
 import uk.gov.hmrc.bindingtariffclassification.repository.SchedulerLockRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 
 class Scheduler @Inject()(actorSystem: ActorSystem,
@@ -38,29 +39,32 @@ class Scheduler @Inject()(actorSystem: ActorSystem,
 
   Logger.info(s"Scheduling job [${job.name}] to run periodically at [${job.firstRunTime}] with interval [${job.interval.length} ${job.interval.unit}]")
   actorSystem.scheduler.schedule(durationUntil(nextRunDate), job.interval, new Runnable() {
-
     override def run(): Unit = {
-      val event = SchedulerRunEvent(job.name, lastRunDate)
-
-      Logger.info(s"Scheduled Job [${job.name}]: Acquiring Lock")
-      schedulerLockRepository.lock(event) map {
-        case true =>
-          Logger.info(s"Scheduled Job [${job.name}]: Successfully acquired lock, Starting Job.")
-          job.execute() map { _ =>
-            Logger.info(s"Scheduled Job [${job.name}]: Completed Successfully")
-          } recover {
-            case t: Throwable => Logger.error(s"Scheduled Job [${job.name}]: Failed", t)
-          }
-        case false => Logger.info(s"Scheduled Job [${job.name}]: Failed to acquire Lock. It may be running elsewhere.")
-      }
+      execute()
     }
   })
+
+  def execute(): Future[Unit] = {
+    val event = SchedulerRunEvent(job.name, closestRunDate)
+
+    Logger.info(s"Scheduled Job [${job.name}]: Acquiring Lock")
+    schedulerLockRepository.lock(event).map {
+      case true =>
+        Logger.info(s"Scheduled Job [${job.name}]: Successfully acquired lock, Starting Job.")
+        job.execute() map { _ =>
+          Logger.info(s"Scheduled Job [${job.name}]: Completed Successfully")
+        } recover {
+          case t: Throwable => Logger.error(s"Scheduled Job [${job.name}]: Failed", t)
+        }
+      case false => Logger.info(s"Scheduled Job [${job.name}]: Failed to acquire Lock. It may be running elsewhere.")
+    }
+  }
 
   private def nextRunDate: Instant = {
     schedulerDateUtil.nextRun(job.firstRunTime, job.interval)
   }
 
-  private def lastRunDate: Instant = {
+  private def closestRunDate: Instant = {
     schedulerDateUtil.closestRun(job.firstRunTime, job.interval)
   }
 
