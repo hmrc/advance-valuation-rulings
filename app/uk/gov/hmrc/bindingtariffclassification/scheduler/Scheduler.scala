@@ -56,7 +56,7 @@ class Scheduler @Inject()(actorSystem: ActorSystem,
         } recover {
           case t: Throwable => Logger.error(s"Scheduled Job [${job.name}]: Failed", t)
         }
-      case false => Logger.info(s"Scheduled Job [${job.name}]: Failed to acquire Lock. It may be running elsewhere.")
+      case false => Logger.info(s"Scheduled Job [${job.name}]: Failed to acquire Lock. It may have been running already.")
     }
   }
 
