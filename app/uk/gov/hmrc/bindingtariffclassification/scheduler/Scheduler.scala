@@ -71,7 +71,7 @@ class Scheduler @Inject()(actorSystem: ActorSystem,
   private def durationUntil(datetime: Instant): FiniteDuration = {
     val now = Instant.now(appConfig.clock)
 
-    if (now.isBefore(datetime)) throw new IllegalArgumentException(s"Expected a future or present datetime but was [$datetime]")
+    if (datetime.isBefore(now)) throw new IllegalArgumentException(s"Expected a future or present datetime but was [$datetime]")
     else FiniteDuration(now.until(datetime, ChronoUnit.SECONDS), TimeUnit.SECONDS)
   }
 
