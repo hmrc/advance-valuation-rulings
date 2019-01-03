@@ -68,11 +68,11 @@ class Scheduler @Inject()(actorSystem: ActorSystem,
     schedulerDateUtil.closestRun(job.firstRunTime, job.interval)
   }
 
-  private def durationUntil(date: Instant): FiniteDuration = {
+  private def durationUntil(datetime: Instant): FiniteDuration = {
     val now = Instant.now(appConfig.clock)
 
-    if (!now.isAfter(date)) FiniteDuration(now.until(date, ChronoUnit.SECONDS), TimeUnit.SECONDS)
-    else throw new IllegalArgumentException(s"Cannot calculate the duration until a date in the past [$date]")
+    if (now.isBefore(datetime)) throw new IllegalArgumentException(s"Expected a future or present datetime but was [$datetime]")
+    else FiniteDuration(now.until(datetime, ChronoUnit.SECONDS), TimeUnit.SECONDS)
   }
 
 }
