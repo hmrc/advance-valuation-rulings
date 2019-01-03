@@ -116,6 +116,11 @@ class SchedulerDateUtilTest extends UnitSpec with MockitoSugar with BeforeAndAft
         time("12:00:02"),
         interval(3, SECONDS)
       ) shouldBe instant("2019-01-01T11:59:59")
+
+      util.closestRun(
+        time("12:00:02"),
+        interval(4, SECONDS)
+      ) shouldBe instant("2019-01-01T11:59:58")
     }
 
     "Calculate the closest run date given a run time in the past" in {
@@ -140,6 +145,11 @@ class SchedulerDateUtilTest extends UnitSpec with MockitoSugar with BeforeAndAft
         time("11:59:56"),
         interval(3, SECONDS)
       ) shouldBe instant("2019-01-01T11:59:59")
+
+      util.closestRun(
+        time("11:59:58"),
+        interval(4, SECONDS)
+      ) shouldBe instant("2019-01-01T11:59:58")
     }
   }
 
