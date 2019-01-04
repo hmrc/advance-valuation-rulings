@@ -18,7 +18,6 @@ package uk.gov.hmrc.bindingtariffclassification.scheduler
 
 import java.time.DayOfWeek.{SATURDAY, SUNDAY}
 import java.time.{LocalDate, LocalTime}
-import java.util.concurrent.TimeUnit
 
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
@@ -30,20 +29,19 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.Future.successful
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration._
 
 @Singleton
 class DaysElapsedJob @Inject()(appConfig: AppConfig, caseService: CaseService, bankHolidaysConnector: BankHolidaysConnector) extends ScheduledJob {
 
   private implicit val carrier: HeaderCarrier = HeaderCarrier()
-
   private lazy val jobConfig = appConfig.daysElapsed
-
   private lazy val weekendDays = Seq(SATURDAY, SUNDAY)
+  private lazy val secondsInADay = 1.day.toSeconds
 
   override val name: String = "DaysElapsed"
 
-  override def interval: FiniteDuration = FiniteDuration(jobConfig.intervalDays, TimeUnit.DAYS)
+  override def interval: FiniteDuration = jobConfig.interval
 
   override def firstRunTime: LocalTime = {
     jobConfig.elapseTime
@@ -72,9 +70,9 @@ class DaysElapsedJob @Inject()(appConfig: AppConfig, caseService: CaseService, b
           Logger.info(s"$msgPrefix Skipped as it is a Bank Holiday")
           successful(())
         case false =>
-          caseService.incrementDaysElapsed(jobConfig.intervalDays).map { modified: Int =>
+          val increment = jobConfig.interval.toSeconds.toDouble / secondsInADay
+          caseService.incrementDaysElapsed(increment).map { modified: Int =>
             Logger.info(s"$msgPrefix Incremented the Days Elapsed for [$modified] cases")
-            ()
           }
       }
     }

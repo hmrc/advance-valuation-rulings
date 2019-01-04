@@ -22,6 +22,8 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.play.test.UnitSpec
 
+import scala.concurrent.duration._
+
 class AppConfigTest extends UnitSpec with GuiceOneAppPerSuite {
 
   private def configWith(pairs: (String, String)*): AppConfig = {
@@ -41,10 +43,10 @@ class AppConfigTest extends UnitSpec with GuiceOneAppPerSuite {
     "build 'DaysElapsedConfig" in {
       val config = configWith(
         "scheduler.days-elapsed.run-time" -> "00:00",
-        "scheduler.days-elapsed.interval-days" -> "1"
+        "scheduler.days-elapsed.interval" -> "1d"
       ).daysElapsed
       config.elapseTime shouldBe LocalTime.of(0, 0, 0)
-      config.intervalDays shouldBe 1
+      config.interval shouldBe 1.days
     }
 
     "build 'bankHolidaysUrl without port" in {
