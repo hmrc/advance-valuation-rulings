@@ -35,15 +35,15 @@ class SchedulerControllerSpec extends UnitSpec with WithFakeApplication with Moc
   private val appConfig = mock[AppConfig]
   private val scheduler = mock[Scheduler]
 
-  private val fakeRequest = FakeRequest(method = HttpVerbs.PUT, path = "/scheduler/elapsed-days")
+  private val fakeRequest = FakeRequest(method = HttpVerbs.PUT, path = "/scheduler/days-elapsed")
 
   private val controller = new SchedulerController(appConfig, scheduler)
 
-  "incrementElapsedDays()" should {
+  "incrementDaysElapsed()" should {
 
     "return 403 if the test mode is disabled" in {
 
-      val result = await(controller.incrementElapsedDays()(fakeRequest))
+      val result = await(controller.incrementDaysElapsed()(fakeRequest))
 
       status(result) shouldEqual FORBIDDEN
       jsonBodyOf(result).toString() shouldEqual s"""{"code":"FORBIDDEN","message":"You are not allowed to call ${fakeRequest.method} ${fakeRequest.path}"}"""
@@ -53,7 +53,7 @@ class SchedulerControllerSpec extends UnitSpec with WithFakeApplication with Moc
       when(appConfig.isTestMode).thenReturn(true)
       when(scheduler.execute()).thenReturn(successful(()))
 
-      val result = await(controller.incrementElapsedDays()(fakeRequest))
+      val result = await(controller.incrementDaysElapsed()(fakeRequest))
       status(result) shouldEqual NO_CONTENT
     }
 
@@ -63,7 +63,7 @@ class SchedulerControllerSpec extends UnitSpec with WithFakeApplication with Moc
       when(appConfig.isTestMode).thenReturn(true)
       when(scheduler.execute()).thenReturn(failed(error))
 
-      val result = await(controller.incrementElapsedDays()(fakeRequest))
+      val result = await(controller.incrementDaysElapsed()(fakeRequest))
 
       status(result) shouldEqual INTERNAL_SERVER_ERROR
       jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""

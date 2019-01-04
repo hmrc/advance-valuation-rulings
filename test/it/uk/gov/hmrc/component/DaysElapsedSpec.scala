@@ -45,8 +45,8 @@ class DaysElapsedSpec extends BaseFeatureSpec {
 
       val locks = schedulerLockStoreSize
 
-      When("I hit the elapsed days endpoint")
-      val result = Http(s"$serviceUrl/scheduler/elapsed-days")
+      When("I hit the days-elapsed endpoint")
+      val result = Http(s"$serviceUrl/scheduler/days-elapsed")
         .method(HttpVerbs.PUT)
         .asString
 
