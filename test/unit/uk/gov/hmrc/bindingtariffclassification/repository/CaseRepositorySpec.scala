@@ -16,11 +16,14 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
+import java.time.ZonedDateTime
+
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-import reactivemongo.api.DB
+import play.api.libs.json.{JsObject, Json}
 import reactivemongo.api.indexes.Index
 import reactivemongo.api.indexes.IndexType.Ascending
+import reactivemongo.api.{Cursor, DB}
 import reactivemongo.bson._
 import reactivemongo.core.errors.DatabaseException
 import reactivemongo.play.json.ImplicitBSONHandlers._
@@ -393,6 +396,20 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
       collectionSize shouldBe size
     }
 
+    "store dates as Mongo Dates" in {
+      val date = ZonedDateTime.now()
+      val oldCase = case1.copy(createdDate = date)
+      val newCase = case2.copy(createdDate = date.plusSeconds(1))
+      await(repository.insert(oldCase))
+      await(repository.insert(newCase))
+
+
+      def selectAllWithSort(dir: Int): Future[Seq[Case]] = getMany(Json.obj(), Json.obj("createdDate" -> dir))
+
+      await(selectAllWithSort(1)) shouldBe Seq(oldCase, newCase)
+      await(selectAllWithSort(-1)) shouldBe Seq(newCase, oldCase)
+    }
+
     "have all expected indexes" in {
 
       import scala.concurrent.duration._
@@ -415,6 +432,14 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
       await(repo.drop)
     }
+  }
+
+  protected def getMany(filterBy: JsObject, sortBy: JsObject): Future[Seq[Case]] = {
+    repository.collection
+      .find[JsObject, Case](filterBy)
+      .sort(sortBy)
+      .cursor[Case]()
+      .collect[Seq](Int.MaxValue, Cursor.FailOnError[Seq[Case]]())
   }
 
   private def selectorByReference(c: Case) = {
