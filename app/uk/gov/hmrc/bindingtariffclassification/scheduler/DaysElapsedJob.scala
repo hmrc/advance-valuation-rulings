@@ -61,8 +61,9 @@ class DaysElapsedJob @Inject()(appConfig: AppConfig,
 
     val today = LocalDate.now(appConfig.clock)
 
-    lazy val msgPrefix = s"Job [$name] executed on $today:"
+    lazy val msgPrefix = s"Scheduled Job [$name] executed on $today:"
 
+    Logger.info(msgPrefix)
     if (isWeekend(today)) {
       Logger.info(s"$msgPrefix Skipped as it is a Weekend")
       successful(())
