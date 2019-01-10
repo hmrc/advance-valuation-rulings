@@ -51,11 +51,13 @@ abstract class BaseFeatureSpec extends FeatureSpec
   }
 
   override protected def beforeEach(): Unit = {
+    super.beforeEach()
     dropStores()
     ensureStoresIndexes()
   }
 
   override protected def afterAll(): Unit = {
+    super.afterAll()
     dropStores()
   }
 
