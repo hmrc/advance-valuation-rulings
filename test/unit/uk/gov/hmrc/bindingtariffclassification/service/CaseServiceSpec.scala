@@ -44,7 +44,7 @@ class CaseServiceSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach
 
   private val service = new CaseService(caseRepository, sequenceRepository, eventService)
 
-  final val emulatedFailure = new RuntimeException("Emulated failure.")
+  private final val emulatedFailure = new RuntimeException("Emulated failure.")
 
   override protected def afterEach(): Unit = {
     reset(caseRepository)
