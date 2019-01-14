@@ -53,7 +53,7 @@ class CaseController @Inject()(appConfig: AppConfig,
   def update(reference: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[Case] { caseRequest: Case =>
       if (caseRequest.reference == reference) {
-        val upsert = request.headers.get("User-Agent") match {
+        val upsert = request.headers.get(USER_AGENT) match {
           case Some(agent) => appConfig.upsertAgents.contains(agent)
           case _ => false
         }
