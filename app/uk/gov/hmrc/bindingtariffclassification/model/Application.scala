@@ -72,7 +72,7 @@ case class EORIDetails
 case class AgentDetails
 (
   eoriDetails: EORIDetails,
-  letterOfAuthorisation: Attachment
+  letterOfAuthorisation: Option[Attachment]
 )
 
 case class Contact
