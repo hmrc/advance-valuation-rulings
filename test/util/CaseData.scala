@@ -80,7 +80,7 @@ object CaseData {
   private def createAgentDetails: AgentDetails = {
     AgentDetails(
       eoriDetails = createEORIDetails.copy(businessName = "Frank Agent-Smith"),
-      letterOfAuthorisation = createAttachment.copy(application = true, public = false)
+      letterOfAuthorisation = Some(createAttachment.copy(application = true, public = false))
     )
   }
 
