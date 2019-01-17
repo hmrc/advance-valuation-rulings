@@ -22,10 +22,10 @@ import java.util.UUID
 case class NewEventRequest
 (
   details: Details,
-  userId: String,
+  operator: Operator,
   timestamp: ZonedDateTime = ZonedDateTime.now()
 ) {
   def toEvent(caseRef: String): Event = {
-    Event(UUID.randomUUID().toString, details, userId, caseRef, timestamp)
+    Event(UUID.randomUUID().toString, details, operator, caseRef, timestamp)
   }
 }

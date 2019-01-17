@@ -14,27 +14,6 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.service
+package uk.gov.hmrc.bindingtariffclassification.model
 
-import javax.inject._
-import uk.gov.hmrc.bindingtariffclassification.model.Event
-import uk.gov.hmrc.bindingtariffclassification.repository.EventRepository
-
-import scala.concurrent.Future
-
-@Singleton
-class EventService @Inject()(repository: EventRepository) {
-
-  def insert(e: Event): Future[Event] = {
-    repository.insert(e)
-  }
-
-  def getByCaseReference(caseReference: String): Future[Seq[Event]] = {
-    repository.getByCaseReference(caseReference)
-  }
-
-  def deleteAll(): Future[Unit] = {
-    repository.deleteAll()
-  }
-
-}
+case class Operator(id: String, name: Option[String] = None)

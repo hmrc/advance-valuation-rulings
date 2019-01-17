@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
+import java.time.ZonedDateTime
+
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import reactivemongo.api.DB
@@ -36,7 +38,8 @@ class EventRepositorySpec extends BaseMongoIndexSpec
   with BeforeAndAfterAll
   with BeforeAndAfterEach
   with MongoSpecSupport
-  with Eventually { self =>
+  with Eventually {
+  self =>
 
   private val mongoDbProvider = new MongoDbProvider {
     override val mongo: () => DB = self.mongo
@@ -98,7 +101,7 @@ class EventRepositorySpec extends BaseMongoIndexSpec
 
       await(repository.collection.find(selectorById(e)).one[Event]) shouldBe Some(e)
 
-      val updated: Event = e.copy(userId = "user_A")
+      val updated: Event = e.copy(operator = Operator("user_A", Some("user name")))
 
       val caught = intercept[DatabaseException] {
         await(repository.insert(updated))
@@ -123,30 +126,30 @@ class EventRepositorySpec extends BaseMongoIndexSpec
       await(repository.getByCaseReference("REF_1")) shouldBe Seq(e1)
     }
 
+
+    "retrieve all expected events from the collection sorted by default date descending" in {
+
+      val e20170917 = createEvent("REF_1", ZonedDateTime.parse("2017-09-17T20:53:31Z"))
+      val e20170911 = createEvent("REF_1", ZonedDateTime.parse("2017-09-11T20:53:31Z"))
+      val e20180811 = createEvent("REF_1", ZonedDateTime.parse("2018-08-11T20:53:31Z"))
+
+
+      await(repository.insert(e20170911))
+      await(repository.insert(e20170917))
+      await(repository.insert(e20180811))
+
+      collectionSize shouldBe 3
+
+      val result: Seq[Event] = await(repository.getByCaseReference("REF_1"))
+
+      result.map(_.id) should contain theSameElementsInOrderAs Seq(e20180811.id, e20170917.id, e20170911.id)
+    }
+
     "return an empty sequence when there are no events matching the case reference" in {
       await(repository.insert(createCaseStatusChangeEvent("REF_1")))
       collectionSize shouldBe 1
 
       await(repository.getByCaseReference("REF_2")) shouldBe Seq.empty
-    }
-  }
-
-  "getById" should {
-
-    "retrieve the correct record" in {
-      await(repository.insert(e))
-      collectionSize shouldBe 1
-
-      await(repository.getById(e.id)) shouldBe Some(e)
-    }
-
-    "return 'None' when the 'id' doesn't match any record in the collection" in {
-      for (_ <- 1 to 3) {
-        await(repository.insert(createNoteEvent("")))
-      }
-      collectionSize shouldBe 3
-
-      await(repository.getById("WRONG_ID")) shouldBe None
     }
   }
 
@@ -159,7 +162,7 @@ class EventRepositorySpec extends BaseMongoIndexSpec
       collectionSize shouldBe 1
 
       val caught = intercept[DatabaseException] {
-        val e2 = e1.copy(caseReference = "DEF", userId = "user_123")
+        val e2 = e1.copy(caseReference = "DEF", operator = Operator("user_123", Some("user name")))
         await(repository.insert(e2))
       }
 
@@ -187,6 +190,8 @@ class EventRepositorySpec extends BaseMongoIndexSpec
 
       await(repo.drop)
     }
+
+
   }
 
   private def selectorById(e: Event) = {

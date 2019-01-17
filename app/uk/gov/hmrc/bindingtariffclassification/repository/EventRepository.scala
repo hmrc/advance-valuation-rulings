@@ -34,8 +34,6 @@ trait EventRepository {
 
   def insert(e: Event): Future[Event]
 
-  def getById(id: String): Future[Option[Event]]
-
   def getByCaseReference(caseReference: String): Future[Seq[Event]]
 
   def deleteAll(): Future[Unit]
@@ -61,20 +59,14 @@ class EventMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
     createOne(e)
   }
 
-  private def byId(id: String): JsObject = {
-    Json.obj("id" -> id)
-  }
-
   private def byCaseReference(caseReference: String): JsObject = {
     Json.obj("caseReference" -> caseReference)
   }
 
-  override def getById(id: String): Future[Option[Event]] = {
-    getOne(byId(id))
-  }
+  private val defaultSortBy = Json.obj("timestamp" -> -1)
 
   override def getByCaseReference(caseReference: String): Future[Seq[Event]] = {
-    getMany(byCaseReference(caseReference), Json.obj())
+    getMany(byCaseReference(caseReference), defaultSortBy)
   }
 
   override def deleteAll(): Future[Unit] = {
