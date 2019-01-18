@@ -56,6 +56,7 @@ class Crypto @Inject()(crypto: CompositeSymmetricCrypto) {
   }
 
   private def applyCrypto(c: Case)(f: String => String): Case = {
+
     import ApplicationType._
 
     c.application.`type` match {
@@ -77,7 +78,8 @@ class Crypto @Inject()(crypto: CompositeSymmetricCrypto) {
             contact = applyCrypto(l.contact)(f)
           )
         )
-      case _ => ???
+      case t: ApplicationType =>
+        throw new IllegalStateException(s"Unexpected application type: $t")
     }
 
   }
