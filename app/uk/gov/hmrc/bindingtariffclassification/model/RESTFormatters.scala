@@ -21,11 +21,13 @@ import uk.gov.hmrc.play.json.Union
 
 object RESTFormatters {
 
+
   // `Case` formatters
   implicit val formatCaseStatus = EnumJson.format(CaseStatus)
   implicit val formatApplicationType = EnumJson.format(ApplicationType)
   implicit val formatLiabilityStatus = EnumJson.format(LiabilityStatus)
 
+  implicit val formatOperator = Json.format[Operator]
   implicit val formatEORIDetails = Json.format[EORIDetails]
   implicit val formatAttachment = Json.format[Attachment]
   implicit val formatAgentDetails = Json.format[AgentDetails]
@@ -55,7 +57,7 @@ object RESTFormatters {
     .and[Note](EventType.NOTE.toString)
     .format
 
-  implicit val formatOperator = Json.format[Operator]
+
   implicit val formatEvent = Json.format[Event]
   implicit val formatNewEventRequest = Json.format[NewEventRequest]
 
