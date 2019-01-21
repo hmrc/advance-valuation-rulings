@@ -44,6 +44,7 @@ object MongoFormatters {
   implicit val formatSequence = Json.format[Sequence]
 
   // `Case` formatters
+  implicit val formatOperator = Json.format[Operator]
   implicit val formatCaseStatus = EnumJson.format(CaseStatus)
   implicit val formatStatus = Json.format[Status]
   implicit val formatApplicationType = EnumJson.format(ApplicationType)
@@ -72,7 +73,7 @@ object MongoFormatters {
     .and[Note](EventType.NOTE.toString)
     .format
 
-  implicit val formatOperator = Json.format[Operator]
+
   implicit val formatEvent = Json.format[Event]
   implicit val formatSchedulerRunEvent = Json.format[SchedulerRunEvent]
 

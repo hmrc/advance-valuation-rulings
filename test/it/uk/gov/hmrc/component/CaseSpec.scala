@@ -42,7 +42,7 @@ class CaseSpec extends BaseFeatureSpec {
   private val c1_updated = c1.copy(status = status)
   private val c2 = createCase(app = createLiabilityOrder,
     decision = Some(createDecision),
-    attachments = Seq(createAttachment))
+    attachments = Seq(createAttachment,createAttachmentWithOperator))
   private val c3 = createNewCaseWithExtraFields()
   private val c4 = createNewCase(app = createBTIApplicationWithAllFields)
 
