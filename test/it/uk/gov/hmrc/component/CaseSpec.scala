@@ -35,7 +35,7 @@ class CaseSpec extends BaseFeatureSpec {
   protected val serviceUrl = s"http://localhost:$port"
 
   private val q1 = "queue1"
-  private val u1 = "user1"
+  private val u1 = Operator("user1")
   private val c0 = createNewCase(app = createBasicBTIApplication)
   private val c1 = createCase(app = createBasicBTIApplication, queue = Some(q1), assignee = Some(u1))
   private val status = CaseStatus.CANCELLED
@@ -110,7 +110,7 @@ class CaseSpec extends BaseFeatureSpec {
       responseCase.reference shouldBe "1"
       responseCase.status shouldBe CaseStatus.NEW
       responseCase.createdDate should roughlyBe(ZonedDateTime.now())
-      responseCase.assigneeId shouldBe None
+      responseCase.assignee shouldBe None
       responseCase.queueId shouldBe None
       responseCase.decision shouldBe None
       responseCase.closedDate shouldBe None

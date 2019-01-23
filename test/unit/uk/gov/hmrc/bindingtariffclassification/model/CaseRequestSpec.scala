@@ -34,7 +34,7 @@ class CaseRequestSpec extends UnitSpec with MockitoSugar {
       c.status shouldBe CaseStatus.NEW
       c.createdDate should roughlyBe(ZonedDateTime.now())
       c.daysElapsed shouldBe 0
-      c.assigneeId shouldBe None
+      c.assignee shouldBe None
       c.queueId shouldBe None
       c.caseBoardsFileNumber shouldBe None
       c.closedDate shouldBe None

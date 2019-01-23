@@ -37,7 +37,7 @@ class JsonObjectMapperTest extends UnitSpec {
       mapFrom(filter) shouldBe
         """{
           | "queueId": "valid_queue",
-          | "assigneeId": "valid_assignee",
+          | "assignee.id": "valid_assignee",
           | "status": {
           |   "$in": [ "S1", "S2" ]
           |  }
@@ -55,7 +55,7 @@ class JsonObjectMapperTest extends UnitSpec {
       mapFrom(filter) shouldBe
         """{
           | "queueId": "valid_queue",
-          | "assigneeId": "valid_assignee"
+          | "assignee.id": "valid_assignee"
           |}
         """.stripMargin.replaceAll(" ", "").replaceAll("\n", "")
     }
@@ -67,7 +67,7 @@ class JsonObjectMapperTest extends UnitSpec {
       mapFrom(filter) shouldBe
         """{
           | "queueId": null,
-          | "assigneeId": null
+          | "assignee.id": null
           |}
         """.stripMargin.replaceAll(" ", "").replaceAll("\n", "")
 
