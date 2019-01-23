@@ -42,7 +42,7 @@ class JsonObjectMapper {
 
   def from: CaseParamsFilter => JsObject = { searchCase =>
     val queueFilter = searchCase.queueId.map("queueId" -> nullifyNoneValues(_))
-    val assigneeFilter = searchCase.assigneeId.map("assigneeId" -> nullifyNoneValues(_))
+    val assigneeFilter = searchCase.assigneeId.map("assignee.id" -> nullifyNoneValues(_))
     val statusFilter = searchCase.status.map(toInFilter).map("status" -> _)
 
     JsObject(Map() ++ queueFilter ++ assigneeFilter ++ statusFilter)

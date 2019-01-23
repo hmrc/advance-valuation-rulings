@@ -106,7 +106,7 @@ object CaseData {
       status = CaseStatus.OPEN,
       createdDate = ZonedDateTime.now.minusYears(1),
       queueId = Some("3"),
-      assigneeId = Some("0"),
+      assignee = Some(Operator("0")),
       application = createBasicBTIApplication,
       decision = Some(createDecision),
       closedDate = Some(ZonedDateTime.now().minusYears(1)),
@@ -118,13 +118,13 @@ object CaseData {
                  r: String = RandomGenerator.randomUUID(),
                  decision: Option[Decision] = None,
                  queue: Option[String] = None,
-                 assignee: Option[String] = None,
+                 assignee: Option[Operator] = None,
                  attachments: Seq[Attachment] = Seq.empty): Case = {
     Case(
       reference = r,
       status = CaseStatus.NEW,
       queueId = queue,
-      assigneeId = assignee,
+      assignee = assignee,
       application = app,
       decision = decision,
       attachments = attachments
