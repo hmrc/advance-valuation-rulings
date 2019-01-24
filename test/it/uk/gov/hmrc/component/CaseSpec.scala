@@ -167,6 +167,7 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
+
   feature("Get Case") {
 
     scenario("Get existing case") {
