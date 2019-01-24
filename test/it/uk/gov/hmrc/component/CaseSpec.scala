@@ -353,7 +353,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c2)
 
       When("I get cases by assignee id")
-      val result = Http(s"$serviceUrl/cases?assignee_id=$u1").asString
+      val result = Http(s"$serviceUrl/cases?assignee_id=${u1.id}").asString
 
       Then("The response code should be OK")
       result.code shouldEqual OK
@@ -403,7 +403,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c2)
 
       When("I get cases by assignee id and queue id")
-      val result = Http(s"$serviceUrl/cases?assignee_id=$u1&queue_id=$q1").asString
+      val result = Http(s"$serviceUrl/cases?assignee_id=${u1.id}&queue_id=$q1").asString
 
       Then("The response code should be OK")
       result.code shouldEqual OK
