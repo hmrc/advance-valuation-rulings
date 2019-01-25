@@ -66,6 +66,7 @@ class EventSpec extends BaseFeatureSpec {
   feature("Get Events by case reference") {
 
     scenario("No events found") {
+
       Given("There is a case")
       storeCases(c1)
 
@@ -101,7 +102,9 @@ class EventSpec extends BaseFeatureSpec {
   }
 
   feature("Create Event by case reference") {
+
     scenario("Create new event") {
+
       Given("An existing Case")
       storeCases(c1)
 
@@ -118,6 +121,7 @@ class EventSpec extends BaseFeatureSpec {
       val responseEvent = Json.parse(result.body).as[Event]
       responseEvent.caseReference shouldBe caseRef
     }
+
   }
 
 }
