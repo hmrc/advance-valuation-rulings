@@ -20,7 +20,7 @@ import java.time.{Clock, LocalTime}
 
 import javax.inject._
 import play.api.Mode.Mode
-import play.api.{Configuration, Environment}
+import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.play.config.ServicesConfig
 
 import scala.concurrent.duration.FiniteDuration
@@ -58,6 +58,9 @@ class AppConfig @Inject()(val runModeConfiguration: Configuration, environment: 
       if (encryptionEnabled) Some(getString("mongodb.encryption.key"))
       else None
     }
+
+    if (encryptionEnabled && encryptionKey.isDefined) Logger.info("Mongo encryption enabled")
+    else Logger.info("Mongo encryption disabled")
 
     MongoEncryption(encryptionEnabled, encryptionKey)
   }
