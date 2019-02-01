@@ -14,31 +14,23 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.controllers
+package uk.gov.hmrc.bindingtariffclassification.crypto
 
+import org.mockito.Mockito
 import org.scalatest.mockito.MockitoSugar
+import uk.gov.hmrc.bindingtariffclassification.config.{AppConfig, MongoEncryption}
+import uk.gov.hmrc.crypto.PlainText
 import uk.gov.hmrc.play.test.UnitSpec
 
-class CaseParamsMapperSpec extends UnitSpec with MockitoSugar {
+class LocalCryptoSpec extends UnitSpec with MockitoSugar {
 
-  val mapper = new CaseParamsMapper()
+  private val config = mock[AppConfig]
 
-  "Case Params Mapper" should {
+  "encrypt()" should {
 
-    "map queueId" in {
-      mapper.from(Some("id"), None, None).queueId shouldBe Some("id")
-    }
-
-    "map assigneeId" in {
-      mapper.from(None, Some("id"), None).assigneeId shouldBe Some("id")
-    }
-
-    "map status" in {
-      mapper.from(None, None, Some("status")).status.get should contain only "status"
-    }
-
-    "map multiple statuses" in {
-      mapper.from(None, None, Some("status1, status2")).status.get should contain only ("status1", "status2")
+    "enable encrypt local" in {
+      Mockito.when(config.mongoEncryption).thenReturn(MongoEncryption(true, Some("YjQ+NiViNGY4V2l2cSxnCg==")))
+      (new LocalCrypto(config)).encrypt(PlainText("hello")).toString shouldBe "Crypted(gUfxIXsmMDAbdTgm36BmEg==)"
     }
   }
 

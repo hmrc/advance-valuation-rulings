@@ -45,6 +45,8 @@ class CaseSpec extends BaseFeatureSpec {
     attachments = Seq(createAttachment,createAttachmentWithOperator))
   private val c3 = createNewCaseWithExtraFields()
   private val c4 = createNewCase(app = createBTIApplicationWithAllFields)
+  private val c5 = createCase(app = createBasicBTIApplication.copy(holder=eORIDetailForNintedo))
+
 
   private val c0Json = Json.toJson(c0)
   private val c1Json = Json.toJson(c1)
@@ -305,7 +307,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(oldCase, newCase)
 
       When("I get all cases sorted by elapsed days")
-      val result = Http(s"$serviceUrl/cases?sort_by=days-elapsed&sort_direction=ascending").asString
+      val result = Http(s"$serviceUrl/cases?sort_by=days-elapsed&sort_direction=asc").asString
 
       Then("The response code should be 200")
       result.code shouldEqual OK
@@ -319,7 +321,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(oldCase, newCase)
 
       When("I get all cases sorted by elapsed days")
-      val result = Http(s"$serviceUrl/cases?sort_by=days-elapsed&sort_direction=descending").asString
+      val result = Http(s"$serviceUrl/cases?sort_by=days-elapsed&sort_direction=desc").asString
 
       Then("The response code should be 200")
       result.code shouldEqual OK
@@ -426,6 +428,55 @@ class CaseSpec extends BaseFeatureSpec {
 
       And("No cases are returned in the JSON response")
       Json.parse(result.body) shouldBe Json.toJson(Seq.empty[Case])
+    }
+
+  }
+
+  feature("Get Cases by status") {
+
+    scenario("Filtering cases by status") {
+
+      storeCases(c1_updated, c2, c5)
+
+      val result = Http(s"$serviceUrl/cases?status=NEW").asString
+
+      result.code shouldEqual OK
+      Json.parse(result.body) shouldBe Json.toJson(Seq(c2,c5))
+    }
+
+    scenario("Filtering cases by multiple status") {
+
+      storeCases(c1_updated, c2, c5)
+
+      val result = Http(s"$serviceUrl/cases?status=NEW,CANCELLED").asString
+
+      result.code shouldEqual OK
+      Json.parse(result.body) shouldBe Json.toJson(Seq(c1_updated,c2,c5))
+    }
+
+  }
+
+
+  feature("Get Cases by trader name") {
+
+    scenario("Filtering cases by trader name") {
+
+      storeCases(c1, c2, c5)
+
+      val result = Http(s"$serviceUrl/cases?trader_name=John%20Lewis").asString
+
+      result.code shouldEqual OK
+      Json.parse(result.body) shouldBe Json.toJson(Seq(c1,c2))
+    }
+
+    scenario("Filtering cases that have undefined trader name") {
+
+      storeCases(c1, c2, c5)
+
+      val result = Http(s"$serviceUrl/cases?trader_name=").asString
+
+      result.code shouldEqual OK
+      result.body.toString shouldBe "[]"
     }
 
   }

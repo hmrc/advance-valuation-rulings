@@ -18,10 +18,8 @@ package uk.gov.hmrc.bindingtariffclassification.service
 
 import javax.inject._
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
-import uk.gov.hmrc.bindingtariffclassification.crypto.Crypto
 import uk.gov.hmrc.bindingtariffclassification.model.Case
-import uk.gov.hmrc.bindingtariffclassification.model.search.CaseParamsFilter
-import uk.gov.hmrc.bindingtariffclassification.model.sort.CaseSort
+import uk.gov.hmrc.bindingtariffclassification.model.search.Search
 import uk.gov.hmrc.bindingtariffclassification.repository.{CaseRepository, SequenceRepository}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -30,21 +28,11 @@ import scala.concurrent.Future
 @Singleton
 class CaseService @Inject()(appConfig: AppConfig,
                             caseRepository: CaseRepository,
-                            crypto: Crypto,
                             sequenceRepository: SequenceRepository,
                             eventService: EventService) {
 
-  private def encryptCase: Case => Case = { c: Case =>
-    if (appConfig.mongoEncryption.enabled) crypto.encrypt(c) else c
-  }
-
-  private def decryptCase: Case => Case = { c: Case =>
-    if (appConfig.mongoEncryption.enabled) crypto.decrypt(c) else c
-  }
-
   def insert(c: Case): Future[Case] = {
-    val encryptedCase = encryptCase(c)
-    caseRepository.insert(encryptedCase).map(decryptCase)
+    caseRepository.insert(c)
   }
 
   def nextCaseReference: Future[String] = {
@@ -52,23 +40,15 @@ class CaseService @Inject()(appConfig: AppConfig,
   }
 
   def update(c: Case, upsert: Boolean): Future[Option[Case]] = {
-    val encryptedCase = encryptCase(c)
-    caseRepository.update(encryptedCase, upsert) map decryptOptionalCase
+    caseRepository.update(c, upsert)
   }
 
   def getByReference(reference: String): Future[Option[Case]] = {
-    caseRepository.getByReference(reference) map decryptOptionalCase
+    caseRepository.getByReference(reference)
   }
 
-  private def decryptOptionalCase: PartialFunction[Option[Case], Option[Case]] = {
-    case Some(c: Case) => Some(decryptCase(c))
-    case _ => None
-  }
-
-  def get(searchBy: CaseParamsFilter, sortBy: Option[CaseSort]): Future[Seq[Case]] = {
-    caseRepository.get(searchBy, sortBy).map {
-      _ map decryptCase
-    }
+  def get(search: Search): Future[Seq[Case]] = {
+    caseRepository.get(search)
   }
 
   def deleteAll(): Future[Unit] = {

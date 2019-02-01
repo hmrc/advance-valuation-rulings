@@ -28,8 +28,8 @@ import reactivemongo.bson.BSONDocument
 import reactivemongo.core.errors.DatabaseException
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.RESTFormatters._
-import uk.gov.hmrc.bindingtariffclassification.model.search.CaseParamsFilter
-import uk.gov.hmrc.bindingtariffclassification.model.sort.CaseSort
+import uk.gov.hmrc.bindingtariffclassification.model.search.{Filter, Search, Sort}
+import uk.gov.hmrc.bindingtariffclassification.model.sort.SortField
 import uk.gov.hmrc.bindingtariffclassification.model.{Case, NewCaseRequest}
 import uk.gov.hmrc.bindingtariffclassification.service.CaseService
 import uk.gov.hmrc.http.HttpVerbs
@@ -47,15 +47,11 @@ class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoS
   private val c2: Case = CaseData.createCase()
 
   private val caseService = mock[CaseService]
-  private val caseParamsMapper = mock[CaseParamsMapper]
-  private val caseSortMapper = mock[CaseSortMapper]
-  private val caseParamsFilter = mock[CaseParamsFilter]
-  private val caseSort = mock[Option[CaseSort]]
   private val appConfig = mock[AppConfig]
 
   private val fakeRequest = FakeRequest()
 
-  private val controller = new CaseController(appConfig, caseService, caseParamsMapper, caseSortMapper)
+  private val controller = new CaseController(appConfig, caseService)
 
   "deleteAll()" should {
 
@@ -114,9 +110,7 @@ class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoS
     "return 500 when an error occurred" in {
       val error = new DatabaseException {
         override def originalDocument: Option[BSONDocument] = None
-
         override def code: Option[Int] = Some(11000)
-
         override def message: String = "duplicate value for db index"
       }
 
@@ -194,39 +188,37 @@ class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoS
 
     val queueId = Some("valid_queueId")
     val assigneeId = Some("valid_assigneeId")
-    val caseStatus = Some("valid_status")
-    val sort = Some("sort")
-    val direction = Some("direction")
-
-    when(caseParamsMapper.from(queueId, assigneeId, caseStatus)).thenReturn(caseParamsFilter)
-    when(caseSortMapper.from(sort, direction)).thenReturn(caseSort)
+    val sortField = SortField.DAYS_ELAPSED
 
     "return 200 with the all cases" in {
+      val search = Search(Filter(queueId = queueId, assigneeId = assigneeId, status = Some("NEW,OPEN")), Some(Sort(field = sortField)))
 
-      when(caseService.get(refEq(caseParamsFilter), refEq(caseSort))).thenReturn(successful(Seq(c1, c2)))
+      when(caseService.get(refEq(search))).thenReturn(successful(Seq(c1, c2)))
 
-      val result = await(controller.get(queueId, assigneeId, caseStatus, sort, direction)(fakeRequest))
+      val result = await(controller.get(search)(fakeRequest))
 
       status(result) shouldEqual OK
       jsonBodyOf(result) shouldEqual toJson(Seq(c1, c2))
     }
 
     "return 200 with an empty sequence if there are no cases" in {
+      val search = Search(Filter(queueId = queueId, assigneeId = assigneeId, status = Some("NEW,OPEN")), Some(Sort(field = sortField)))
 
-      when(caseService.get(refEq(caseParamsFilter), refEq(caseSort))).thenReturn(successful(Seq.empty))
+      when(caseService.get(search)).thenReturn(successful(Seq.empty))
 
-      val result = await(controller.get(queueId, assigneeId, caseStatus,  sort, direction)(fakeRequest))
+      val result = await(controller.get(search)(fakeRequest))
 
       status(result) shouldEqual OK
       jsonBodyOf(result) shouldEqual toJson(Seq.empty[Case])
     }
 
     "return 500 when an error occurred" in {
+      val search = Search(Filter(), None)
       val error = new RuntimeException
 
-      when(caseService.get(refEq(caseParamsFilter), refEq(caseSort))).thenReturn(failed(error))
+      when(caseService.get(refEq(search))).thenReturn(failed(error))
 
-      val result = await(controller.get(queueId, assigneeId, caseStatus,  sort, direction)(fakeRequest))
+      val result = await(controller.get(search)(fakeRequest))
 
       status(result) shouldEqual INTERNAL_SERVER_ERROR
       jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""

@@ -16,17 +16,16 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
-import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json
 import reactivemongo.api.indexes.Index
 import reactivemongo.bson.{BSONArray, BSONDocument, BSONDouble, BSONObjectID, BSONString}
 import reactivemongo.play.json.ImplicitBSONHandlers._
 import reactivemongo.play.json.collection.JSONCollection
-import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatCase
+import uk.gov.hmrc.bindingtariffclassification.crypto.Crypto
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.{NEW, OPEN}
-import uk.gov.hmrc.bindingtariffclassification.model.search.CaseParamsFilter
-import uk.gov.hmrc.bindingtariffclassification.model.sort.CaseSort
+import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatCase
+import uk.gov.hmrc.bindingtariffclassification.model.search.Search
 import uk.gov.hmrc.bindingtariffclassification.model.{Case, MongoFormatters}
 import uk.gov.hmrc.mongo.ReactiveRepository
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
@@ -34,7 +33,6 @@ import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-@ImplementedBy(classOf[CaseMongoRepository])
 trait CaseRepository {
 
   def insert(c: Case): Future[Case]
@@ -45,13 +43,34 @@ trait CaseRepository {
 
   def getByReference(reference: String): Future[Option[Case]]
 
-  def get(searchBy: CaseParamsFilter, sortedBy: Option[CaseSort]): Future[Seq[Case]]
+  def get(search: Search): Future[Seq[Case]]
 
   def deleteAll(): Future[Unit]
 }
 
 @Singleton
-class CaseMongoRepository @Inject()(mongoDbProvider: MongoDbProvider, jsonMapper: JsonObjectMapper)
+class EncryptedCaseMongoRepository @Inject()(repository: CaseMongoRepository, crypto: Crypto) extends CaseRepository {
+  private def encrypt: Case => Case = crypto.encrypt
+  private def encrypt(search: Search): Search = crypto.encrypt(search)
+  private def decrypt: Case => Case = crypto.decrypt
+
+  override def insert(c: Case): Future[Case] = repository.insert(encrypt(c)).map(decrypt)
+
+  override def update(c: Case, upsert: Boolean): Future[Option[Case]] = repository.update(encrypt(c), upsert).map(_.map(decrypt))
+
+  override def incrementDaysElapsed(increment: Double): Future[Int] = repository.incrementDaysElapsed(increment)
+
+  override def getByReference(reference: String): Future[Option[Case]] = repository.getByReference(reference).map(_.map(decrypt))
+
+  override def get(search: Search): Future[Seq[Case]] = {
+    repository.get(encrypt(search)).map(_.map(decrypt))
+  }
+
+  override def deleteAll(): Future[Unit] = repository.deleteAll()
+}
+
+@Singleton
+class CaseMongoRepository @Inject()(mongoDbProvider: MongoDbProvider, mapper: SearchMapper)
   extends ReactiveRepository[Case, BSONObjectID](
     collectionName = "cases",
     mongo = mongoDbProvider.mongo,
@@ -80,21 +99,15 @@ class CaseMongoRepository @Inject()(mongoDbProvider: MongoDbProvider, jsonMapper
   }
 
   override def update(c: Case, upsert: Boolean): Future[Option[Case]] = {
-    updateDocument(selector = jsonMapper.fromReference(c.reference), update = c, upsert = upsert)
+    updateDocument(selector = mapper.reference(c.reference), update = c, upsert = upsert)
   }
 
   override def getByReference(reference: String): Future[Option[Case]] = {
-    getOne(jsonMapper.fromReference(reference))
+    getOne(mapper.reference(reference))
   }
 
-  override def get(searchBy: CaseParamsFilter, sortedBy: Option[CaseSort] = None): Future[Seq[Case]] = {
-
-    val sorting = sortedBy match {
-      case Some(sort: CaseSort) => Json.obj(sort.field.toString -> sort.direction.id)
-      case _ => Json.obj()
-    }
-
-    getMany(jsonMapper.from(searchBy), sorting)
+  override def get(search: Search): Future[Seq[Case]] = {
+    getMany(mapper.filterBy(search.filter), search.sort.map(mapper.sortBy).getOrElse(Json.obj()))
   }
 
   override def deleteAll(): Future[Unit] = {
