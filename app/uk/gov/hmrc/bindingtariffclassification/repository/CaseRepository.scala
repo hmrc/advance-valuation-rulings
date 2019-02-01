@@ -99,15 +99,22 @@ class CaseMongoRepository @Inject()(mongoDbProvider: MongoDbProvider, mapper: Se
   }
 
   override def update(c: Case, upsert: Boolean): Future[Option[Case]] = {
-    updateDocument(selector = mapper.reference(c.reference), update = c, upsert = upsert)
+    updateDocument(
+      selector = mapper.reference(c.reference),
+      update = c,
+      upsert = upsert
+    )
   }
 
   override def getByReference(reference: String): Future[Option[Case]] = {
-    getOne(mapper.reference(reference))
+    getOne(selector = mapper.reference(reference))
   }
 
   override def get(search: Search): Future[Seq[Case]] = {
-    getMany(mapper.filterBy(search.filter), search.sort.map(mapper.sortBy).getOrElse(Json.obj()))
+    getMany(
+      filterBy = mapper.filterBy(search.filter),
+      sortBy = search.sort.map(mapper.sortBy).getOrElse(Json.obj())
+    )
   }
 
   override def deleteAll(): Future[Unit] = {
