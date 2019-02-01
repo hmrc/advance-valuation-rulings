@@ -75,7 +75,7 @@ class SearchMapper {
   private def toMongoField(sort: SortField): String = {
     sort match {
       case SortField.DAYS_ELAPSED => "daysElapsed"
-      case unknown => throw new IllegalArgumentException(s"cannot sort by field:$unknown")
+      case unknown => throw new IllegalArgumentException(s"cannot sort by field: $unknown")
     }
   }
 
