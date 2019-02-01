@@ -81,18 +81,17 @@ class CaseMongoRepository @Inject()(mongoDbProvider: MongoDbProvider, mapper: Se
 
   override val mongoCollection: JSONCollection = collection
 
-  ///////////////////////////////////////////////////////////////////////
-  // TODO: remove this block of code when the index has been deleted in all environments
+  //////////////////////////////////////////////////////////////////////////////////////////
+  // TODO: remove this block of code when the old index has been deleted in all environments
   private def deleteWrongIndex(): Unit = {
     val oldIndex = "assigneeId_Index"
     collection.indexesManager.drop(oldIndex) onComplete {
-      case Success(1) => Logger.info(s"Index $oldIndex has been deleted")
-      case Success(n) => Logger.warn(s"Index $oldIndex has not been deleted: $n")
-      case Failure(e) => Logger.error(s"Error found while deleting index $oldIndex", e) // possibly the index has been deleted already
+      case Success(n) => Logger.warn(s"Index $oldIndex has been deleted: $n")
+      case Failure(e) => Logger.error(s"Error found while deleting index $oldIndex.", e)
     }
   }
   deleteWrongIndex()
-  ///////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////
 
   lazy private val uniqueSingleFieldIndexes = Seq("reference")
   lazy private val nonUniqueSingleFieldIndexes = Seq(
