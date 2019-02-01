@@ -17,6 +17,7 @@
 package uk.gov.hmrc.bindingtariffclassification.repository
 
 import javax.inject.{Inject, Singleton}
+import play.api.Logger
 import play.api.libs.json.Json
 import reactivemongo.api.indexes.Index
 import reactivemongo.bson.{BSONArray, BSONDocument, BSONDouble, BSONObjectID, BSONString}
@@ -32,6 +33,7 @@ import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 trait CaseRepository {
 
@@ -79,13 +81,29 @@ class CaseMongoRepository @Inject()(mongoDbProvider: MongoDbProvider, mapper: Se
 
   override val mongoCollection: JSONCollection = collection
 
+  ///////////////////////////////////////////////////////////////////////
+  // TODO: remove this block of code when the index has been deleted in all environments
+  private def deleteWrongIndex(): Unit = {
+    val oldIndex = "assigneeId_Index"
+    collection.indexesManager.drop(oldIndex) onComplete {
+      case Success(1) => Logger.info(s"Index $oldIndex has been deleted")
+      case Success(n) => Logger.warn(s"Index $oldIndex has not been deleted: $n")
+      case Failure(e) => Logger.error(s"Error found while deleting index $oldIndex", e) // possibly the index has been deleted already
+    }
+  }
+  deleteWrongIndex()
+  ///////////////////////////////////////////////////////////////////////
+
   lazy private val uniqueSingleFieldIndexes = Seq("reference")
   lazy private val nonUniqueSingleFieldIndexes = Seq(
+    "assignee.id",
+    "application.holder.businessName", // TODO: to be removed if later we decide to use non-exact match search
     "queueId",
-    "assigneeId",
     "status",
     "daysElapsed"
   )
+
+  // TODO: text indexes could be used for searching keywords, comm code,  or non-exact match search (keywords + good description)
 
   override def indexes: Seq[Index] = {
     // TODO: We need to add relevant indexes for each possible search
