@@ -143,11 +143,6 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
   // TODO: test all possible combinations
   // TODO: the test scenarios titles need to be written and grouped properly
 
-  def defaultSearch() = {
-    Search(Filter(), None)
-  }
-
-
   "get without params" should {
 
     "retrieve all cases from the collection unsorted" in {
@@ -431,12 +426,13 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
       import scala.concurrent.duration._
 
       val expectedIndexes = List(
+        Index(key = Seq("_id" -> Ascending), name = Some("_id_")),
         Index(key = Seq("reference" -> Ascending), name = Some("reference_Index"), unique = true),
         Index(key = Seq("queueId" -> Ascending), name = Some("queueId_Index"), unique = false),
         Index(key = Seq("daysElapsed" -> Ascending), name = Some("daysElapsed_Index"), unique = false),
-        Index(key = Seq("assigneeId" -> Ascending), name = Some("assigneeId_Index"), unique = false),
-        Index(key = Seq("status" -> Ascending), name = Some("status_Index"), unique = false),
-        Index(key = Seq("_id" -> Ascending), name = Some("_id_"))
+        Index(key = Seq("application.holder.businessName" -> Ascending), name = Some("application.holder.businessName_Index"), unique = false),
+        Index(key = Seq("assignee.id" -> Ascending), name = Some("assignee.id_Index"), unique = false),
+        Index(key = Seq("status" -> Ascending), name = Some("status_Index"), unique = false)
       )
 
       val repo = createMongoRepo
