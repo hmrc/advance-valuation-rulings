@@ -18,6 +18,7 @@ package uk.gov.hmrc.bindingtariffclassification
 
 import play.api.inject.Binding
 import play.api.{Configuration, Environment}
+import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.crypto.LocalCrypto
 import uk.gov.hmrc.bindingtariffclassification.repository.{CaseMongoRepository, CaseRepository, EncryptedCaseMongoRepository}
 import uk.gov.hmrc.bindingtariffclassification.scheduler.{DaysElapsedJob, ScheduledJob, Scheduler}
@@ -26,14 +27,15 @@ import uk.gov.hmrc.crypto.CompositeSymmetricCrypto
 class Module extends play.api.inject.Module {
 
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
-    val repositoryBinding: Binding[CaseRepository] = if(configuration.getBoolean("mongodb.encryption.enabled").getOrElse(false)) {
+    val appConfig = new AppConfig(configuration, environment)
+    val repositoryBinding: Binding[CaseRepository] = if(appConfig.mongoEncryption.enabled) {
       bind[CaseRepository].to[EncryptedCaseMongoRepository]
     } else {
       bind[CaseRepository].to[CaseMongoRepository]
     }
 
     Seq(
-      bind(classOf[CompositeSymmetricCrypto]).to(classOf[LocalCrypto]),
+      bind[CompositeSymmetricCrypto].to(classOf[LocalCrypto]),
       bind[ScheduledJob].to[DaysElapsedJob],
       bind[Scheduler].toSelf.eagerly(),
       repositoryBinding
