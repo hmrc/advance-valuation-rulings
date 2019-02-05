@@ -310,23 +310,24 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
     val caseWithStatusX2 = createCase().copy(status = NEW)
     val caseWithStatusY1 = createCase().copy(status = OPEN)
     val caseWithStatusZ1 = createCase().copy(status = CANCELLED)
+    val caseWithStatusW1 = createCase().copy(status = SUPPRESSED)
 
     "return an empty sequence when there are no matches" in {
       val search = Search(Filter(statuses = Some(Set(DRAFT,REFERRED))))
-      store(caseWithStatusX1, caseWithStatusX2, caseWithStatusY1, caseWithStatusZ1)
+      store(caseWithStatusX1, caseWithStatusX2, caseWithStatusY1, caseWithStatusZ1, caseWithStatusW1)
       await(repository.get(search)) shouldBe Seq.empty
     }
 
     "return the expected document when there is one match" in {
-      val search = Search(Filter(statuses = Some(Set(NEW,REFERRED))))
-      store(caseWithStatusX1, caseWithStatusY1, caseWithStatusZ1)
+      val search = Search(Filter(statuses = Some(Set(NEW,REFERRED,SUSPENDED))))
+      store(caseWithStatusX1, caseWithStatusY1, caseWithStatusZ1, caseWithStatusW1)
       await(repository.get(search)) shouldBe Seq(caseWithStatusX1)
     }
 
     "return the expected documents when there are multiple matches" in {
-      val search = Search(Filter(statuses = Some(Set(NEW,DRAFT))))
-      store(caseWithStatusX1, caseWithStatusX2, caseWithStatusY1, caseWithStatusZ1)
-      await(repository.get(search)) shouldBe Seq(caseWithStatusX1, caseWithStatusX2)
+      val search = Search(Filter(statuses = Some(Set(NEW,DRAFT,OPEN))))
+      store(caseWithStatusX1, caseWithStatusX2, caseWithStatusY1, caseWithStatusZ1, caseWithStatusW1)
+      await(repository.get(search)) shouldBe Seq(caseWithStatusX1, caseWithStatusX2, caseWithStatusY1)
     }
 
   }
