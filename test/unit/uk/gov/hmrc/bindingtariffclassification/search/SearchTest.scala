@@ -19,7 +19,7 @@ package uk.gov.hmrc.bindingtariffclassification.search
 import java.net.URLDecoder
 import java.time.Instant
 
-import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus
+import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus._
 import uk.gov.hmrc.bindingtariffclassification.sort.{SortDirection, SortField}
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -34,7 +34,7 @@ class SearchTest extends UnitSpec {
     traderName = Some("trader-name"),
     queueId = Some("queue-id"),
     assigneeId = Some("assignee-id"),
-    statuses = Some(Set(CaseStatus.NEW, CaseStatus.OPEN)),
+    statuses = Some(Set(NEW, OPEN)),
     minDecisionEnd = Some(Instant.EPOCH)
   )
 
