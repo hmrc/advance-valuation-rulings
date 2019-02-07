@@ -36,16 +36,20 @@ class SearchMapper {
         filter.traderName.map("application.holder.businessName" -> nullifyNoneValues(_)) ++
         filter.minDecisionEnd.map("decision.effectiveEndDate" -> greaterThan(_)(formatInstant)) ++
         filter.commodityCode.map("decision.bindingCommodityCode" -> numberStartingWith(_)) ++
-        filter.goodDescription.map("application.goodDescription" -> contains(_))
+        filter.goodDescription.map("application.goodDescription" -> contains(_)) ++
+        filter.keywords.map("keywords" -> containsAll(_))
     )
   }
-
 
   def sortBy(sort: Sort): JsObject = {
     Json.obj(toMongoField(sort.field) -> sort.direction.id)
   }
 
-  def greaterThan[T](value: T)(implicit writes: Writes[T]): JsObject = {
+  private def containsAll(strs: Set[String]): JsObject = {
+    Json.obj("$all" -> strs)
+  }
+
+  private def greaterThan[T](value: T)(implicit writes: Writes[T]): JsObject = {
     Json.obj("$gte" -> value)
   }
 
@@ -96,7 +100,7 @@ class SearchMapper {
     sort match {
       case DAYS_ELAPSED => "daysElapsed"
       case COMMODITY_CODE => "decision.bindingCommodityCode"
-      case unknown => throw new IllegalArgumentException(s"cannot sort by field: $unknown")
+      case s => throw new IllegalArgumentException(s"cannot sort by field: $s")
     }
   }
 
