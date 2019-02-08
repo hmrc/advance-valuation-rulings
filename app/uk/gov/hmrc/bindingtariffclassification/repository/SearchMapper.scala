@@ -36,17 +36,29 @@ class SearchMapper {
         filter.traderName.map("application.holder.businessName" -> nullifyNoneValues(_)) ++
         filter.minDecisionEnd.map("decision.effectiveEndDate" -> greaterThan(_)(formatInstant)) ++
         filter.commodityCode.map("decision.bindingCommodityCode" -> numberStartingWith(_)) ++
-        filter.goodDescription.map("application.goodDescription" -> contains(_)) ++
+        filter.goodDescription.map( gd => any(matchingGoodsDescription(gd) ) ) ++
         filter.keywords.map("keywords" -> containsAll(_))
     )
   }
 
-  def sortBy(sort: Sort): JsObject = {
-    Json.obj(toMongoField(sort.field) -> sort.direction.id)
+  private lazy val goodsDescriptionFields = {
+    Seq("decision.goodsDescription", "decision.methodCommercialDenomination")
   }
 
-  private def containsAll(strs: Set[String]): JsObject = {
-    Json.obj("$all" -> strs)
+  private def matchingGoodsDescription: String => Seq[(String, JsValueWrapper)] = { gd: String =>
+    goodsDescriptionFields map ( _ -> contains(gd) )
+  }
+
+  private def any(conditions: Seq[(String, JsValueWrapper)]): (String, JsValue) = {
+    "$or" -> Json.toJson( conditions map (Json.obj(_)) )
+  }
+
+  def sortBy(sort: Sort): JsObject = {
+    Json.obj( toMongoField(sort.field) -> sort.direction.id )
+  }
+
+  private def containsAll(s: Set[String]): JsObject = {
+    Json.obj("$all" -> s)
   }
 
   private def greaterThan[T](value: T)(implicit writes: Writes[T]): JsObject = {
@@ -57,16 +69,12 @@ class SearchMapper {
     Json.obj("reference" -> reference)
   }
 
-  def fromReferenceAndStatus(reference: String, notAllowedStatus: CaseStatus): JsObject = {
-    Json.obj("reference" -> reference, "status" -> notEqualFilter(notAllowedStatus.toString))
-  }
-
   def updateField(fieldName: String, fieldValue: String): JsObject = {
     Json.obj("$set" -> Json.obj(fieldName -> fieldValue))
   }
 
   private def inArray[T](values: TraversableOnce[T])(implicit writes: Writes[T]): JsObject = {
-    JsObject(Map("$in" -> JsArray(values.toSeq.map(writes.writes))))
+    JsObject( Map( "$in" -> JsArray(values.toSeq.map(writes.writes)) ) )
   }
 
   private def nullifyNoneValues: String => JsValue = { v: String =>
@@ -80,7 +88,7 @@ class SearchMapper {
     Json.obj( regexFilter(s"^$value\\d*") )
   }
 
-  private def contains(value: String): JsObject = {
+  private def contains(value: String): JsValueWrapper = {
     Json.obj( regexFilter(s".*$value.*"), caseInsensitiveFilter )
   }
 
@@ -88,7 +96,7 @@ class SearchMapper {
     "$regex" -> reg
   }
 
-  private def caseInsensitiveFilter: (String, JsValueWrapper) = {
+  private lazy val caseInsensitiveFilter: (String, JsValueWrapper) = {
     "$options" -> "i"
   }
 
