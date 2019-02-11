@@ -29,7 +29,6 @@ import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatCase
 import uk.gov.hmrc.bindingtariffclassification.search.Search
 import uk.gov.hmrc.bindingtariffclassification.model.{Case, MongoFormatters}
 import uk.gov.hmrc.mongo.ReactiveRepository
-import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -76,8 +75,7 @@ class CaseMongoRepository @Inject()(mongoDbProvider: MongoDbProvider, mapper: Se
   extends ReactiveRepository[Case, BSONObjectID](
     collectionName = "cases",
     mongo = mongoDbProvider.mongo,
-    domainFormat = MongoFormatters.formatCase,
-    idFormat = ReactiveMongoFormats.objectIdFormats) with CaseRepository with MongoCrudHelper[Case] {
+    domainFormat = MongoFormatters.formatCase) with CaseRepository with MongoCrudHelper[Case] {
 
   override val mongoCollection: JSONCollection = collection
 
