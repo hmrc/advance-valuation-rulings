@@ -22,8 +22,8 @@ import play.api.mvc.QueryStringBindable
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus._
 import uk.gov.hmrc.bindingtariffclassification.sort.SortDirection._
-import uk.gov.hmrc.bindingtariffclassification.sort.{SortDirection, SortField}
 import uk.gov.hmrc.bindingtariffclassification.sort.SortField._
+import uk.gov.hmrc.bindingtariffclassification.sort.{SortDirection, SortField}
 
 import scala.util.Try
 
@@ -132,7 +132,7 @@ object Filter {
             minDecisionEnd = param(minDecisionEndKey).flatMap(bindInstant),
             commodityCode = param(commodityCodeKey),
             goodDescription = param(goodDescriptionKey),
-            keywords = params(keywordKey)
+            keywords = params(keywordKey).map(_.map(_.toUpperCase))
           )
         )
       )

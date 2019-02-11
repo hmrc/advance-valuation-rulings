@@ -47,7 +47,7 @@ class SearchTest extends UnitSpec {
     "assignee_id" -> Seq("assignee-id"),
     "status" -> Seq("NEW", "OPEN"),
     "min_decision_end" -> Seq("1970-01-01T00:00:00Z"),
-    "keyword" -> Seq("BIKE", "MTB"),
+    "keyword" -> Seq("bike", "MTB"),
     "sort_by" -> Seq("days-elapsed"),
     "sort_direction" -> Seq("desc")
   )
