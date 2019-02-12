@@ -47,6 +47,8 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
   with MockitoSugar {
   self =>
 
+  private val conflict = 11000
+
   private val mongoDbProvider = new MongoDbProvider {
     override val mongo: () => DB = self.mongo
   }
@@ -106,7 +108,7 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
       val caught = intercept[DatabaseException] {
         await(repository.insert(case1))
       }
-      caught.code shouldBe Some(11000)
+      caught.code shouldBe Some(conflict)
 
       collectionSize shouldBe size
     }
@@ -559,7 +561,7 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
         await(repository.insert(case1.copy(status = REFERRED)))
       }
-      caught.code shouldBe Some(11000)
+      caught.code shouldBe Some(conflict)
 
       collectionSize shouldBe size
     }
