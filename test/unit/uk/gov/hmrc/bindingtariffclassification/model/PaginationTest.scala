@@ -45,6 +45,14 @@ class PaginationTest extends UnitSpec {
       Pagination.bindable.bind("", params) shouldBe Some(Right(pagination))
     }
 
+    "Bind page only" in {
+      Pagination.bindable.bind("", Map("page" -> Seq("10"))) shouldBe Some(Right(Pagination(page = 10)))
+    }
+
+    "Bind page_size only" in {
+      Pagination.bindable.bind("", Map("page_size" -> Seq("10"))) shouldBe Some(Right(Pagination(pageSize = 10)))
+    }
+
     "Ignore page <1" in {
       Pagination.bindable.bind("", Map("page" -> Seq("0"))) shouldBe None
     }
