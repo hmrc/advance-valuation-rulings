@@ -699,7 +699,7 @@ class CaseSpec extends BaseFeatureSpec {
       result.code shouldEqual OK
 
       And("The expected cases are returned in the JSON response")
-      Json.parse(result.body) shouldBe Json.toJson(Seq(caseY1, caseY2, caseZ, caseWithEmptyCommCode))
+      Json.parse(result.body) shouldBe Json.toJson(Seq(caseY2, caseY1, caseZ, caseWithEmptyCommCode))
     }
 
   }
