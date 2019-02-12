@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.search
+package uk.gov.hmrc.bindingtariffclassification.model
 
 import java.time.Instant
 
 import play.api.mvc.QueryStringBindable
-import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus._
 import uk.gov.hmrc.bindingtariffclassification.sort.SortDirection._
 import uk.gov.hmrc.bindingtariffclassification.sort.SortField._

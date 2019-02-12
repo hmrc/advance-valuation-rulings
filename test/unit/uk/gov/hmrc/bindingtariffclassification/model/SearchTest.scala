@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.search
+package uk.gov.hmrc.bindingtariffclassification.model
 
 import java.net.URLDecoder
 import java.time.Instant

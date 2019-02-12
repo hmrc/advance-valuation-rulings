@@ -28,10 +28,9 @@ import reactivemongo.bson.BSONDocument
 import reactivemongo.core.errors.DatabaseException
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.RESTFormatters._
-import uk.gov.hmrc.bindingtariffclassification.search.{Filter, Search, Sort}
-import uk.gov.hmrc.bindingtariffclassification.sort.{SortDirection, SortField}
-import uk.gov.hmrc.bindingtariffclassification.model.{Case, CaseStatus, NewCaseRequest}
+import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.service.CaseService
+import uk.gov.hmrc.bindingtariffclassification.sort.{SortDirection, SortField}
 import uk.gov.hmrc.http.HttpVerbs
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 import util.CaseData
