@@ -28,9 +28,9 @@ import reactivemongo.api.{Cursor, DB}
 import reactivemongo.bson._
 import reactivemongo.core.errors.DatabaseException
 import reactivemongo.play.json.ImplicitBSONHandlers._
+import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus._
 import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatCase
 import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus._
 import uk.gov.hmrc.bindingtariffclassification.search.{Filter, Search, Sort}
 import uk.gov.hmrc.bindingtariffclassification.sort.{SortDirection, SortField}
 import uk.gov.hmrc.mongo.MongoSpecSupport
@@ -590,6 +590,7 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
         Index(key = Seq("application.holder.businessName" -> Ascending), name = Some("application.holder.businessName_Index"), unique = false),
         Index(key = Seq("assignee.id" -> Ascending), name = Some("assignee.id_Index"), unique = false),
         Index(key = Seq("decision.effectiveEndDate" -> Ascending), name = Some("decision.effectiveEndDate_Index"), unique = false),
+        Index(key = Seq("decision.bindingCommodityCode" -> Ascending), name = Some("decision.bindingCommodityCode_Index"), unique = false),
         Index(key = Seq("status" -> Ascending), name = Some("status_Index"), unique = false),
         Index(key = Seq("keywords" -> Ascending), name = Some("keywords_Index"), unique = false)
       )
