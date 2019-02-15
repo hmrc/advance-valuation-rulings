@@ -489,7 +489,6 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Seq(c1,c2))
     }
 
-    // currently not implemented
     scenario("Case-insensitive search") {
 
       storeCases(c1)
@@ -497,10 +496,9 @@ class CaseSpec extends BaseFeatureSpec {
       val result = Http(s"$serviceUrl/cases?trader_name=john%20Lewis").asString
 
       result.code shouldEqual OK
-      result.body.toString shouldBe "[]"
+      Json.parse(result.body) shouldBe Json.toJson(Seq(c1))
     }
 
-    // currently not implemented
     scenario("Search by substring") {
 
       storeCases(c1)
@@ -508,7 +506,7 @@ class CaseSpec extends BaseFeatureSpec {
       val result = Http(s"$serviceUrl/cases?trader_name=Lewis").asString
 
       result.code shouldEqual OK
-      result.body.toString shouldBe "[]"
+      Json.parse(result.body) shouldBe Json.toJson(Seq(c1))
     }
 
     scenario("No matches") {
@@ -516,16 +514,6 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1)
 
       val result = Http(s"$serviceUrl/cases?trader_name=Albert").asString
-
-      result.code shouldEqual OK
-      result.body.toString shouldBe "[]"
-    }
-
-    scenario("Filtering cases that have undefined trader name") {
-
-      storeCases(c1, c2, c5)
-
-      val result = Http(s"$serviceUrl/cases?trader_name=").asString
 
       result.code shouldEqual OK
       result.body.toString shouldBe "[]"

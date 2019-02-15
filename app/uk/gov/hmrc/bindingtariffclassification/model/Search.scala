@@ -114,7 +114,7 @@ object Filter {
     override def bind(key: String, requestParams: Map[String, Seq[String]]): Option[Either[String, Filter]] = {
 
       def params(name: String): Option[Set[String]] = {
-        requestParams.get(name).map(_.flatMap(_.split(",")).toSet).filter(_.nonEmpty)
+        requestParams.get(name).map(_.flatMap(_.split(",")).toSet).filter(_.exists(_.nonEmpty))
       }
 
       def param(name: String): Option[String] = {

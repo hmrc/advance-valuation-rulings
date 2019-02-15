@@ -46,7 +46,10 @@ class SearchMapperSpec extends UnitSpec {
         "queueId" -> "valid_queue",
         "assignee.id" -> "valid_assignee",
         "status" -> Json.obj("$in" -> Json.arr("NEW", "OPEN")),
-        "application.holder.businessName" -> "trader_name",
+        "application.holder.businessName" -> Json.obj(
+          "$regex" -> ".*trader_name.*",
+          "$options" -> "i"
+        ),
         "decision.effectiveEndDate" -> Json.obj("$gte" -> Json.obj("$date" -> 0)),
         "decision.bindingCommodityCode" -> Json.obj("$regex" -> "^12345\\d*"),
         "$or" -> Json.arr(
@@ -82,7 +85,12 @@ class SearchMapperSpec extends UnitSpec {
     }
 
     "convert to Json when just the `traderName` param is taken into account " in {
-      jsonMapper.filterBy(Filter(traderName = Some("traderName"))) shouldBe Json.obj("application.holder.businessName" -> "traderName")
+      jsonMapper.filterBy(Filter(traderName = Some("traderName"))) shouldBe Json.obj(
+        "application.holder.businessName" -> Json.obj(
+          "$regex" -> ".*traderName.*",
+          "$options" -> "i"
+        )
+      )
     }
 
     "convert to Json when just the `minDecisionEnd` param is taken into account " in {

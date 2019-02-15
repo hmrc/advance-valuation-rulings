@@ -27,10 +27,6 @@ class Crypto @Inject()(crypto: CompositeSymmetricCrypto) {
     applyCrypto(c)(encryptString)
   }
 
-  def encrypt(search: Search): Search = {
-    applyCrypto(search)(encryptString)
-  }
-
   def decrypt(c: Case): Case = {
     applyCrypto(c)(decryptString)
   }
@@ -41,14 +37,6 @@ class Crypto @Inject()(crypto: CompositeSymmetricCrypto) {
 
   private def decryptString: String => String = { s: String =>
     crypto.decrypt(Crypted(s)).value
-  }
-
-  private def applyCrypto(filter: Filter)(f: String => String): Filter = {
-    filter.copy(traderName = filter.traderName map f)
-  }
-
-  private def applyCrypto(search: Search)(f: String => String): Search = {
-    search.copy(filter = applyCrypto(search.filter)(f))
   }
 
   private def applyCrypto(c: Contact)(f: String => String): Contact = {
@@ -62,7 +50,7 @@ class Crypto @Inject()(crypto: CompositeSymmetricCrypto) {
   private def applyCrypto(e: EORIDetails)(f: String => String): EORIDetails = {
     e.copy(
       eori = f(e.eori),
-      businessName = f(e.businessName),
+      businessName = e.businessName,
       addressLine1 = f(e.addressLine1),
       addressLine2 = f(e.addressLine2),
       addressLine3 = f(e.addressLine3),

@@ -391,24 +391,28 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
       store(case1, caseX)
 
       await(repository.get(Search(Filter(traderName = Some("Alfred"))), Pagination())) shouldBe Seq.empty
-
-      // substring search is not allowed
-      await(repository.get(Search(Filter(traderName = Some("Novak"))), Pagination())) shouldBe Seq.empty
-
-      // case-sensitive is not allowed
-      await(repository.get(Search(Filter(traderName = Some("novak djokovic"))), Pagination())) shouldBe Seq.empty
     }
 
     "return the expected document when there is one match" in {
       store(case1, caseX)
-      val search = Search(Filter(traderName = Some("Lewis")))
-      await(repository.get(search, Pagination())) shouldBe Seq.empty
+
+      // full name search
+      await(repository.get(Search(Filter(traderName = Some("Novak Djokovic"))), Pagination())) shouldBe Seq(caseX)
+
+      // substring search
+      await(repository.get(Search(Filter(traderName = Some("Novak"))), Pagination())) shouldBe Seq(caseX)
+      await(repository.get(Search(Filter(traderName = Some("Djokovic"))), Pagination())) shouldBe Seq(caseX)
+
+      // case-sensitive
+      await(repository.get(Search(Filter(traderName = Some("novak djokovic"))), Pagination())) shouldBe Seq(caseX)
     }
 
     "return the expected documents when there are multiple matches" in {
-      store(case1, caseX)
+      val novakApp2 = createBasicBTIApplication.copy(holder = createEORIDetails.copy(businessName = "Novak Djokovic 2"))
+      val caseX2 = createCase(app = novakApp)
+      store(caseX, caseX2)
       val search = Search(Filter(traderName = Some("Novak Djokovic")))
-      await(repository.get(search, Pagination())) shouldBe Seq(caseX)
+      await(repository.get(search, Pagination())) shouldBe Seq(caseX, caseX2)
     }
   }
 
@@ -611,7 +615,6 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
         Index(key = Seq("reference" -> Ascending), name = Some("reference_Index"), unique = true),
         Index(key = Seq("queueId" -> Ascending), name = Some("queueId_Index"), unique = false),
         Index(key = Seq("daysElapsed" -> Ascending), name = Some("daysElapsed_Index"), unique = false),
-        Index(key = Seq("application.holder.businessName" -> Ascending), name = Some("application.holder.businessName_Index"), unique = false),
         Index(key = Seq("assignee.id" -> Ascending), name = Some("assignee.id_Index"), unique = false),
         Index(key = Seq("decision.effectiveEndDate" -> Ascending), name = Some("decision.effectiveEndDate_Index"), unique = false),
         Index(key = Seq("decision.bindingCommodityCode" -> Ascending), name = Some("decision.bindingCommodityCode_Index"), unique = false),

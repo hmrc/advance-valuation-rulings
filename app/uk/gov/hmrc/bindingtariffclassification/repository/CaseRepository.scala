@@ -49,7 +49,6 @@ trait CaseRepository {
 @Singleton
 class EncryptedCaseMongoRepository @Inject()(repository: CaseMongoRepository, crypto: Crypto) extends CaseRepository {
 
-  private def encrypt(search: Search): Search = crypto.encrypt(search)
   private def encrypt: Case => Case = crypto.encrypt
   private def decrypt: Case => Case = crypto.decrypt
 
@@ -62,7 +61,7 @@ class EncryptedCaseMongoRepository @Inject()(repository: CaseMongoRepository, cr
   override def getByReference(reference: String): Future[Option[Case]] = repository.getByReference(reference).map(_.map(decrypt))
 
   override def get(search: Search, pagination: Pagination): Future[Seq[Case]] = {
-    repository.get(encrypt(search), pagination).map(_.map(decrypt))
+    repository.get(search, pagination).map(_.map(decrypt))
   }
 
   override def deleteAll(): Future[Unit] = repository.deleteAll()
@@ -80,7 +79,6 @@ class CaseMongoRepository @Inject()(mongoDbProvider: MongoDbProvider, mapper: Se
   lazy private val uniqueSingleFieldIndexes = Seq("reference")
   lazy private val nonUniqueSingleFieldIndexes = Seq(
     "assignee.id",
-    "application.holder.businessName", // TODO: to be removed if later we decide to use non-exact match search
     "queueId",
     "status",
     "decision.effectiveEndDate",
