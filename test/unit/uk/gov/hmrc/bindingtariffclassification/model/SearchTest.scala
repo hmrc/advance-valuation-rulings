@@ -36,7 +36,8 @@ class SearchTest extends UnitSpec {
     assigneeId = Some("assignee-id"),
     statuses = Some(Set(NEW, OPEN)),
     minDecisionEnd = Some(Instant.EPOCH),
-    keywords = Some(Set("BIKE", "MTB"))
+    keywords = Some(Set("BIKE", "MTB")),
+    decisionDetails = Some("decision-details")
   )
 
   private val search = Search(filter = filter, sort = Some(sort))
@@ -47,6 +48,7 @@ class SearchTest extends UnitSpec {
     "assignee_id" -> Seq("assignee-id"),
     "status" -> Seq("NEW", "OPEN"),
     "min_decision_end" -> Seq("1970-01-01T00:00:00Z"),
+    "decision_details" -> Seq("decision-details"),
     "keyword" -> Seq("bike", "MTB"),
     "sort_by" -> Seq("days-elapsed"),
     "sort_direction" -> Seq("desc")
@@ -80,6 +82,7 @@ class SearchTest extends UnitSpec {
           "&status=OPEN" +
           "&trader_name=trader-name" +
           "&min_decision_end=1970-01-01T00:00:00Z" +
+          "&decision_details=decision-details" +
           "&keyword=BIKE" +
           "&keyword=MTB" +
           "&sort_by=days-elapsed" +
@@ -118,6 +121,7 @@ class SearchTest extends UnitSpec {
           "&status=OPEN" +
           "&trader_name=trader-name" +
           "&min_decision_end=1970-01-01T00:00:00Z" +
+          "&decision_details=decision-details" +
           "&keyword=BIKE" +
           "&keyword=MTB"
       URLDecoder.decode(Filter.bindable.unbind("", filter), "UTF-8") shouldBe populatedQueryParam
