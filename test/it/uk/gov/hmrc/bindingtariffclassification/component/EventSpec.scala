@@ -24,7 +24,7 @@ import play.api.http.{HttpVerbs, Status}
 import play.api.libs.json.Json
 import scalaj.http.Http
 import uk.gov.hmrc.bindingtariffclassification.model.RESTFormatters.{formatEvent, formatNewEventRequest}
-import uk.gov.hmrc.bindingtariffclassification.model.{Event, NewEventRequest, Note, Operator}
+import uk.gov.hmrc.bindingtariffclassification.model._
 import util.CaseData.createCase
 import util.EventData._
 
@@ -77,14 +77,14 @@ class EventSpec extends BaseFeatureSpec {
       result.code shouldEqual OK
 
       And("An empty sequence is returned in the JSON response")
-      Json.parse(result.body).toString() shouldBe "[]"
+      Json.parse(result.body) shouldBe Json.toJson(Paged.empty[Event])
     }
 
     scenario("Events found in any order") {
 
       Given("There is a case with events")
       storeCases(c1)
-      storeEvents(e1, e2)
+      storeEvents(e1)
 
       When("I get the events for that specific case")
       val result = Http(s"$serviceUrl/cases/$caseRef/events").asString
@@ -93,10 +93,7 @@ class EventSpec extends BaseFeatureSpec {
       result.code shouldEqual OK
 
       And("All events are returned in the JSON response")
-
-      val responseEvent: Seq[Event] = Json.parse(result.body).as[Seq[Event]]
-
-      responseEvent.map(_.id) should contain theSameElementsAs Seq(e1.id, e2.id)
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(e1)))
     }
 
   }

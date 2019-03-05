@@ -19,7 +19,7 @@ package uk.gov.hmrc.bindingtariffclassification.repository
 import java.time.Instant
 
 import play.api.libs.json.{JsNull, Json}
-import uk.gov.hmrc.bindingtariffclassification.model.{CaseStatus, Filter, Sort}
+import uk.gov.hmrc.bindingtariffclassification.model.{ApplicationType, CaseStatus, Filter, Sort}
 import uk.gov.hmrc.bindingtariffclassification.sort.{SortDirection, SortField}
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -32,6 +32,7 @@ class SearchMapperSpec extends UnitSpec {
     "convert to Json when all possible parameters are taken into account " in {
 
       val filter = Filter(
+        applicationType = Some(ApplicationType.BTI),
         queueId = Some("valid_queue"),
         assigneeId = Some("valid_assignee"),
         statuses = Some(Set(CaseStatus.NEW, CaseStatus.OPEN)),
@@ -43,6 +44,7 @@ class SearchMapperSpec extends UnitSpec {
       )
 
       jsonMapper.filterBy(filter) shouldBe Json.obj(
+        "application.type" -> "BTI",
         "queueId" -> "valid_queue",
         "assignee.id" -> "valid_assignee",
         "status" -> Json.obj("$in" -> Json.arr("NEW", "OPEN")),
@@ -61,12 +63,22 @@ class SearchMapperSpec extends UnitSpec {
       )
     }
 
+    "convert to Json when just the `applicationType` param is taken into account " in {
+      jsonMapper.filterBy(Filter(applicationType = Some(ApplicationType.BTI))) shouldBe Json.obj(
+        "application.type" -> "BTI"
+      )
+    }
+
     "convert to Json when just the `queueId` param is taken into account " in {
-      jsonMapper.filterBy(Filter(queueId = Some("valid_queue"))) shouldBe Json.obj("queueId" -> "valid_queue")
+      jsonMapper.filterBy(Filter(queueId = Some("valid_queue"))) shouldBe Json.obj(
+        "queueId" -> "valid_queue"
+      )
     }
 
     "convert to Json when just the `assigneeId` param is taken into account " in {
-      jsonMapper.filterBy(Filter(assigneeId = Some("valid_assignee"))) shouldBe Json.obj("assignee.id" -> "valid_assignee")
+      jsonMapper.filterBy(Filter(assigneeId = Some("valid_assignee"))) shouldBe Json.obj(
+        "assignee.id" -> "valid_assignee"
+      )
     }
 
     "convert to Json when just the `status` param is taken into account " in {
@@ -95,23 +107,26 @@ class SearchMapperSpec extends UnitSpec {
     }
 
     "convert to Json when just the `minDecisionEnd` param is taken into account " in {
-      jsonMapper.filterBy(Filter(minDecisionEnd = Some(Instant.EPOCH))) shouldBe Json.obj("decision.effectiveEndDate" -> Json.obj("$gte" -> Json.obj("$date" -> 0)))
+      jsonMapper.filterBy(Filter(minDecisionEnd = Some(Instant.EPOCH))) shouldBe Json.obj(
+        "decision.effectiveEndDate" -> Json.obj("$gte" -> Json.obj("$date" -> 0))
+      )
     }
 
     "convert to Json when just the `commodityCode` param is taken into account " in {
-      val expectedResult = Json.obj("decision.bindingCommodityCode" -> Json.obj("$regex" -> "^1234\\d*"))
-      jsonMapper.filterBy(Filter(commodityCode = Some("1234"))) shouldBe expectedResult
+      jsonMapper.filterBy(Filter(commodityCode = Some("1234"))) shouldBe Json.obj(
+        "decision.bindingCommodityCode" -> Json.obj("$regex" -> "^1234\\d*")
+      )
     }
 
     "convert to Json when just the `decisionDetails` param is taken into account " in {
-      val expectedResult = Json.obj("$or" ->
-        Json.arr(
-          Json.obj("decision.goodsDescription" -> Json.obj("$regex" -> ".*strawberry.*", "$options" -> "i")),
-          Json.obj("decision.methodCommercialDenomination" -> Json.obj("$regex" -> ".*strawberry.*", "$options" -> "i")),
-          Json.obj("decision.justification" -> Json.obj("$regex" -> ".*strawberry.*", "$options" -> "i"))
-        )
+      jsonMapper.filterBy(Filter(decisionDetails = Some("strawberry"))) shouldBe Json.obj(
+        "$or" ->
+          Json.arr(
+            Json.obj("decision.goodsDescription" -> Json.obj("$regex" -> ".*strawberry.*", "$options" -> "i")),
+            Json.obj("decision.methodCommercialDenomination" -> Json.obj("$regex" -> ".*strawberry.*", "$options" -> "i")),
+            Json.obj("decision.justification" -> Json.obj("$regex" -> ".*strawberry.*", "$options" -> "i"))
+          )
       )
-      jsonMapper.filterBy(Filter(decisionDetails = Some("strawberry"))) shouldBe expectedResult
     }
 
     "convert to Json when fields `queueId` and `assigneeId` are set to `none` " in {
