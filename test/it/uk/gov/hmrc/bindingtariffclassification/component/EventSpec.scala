@@ -20,7 +20,7 @@ import java.util.UUID
 
 import play.api.http.HeaderNames.CONTENT_TYPE
 import play.api.http.Status.{NO_CONTENT, OK}
-import play.api.http.{HttpVerbs, Status}
+import play.api.http.{ContentTypes, HttpVerbs, Status}
 import play.api.libs.json.Json
 import scalaj.http.Http
 import uk.gov.hmrc.bindingtariffclassification.model.RESTFormatters.{formatEvent, formatNewEventRequest}
@@ -48,7 +48,7 @@ class EventSpec extends BaseFeatureSpec {
 
       When("I delete all documents")
       val deleteResult = Http(s"$serviceUrl/events")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .method(HttpVerbs.DELETE)
         .asString
 
@@ -73,7 +73,7 @@ class EventSpec extends BaseFeatureSpec {
 
       When("I get the events for a specific case reference")
       val result = Http(s"$serviceUrl/cases/$caseRef/events")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       Then("The response code should be OK")
@@ -91,7 +91,7 @@ class EventSpec extends BaseFeatureSpec {
 
       When("I get the events for that specific case")
       val result = Http(s"$serviceUrl/cases/$caseRef/events")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       Then("The response code should be OK")
@@ -113,8 +113,8 @@ class EventSpec extends BaseFeatureSpec {
       When("I create an Event")
       val payload = NewEventRequest(Note("Note"), Operator("user-id", Some("user name")))
       val result = Http(s"$serviceUrl/cases/$caseRef/events")
-        .header(apiTokenKey,  appConfig.authorization)
-        .header(CONTENT_TYPE, "application/json")
+        .header(apiTokenKey, appConfig.authorization)
+        .header(CONTENT_TYPE, ContentTypes.JSON)
         .postData(Json.toJson(payload).toString()).asString
 
       Then("The response code should be created")
