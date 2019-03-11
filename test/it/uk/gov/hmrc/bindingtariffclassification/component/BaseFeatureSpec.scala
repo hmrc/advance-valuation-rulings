@@ -34,6 +34,8 @@ abstract class BaseFeatureSpec extends FeatureSpec
 
   protected lazy val appConfig: AppConfig = app.injector.instanceOf[AppConfig]
 
+  protected lazy val apiTokenKey = "X-Api-Token"
+
   private lazy val caseStore: CaseMongoRepository = app.injector.instanceOf[CaseMongoRepository]
   private lazy val eventStore: EventMongoRepository = app.injector.instanceOf[EventMongoRepository]
   private lazy val sequenceStore: SequenceMongoRepository = app.injector.instanceOf[SequenceMongoRepository]
