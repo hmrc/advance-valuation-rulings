@@ -69,7 +69,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I delete all documents")
       val deleteResult = Http(s"$serviceUrl/cases")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .method(HttpVerbs.DELETE)
         .asString
 
@@ -92,7 +92,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I create a new case")
       val result: HttpResponse[String] = Http(s"$serviceUrl/cases")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .header(CONTENT_TYPE, JSON)
         .postData(c0Json.toString()).asString
 
@@ -108,7 +108,7 @@ class CaseSpec extends BaseFeatureSpec {
     scenario("Extra fields are ignored when creating a case") {
       When("I create a new case with extra fields")
       val result: HttpResponse[String] = Http(s"$serviceUrl/cases")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .header(CONTENT_TYPE, JSON)
         .postData(c3Json.toString()).asString
 
@@ -130,7 +130,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I create a new case")
       val result: HttpResponse[String] = Http(s"$serviceUrl/cases")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .header(CONTENT_TYPE, JSON)
         .postData(c4Json.toString()).asString
 
@@ -152,7 +152,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I update a non-existing case")
       val result = Http(s"$serviceUrl/cases/${c1.reference}")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .header(CONTENT_TYPE, JSON)
         .put(c1Json.toString()).asString
 
@@ -167,7 +167,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I update an existing case")
       val result = Http(s"$serviceUrl/cases/${c1.reference}")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .header(CONTENT_TYPE, JSON)
         .put(c1UpdatedJson.toString()).asString
 
@@ -190,7 +190,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I get a case")
       val result = Http(s"$serviceUrl/cases/${c1.reference}")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       Then("The response code should be OK")
@@ -204,7 +204,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I get a case")
       val result = Http(s"$serviceUrl/cases/${c1.reference}")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       Then("The response code should be NOT FOUND")
@@ -223,7 +223,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I get all cases")
       val result = Http(s"$serviceUrl/cases")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       Then("The response code should be OK")
@@ -239,7 +239,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I get all cases")
       val result = Http(s"$serviceUrl/cases")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       Then("The response code should be OK")
@@ -261,7 +261,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I get cases by queue id")
       val result = Http(s"$serviceUrl/cases?queue_id=none")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       Then("The response code should be OK")
@@ -278,7 +278,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I get cases by queue id")
       val result = Http(s"$serviceUrl/cases?queue_id=$q1")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       Then("The response code should be OK")
@@ -295,7 +295,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I get cases by queue id")
       val result = Http(s"$serviceUrl/cases?queue_id=wrong")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       Then("The response code should be OK")
@@ -317,7 +317,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I get cases by assignee id")
       val result = Http(s"$serviceUrl/cases?assignee_id=none")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       Then("The response code should be OK")
@@ -334,7 +334,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I get cases by assignee id")
       val result = Http(s"$serviceUrl/cases?assignee_id=${u1.id}")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       Then("The response code should be OK")
@@ -351,7 +351,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I get cases by assignee id")
       val result = Http(s"$serviceUrl/cases?assignee_id=wrong")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       Then("The response code should be OK")
@@ -373,7 +373,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I get cases by assignee id and queue id")
       val result = Http(s"$serviceUrl/cases?assignee_id=none&queue_id=none")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       Then("The response code should be OK")
@@ -390,7 +390,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I get cases by assignee id and queue id")
       val result = Http(s"$serviceUrl/cases?assignee_id=${u1.id}&queue_id=$q1")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       Then("The response code should be OK")
@@ -407,7 +407,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I get cases by assignee id")
       val result = Http(s"$serviceUrl/cases?assignee_id=_a_&queue_id=$q1")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       Then("The response code should be OK")
@@ -427,7 +427,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1_updated, c2, c5)
 
       val result = Http(s"$serviceUrl/cases?status=SUSPENDED")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -439,7 +439,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1_updated, c2, c5)
 
       val result = Http(s"$serviceUrl/cases?status=NEW")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -451,7 +451,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1_updated, c2, c5)
 
       val result = Http(s"$serviceUrl/cases?status=NEW&status=CANCELLED")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -463,7 +463,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1_updated, c2, c5)
 
       val result = Http(s"$serviceUrl/cases?status=NEW,CANCELLED")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -480,7 +480,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c2, c10)
 
       val result = Http(s"$serviceUrl/cases?keyword=PHONE")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -492,7 +492,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c2, c5, c10)
 
       val result = Http(s"$serviceUrl/cases?keyword=MTB")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -504,7 +504,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c2, c5, c10)
 
       val result = Http(s"$serviceUrl/cases?keyword=MTB&keyword=HARDTAIL")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -516,7 +516,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c2, c5, c10)
 
       val result = Http(s"$serviceUrl/cases?keyword=MTB,HARDTAIL")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -533,7 +533,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c2, c5)
 
       val result = Http(s"$serviceUrl/cases?trader_name=John%20Lewis")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -545,7 +545,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1)
 
       val result = Http(s"$serviceUrl/cases?trader_name=john%20Lewis")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -557,7 +557,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1)
 
       val result = Http(s"$serviceUrl/cases?trader_name=Lewis")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -569,7 +569,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1)
 
       val result = Http(s"$serviceUrl/cases?trader_name=Albert")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -586,7 +586,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c6)
 
       val result = Http(s"$serviceUrl/cases?min_decision_end=1970-01-01T00:00:00Z")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -598,7 +598,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c6)
 
       val result = Http(s"$serviceUrl/cases?min_decision_end=3000-01-01T00:00:00Z")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -615,7 +615,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c2, c5)
 
       val result = Http(s"$serviceUrl/cases?commodity_code=66")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -627,7 +627,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c2, c5, c6)
 
       val result = Http(s"$serviceUrl/cases?commodity_code=12345678")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -639,7 +639,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c2, c5, c6)
 
       val result = Http(s"$serviceUrl/cases?commodity_code=123")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -651,7 +651,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c2, c6)
 
       val result = Http(s"$serviceUrl/cases?commodity_code=456")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -668,7 +668,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c2, c5)
 
       val result = Http(s"$serviceUrl/cases?decision_details=laptop")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -680,7 +680,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c2, c7)
 
       val result = Http(s"$serviceUrl/cases?decision_details=LAPTOP")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -692,7 +692,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c2, c8)
 
       val result = Http(s"$serviceUrl/cases?decision_details=laptop%20from%20Mexico")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -704,7 +704,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c2, c9)
 
       val result = Http(s"$serviceUrl/cases?decision_details=this%20LLLLaptoppp")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -716,7 +716,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c2, c7)
 
       val result = Http(s"$serviceUrl/cases?decision_details=laptop")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -728,7 +728,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c2, c7, c8, c9)
 
       val result = Http(s"$serviceUrl/cases?decision_details=laptop")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -754,7 +754,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c2)
 
       val result = Http(s"$serviceUrl/cases?eori=333333")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -765,7 +765,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c2, agentCase, holderCase)
 
       val result = Http(s"$serviceUrl/cases?eori=eori_98765")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -776,7 +776,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c2, agentCase, holderCase)
 
       val result = Http(s"$serviceUrl/cases?eori=eori_01234")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -787,7 +787,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c2, agentCase, holderCase)
 
       val result = Http(s"$serviceUrl/cases?eori=EORI_98765")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -798,7 +798,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c2, agentCase, holderCase)
 
       val result = Http(s"$serviceUrl/cases?eori=2345")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -815,7 +815,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c5)
 
       val result = Http(s"$serviceUrl/cases?application_type=LIABILITY_ORDER")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -827,7 +827,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c2, c7)
 
       val result = Http(s"$serviceUrl/cases?application_type=BTI")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -839,7 +839,7 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c7)
 
       val result = Http(s"$serviceUrl/cases?application_type=bti")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
@@ -861,7 +861,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I get all cases sorted by commodity code")
       val result = Http(s"$serviceUrl/cases?sort_by=commodity-code")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       Then("The response code should be 200")
@@ -877,7 +877,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I get all cases sorted by commodity code")
       val result = Http(s"$serviceUrl/cases?sort_by=commodity-code&sort_direction=asc")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       Then("The response code should be 200")
@@ -893,7 +893,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I get all cases sorted by commodity code")
       val result = Http(s"$serviceUrl/cases?sort_by=commodity-code&sort_direction=desc")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       Then("The response code should be 200")
@@ -917,7 +917,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I get all cases sorted by elapsed days")
       val result = Http(s"$serviceUrl/cases?sort_by=days-elapsed")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       Then("The response code should be 200")
@@ -933,7 +933,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I get all cases sorted by elapsed days")
       val result = Http(s"$serviceUrl/cases?sort_by=days-elapsed&sort_direction=asc")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       Then("The response code should be 200")
@@ -949,7 +949,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       When("I get all cases sorted by elapsed days")
       val result = Http(s"$serviceUrl/cases?sort_by=days-elapsed&sort_direction=desc")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       Then("The response code should be 200")
@@ -969,14 +969,14 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(c1, c2)
 
       val result1 = Http(s"$serviceUrl/cases?page_size=1&page=1")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result1.code shouldEqual OK
       Json.parse(result1.body) shouldBe Json.toJson(Paged(results = Seq(c1), pageIndex = 1, pageSize = 1, resultCount = 2))
 
       val result2 = Http(s"$serviceUrl/cases?page_size=1&page=2")
-        .header(apiTokenKey,  appConfig.authorization)
+        .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result2.code shouldEqual OK
@@ -998,7 +998,9 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(caseD0, caseD1, caseD2, caseD3)
 
       When("I get all cases sorted by created date")
-      val result = Http(s"$serviceUrl/cases?sort_by=created-date").asString
+      val result = Http(s"$serviceUrl/cases?sort_by=created-date")
+        .header(apiTokenKey, appConfig.authorization)
+        .asString
 
       Then("The response code should be 200")
       result.code shouldEqual OK
@@ -1012,7 +1014,9 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(caseD0, caseD1, caseD2, caseD3)
 
       When("I get all cases sorted by created date")
-      val result = Http(s"$serviceUrl/cases?sort_by=created-date&sort_direction=asc").asString
+      val result = Http(s"$serviceUrl/cases?sort_by=created-date&sort_direction=asc")
+        .header(apiTokenKey, appConfig.authorization)
+        .asString
 
       Then("The response code should be 200")
       result.code shouldEqual OK
@@ -1026,7 +1030,9 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(caseD0, caseD1, caseD2, caseD3)
 
       When("I get all cases sorted by created date")
-      val result = Http(s"$serviceUrl/cases?sort_by=created-date&sort_direction=desc").asString
+      val result = Http(s"$serviceUrl/cases?sort_by=created-date&sort_direction=desc")
+        .header(apiTokenKey, appConfig.authorization)
+        .asString
 
       Then("The response code should be 200")
       result.code shouldEqual OK
@@ -1050,7 +1056,9 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(caseD0, caseD3, caseD2, caseD1)
 
       When("I get all cases sorted by created date")
-      val result = Http(s"$serviceUrl/cases?sort_by=decision-start-date").asString
+      val result = Http(s"$serviceUrl/cases?sort_by=decision-start-date")
+        .header(apiTokenKey, appConfig.authorization)
+        .asString
 
       Then("The response code should be 200")
       result.code shouldEqual OK
@@ -1064,7 +1072,9 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(caseD0, caseD1, caseD2, caseD3)
 
       When("I get all cases sorted by decision effective start date")
-      val result = Http(s"$serviceUrl/cases?sort_by=decision-start-date&sort_direction=asc").asString
+      val result = Http(s"$serviceUrl/cases?sort_by=decision-start-date&sort_direction=asc")
+        .header(apiTokenKey, appConfig.authorization)
+        .asString
 
       Then("The response code should be 200")
       result.code shouldEqual OK
@@ -1078,7 +1088,9 @@ class CaseSpec extends BaseFeatureSpec {
       storeCases(caseD0, caseD3, caseD2, caseD1)
 
       When("I get all cases sorted by decision effective start date")
-      val result = Http(s"$serviceUrl/cases?sort_by=decision-start-date&sort_direction=desc").asString
+      val result = Http(s"$serviceUrl/cases?sort_by=decision-start-date&sort_direction=desc")
+        .header(apiTokenKey, appConfig.authorization)
+        .asString
 
       Then("The response code should be 200")
       result.code shouldEqual OK
