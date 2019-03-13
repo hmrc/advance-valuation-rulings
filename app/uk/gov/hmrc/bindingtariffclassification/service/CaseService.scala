@@ -35,7 +35,7 @@ class CaseService @Inject()(appConfig: AppConfig,
   }
 
   def nextCaseReference: Future[String] = {
-    sequenceRepository.incrementAndGetByName("case").map(_.value.toString)
+    sequenceRepository.incrementAndGetByName("case").map(_.value + appConfig.caseReferenceStart).map(_.toString)
   }
 
   def update(c: Case, upsert: Boolean): Future[Option[Case]] = {
