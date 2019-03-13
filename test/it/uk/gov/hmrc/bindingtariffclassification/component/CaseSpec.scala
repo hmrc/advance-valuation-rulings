@@ -101,7 +101,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       And("The case is returned in the JSON response")
       val responseCase = Json.parse(result.body).as[Case]
-      responseCase.reference shouldBe "1"
+      responseCase.reference shouldBe "504400001"
       responseCase.status shouldBe CaseStatus.NEW
     }
 
@@ -117,7 +117,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       And("The case is returned in the JSON response")
       val responseCase = Json.parse(result.body).as[Case]
-      responseCase.reference shouldBe "1"
+      responseCase.reference shouldBe "504400001"
       responseCase.status shouldBe CaseStatus.NEW
       responseCase.createdDate should roughlyBe(Instant.now())
       responseCase.assignee shouldBe None
@@ -139,7 +139,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       And("The case is returned in the JSON response")
       val responseCase = Json.parse(result.body).as[Case]
-      responseCase.reference shouldBe "1"
+      responseCase.reference shouldBe "504400001"
       responseCase.status shouldBe CaseStatus.NEW
     }
 
