@@ -32,7 +32,7 @@ class AppConfig @Inject()(val runModeConfiguration: Configuration, environment: 
 
   lazy val isTestMode: Boolean = getBooleanConfig("testMode", default = false)
 
-  lazy val caseReferenceStart: Long = runModeConfiguration.getLong("caseReferenceStart").getOrElse(504400000)
+  lazy val caseReferenceStart: Long = runModeConfiguration.getLong("case-reference-start").getOrElse(504400000)
 
   lazy val clock: Clock = Clock.systemDefaultZone()
 
