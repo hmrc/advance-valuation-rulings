@@ -29,7 +29,7 @@ import scala.concurrent.duration._
 class SchedulerDateUtilTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach {
 
   private val zone = ZoneOffset.UTC
-  private val clock: Clock = Clock.fixed(instant("2019-01-01T12:00:00"), zone)
+  private val clock: Clock = Clock.fixed(instant("2019-01-01T12:00:00").plusNanos((Math.random()*1000).toInt), zone)
   private val config: AppConfig = mock[AppConfig]
   private val util = new SchedulerDateUtil(config)
 

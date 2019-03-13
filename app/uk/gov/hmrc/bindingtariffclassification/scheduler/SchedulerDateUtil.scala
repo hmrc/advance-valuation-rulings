@@ -19,8 +19,6 @@ package uk.gov.hmrc.bindingtariffclassification.scheduler
 import java.time.{Instant, LocalDate, LocalTime}
 
 import javax.inject.{Inject, Singleton}
-import javax.inject.Inject
-
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 
 import scala.concurrent.duration.FiniteDuration
@@ -31,7 +29,7 @@ class SchedulerDateUtil @Inject()(appConfig: AppConfig) {
   private lazy val clock = appConfig.clock
 
   def nextRun(offset: LocalTime, interval: FiniteDuration): Instant = {
-    val time = LocalTime.now(clock)
+    val time = LocalTime.now(clock).withNano(0)
 
     val offsetSeconds: Int = offset.toSecondOfDay
     val currentSeconds: Int = time.toSecondOfDay
@@ -50,7 +48,7 @@ class SchedulerDateUtil @Inject()(appConfig: AppConfig) {
   }
 
   def closestRun(offset: LocalTime, interval: FiniteDuration): Instant = {
-    val time = LocalTime.now(clock)
+    val time = LocalTime.now(clock).withNano(0)
 
     val offsetSeconds: Int = offset.toSecondOfDay
     val currentSeconds: Int = time.toSecondOfDay
