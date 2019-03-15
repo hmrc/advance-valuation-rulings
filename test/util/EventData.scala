@@ -23,34 +23,66 @@ import uk.gov.hmrc.bindingtariffclassification.utils.RandomGenerator
 
 object EventData {
 
-
-  def createEvent(caseReference: String, date :  Instant): Event = {
+  private def createEvent(caseRef: String, details: Details, date: Instant = Instant.now()): Event = {
     Event(
       id = RandomGenerator.randomUUID(),
-      details = Note("This is a random note"),
+      details = details,
       operator = Operator(RandomGenerator.randomUUID(), Some("user name")),
-      caseReference = caseReference,
+      caseReference = caseRef,
       timestamp = date
     )
   }
 
-  def createNoteEvent(caseReference: String): Event = {
-    Event(
-      id = RandomGenerator.randomUUID(),
-      details = Note("This is a note"),
-      operator = Operator(RandomGenerator.randomUUID(), Some("user name")),
-      caseReference = caseReference,
-      timestamp = Instant.now()
+  def createNoteEvent(caseReference: String, date: Instant = Instant.now()): Event = {
+    createEvent(
+      caseRef = caseReference,
+      details = Note("This is a random note"),
+      date = date
     )
   }
 
   def createCaseStatusChangeEvent(caseReference: String): Event = {
-    Event(
-      id = RandomGenerator.randomUUID(),
-      details = CaseStatusChange(from = CaseStatus.DRAFT, to = CaseStatus.NEW),
-      operator = Operator(RandomGenerator.randomUUID(), Some("user name")),
-      caseReference = caseReference,
-      timestamp = Instant.now()
+    createEvent(
+      caseRef = caseReference,
+      details = CaseStatusChange(from = CaseStatus.DRAFT, to = CaseStatus.NEW, comment = Some("comment"))
+    )
+  }
+
+  def createAppealStatusChangeEvent(caseReference: String): Event = {
+    createEvent(
+      caseRef = caseReference,
+      details = AppealStatusChange(from = Some(AppealStatus.ALLOWED), to = Some(AppealStatus.IN_PROGRESS), comment = Some("comment"))
+    )
+  }
+
+  def createReviewStatusChangeEvent(caseReference: String): Event = {
+    createEvent(
+      caseRef = caseReference,
+      details = ReviewStatusChange(from = Some(ReviewStatus.IN_PROGRESS), to = Some(ReviewStatus.OVERTURNED), comment = Some("comment"))
+    )
+  }
+
+  def createExtendedUseStatusChangeEvent(caseReference: String): Event = {
+    createEvent(
+      caseRef = caseReference,
+      details = ExtendedUseStatusChange(from = true, to = false, comment = Some("comment"))
+    )
+  }
+
+  def createQueueChangeEvent(caseReference: String): Event = {
+    createEvent(
+      caseRef = caseReference,
+      details = QueueChange(from = Some("q1"), to = Some("q2"), comment = Some("comment"))
+    )
+  }
+
+  def createAssignmentChangeEvent(caseReference: String): Event = {
+    val o1 = Operator(RandomGenerator.randomUUID(), Some("user 1"))
+    val o2 = Operator(RandomGenerator.randomUUID(), Some("user 2"))
+
+    createEvent(
+      caseRef = caseReference,
+      details = AssignmentChange(from = Some(o1), to = Some(o2), comment = Some("comment"))
     )
   }
 

@@ -129,10 +129,9 @@ class EventRepositorySpec extends BaseMongoIndexSpec
 
     "retrieve all expected events from the collection sorted by default date descending" in {
 
-      val e20170917 = createEvent("REF_1", Instant.parse("2017-09-17T20:53:31Z"))
-      val e20170911 = createEvent("REF_1", Instant.parse("2017-09-11T20:53:31Z"))
-      val e20180811 = createEvent("REF_1", Instant.parse("2018-08-11T20:53:31Z"))
-
+      val e20170917 = createNoteEvent("REF_1", Instant.parse("2017-09-17T20:53:31Z"))
+      val e20170911 = createNoteEvent("REF_1", Instant.parse("2017-09-11T20:53:31Z"))
+      val e20180811 = createNoteEvent("REF_1", Instant.parse("2018-08-11T20:53:31Z"))
 
       await(repository.insert(e20170911))
       await(repository.insert(e20170917))
@@ -153,21 +152,21 @@ class EventRepositorySpec extends BaseMongoIndexSpec
     }
 
     "return some events with default Pagination" in {
-      await(repository.insert(createCaseStatusChangeEvent("ref")))
-      await(repository.insert(createCaseStatusChangeEvent("ref")))
+      await(repository.insert(createAssignmentChangeEvent("ref")))
+      await(repository.insert(createAppealStatusChangeEvent("ref")))
       await(repository.getByCaseReference("ref", Pagination())).size shouldBe 2
     }
 
-    "return upto 'pageSize' cases" in {
+    "return up to 'pageSize' cases" in {
       await(repository.insert(createCaseStatusChangeEvent("ref")))
-      await(repository.insert(createCaseStatusChangeEvent("ref")))
-      await(repository.getByCaseReference("ref", Pagination(page = 1, pageSize = 1))).size shouldBe 1
+      await(repository.insert(createQueueChangeEvent("ref")))
+      await(repository.getByCaseReference("ref", Pagination(pageSize = 1))).size shouldBe 1
     }
 
     "return pages of cases" in {
-      await(repository.insert(createCaseStatusChangeEvent("ref")))
-      await(repository.insert(createCaseStatusChangeEvent("ref")))
-      await(repository.getByCaseReference("ref", Pagination(page = 1, pageSize = 1))).size shouldBe 1
+      await(repository.insert(createExtendedUseStatusChangeEvent("ref")))
+      await(repository.insert(createReviewStatusChangeEvent("ref")))
+      await(repository.getByCaseReference("ref", Pagination(pageSize = 1))).size shouldBe 1
       await(repository.getByCaseReference("ref", Pagination(page = 2, pageSize = 1))).size shouldBe 1
       await(repository.getByCaseReference("ref", Pagination(page = 3, pageSize = 1))).size shouldBe 0
     }
