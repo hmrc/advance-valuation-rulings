@@ -536,7 +536,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       storeCases(c2, c5, c10)
 
-      val result = Http(s"$serviceUrl/cases?reference=${c2.reference}&keyword=${c5.reference}")
+      val result = Http(s"$serviceUrl/cases?reference=${c2.reference}&reference=${c5.reference}")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
