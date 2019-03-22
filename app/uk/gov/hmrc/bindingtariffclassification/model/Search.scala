@@ -36,6 +36,7 @@ case class Search
 
 case class Filter
 (
+  reference: Option[Set[String]] = None,
   applicationType: Option[ApplicationType] = None,
   queueId: Option[String] = None,
   eori: Option[String] = None,
@@ -97,6 +98,7 @@ object Sort {
 
 object Filter {
 
+  private val referenceKey = "reference"
   private val applicationTypeKey = "application_type"
   private val queueIdKey = "queue_id"
   private val eoriKey = "eori"
@@ -133,6 +135,7 @@ object Filter {
       Some(
         Right(
           Filter(
+            reference = params(referenceKey),
             applicationType = param(applicationTypeKey).flatMap(bindApplicationType),
             queueId = param(queueIdKey),
             eori = param(eoriKey),
@@ -150,6 +153,7 @@ object Filter {
 
     override def unbind(key: String, filter: Filter): String = {
       Seq(
+        filter.reference.map(_.map(s => stringBinder.unbind(referenceKey, s.toString)).mkString("&")),
         filter.applicationType.map(t => stringBinder.unbind(applicationTypeKey, t.toString)),
         filter.queueId.map(stringBinder.unbind(queueIdKey, _)),
         filter.eori.map(stringBinder.unbind(eoriKey, _)),

@@ -32,6 +32,7 @@ class SearchMapperSpec extends UnitSpec {
     "convert to Json when all possible parameters are taken into account " in {
 
       val filter = Filter(
+        reference = Some(Set("id1", "id2")),
         applicationType = Some(ApplicationType.BTI),
         queueId = Some("valid_queue"),
         eori = Some("eori-number"),
@@ -45,6 +46,7 @@ class SearchMapperSpec extends UnitSpec {
       )
 
       jsonMapper.filterBy(filter) shouldBe Json.obj(
+        "reference" -> Json.obj("$in" -> Json.arr("id1", "id2")),
         "application.type" -> "BTI",
         "queueId" -> "valid_queue",
         "assignee.id" -> "valid_assignee",
@@ -65,6 +67,12 @@ class SearchMapperSpec extends UnitSpec {
           Json.obj("application.agent.eoriDetails.eori" -> JsString("eori-number"))
         ),
         "keywords" -> Json.obj("$all" -> Json.arr("MTB", "BIKE"))
+      )
+    }
+
+    "convert to Json when just the `reference` param is taken into account " in {
+      jsonMapper.filterBy(Filter(reference = Some(Set("id1", "id2")))) shouldBe Json.obj(
+        "reference" -> Json.obj("$in" -> Json.arr("id1", "id2"))
       )
     }
 

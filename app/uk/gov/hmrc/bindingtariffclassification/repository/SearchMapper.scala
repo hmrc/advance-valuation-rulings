@@ -30,6 +30,7 @@ class SearchMapper {
   def filterBy(filter: Filter): JsObject = {
     JsObject(
       Map() ++
+        filter.reference.map("reference" -> inArray[String](_)) ++
         filter.applicationType.map(s => "application.type" -> JsString(s.toString)) ++
         filter.queueId.map("queueId" -> mappingNoneOrSome(_)) ++
         filter.assigneeId.map("assignee.id" -> mappingNoneOrSome(_)) ++

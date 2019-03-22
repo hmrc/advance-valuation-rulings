@@ -506,6 +506,58 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
+  feature("Get Cases by references") {
+
+    scenario("No matches") {
+
+      storeCases(c2, c10)
+
+      val result = Http(s"$serviceUrl/cases?reference=a")
+        .header(apiTokenKey, appConfig.authorization)
+        .asString
+
+      result.code shouldEqual OK
+      Json.parse(result.body) shouldBe Json.toJson(Paged.empty[Case])
+    }
+
+    scenario("Filtering cases by single reference") {
+
+      storeCases(c2, c5, c10)
+
+      val result = Http(s"$serviceUrl/cases?reference=${c2.reference}")
+        .header(apiTokenKey, appConfig.authorization)
+        .asString
+
+      result.code shouldEqual OK
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2)))
+    }
+
+    scenario("Filtering cases by multiple references") {
+
+      storeCases(c2, c5, c10)
+
+      val result = Http(s"$serviceUrl/cases?reference=${c2.reference}&keyword=${c5.reference}")
+        .header(apiTokenKey, appConfig.authorization)
+        .asString
+
+      result.code shouldEqual OK
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2, c5)))
+    }
+
+    scenario("Filtering cases by multiple references - comma separated") {
+
+      storeCases(c2, c5, c10)
+
+      val result = Http(s"$serviceUrl/cases?reference=${c2.reference},${c5.reference}")
+        .header(apiTokenKey, appConfig.authorization)
+        .asString
+
+      result.code shouldEqual OK
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2, c5)))
+    }
+
+  }
+
 
   feature("Get Cases by keywords") {
 

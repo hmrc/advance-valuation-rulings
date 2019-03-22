@@ -31,6 +31,7 @@ class SearchTest extends UnitSpec {
   )
 
   private val filter = Filter(
+    reference = Some(Set("id1", "id2")),
     applicationType = Some(ApplicationType.BTI),
     traderName = Some("trader-name"),
     queueId = Some("queue-id"),
@@ -45,6 +46,7 @@ class SearchTest extends UnitSpec {
   private val search = Search(filter = filter, sort = Some(sort))
 
   private val params: Map[String, Seq[String]] = Map(
+    "reference" -> Seq("id1", "id2"),
     "application_type" -> Seq("BTI"),
     "trader_name" -> Seq("trader-name"),
     "queue_id" -> Seq("queue-id"),
@@ -59,6 +61,7 @@ class SearchTest extends UnitSpec {
   )
 
   private val emptyParams: Map[String, Seq[String]] = Map(
+    "reference" -> Seq(""),
     "application_type" -> Seq(""),
     "trader_name" -> Seq(""),
     "queue_id" -> Seq(""),
@@ -82,7 +85,9 @@ class SearchTest extends UnitSpec {
 
     "Unbind Populated Search to Query String" in {
       val populatedQueryParam: String =
-        "application_type=BTI" +
+        "reference=id1" +
+          "&reference=id2" +
+          "&application_type=BTI" +
           "&queue_id=queue-id" +
           "&eori=eori-number" +
           "&assignee_id=assignee-id" +
@@ -123,7 +128,9 @@ class SearchTest extends UnitSpec {
 
     "Unbind Populated Filter to Query String" in {
       val populatedQueryParam: String =
-        "application_type=BTI" +
+        "reference=id1" +
+          "&reference=id2" +
+          "&application_type=BTI" +
           "&queue_id=queue-id" +
           "&eori=eori-number" +
           "&assignee_id=assignee-id" +

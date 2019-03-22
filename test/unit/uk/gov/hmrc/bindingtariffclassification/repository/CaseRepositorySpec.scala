@@ -342,6 +342,33 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
   }
 
+  "get by multiple references" should {
+    val caseWithReferenceX1 = createCase().copy(reference = "x1")
+    val caseWithReferenceX2 = createCase().copy(reference = "x2")
+    val caseWithReferenceY1 = createCase().copy(reference = "y1")
+    val caseWithReferenceZ1 = createCase().copy(reference = "z1")
+    val caseWithReferenceW1 = createCase().copy(reference = "w1")
+
+    "return an empty sequence when there are no matches" in {
+      val search = Search(Filter(reference = Some(Set("a", "b"))))
+      store(caseWithReferenceX1, caseWithReferenceX2, caseWithReferenceY1, caseWithReferenceZ1, caseWithReferenceW1)
+      await(repository.get(search, Pagination())).results shouldBe Seq.empty
+    }
+
+    "return the expected document when there is one match" in {
+      val search = Search(Filter(reference = Some(Set("x1"))))
+      store(caseWithReferenceX1, caseWithReferenceY1, caseWithReferenceZ1, caseWithReferenceW1)
+      await(repository.get(search, Pagination())).results shouldBe Seq(caseWithReferenceX1)
+    }
+
+    "return the expected documents when there are multiple matches" in {
+      val search = Search(Filter(reference = Some(Set("x1", "x2", "y1"))))
+      store(caseWithReferenceX1, caseWithReferenceX2, caseWithReferenceY1, caseWithReferenceZ1, caseWithReferenceW1)
+      await(repository.get(search, Pagination())).results shouldBe Seq(caseWithReferenceX1, caseWithReferenceX2, caseWithReferenceY1)
+    }
+
+  }
+
   "get by single keyword" should {
 
     val c1 = createCase(keywords = Set("BIKE", "MTB"))
