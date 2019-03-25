@@ -33,7 +33,8 @@ trait MongoCrudHelper[T] extends MongoIndexCreator {
     mongoCollection.find[JsObject, T](selector).one[T]
   }
 
-  protected def getMany(filterBy: JsObject, sortBy: JsObject, pagination: Pagination = Pagination())(implicit r: OFormat[T]): Future[Paged[T]] = {
+  protected def getMany(filterBy: JsObject, sortBy: JsObject, pagination: Pagination = Pagination())
+                       (implicit r: OFormat[T]): Future[Paged[T]] = {
     for {
       results <- mongoCollection.find[JsObject, T](filterBy)
         .sort(sortBy)
