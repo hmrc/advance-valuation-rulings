@@ -41,13 +41,13 @@ class CaseSpec extends BaseFeatureSpec {
   private val c1 = createCase(app = createBasicBTIApplication, queue = Some(q1), assignee = Some(u1))
   private val status = CaseStatus.CANCELLED
   private val c1_updated = c1.copy(status = status)
-  private val c2 = createCase(app = createLiabilityOrder,
+  private val c2 = createCase(r = "case_ref_2", app = createLiabilityOrder,
     decision = Some(createDecision()),
     attachments = Seq(createAttachment,createAttachmentWithOperator),
     keywords = Set("BIKE", "MTB", "HARDTAIL"))
   private val c3 = createNewCaseWithExtraFields()
   private val c4 = createNewCase(app = createBTIApplicationWithAllFields)
-  private val c5 = createCase(app = createBasicBTIApplication.copy(holder = eORIDetailForNintedo))
+  private val c5 = createCase(r = "case_ref_5", app = createBasicBTIApplication.copy(holder = eORIDetailForNintedo))
   private val c6 = createCase(decision = Some(createDecision(effectiveEndDate = Some(Instant.now().plusSeconds(60)))))
   private val c7 = createCase(decision = Some(createDecision(goodsDescription = "LAPTOP")))
   private val c8 = createCase(decision = Some(createDecision(methodCommercialDenomination = Some("laptop from Mexico"))))
@@ -536,7 +536,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       storeCases(c2, c5, c10)
 
-      val result = Http(s"$serviceUrl/cases?reference=${c2.reference}&reference=${c5.reference}&sort_by=reference")
+      val result = Http(s"$serviceUrl/cases?reference=${c5.reference}&reference=${c2.reference}&sort_by=reference")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
@@ -548,7 +548,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       storeCases(c2, c5, c10)
 
-      val result = Http(s"$serviceUrl/cases?reference=${c2.reference},${c5.reference}&sort_by=reference")
+      val result = Http(s"$serviceUrl/cases?reference=${c5.reference},${c2.reference}&sort_by=reference")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
