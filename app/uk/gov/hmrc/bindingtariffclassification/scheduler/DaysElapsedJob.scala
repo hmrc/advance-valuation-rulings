@@ -16,69 +16,114 @@
 
 package uk.gov.hmrc.bindingtariffclassification.scheduler
 
-import java.time.DayOfWeek.{SATURDAY, SUNDAY}
-import java.time.{LocalDate, LocalTime}
+import java.time._
+import java.time.temporal.ChronoUnit
 
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.connector.BankHolidaysConnector
-import uk.gov.hmrc.bindingtariffclassification.service.CaseService
+import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
+import uk.gov.hmrc.bindingtariffclassification.model._
+import uk.gov.hmrc.bindingtariffclassification.service.{CaseService, EventService}
+import uk.gov.hmrc.bindingtariffclassification.sort.CaseSortField
 import uk.gov.hmrc.http.HeaderCarrier
 
+import scala.collection.immutable.SortedMap
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.concurrent.Future.successful
+import scala.concurrent.Future._
 import scala.concurrent.duration._
 
 @Singleton
 class DaysElapsedJob @Inject()(appConfig: AppConfig,
                                caseService: CaseService,
+                               eventService: EventService,
                                bankHolidaysConnector: BankHolidaysConnector) extends ScheduledJob {
 
   private implicit val carrier: HeaderCarrier = HeaderCarrier()
   private lazy val jobConfig = appConfig.daysElapsed
-  private lazy val weekendDays = Seq(SATURDAY, SUNDAY)
-  private lazy val secondsInADay = 1.day.toSeconds
+  private lazy val criteria = CaseSearch(
+    filter = Filter(statuses = Some(Set(CaseStatus.OPEN, CaseStatus.NEW))),
+    sort = Some(CaseSort(CaseSortField.REFERENCE))
+  )
 
   override val name: String = "DaysElapsed"
 
   override def interval: FiniteDuration = jobConfig.interval
 
-  override def firstRunTime: LocalTime = {
-    jobConfig.elapseTime
+  override def firstRunTime: LocalTime = jobConfig.elapseTime
+
+  override def execute(): Future[Unit] = for {
+    bankHolidays <- bankHolidaysConnector.get()
+    _ <- process(1)(bankHolidays)
+  } yield ()
+
+  private def process(page: Int)(implicit bankHolidays: Set[LocalDate]): Future[Unit] = {
+    caseService.get(criteria, Pagination(page = page)) flatMap { pager =>
+      sequence(pager.results.map(refreshDaysElapsed)).map(_ => pager)
+    } flatMap {
+      case pager if pager.hasNextPage => process(page + 1)
+      case _ => successful(())
+    }
   }
 
-  def isWeekend: LocalDate => Boolean = { d: LocalDate =>
-    weekendDays.contains(d.getDayOfWeek)
+  private def refreshDaysElapsed(c: Case)(implicit bankHolidays: Set[LocalDate]): Future[Unit] = {
+    val createdDate: LocalDate = LocalDateTime.ofInstant(c.createdDate, ZoneOffset.UTC).toLocalDate
+    val daysSinceCreated: Long = ChronoUnit.DAYS.between(createdDate, LocalDate.now(appConfig.clock))
+
+    // Working days between the created date and Now
+    val workingDays: Seq[Instant] = (0L until daysSinceCreated)
+      .map(createdDate.plusDays)
+      .filterNot(bankHoliday)
+      .filterNot(weekend)
+      .map(toInstant)
+
+    for {
+      // Get the Status Change events for that case
+      events <- eventService.search(EventSearch(c.reference, Some(EventType.CASE_STATUS_CHANGE)), Pagination(1, Integer.MAX_VALUE))
+
+      // Generate a timeline of the Case Status over time
+      statusTimeline: StatusTimeline = StatusTimeline.from(events.results)
+
+      // Filter down to the days the case was not Referred
+      actionableDays: Seq[Instant] = workingDays
+        .filterNot(statusTimeline.statusOn(_).contains(CaseStatus.REFERRED))
+        .filterNot(statusTimeline.statusOn(_).contains(CaseStatus.SUSPENDED))
+
+      // Update the case
+      _ <- caseService.update(c.copy(daysElapsed = actionableDays.size), upsert = false)
+
+      _ = Logger.info(s"DaysElapsedJob: Updated Days Elapsed of Case [${c.reference}] from [${c.daysElapsed}] to [${actionableDays.size}]")
+    } yield ()
   }
 
-  def isBankHoliday: LocalDate => Future[Boolean] = { d: LocalDate =>
-    bankHolidaysConnector.get().map(_.contains(d))
-  }
+  private def toInstant: LocalDate => Instant = _.atStartOfDay(appConfig.clock.getZone).toInstant
 
-  override def execute(): Future[Unit] = {
+  private def bankHoliday(date: LocalDate)(implicit bankHolidays: Set[LocalDate]): Boolean = bankHolidays.contains(date)
 
-    val today = LocalDate.now(appConfig.clock)
+  private def weekend(date: LocalDate): Boolean = Set(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY).contains(date.getDayOfWeek)
 
-    lazy val msgPrefix = s"Scheduled Job [$name] executed on $today:"
+  private class StatusTimeline(statusChanges: Seq[(Instant, CaseStatus)]) {
+    lazy val timeline: SortedMap[Instant, CaseStatus] = SortedMap[Instant, CaseStatus](statusChanges: _*)
 
-    Logger.info(msgPrefix)
-    if (isWeekend(today)) {
-      Logger.info(s"$msgPrefix Skipped as it is a Weekend")
-      successful(())
-    } else {
-      isBankHoliday(today).flatMap {
-        case true =>
-          Logger.info(s"$msgPrefix Skipped as it is a Bank Holiday")
-          successful(())
-        case false =>
-          val increment = jobConfig.interval.toSeconds.toDouble / secondsInADay
-          caseService.incrementDaysElapsed(increment).map { modified: Int =>
-            Logger.info(s"$msgPrefix Incremented the Days Elapsed for [$modified] cases")
-          }
+    def statusOn(date: Instant): Option[CaseStatus] = {
+      if (timeline.contains(date)) {
+        timeline.get(date)
+      } else {
+        timeline.until(date).lastOption.map(_._2)
       }
     }
+  }
+
+  private object StatusTimeline {
+    def from(events: Seq[Event]): StatusTimeline = new StatusTimeline(
+      events
+        .filter(_.details.isInstanceOf[CaseStatusChange])
+        .map { event =>
+          (event.timestamp, event.details.asInstanceOf[CaseStatusChange].to)
+        }
+    )
   }
 
 }

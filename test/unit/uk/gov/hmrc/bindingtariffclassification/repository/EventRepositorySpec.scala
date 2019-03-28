@@ -20,9 +20,9 @@ import java.time.Instant
 
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-import reactivemongo.api.DB
 import reactivemongo.api.indexes.Index
 import reactivemongo.api.indexes.IndexType.Ascending
+import reactivemongo.api.{DB, ReadConcern}
 import reactivemongo.bson._
 import reactivemongo.core.errors.DatabaseException
 import reactivemongo.play.json.ImplicitBSONHandlers._
@@ -65,7 +65,7 @@ class EventRepositorySpec extends BaseMongoIndexSpec
   }
 
   private def collectionSize: Int = {
-    await(repository.collection.count())
+    await(repository.collection.count(selector = None, limit = Some(0), skip = 0, hint = None, readConcern = ReadConcern.Local)).toInt
   }
 
   "deleteAll()" should {
@@ -113,9 +113,9 @@ class EventRepositorySpec extends BaseMongoIndexSpec
     }
   }
 
-  "getByCaseReference" should {
+  "search" should {
 
-    "retrieve all expected events from the collection" in {
+    "retrieve all expected events from the collection by reference" in {
       val e1 = createNoteEvent("REF_1")
       val e2 = createCaseStatusChangeEvent("REF_2")
 
@@ -123,7 +123,20 @@ class EventRepositorySpec extends BaseMongoIndexSpec
       await(repository.insert(e2))
       collectionSize shouldBe 2
 
-      await(repository.getByCaseReference("REF_1", Pagination())) shouldBe Paged(Seq(e1), Pagination(), 1)
+      await(repository.search(EventSearch("REF_1"), Pagination())) shouldBe Paged(Seq(e1), Pagination(), 1)
+      await(repository.search(EventSearch("REF_2"), Pagination())) shouldBe Paged(Seq(e2), Pagination(), 1)
+    }
+
+    "retrieve all expected events from the collection by type" in {
+      val e1 = createNoteEvent("REF_1")
+      val e2 = createCaseStatusChangeEvent("REF_1")
+
+      await(repository.insert(e1))
+      await(repository.insert(e2))
+      collectionSize shouldBe 2
+
+      await(repository.search(EventSearch("REF_1", Some(EventType.NOTE)), Pagination())) shouldBe Paged(Seq(e1), Pagination(), 1)
+      await(repository.search(EventSearch("REF_1", Some(EventType.CASE_STATUS_CHANGE)), Pagination())) shouldBe Paged(Seq(e2), Pagination(), 1)
     }
 
 
@@ -139,7 +152,7 @@ class EventRepositorySpec extends BaseMongoIndexSpec
 
       collectionSize shouldBe 3
 
-      val result: Paged[Event] = await(repository.getByCaseReference("REF_1", Pagination()))
+      val result: Paged[Event] = await(repository.search(EventSearch("REF_1"), Pagination()))
 
       result.results.map(_.id) should contain theSameElementsInOrderAs Seq(e20180811.id, e20170917.id, e20170911.id)
     }
@@ -148,27 +161,27 @@ class EventRepositorySpec extends BaseMongoIndexSpec
       await(repository.insert(createCaseStatusChangeEvent("REF_1")))
       collectionSize shouldBe 1
 
-      await(repository.getByCaseReference("REF_2", Pagination())) shouldBe Paged.empty
+      await(repository.search(EventSearch("REF_2"), Pagination())) shouldBe Paged.empty
     }
 
     "return some events with default Pagination" in {
       await(repository.insert(createAssignmentChangeEvent("ref")))
       await(repository.insert(createAppealStatusChangeEvent("ref")))
-      await(repository.getByCaseReference("ref", Pagination())).size shouldBe 2
+      await(repository.search(EventSearch("ref"), Pagination())).size shouldBe 2
     }
 
     "return up to 'pageSize' cases" in {
       await(repository.insert(createCaseStatusChangeEvent("ref")))
       await(repository.insert(createQueueChangeEvent("ref")))
-      await(repository.getByCaseReference("ref", Pagination(pageSize = 1))).size shouldBe 1
+      await(repository.search(EventSearch("ref"), Pagination(pageSize = 1))).size shouldBe 1
     }
 
     "return pages of cases" in {
       await(repository.insert(createExtendedUseStatusChangeEvent("ref")))
       await(repository.insert(createReviewStatusChangeEvent("ref")))
-      await(repository.getByCaseReference("ref", Pagination(pageSize = 1))).size shouldBe 1
-      await(repository.getByCaseReference("ref", Pagination(page = 2, pageSize = 1))).size shouldBe 1
-      await(repository.getByCaseReference("ref", Pagination(page = 3, pageSize = 1))).size shouldBe 0
+      await(repository.search(EventSearch("ref"), Pagination(pageSize = 1))).size shouldBe 1
+      await(repository.search(EventSearch("ref"), Pagination(page = 2, pageSize = 1))).size shouldBe 1
+      await(repository.search(EventSearch("ref"), Pagination(page = 3, pageSize = 1))).size shouldBe 0
     }
 
   }
