@@ -37,7 +37,7 @@ class CryptoSpec extends UnitSpec with MockitoSugar {
 
   private val bti = createBTIApplicationWithAllFields
   private val lo = createLiabilityOrder
-  private val filter = Filter(traderName = Some("name"))
+  private val filter = CaseFilter(traderName = Some("name"))
 
   private def expectedEncryptedBti(k: String, letter: Option[Attachment]): BTIApplication = {
     bti.copy(
@@ -55,7 +55,7 @@ class CryptoSpec extends UnitSpec with MockitoSugar {
     )
   }
 
-  private def expectedEncryptedSearchFilter(k: String): Filter = {
+  private def expectedEncryptedSearchFilter(k: String): CaseFilter = {
     filter.copy(traderName = Some(k))
   }
 

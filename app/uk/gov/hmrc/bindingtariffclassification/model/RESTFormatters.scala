@@ -52,8 +52,6 @@ object RESTFormatters {
   implicit val formatCase = Jsonx.formatCaseClass[Case]
   implicit val formatNewCase = Json.format[NewCaseRequest]
 
-  implicit val formatStatus = Json.format[Status]
-
   // `Event` formatters
   implicit val formatCaseStatusChange = Json.format[CaseStatusChange]
   implicit val formatAppealStatusChange = Json.format[AppealStatusChange]

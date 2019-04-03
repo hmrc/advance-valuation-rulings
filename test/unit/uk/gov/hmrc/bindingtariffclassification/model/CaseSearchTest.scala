@@ -30,7 +30,7 @@ class CaseSearchTest extends UnitSpec {
     direction = SortDirection.DESCENDING
   )
 
-  private val filter = Filter(
+  private val filter = CaseFilter(
     reference = Some(Set("id1", "id2")),
     applicationType = Some(ApplicationType.BTI),
     traderName = Some("trader-name"),
@@ -123,7 +123,7 @@ class CaseSearchTest extends UnitSpec {
   "Filter Binder" should {
 
     "Unbind Unpopulated Filter to Query String" in {
-      Filter.bindable.unbind("", Filter()) shouldBe ""
+      CaseFilter.bindable.unbind("", CaseFilter()) shouldBe ""
     }
 
     "Unbind Populated Filter to Query String" in {
@@ -141,19 +141,19 @@ class CaseSearchTest extends UnitSpec {
           "&decision_details=decision-details" +
           "&keyword=BIKE" +
           "&keyword=MTB"
-      URLDecoder.decode(Filter.bindable.unbind("", filter), "UTF-8") shouldBe populatedQueryParam
+      URLDecoder.decode(CaseFilter.bindable.unbind("", filter), "UTF-8") shouldBe populatedQueryParam
     }
 
     "Bind empty query string" in {
-      Filter.bindable.bind("", Map()) shouldBe Some(Right(Filter()))
+      CaseFilter.bindable.bind("", Map()) shouldBe Some(Right(CaseFilter()))
     }
 
     "Bind query string with empty values" in {
-      Filter.bindable.bind("", emptyParams) shouldBe Some(Right(Filter()))
+      CaseFilter.bindable.bind("", emptyParams) shouldBe Some(Right(CaseFilter()))
     }
 
     "Bind populated query string" in {
-      Filter.bindable.bind("", params) shouldBe Some(Right(filter))
+      CaseFilter.bindable.bind("", params) shouldBe Some(Right(filter))
     }
   }
 

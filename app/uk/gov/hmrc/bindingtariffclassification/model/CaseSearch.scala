@@ -16,174 +16,32 @@
 
 package uk.gov.hmrc.bindingtariffclassification.model
 
-import java.time.Instant
-
 import play.api.mvc.QueryStringBindable
-import uk.gov.hmrc.bindingtariffclassification.model.ApplicationType.ApplicationType
-import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus._
-import uk.gov.hmrc.bindingtariffclassification.sort.CaseSortField._
-import uk.gov.hmrc.bindingtariffclassification.sort.SortDirection._
-import uk.gov.hmrc.bindingtariffclassification.sort.{CaseSortField, SortDirection}
-
-import scala.util.Try
 
 
 case class CaseSearch
 (
-  filter: Filter = Filter(),
+  filter: CaseFilter = CaseFilter(),
   sort: Option[CaseSort] = None
 )
 
-case class Filter
-(
-  reference: Option[Set[String]] = None,
-  applicationType: Option[ApplicationType] = None,
-  queueId: Option[String] = None,
-  eori: Option[String] = None,
-  assigneeId: Option[String] = None,
-  statuses: Option[Set[CaseStatus]] = None,
-  traderName: Option[String] = None,
-  minDecisionEnd: Option[Instant] = None,
-  commodityCode: Option[String] = None,
-  decisionDetails: Option[String] = None,
-  keywords: Option[Set[String]] = None
-)
-
-case class CaseSort
-(
-  field: CaseSortField,
-  direction: SortDirection = SortDirection.ASCENDING
-)
-
-object CaseSort {
-
-  private val sortByKey = "sort_by"
-  private val sortDirectionKey = "sort_direction"
-
-  private def bindSortField(key: String): Option[CaseSortField] = {
-    CaseSortField.values.find(_.toString == key)
-  }
-
-  private def bindSortDirection(key: String): Option[SortDirection] = {
-    SortDirection.values.find(_.toString == key)
-  }
-
-  implicit def bindable(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[CaseSort] = new QueryStringBindable[CaseSort] {
-
-    override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, CaseSort]] = {
-
-      def param(name: String): Option[String] = stringBinder.bind(name, params).filter(_.isRight).map(_.right.get)
-
-      val field: Option[CaseSortField] = param(sortByKey).flatMap(bindSortField)
-      val direction: Option[SortDirection] = param(sortDirectionKey).flatMap(bindSortDirection)
-
-      (field, direction) match {
-        case (Some(f), Some(d)) => Some(Right(CaseSort(field = f, direction = d)))
-        case (Some(f), _) => Some(Right(CaseSort(field = f)))
-        case _ => None
-      }
-    }
-
-    override def unbind(key: String, query: CaseSort): String = {
-      Seq[String](
-        stringBinder.unbind(sortByKey, query.field.toString),
-        stringBinder.unbind(sortDirectionKey, query.direction.toString)
-      ).mkString("&")
-
-    }
-
-  }
-
-}
-
-object Filter {
-
-  private val referenceKey = "reference"
-  private val applicationTypeKey = "application_type"
-  private val queueIdKey = "queue_id"
-  private val eoriKey = "eori"
-  private val assigneeIdKey = "assignee_id"
-  private val statusKey = "status"
-  private val traderNameKey = "trader_name"
-  private val minDecisionEndKey = "min_decision_end"
-  private val commodityCodeKey = "commodity_code"
-  private val decisionDetailsKey = "decision_details"
-  private val keywordKey = "keyword"
-
-  implicit def bindable(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[Filter] = new QueryStringBindable[Filter] {
-
-    private def bindCaseStatus(key: String): Option[CaseStatus] = {
-      CaseStatus.values.find(_.toString.equalsIgnoreCase(key))
-    }
-
-    private def bindApplicationType(key: String): Option[ApplicationType] = {
-      ApplicationType.values.find(_.toString.equalsIgnoreCase(key))
-    }
-
-    private def bindInstant(key: String): Option[Instant] = Try(Instant.parse(key)).toOption
-
-    override def bind(key: String, requestParams: Map[String, Seq[String]]): Option[Either[String, Filter]] = {
-
-      def params(name: String): Option[Set[String]] = {
-        requestParams.get(name).map(_.flatMap(_.split(",")).toSet).filter(_.exists(_.nonEmpty))
-      }
-
-      def param(name: String): Option[String] = {
-        params(name).map(_.head)
-      }
-
-      Some(
-        Right(
-          Filter(
-            reference = params(referenceKey),
-            applicationType = param(applicationTypeKey).flatMap(bindApplicationType),
-            queueId = param(queueIdKey),
-            eori = param(eoriKey),
-            assigneeId = param(assigneeIdKey),
-            statuses = params(statusKey).map(_.map(bindCaseStatus).filter(_.isDefined).map(_.get)),
-            traderName = param(traderNameKey),
-            minDecisionEnd = param(minDecisionEndKey).flatMap(bindInstant),
-            commodityCode = param(commodityCodeKey),
-            decisionDetails = param(decisionDetailsKey),
-            keywords = params(keywordKey).map(_.map(_.toUpperCase))
-          )
-        )
-      )
-    }
-
-    override def unbind(key: String, filter: Filter): String = {
-      Seq(
-        filter.reference.map(_.map(s => stringBinder.unbind(referenceKey, s.toString)).mkString("&")),
-        filter.applicationType.map(t => stringBinder.unbind(applicationTypeKey, t.toString)),
-        filter.queueId.map(stringBinder.unbind(queueIdKey, _)),
-        filter.eori.map(stringBinder.unbind(eoriKey, _)),
-        filter.assigneeId.map(stringBinder.unbind(assigneeIdKey, _)),
-        filter.statuses.map(_.map(s => stringBinder.unbind(statusKey, s.toString)).mkString("&")),
-        filter.traderName.map(stringBinder.unbind(traderNameKey, _)),
-        filter.minDecisionEnd.map(i => stringBinder.unbind(minDecisionEndKey, i.toString)),
-        filter.commodityCode.map(stringBinder.unbind(commodityCodeKey, _)),
-        filter.decisionDetails.map(stringBinder.unbind(decisionDetailsKey, _)),
-        filter.keywords.map(_.map(s => stringBinder.unbind(keywordKey, s.toString)).mkString("&"))
-      ).filter(_.isDefined).map(_.get).mkString("&")
-    }
-  }
-}
-
 object CaseSearch {
 
-  implicit def bindable(implicit filterBinder: QueryStringBindable[Filter],
-                        sortBinder: QueryStringBindable[CaseSort]): QueryStringBindable[CaseSearch] = new QueryStringBindable[CaseSearch] {
+  implicit def bindable(implicit
+                        filterBinder: QueryStringBindable[CaseFilter],
+                        sortBinder: QueryStringBindable[CaseSort]
+                       ): QueryStringBindable[CaseSearch] = new QueryStringBindable[CaseSearch] {
 
     override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, CaseSearch]] = {
 
-      val filter: Option[Either[String, Filter]] = filterBinder.bind(key, params)
+      val filter: Option[Either[String, CaseFilter]] = filterBinder.bind(key, params)
 
       val sort: Option[Either[String, CaseSort]] = sortBinder.bind(key, params)
 
       Some(
         Right(
           CaseSearch(
-            filter.map(_.right.get).getOrElse(Filter()),
+            filter.map(_.right.get).getOrElse(CaseFilter()),
             sort.map(_.right.get)
           )
         )

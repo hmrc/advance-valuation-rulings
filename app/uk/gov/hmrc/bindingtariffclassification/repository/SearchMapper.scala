@@ -21,13 +21,13 @@ import play.api.libs.json.Json.JsValueWrapper
 import play.api.libs.json._
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatInstant
-import uk.gov.hmrc.bindingtariffclassification.model.{CaseSort, Filter}
+import uk.gov.hmrc.bindingtariffclassification.model.{CaseFilter, CaseSort}
 import uk.gov.hmrc.bindingtariffclassification.sort.CaseSortField._
 
 @Singleton
 class SearchMapper {
 
-  def filterBy(filter: Filter): JsObject = {
+  def filterBy(filter: CaseFilter): JsObject = {
     JsObject(
       Map() ++
         filter.reference.map("reference" -> inArray[String](_)) ++

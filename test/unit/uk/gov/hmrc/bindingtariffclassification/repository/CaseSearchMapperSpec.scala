@@ -19,7 +19,7 @@ package uk.gov.hmrc.bindingtariffclassification.repository
 import java.time.Instant
 
 import play.api.libs.json.{JsNull, JsString, Json}
-import uk.gov.hmrc.bindingtariffclassification.model.{ApplicationType, CaseSort, CaseStatus, Filter}
+import uk.gov.hmrc.bindingtariffclassification.model.{ApplicationType, CaseFilter, CaseSort, CaseStatus}
 import uk.gov.hmrc.bindingtariffclassification.sort.{CaseSortField, SortDirection}
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -31,7 +31,7 @@ class CaseSearchMapperSpec extends UnitSpec {
 
     "convert to Json when all possible parameters are taken into account " in {
 
-      val filter = Filter(
+      val filter = CaseFilter(
         reference = Some(Set("id1", "id2")),
         applicationType = Some(ApplicationType.BTI),
         queueId = Some("valid_queue"),
@@ -71,25 +71,25 @@ class CaseSearchMapperSpec extends UnitSpec {
     }
 
     "convert to Json when just the `reference` param is taken into account " in {
-      jsonMapper.filterBy(Filter(reference = Some(Set("id1", "id2")))) shouldBe Json.obj(
+      jsonMapper.filterBy(CaseFilter(reference = Some(Set("id1", "id2")))) shouldBe Json.obj(
         "reference" -> Json.obj("$in" -> Json.arr("id1", "id2"))
       )
     }
 
     "convert to Json when just the `applicationType` param is taken into account " in {
-      jsonMapper.filterBy(Filter(applicationType = Some(ApplicationType.BTI))) shouldBe Json.obj(
+      jsonMapper.filterBy(CaseFilter(applicationType = Some(ApplicationType.BTI))) shouldBe Json.obj(
         "application.type" -> "BTI"
       )
     }
 
     "convert to Json when just the `queueId` param is taken into account " in {
-      jsonMapper.filterBy(Filter(queueId = Some("valid_queue"))) shouldBe Json.obj(
+      jsonMapper.filterBy(CaseFilter(queueId = Some("valid_queue"))) shouldBe Json.obj(
         "queueId" -> "valid_queue"
       )
     }
 
     "convert to Json when just the `eori` param is taken into account " in {
-      jsonMapper.filterBy(Filter(eori = Some("eori-number"))) shouldBe Json.obj(
+      jsonMapper.filterBy(CaseFilter(eori = Some("eori-number"))) shouldBe Json.obj(
         "$or" -> Json.arr(
           Json.obj("application.holder.eori" -> JsString("eori-number")),
           Json.obj("application.agent.eoriDetails.eori" -> JsString("eori-number"))
@@ -98,13 +98,13 @@ class CaseSearchMapperSpec extends UnitSpec {
     }
 
     "convert to Json when just the `assigneeId` param is taken into account " in {
-      jsonMapper.filterBy(Filter(assigneeId = Some("valid_assignee"))) shouldBe Json.obj(
+      jsonMapper.filterBy(CaseFilter(assigneeId = Some("valid_assignee"))) shouldBe Json.obj(
         "assignee.id" -> "valid_assignee"
       )
     }
 
     "convert to Json when just the `status` param is taken into account " in {
-      jsonMapper.filterBy(Filter(statuses = Some(Set(CaseStatus.NEW, CaseStatus.OPEN)))) shouldBe Json.obj(
+      jsonMapper.filterBy(CaseFilter(statuses = Some(Set(CaseStatus.NEW, CaseStatus.OPEN)))) shouldBe Json.obj(
         "status" -> Json.obj(
           "$in" -> Json.arr("NEW", "OPEN")
         )
@@ -112,7 +112,7 @@ class CaseSearchMapperSpec extends UnitSpec {
     }
 
     "convert to Json when just the `keywords` param is taken into account " in {
-      jsonMapper.filterBy(Filter(keywords = Some(Set("BIKE", "MTB")))) shouldBe Json.obj(
+      jsonMapper.filterBy(CaseFilter(keywords = Some(Set("BIKE", "MTB")))) shouldBe Json.obj(
         "keywords" -> Json.obj(
           "$all" -> Json.arr("BIKE", "MTB")
         )
@@ -120,7 +120,7 @@ class CaseSearchMapperSpec extends UnitSpec {
     }
 
     "convert to Json when just the `traderName` param is taken into account " in {
-      jsonMapper.filterBy(Filter(traderName = Some("traderName"))) shouldBe Json.obj(
+      jsonMapper.filterBy(CaseFilter(traderName = Some("traderName"))) shouldBe Json.obj(
         "application.holder.businessName" -> Json.obj(
           "$regex" -> ".*traderName.*",
           "$options" -> "i"
@@ -129,19 +129,19 @@ class CaseSearchMapperSpec extends UnitSpec {
     }
 
     "convert to Json when just the `minDecisionEnd` param is taken into account " in {
-      jsonMapper.filterBy(Filter(minDecisionEnd = Some(Instant.EPOCH))) shouldBe Json.obj(
+      jsonMapper.filterBy(CaseFilter(minDecisionEnd = Some(Instant.EPOCH))) shouldBe Json.obj(
         "decision.effectiveEndDate" -> Json.obj("$gte" -> Json.obj("$date" -> 0))
       )
     }
 
     "convert to Json when just the `commodityCode` param is taken into account " in {
-      jsonMapper.filterBy(Filter(commodityCode = Some("1234"))) shouldBe Json.obj(
+      jsonMapper.filterBy(CaseFilter(commodityCode = Some("1234"))) shouldBe Json.obj(
         "decision.bindingCommodityCode" -> Json.obj("$regex" -> "^1234\\d*")
       )
     }
 
     "convert to Json when just the `decisionDetails` param is taken into account " in {
-      jsonMapper.filterBy(Filter(decisionDetails = Some("strawberry"))) shouldBe Json.obj(
+      jsonMapper.filterBy(CaseFilter(decisionDetails = Some("strawberry"))) shouldBe Json.obj(
         "$or" ->
           Json.arr(
             Json.obj("decision.goodsDescription" -> Json.obj("$regex" -> ".*strawberry.*", "$options" -> "i")),
@@ -152,7 +152,7 @@ class CaseSearchMapperSpec extends UnitSpec {
     }
 
     "convert to Json when fields `queueId` and `assigneeId` are set to `none` " in {
-      val filter = Filter(queueId = Some("none"), assigneeId = Some("none"))
+      val filter = CaseFilter(queueId = Some("none"), assigneeId = Some("none"))
 
       jsonMapper.filterBy(filter) shouldBe Json.obj(
         "queueId" -> JsNull,
@@ -162,7 +162,7 @@ class CaseSearchMapperSpec extends UnitSpec {
 
     "convert to Json when fields `queueId` and `assigneeId` are set to `some` " in {
 
-      val filter = Filter(queueId = Some("some"), assigneeId = Some("some"))
+      val filter = CaseFilter(queueId = Some("some"), assigneeId = Some("some"))
 
       jsonMapper.filterBy(filter) shouldBe Json.obj(
         "queueId" -> Json.obj("$ne" -> JsNull),
@@ -171,7 +171,7 @@ class CaseSearchMapperSpec extends UnitSpec {
     }
 
     "convert to Json when there are no filters" in {
-      jsonMapper.filterBy(Filter()) shouldBe Json.obj()
+      jsonMapper.filterBy(CaseFilter()) shouldBe Json.obj()
     }
 
   }

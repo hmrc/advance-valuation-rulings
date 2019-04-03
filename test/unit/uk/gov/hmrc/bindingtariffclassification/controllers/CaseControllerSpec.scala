@@ -189,7 +189,7 @@ class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoS
     val assigneeId = Some("valid_assigneeId")
 
     val search = CaseSearch(
-      filter = Filter(queueId = queueId, assigneeId = assigneeId, statuses = Some(Set(CaseStatus.NEW, CaseStatus.OPEN))),
+      filter = CaseFilter(queueId = queueId, assigneeId = assigneeId, statuses = Some(Set(CaseStatus.NEW, CaseStatus.OPEN))),
       sort = Some(CaseSort(field = CaseSortField.DAYS_ELAPSED, direction = SortDirection.DESCENDING)))
 
     val pagination = Pagination()
@@ -213,7 +213,7 @@ class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoS
     }
 
     "return 500 when an error occurred" in {
-      val search = CaseSearch(Filter(), None)
+      val search = CaseSearch(CaseFilter(), None)
       val error = new RuntimeException
 
       when(caseService.get(refEq(search), refEq(pagination))).thenReturn(failed(error))
