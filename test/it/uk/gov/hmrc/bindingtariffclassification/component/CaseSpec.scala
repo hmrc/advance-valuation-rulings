@@ -125,7 +125,6 @@ class CaseSpec extends BaseFeatureSpec {
       responseCase.assignee shouldBe None
       responseCase.queueId shouldBe None
       responseCase.decision shouldBe None
-      responseCase.closedDate shouldBe None
     }
 
     scenario("Create a new case with all fields") {

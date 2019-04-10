@@ -26,7 +26,6 @@ case class Case
   status: CaseStatus,
   createdDate: Instant = Instant.now(),
   daysElapsed: Long = 0,
-  closedDate: Option[Instant] = None,
   caseBoardsFileNumber: Option[String] = None,
   assignee: Option[Operator] = None,
   queueId: Option[String] = None,

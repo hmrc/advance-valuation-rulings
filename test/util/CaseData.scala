@@ -126,7 +126,6 @@ object CaseData {
       assignee = Some(Operator("0")),
       application = createBasicBTIApplication,
       decision = Some(createDecision()),
-      closedDate = Some(Instant.now().minusSeconds(1 * secondsInAYear)),
       attachments = Seq.empty,
       keywords = Set("bike", "tool")
     )

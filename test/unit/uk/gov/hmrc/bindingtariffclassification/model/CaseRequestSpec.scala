@@ -37,7 +37,6 @@ class CaseRequestSpec extends UnitSpec with MockitoSugar {
       c.assignee shouldBe None
       c.queueId shouldBe None
       c.caseBoardsFileNumber shouldBe None
-      c.closedDate shouldBe None
       c.decision shouldBe None
       c.application shouldBe application
       c.attachments shouldBe attachments
