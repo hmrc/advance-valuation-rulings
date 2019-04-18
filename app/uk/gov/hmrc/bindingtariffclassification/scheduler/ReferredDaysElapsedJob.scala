@@ -23,24 +23,23 @@ import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.connector.BankHolidaysConnector
-import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.service.{CaseService, EventService}
 import uk.gov.hmrc.bindingtariffclassification.sort.CaseSortField
+import uk.gov.hmrc.bindingtariffclassification.utils.DateUtil._
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.collection.immutable.SortedMap
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.Future._
 import scala.concurrent.duration._
-
 @Singleton
 class ReferredDaysElapsedJob @Inject()(appConfig: AppConfig,
                                        caseService: CaseService,
                                        eventService: EventService,
                                        bankHolidaysConnector: BankHolidaysConnector) extends ScheduledJob {
 
+  private implicit val config: AppConfig = appConfig
   private implicit val carrier: HeaderCarrier = HeaderCarrier()
   private lazy val jobConfig = appConfig.referredDaysElapsed
   private lazy val criteria = CaseSearch(
@@ -95,34 +94,6 @@ class ReferredDaysElapsedJob @Inject()(appConfig: AppConfig,
 
       _ = Logger.info(s"$name: Updated Days Elapsed of Case [${c.reference}] from [${c.daysElapsed}] to [${referredDays.size}]")
     } yield ()
-  }
-
-  private def toInstant: LocalDate => Instant = _.atStartOfDay(appConfig.clock.getZone).toInstant
-
-  private def bankHoliday(date: LocalDate)(implicit bankHolidays: Set[LocalDate]): Boolean = bankHolidays.contains(date)
-
-  private def weekend(date: LocalDate): Boolean = Set(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY).contains(date.getDayOfWeek)
-
-  private class StatusTimeline(statusChanges: Seq[(Instant, CaseStatus)]) {
-    lazy val timeline: SortedMap[Instant, CaseStatus] = SortedMap[Instant, CaseStatus](statusChanges: _*)
-
-    def statusOn(date: Instant): Option[CaseStatus] = {
-      if (timeline.contains(date)) {
-        timeline.get(date)
-      } else {
-        timeline.until(date).lastOption.map(_._2)
-      }
-    }
-  }
-
-  private object StatusTimeline {
-    def from(events: Seq[Event]): StatusTimeline = new StatusTimeline(
-      events
-        .filter(_.details.isInstanceOf[CaseStatusChange])
-        .map { event =>
-          (event.timestamp, event.details.asInstanceOf[CaseStatusChange].to)
-        }
-    )
   }
 
 }

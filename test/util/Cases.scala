@@ -40,7 +40,7 @@ object Cases {
     "040900", Some(Instant.now()), Some(Instant.now().plusSeconds(2 * 3600 * 24 * 365)), "justification", "good description", None, None, Some("denomination"), None
   )
   private val btiCaseExample = Case(
-    UUID.randomUUID().toString, CaseStatus.OPEN, Instant.now(), 0, None, None, None, btiApplicationExample, Some(decision), Seq()
+    UUID.randomUUID().toString, CaseStatus.OPEN, Instant.now(), 0, 0, None, None, None, btiApplicationExample, Some(decision), Seq()
   )
 
   def aCase(withModifier: (Case => Case)*): Case = {
