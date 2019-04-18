@@ -4,7 +4,7 @@ import sbt._
 object AppDependencies {
 
   lazy val compile = Seq(
-    "uk.gov.hmrc" %% "bootstrap-play-25"          % "4.10.0",
+    "uk.gov.hmrc" %% "bootstrap-play-25"          % "4.11.0",
     "uk.gov.hmrc" %% "crypto"                     % "5.3.0",
     "uk.gov.hmrc" %% "play-json-union-formatter"  % "1.5.0",
     "uk.gov.hmrc" %% "simple-reactivemongo"       % "7.14.0-play-25",
@@ -20,8 +20,8 @@ object AppDependencies {
     "org.pegdown"            %  "pegdown"             % "1.6.0"         % scope,
     "org.scalaj"             %% "scalaj-http"         % "2.4.1"         % scope,
     "org.scalatestplus.play" %% "scalatestplus-play"  % "2.0.1"         % scope,
-    "uk.gov.hmrc"            %% "hmrctest"            % "3.6.0-play-25" % scope,
-    "uk.gov.hmrc"            %% "reactivemongo-test"  % "4.9.0-play-25" % scope
+    "uk.gov.hmrc"            %% "hmrctest"            % "3.8.0-play-25" % scope,
+    "uk.gov.hmrc"            %% "reactivemongo-test"  % "4.13.0-play-25" % scope
   )
 
 }
