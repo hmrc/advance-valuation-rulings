@@ -31,10 +31,12 @@ import reactivemongo.core.errors.DatabaseException
 import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatCase
+import uk.gov.hmrc.bindingtariffclassification.model.reporting._
 import uk.gov.hmrc.bindingtariffclassification.model.{CaseStatus, PseudoCaseStatus, _}
 import uk.gov.hmrc.bindingtariffclassification.sort.{CaseSortField, SortDirection}
 import uk.gov.hmrc.mongo.MongoSpecSupport
 import util.CaseData._
+import util.Cases._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -222,8 +224,8 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
   "get by minDecisionDate" should {
 
-    val futureDate = LocalDate.of(3000,1,1).atStartOfDay().toInstant(ZoneOffset.UTC)
-    val pastDate = LocalDate.of(1970,1,1).atStartOfDay().toInstant(ZoneOffset.UTC)
+    val futureDate = LocalDate.of(3000, 1, 1).atStartOfDay().toInstant(ZoneOffset.UTC)
+    val pastDate = LocalDate.of(1970, 1, 1).atStartOfDay().toInstant(ZoneOffset.UTC)
 
     val decisionExpired = createDecision(effectiveEndDate = Some(pastDate))
     val decisionFuture = createDecision(effectiveEndDate = Some(futureDate))
@@ -314,7 +316,7 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
   }
 
   "get by pseudo status" should {
-    val now = LocalDateTime.of(2019,1,1,0,0).toInstant(ZoneOffset.UTC)
+    val now = LocalDateTime.of(2019, 1, 1, 0, 0).toInstant(ZoneOffset.UTC)
 
     val newCase = createCase(r = "new", status = CaseStatus.NEW)
     val liveCase = createCase(r = "live", status = CaseStatus.COMPLETED, decision = Some(createDecision(effectiveEndDate = Some(now.plusSeconds(1)))))
@@ -680,6 +682,52 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
       collectionSize shouldBe 1
 
       await(repository.incrementDaysElapsed()) shouldBe 0
+    }
+  }
+
+  "generate report" should {
+
+    "group by queue id" in {
+      val c1 = aCase(withQueue("queue-1"), withDaysElapsed(1))
+      val c2 = aCase(withQueue("queue-1"), withDaysElapsed(2))
+      val c3 = aCase(withQueue("queue-2"), withDaysElapsed(3))
+      val c4 = aCase(withoutQueue(), withDaysElapsed(4))
+
+      await(repository.insert(c1))
+      await(repository.insert(c2))
+      await(repository.insert(c3))
+      await(repository.insert(c4))
+      collectionSize shouldBe 4
+
+      val report = CaseReport(
+        filter = CaseReportFilter(),
+        group = CaseReportGroup.QUEUE,
+        field = CaseReportField.DAYS_ELAPSED
+      )
+
+      val results = await(repository.generateReport(report))
+      results should have length 3
+      results should contain(ReportResult("queue-1", Seq(1, 2)))
+      results should contain(ReportResult("queue-2", Seq(3)))
+      results should contain(ReportResult(None, Seq(4)))
+    }
+
+    "filter on Decision Start Date" in {
+      val date = LocalDate.of(2019, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant
+      val c1 = aCase(withoutQueue(), withDaysElapsed(1), withDecision(effectiveStartDate = Some(date)))
+      val c2 = aCase(withoutQueue(), withDaysElapsed(2), withDecision(effectiveStartDate = Some(date.plusSeconds(1))))
+
+      await(repository.insert(c1))
+      await(repository.insert(c2))
+      collectionSize shouldBe 2
+
+      val report = CaseReport(
+        filter = CaseReportFilter(decisionStartDate = Some(InstantRange(date, date))),
+        group = CaseReportGroup.QUEUE,
+        field = CaseReportField.DAYS_ELAPSED
+      )
+
+      await(repository.generateReport(report)) shouldBe Seq(ReportResult(None, Seq(1)))
     }
   }
 

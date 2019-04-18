@@ -17,7 +17,8 @@
 package uk.gov.hmrc.bindingtariffclassification.repository
 
 import javax.inject.{Inject, Singleton}
-import play.api.libs.json.Json
+import play.api.libs.json.Json.toJson
+import play.api.libs.json._
 import reactivemongo.api.indexes.Index
 import reactivemongo.bson.{BSONArray, BSONDocument, BSONDouble, BSONObjectID, BSONString}
 import reactivemongo.play.json.ImplicitBSONHandlers._
@@ -26,6 +27,7 @@ import uk.gov.hmrc.bindingtariffclassification.crypto.Crypto
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.{NEW, OPEN}
 import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatCase
 import uk.gov.hmrc.bindingtariffclassification.model._
+import uk.gov.hmrc.bindingtariffclassification.model.reporting.{CaseReport, CaseReportField, CaseReportGroup, ReportResult}
 import uk.gov.hmrc.mongo.ReactiveRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -44,12 +46,15 @@ trait CaseRepository {
   def get(search: CaseSearch, pagination: Pagination): Future[Paged[Case]]
 
   def deleteAll(): Future[Unit]
+
+  def generateReport(report: CaseReport): Future[Seq[ReportResult]]
 }
 
 @Singleton
 class EncryptedCaseMongoRepository @Inject()(repository: CaseMongoRepository, crypto: Crypto) extends CaseRepository {
 
   private def encrypt: Case => Case = crypto.encrypt
+
   private def decrypt: Case => Case = crypto.decrypt
 
   override def insert(c: Case): Future[Case] = repository.insert(encrypt(c)).map(decrypt)
@@ -70,6 +75,8 @@ class EncryptedCaseMongoRepository @Inject()(repository: CaseMongoRepository, cr
     val eoriEnc: Option[String] = search.filter.eori.map(crypto.encryptString)
     search.copy(filter = search.filter.copy(eori = eoriEnc))
   }
+
+  override def generateReport(report: CaseReport): Future[Seq[ReportResult]] = repository.generateReport(report)
 }
 
 @Singleton
@@ -98,7 +105,7 @@ class CaseMongoRepository @Inject()(mongoDbProvider: MongoDbProvider, mapper: Se
     // TODO: We need to add relevant indexes for each possible search
     // TODO: We should add compound indexes for searches involving multiple fields
     uniqueSingleFieldIndexes.map(createSingleFieldAscendingIndex(_, isUnique = true)) ++
-    nonUniqueSingleFieldIndexes.map(createSingleFieldAscendingIndex(_, isUnique = false))
+      nonUniqueSingleFieldIndexes.map(createSingleFieldAscendingIndex(_, isUnique = false))
   }
 
   override def insert(c: Case): Future[Case] = {
@@ -144,4 +151,44 @@ class CaseMongoRepository @Inject()(mongoDbProvider: MongoDbProvider, mapper: Se
     ).map(_.nModified)
   }
 
+  override def generateReport(report: CaseReport): Future[Seq[ReportResult]] = {
+    import MongoFormatters.formatInstant
+    import collection.BatchCommands.AggregationFramework._
+
+    val filter: Option[PipelineOperator] = report.filter.decisionStartDate.map {
+      range =>
+        Match(
+          Json.obj("decision.effectiveStartDate" -> Json.obj(
+            "$lte" -> toJson(range.max),
+            "$gte" -> toJson(range.min)
+          ))
+        )
+    }
+
+    val groupField = report.group match {
+      case CaseReportGroup.QUEUE => "queueId"
+    }
+
+    val reportField = report.field match {
+      case CaseReportField.DAYS_ELAPSED => "daysElapsed"
+    }
+
+    val group: PipelineOperator = GroupField(groupField)("field" -> PushField(reportField))
+
+    val aggregation = filter match {
+      case Some(f) => (f, List(group))
+      case None => (group, List.empty)
+    }
+
+    collection.aggregateWith[JsObject]()(_ => aggregation)
+      .collect[List](Int.MaxValue, reactivemongo.api.Cursor.FailOnError())
+      .map {
+        _.map { obj: JsObject =>
+          ReportResult(
+            Option(obj.value("_id")).filter(_.isInstanceOf[JsString]).map(_.as[JsString].value),
+            obj.value("field").as[JsArray].value.map(_.as[JsNumber].value.toInt).toList
+          )
+        }
+      }
+  }
 }
