@@ -17,36 +17,49 @@
 package uk.gov.hmrc.bindingtariffclassification.model.reporting
 
 import play.api.mvc.QueryStringBindable
+import uk.gov.hmrc.bindingtariffclassification.model.utils.BinderUtil._
 
 case class CaseReportFilter
 (
-  decisionStartDate: Option[InstantRange] = None
+  decisionStartDate: Option[InstantRange] = None,
+  referralDate: Option[InstantRange] = None,
+  reference: Option[Set[String]] = None
 )
 
 object CaseReportFilter {
 
   val decisionStartKey = "decision_start"
+  val referralDateKey = "referral_date"
+  val referenceKey = "reference"
 
-  implicit def binder(implicit rangeBinder: QueryStringBindable[InstantRange]): QueryStringBindable[CaseReportFilter]
-  = new QueryStringBindable[CaseReportFilter] {
+  implicit def binder(implicit
+                      rangeBinder: QueryStringBindable[InstantRange],
+                      stringBinder: QueryStringBindable[String]): QueryStringBindable[CaseReportFilter] = new QueryStringBindable[CaseReportFilter] {
 
     override def bind(key: String, requestParams: Map[String, Seq[String]]): Option[Either[String, CaseReportFilter]] = {
       implicit val rp: Map[String, Seq[String]] = requestParams
 
       val decisionStart: Option[InstantRange] = rangeBinder.bind(decisionStartKey, requestParams).filter(_.isRight).map(_.right.get)
+      val referralDate: Option[InstantRange] = rangeBinder.bind(referralDateKey, requestParams).filter(_.isRight).map(_.right.get)
+      val reference: Option[Set[String]] = params(referenceKey)
 
       Some(
         Right(
           CaseReportFilter(
-            decisionStart
+            decisionStart,
+            referralDate,
+            reference
           )
         )
       )
     }
 
     override def unbind(key: String, filter: CaseReportFilter): String = {
-      filter.decisionStartDate.map(r => rangeBinder.unbind(decisionStartKey, r))
-        .getOrElse("")
+      Seq(
+        filter.decisionStartDate.map(r => rangeBinder.unbind(decisionStartKey, r)),
+        filter.referralDate.map(r => rangeBinder.unbind(referralDateKey, r)),
+        filter.reference.map(_.map(r => stringBinder.unbind(referenceKey, r)).mkString("&"))
+      ).filter(_.isDefined).map(_.get).mkString("&")
     }
   }
 }
