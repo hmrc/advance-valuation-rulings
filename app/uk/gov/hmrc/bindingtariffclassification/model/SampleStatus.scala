@@ -16,24 +16,8 @@
 
 package uk.gov.hmrc.bindingtariffclassification.model
 
-import java.time.Instant
-
-import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
-import uk.gov.hmrc.bindingtariffclassification.model.SampleStatus.SampleStatus
-
-case class Case
-(
-  reference: String,
-  status: CaseStatus,
-  createdDate: Instant = Instant.now(),
-  daysElapsed: Long = 0,
-  referredDaysElapsed: Long = 0,
-  caseBoardsFileNumber: Option[String] = None,
-  assignee: Option[Operator] = None,
-  queueId: Option[String] = None,
-  application: Application,
-  decision: Option[Decision] = None,
-  attachments: Seq[Attachment] = Seq.empty,
-  keywords: Set[String] = Set.empty,
-  sampleStatus: Option[SampleStatus] = None
-)
+object SampleStatus extends Enumeration {
+  type SampleStatus = Value
+  val AWAITING, MOVED_TO_ACT, MOVED_TO_ELM, SENT_FOR_ANALYSIS, SENT_TO_APPEALS, STORAGE, RETURNED_APPLICANT,
+  RETURNED_PORT_OFFICER, RETURNED_COURIER, DESTROYED = Value
+}

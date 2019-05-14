@@ -23,6 +23,7 @@ import uk.gov.hmrc.bindingtariffclassification.model.AppealStatus.AppealStatus
 import uk.gov.hmrc.bindingtariffclassification.model.AppealType.AppealType
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model.EventType.EventType
+import uk.gov.hmrc.bindingtariffclassification.model.SampleStatus.SampleStatus
 
 case class Event
 (
@@ -44,6 +45,7 @@ sealed trait OptionalComment {
 sealed trait FieldChange[T] extends Details with OptionalComment {
   val from: T
   val to: T
+  val comment: Option[String]
 }
 
 case class CaseStatusChange
@@ -108,8 +110,18 @@ case class Note
   override val `type`: EventType.Value = EventType.NOTE
 }
 
+case class SampleStatusChange
+(
+  override val from: Option[SampleStatus],
+  override val to: Option[SampleStatus],
+  override val comment: Option[String] = None
+) extends FieldChange[Option[SampleStatus]] {
+  override val `type`: EventType.Value = EventType.SAMPLE_STATUS_CHANGE
+}
+
 
 object EventType extends Enumeration {
   type EventType = Value
-  val CASE_STATUS_CHANGE, APPEAL_STATUS_CHANGE, APPEAL_ADDED, EXTENDED_USE_STATUS_CHANGE, ASSIGNMENT_CHANGE, QUEUE_CHANGE, NOTE = Value
+  val CASE_STATUS_CHANGE, APPEAL_STATUS_CHANGE, APPEAL_ADDED, EXTENDED_USE_STATUS_CHANGE, ASSIGNMENT_CHANGE,
+  QUEUE_CHANGE, NOTE, SAMPLE_STATUS_CHANGE  = Value
 }

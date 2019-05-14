@@ -30,6 +30,7 @@ object RESTFormatters {
   implicit val formatLiabilityStatus: Format[LiabilityStatus.Value] = EnumJson.format(LiabilityStatus)
   implicit val formatAppealStatus: Format[AppealStatus.Value] = EnumJson.format(AppealStatus)
   implicit val formatAppealType: Format[AppealType.Value] = EnumJson.format(AppealType)
+  implicit val formatSampleStatus: Format[SampleStatus.Value] = EnumJson.format(SampleStatus)
   implicit val formatCancelReason: Format[CancelReason.Value] = EnumJson.format(CancelReason)
 
   implicit val formatReportResult: OFormat[ReportResult] = Json.format[ReportResult]
@@ -59,6 +60,7 @@ object RESTFormatters {
   implicit val formatCaseStatusChange: OFormat[CaseStatusChange] = Json.format[CaseStatusChange]
   implicit val formatAppealStatusChange: OFormat[AppealStatusChange] = Json.format[AppealStatusChange]
   implicit val formatAppealAdded: OFormat[AppealAdded] = Json.format[AppealAdded]
+  implicit val formatSampleStatusChange: OFormat[SampleStatusChange] = Json.format[SampleStatusChange]
   implicit val formatExtendedUseStatusChange: OFormat[ExtendedUseStatusChange] = Json.format[ExtendedUseStatusChange]
   implicit val formatAssignmentChange: OFormat[AssignmentChange] = Json.format[AssignmentChange]
   implicit val formatQueueChange: OFormat[QueueChange] = Json.format[QueueChange]
@@ -69,6 +71,7 @@ object RESTFormatters {
     .and[CaseStatusChange](EventType.CASE_STATUS_CHANGE.toString)
     .and[AppealStatusChange](EventType.APPEAL_STATUS_CHANGE.toString)
     .and[AppealAdded](EventType.APPEAL_ADDED.toString)
+    .and[SampleStatusChange](EventType.SAMPLE_STATUS_CHANGE.toString)
     .and[ExtendedUseStatusChange](EventType.EXTENDED_USE_STATUS_CHANGE.toString)
     .and[AssignmentChange](EventType.ASSIGNMENT_CHANGE.toString)
     .and[QueueChange](EventType.QUEUE_CHANGE.toString)
