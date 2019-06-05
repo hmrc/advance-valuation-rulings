@@ -12,6 +12,8 @@ This is the Back End for the Binding Tariff Suite of applications e.g.
 To run this service you will need:
 
 1) A Local Mongo instance running
+2) The Bank Holidays proxy service
+    `sm --start BANK_HOLIDAYS -r`
 
 ##### Running with SBT
 
@@ -23,7 +25,7 @@ Try `GET http://localhost:{port}/cases`
 
 This application runs on port 9580
 
-1) Run `sm --start BINDING_TARIF_CLASSIFICATION -f`
+1) Run `sm --start BINDING_TARIF_CLASSIFICATION`
 
 Try `GET http://localhost:9580/cases`
 
