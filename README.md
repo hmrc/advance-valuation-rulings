@@ -12,7 +12,8 @@ This is the Back End for the Binding Tariff Suite of applications e.g.
 To run this service you will need:
 
 1) A Local Mongo instance running
-2) The Bank Holidays proxy service
+2) The [Bank Holidays](https://github.com/hmrc/bank-holidays) proxy service
+
     `sm --start BANK_HOLIDAYS -r`
 
 ##### Running with SBT
