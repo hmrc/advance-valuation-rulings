@@ -31,6 +31,7 @@ object RESTFormatters {
   implicit val formatAppealStatus: Format[AppealStatus.Value] = EnumJson.format(AppealStatus)
   implicit val formatAppealType: Format[AppealType.Value] = EnumJson.format(AppealType)
   implicit val formatSampleStatus: Format[SampleStatus.Value] = EnumJson.format(SampleStatus)
+  implicit val formatSampleReturn: Format[SampleReturn.Value] = EnumJson.format(SampleReturn)
   implicit val formatCancelReason: Format[CancelReason.Value] = EnumJson.format(CancelReason)
   implicit val formatReferralReason: Format[ReferralReason.Value] = EnumJson.format(ReferralReason)
 
@@ -53,6 +54,7 @@ object RESTFormatters {
   implicit val formatAppeal: OFormat[Appeal] = Json.format[Appeal]
   implicit val formatCancellation: OFormat[Cancellation] = Json.format[Cancellation]
   implicit val formatDecision: OFormat[Decision] = Json.format[Decision]
+  implicit val formatSample: OFormat[Sample] = Json.format[Sample]
 
   implicit val formatCase: InvariantFormat[Case] = Jsonx.formatCaseClass[Case]
   implicit val formatNewCase: OFormat[NewCaseRequest] = Json.format[NewCaseRequest]
@@ -65,6 +67,7 @@ object RESTFormatters {
   implicit val formatAppealStatusChange: OFormat[AppealStatusChange] = Json.format[AppealStatusChange]
   implicit val formatAppealAdded: OFormat[AppealAdded] = Json.format[AppealAdded]
   implicit val formatSampleStatusChange: OFormat[SampleStatusChange] = Json.format[SampleStatusChange]
+  implicit val formatSampleReturnChange: OFormat[SampleReturnChange] = Json.format[SampleReturnChange]
   implicit val formatExtendedUseStatusChange: OFormat[ExtendedUseStatusChange] = Json.format[ExtendedUseStatusChange]
   implicit val formatAssignmentChange: OFormat[AssignmentChange] = Json.format[AssignmentChange]
   implicit val formatQueueChange: OFormat[QueueChange] = Json.format[QueueChange]
@@ -79,6 +82,7 @@ object RESTFormatters {
     .and[AppealStatusChange](EventType.APPEAL_STATUS_CHANGE.toString)
     .and[AppealAdded](EventType.APPEAL_ADDED.toString)
     .and[SampleStatusChange](EventType.SAMPLE_STATUS_CHANGE.toString)
+    .and[SampleReturnChange](EventType.SAMPLE_RETURN_CHANGE.toString)
     .and[ExtendedUseStatusChange](EventType.EXTENDED_USE_STATUS_CHANGE.toString)
     .and[AssignmentChange](EventType.ASSIGNMENT_CHANGE.toString)
     .and[QueueChange](EventType.QUEUE_CHANGE.toString)

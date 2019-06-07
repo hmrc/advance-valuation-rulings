@@ -16,23 +16,8 @@
 
 package uk.gov.hmrc.bindingtariffclassification.model
 
-import java.time.Instant
+object SampleReturn extends Enumeration {
+  type SampleReturn = Value
 
-import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
-
-case class Case
-(
-  reference: String,
-  status: CaseStatus,
-  createdDate: Instant = Instant.now(),
-  daysElapsed: Long = 0,
-  referredDaysElapsed: Long = 0,
-  caseBoardsFileNumber: Option[String] = None,
-  assignee: Option[Operator] = None,
-  queueId: Option[String] = None,
-  application: Application,
-  decision: Option[Decision] = None,
-  attachments: Seq[Attachment] = Seq.empty,
-  keywords: Set[String] = Set.empty,
-  sample: Sample = Sample()
-)
+  val YES, NO, TO_BE_CONFIRMED = Value
+}

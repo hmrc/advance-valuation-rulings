@@ -16,23 +16,14 @@
 
 package uk.gov.hmrc.bindingtariffclassification.model
 
-import java.time.Instant
+import uk.gov.hmrc.bindingtariffclassification.model.SampleReturn.SampleReturn
+import uk.gov.hmrc.bindingtariffclassification.model.SampleStatus.SampleStatus
 
-import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
-
-case class Case
+case class Sample
 (
-  reference: String,
-  status: CaseStatus,
-  createdDate: Instant = Instant.now(),
-  daysElapsed: Long = 0,
-  referredDaysElapsed: Long = 0,
-  caseBoardsFileNumber: Option[String] = None,
-  assignee: Option[Operator] = None,
-  queueId: Option[String] = None,
-  application: Application,
-  decision: Option[Decision] = None,
-  attachments: Seq[Attachment] = Seq.empty,
-  keywords: Set[String] = Set.empty,
-  sample: Sample = Sample()
+  status: Option[SampleStatus] = None,
+  requestedBy: Option[Operator] = None,
+  returnStatus: Option[SampleReturn] = None
 )
+
+
