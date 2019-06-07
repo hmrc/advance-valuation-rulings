@@ -42,7 +42,7 @@ class CaseController @Inject()(appConfig: AppConfig,
   def create: Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[NewCaseRequest] { caseRequest: NewCaseRequest =>
       for {
-        r <- caseService.nextCaseReference
+        r <- caseService.nextCaseReference(caseRequest.application.`type`)
         c <- caseService.insert(caseRequest.toCase(r))
         _ <- caseService.addInitialSampleStatusIfExists(c)
       } yield Created(Json.toJson(c))

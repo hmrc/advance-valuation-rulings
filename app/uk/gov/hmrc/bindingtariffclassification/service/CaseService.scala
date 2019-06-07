@@ -21,6 +21,7 @@ import java.util.UUID
 
 import javax.inject._
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
+import uk.gov.hmrc.bindingtariffclassification.model.ApplicationType.ApplicationType
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.repository.{CaseRepository, SequenceRepository}
 
@@ -40,13 +41,18 @@ class CaseService @Inject()(appConfig: AppConfig,
   def addInitialSampleStatusIfExists(c: Case): Future[Unit] = {
     if (c.sampleStatus.nonEmpty) {
       val details = SampleStatusChange(None, c.sampleStatus, None)
-      eventService.insert(Event(UUID.randomUUID().toString, details, Operator("-1",Some(c.application.contact.name)), c.reference, Instant.now()))
+      eventService.insert(Event(UUID.randomUUID().toString, details, Operator("-1", Some(c.application.contact.name)), c.reference, Instant.now()))
     }
     Future.successful((): Unit)
   }
 
-  def nextCaseReference: Future[String] = {
-    sequenceRepository.incrementAndGetByName("case").map(_.value + appConfig.caseReferenceStart).map(_.toString)
+  def nextCaseReference(applicationType: ApplicationType): Future[String] = {
+    sequenceRepository.incrementAndGetByName("case").map {
+      _.value + appConfig.caseReferenceStart + (applicationType match {
+        case ApplicationType.BTI => appConfig.btiReferenceOffset
+        case ApplicationType.LIABILITY_ORDER => appConfig.liabilityReferenceOffset
+      })
+    }.map(_.toString)
   }
 
   def update(c: Case, upsert: Boolean): Future[Option[Case]] = {

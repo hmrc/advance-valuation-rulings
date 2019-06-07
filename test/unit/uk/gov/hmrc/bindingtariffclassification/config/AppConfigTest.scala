@@ -103,6 +103,12 @@ class AppConfigTest extends UnitSpec {
 
     }
 
+    "build 'case reference configuration" in {
+      configWith("case-reference-start" -> "1").caseReferenceStart shouldBe 1
+      configWith("bti-reference-offset" -> "10").btiReferenceOffset shouldBe 10
+      configWith("liability-reference-offset" -> "20").liabilityReferenceOffset shouldBe 20
+    }
+
   }
 
 }

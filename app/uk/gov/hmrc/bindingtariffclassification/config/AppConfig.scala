@@ -32,7 +32,9 @@ class AppConfig @Inject()(val runModeConfiguration: Configuration, environment: 
 
   lazy val isTestMode: Boolean = getBooleanConfig("testMode", default = false)
 
-  lazy val caseReferenceStart: Long = runModeConfiguration.getLong("case-reference-start").getOrElse(504400000)
+  lazy val caseReferenceStart: Long = runModeConfiguration.getLong("case-reference-start").get
+  lazy val btiReferenceOffset: Long = runModeConfiguration.getLong("bti-reference-offset").get
+  lazy val liabilityReferenceOffset: Long = runModeConfiguration.getLong("liability-reference-offset").get
 
   lazy val clock: Clock = Clock.systemUTC()
 

@@ -44,11 +44,32 @@ class CaseServiceSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach
 
   override protected def afterEach(): Unit = {
     super.afterEach()
-    reset(caseRepository)
+    reset(caseRepository, appConfig)
   }
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
+  }
+
+  "nextReference()" should {
+
+    "generate a new reference" when {
+
+      "Case is a BTI" in {
+        when(appConfig.caseReferenceStart).thenReturn(100)
+        when(sequenceRepository.incrementAndGetByName("case")).thenReturn(successful(Sequence("case", 10)))
+        when(appConfig.btiReferenceOffset).thenReturn(1)
+        await(service.nextCaseReference(ApplicationType.BTI)) shouldBe "111"
+      }
+
+      "Case is a Liability" in {
+        when(appConfig.caseReferenceStart).thenReturn(100)
+        when(sequenceRepository.incrementAndGetByName("case")).thenReturn(successful(Sequence("case", 10)))
+        when(appConfig.liabilityReferenceOffset).thenReturn(2)
+        await(service.nextCaseReference(ApplicationType.LIABILITY_ORDER)) shouldBe "112"
+      }
+    }
+
   }
 
   "deleteAll()" should {

@@ -91,7 +91,7 @@ class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoS
   "create()" should {
 
     "return 201 when the case has been created successfully" in {
-      when(caseService.nextCaseReference).thenReturn(successful("1"))
+      when(caseService.nextCaseReference(ApplicationType.BTI)).thenReturn(successful("1"))
       when(caseService.insert(any[Case])).thenReturn(successful(c1))
       when(caseService.addInitialSampleStatusIfExists(any[Case])).thenReturn(Future.successful(():Unit))
 
@@ -115,7 +115,7 @@ class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoS
         override def message: String = "duplicate value for db index"
       }
 
-      when(caseService.nextCaseReference).thenReturn(successful("1"))
+      when(caseService.nextCaseReference(ApplicationType.BTI)).thenReturn(successful("1"))
       when(caseService.insert(any[Case])).thenReturn(failed(error))
 
       val result = await(controller.create()(fakeRequest.withBody(toJson(newCase))))
