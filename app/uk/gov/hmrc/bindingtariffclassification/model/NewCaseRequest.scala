@@ -21,16 +21,11 @@ case class NewCaseRequest
   application: Application,
   attachments: Seq[Attachment] = Seq.empty
 ) {
-
   def toCase(reference: String) = Case(
     reference = reference,
     status = CaseStatus.NEW,
-    sampleStatus = application.asBTI.sampleToBeProvided match {
-      case true => Some(SampleStatus.AWAITING)
-      case false => None
-    },
+    sampleStatus = if (application.isBTI && application.asBTI.sampleToBeProvided) Some(SampleStatus.AWAITING) else None,
     application = application,
     attachments = attachments
   )
-
 }
