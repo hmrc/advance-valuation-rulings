@@ -24,7 +24,7 @@ case class NewCaseRequest
   def toCase(reference: String) = Case(
     reference = reference,
     status = CaseStatus.NEW,
-    sampleStatus = if (application.isBTI && application.asBTI.sampleToBeProvided) Some(SampleStatus.AWAITING) else None,
+    sample = if (application.isBTI && application.asBTI.sampleToBeProvided) Sample(status = Some(SampleStatus.AWAITING)) else Sample(),
     application = application,
     attachments = attachments
   )
