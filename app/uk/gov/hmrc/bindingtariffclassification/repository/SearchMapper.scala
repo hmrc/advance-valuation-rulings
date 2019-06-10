@@ -22,6 +22,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json.JsValueWrapper
 import play.api.libs.json._
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
+import uk.gov.hmrc.bindingtariffclassification.model.ApplicationType.ApplicationType
 import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatInstant
 import uk.gov.hmrc.bindingtariffclassification.model.PseudoCaseStatus.PseudoCaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model.{CaseFilter, CaseSort, CaseStatus, PseudoCaseStatus}
@@ -45,7 +46,7 @@ class SearchMapper @Inject()(appConfig: AppConfig) {
   def filterBy(filter: CaseFilter): JsObject = {
     val params = Seq[Option[(String, JsValue)]](
       filter.reference.map("reference" -> inArray[String](_)),
-      filter.applicationType.map(s => "application.type" -> JsString(s.toString)),
+      filter.applicationType.map("application.type" -> inArray[ApplicationType](_)),
       filter.queueId.map("queueId" -> mappingNoneOrSome(_)),
       filter.assigneeId.map("assignee.id" -> mappingNoneOrSome(_)),
       filter.traderName.map(traderName => either(
