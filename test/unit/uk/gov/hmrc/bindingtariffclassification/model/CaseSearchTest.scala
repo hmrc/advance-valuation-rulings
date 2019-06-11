@@ -25,7 +25,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 class CaseSearchTest extends UnitSpec {
 
   private val sort = CaseSort(
-    field = CaseSortField.DAYS_ELAPSED,
+    field = Set(CaseSortField.DAYS_ELAPSED),
     direction = SortDirection.DESCENDING
   )
 

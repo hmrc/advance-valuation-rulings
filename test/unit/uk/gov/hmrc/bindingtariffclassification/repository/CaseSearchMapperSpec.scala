@@ -232,7 +232,7 @@ class CaseSearchMapperSpec extends UnitSpec with MockitoSugar {
     "sort by passed field and default direction to descending(-1)" in {
 
       val sort = CaseSort(
-        field = CaseSortField.COMMODITY_CODE,
+        field = Set(CaseSortField.COMMODITY_CODE),
         direction = SortDirection.DESCENDING
       )
 
@@ -242,7 +242,7 @@ class CaseSearchMapperSpec extends UnitSpec with MockitoSugar {
     "sort by passed field and set direction ascending(1)" in {
 
       val sort = CaseSort(
-        field = CaseSortField.DAYS_ELAPSED,
+        field = Set(CaseSortField.DAYS_ELAPSED),
         direction = SortDirection.ASCENDING
       )
 
@@ -252,7 +252,7 @@ class CaseSearchMapperSpec extends UnitSpec with MockitoSugar {
     "sort by decision start date and set direction descending" in {
 
       val sort = CaseSort(
-        field = CaseSortField.DECISION_START_DATE,
+        field = Set(CaseSortField.DECISION_START_DATE),
         direction = SortDirection.ASCENDING
       )
 
@@ -263,7 +263,7 @@ class CaseSearchMapperSpec extends UnitSpec with MockitoSugar {
     "sort by created date and set direction descending" in {
 
       val sort = CaseSort(
-        field = CaseSortField.CREATED_DATE,
+        field = Set(CaseSortField.CREATED_DATE),
         direction = SortDirection.DESCENDING
       )
 
@@ -273,7 +273,7 @@ class CaseSearchMapperSpec extends UnitSpec with MockitoSugar {
     "sort by reference " in {
 
       val sort = CaseSort(
-        field = CaseSortField.REFERENCE,
+        field = Set(CaseSortField.REFERENCE),
         direction = SortDirection.DESCENDING
       )
 

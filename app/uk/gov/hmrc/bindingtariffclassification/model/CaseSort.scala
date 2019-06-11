@@ -17,13 +17,14 @@
 package uk.gov.hmrc.bindingtariffclassification.model
 
 import play.api.mvc.QueryStringBindable
+import uk.gov.hmrc.bindingtariffclassification.model.CaseFilter.referenceKey
 import uk.gov.hmrc.bindingtariffclassification.sort.CaseSortField.CaseSortField
 import uk.gov.hmrc.bindingtariffclassification.sort.SortDirection
 import uk.gov.hmrc.bindingtariffclassification.sort.SortDirection.SortDirection
 
 case class CaseSort
 (
-  field: CaseSortField,
+  field: Set[CaseSortField],
   direction: SortDirection = SortDirection.ASCENDING
 )
 
@@ -38,7 +39,7 @@ object CaseSort {
       import uk.gov.hmrc.bindingtariffclassification.model.utils.BinderUtil._
       implicit val rp: Map[String, Seq[String]] = requestParams
 
-      val field: Option[CaseSortField] = param(sortByKey).flatMap(bindSortField)
+      val field: Option[Set[CaseSortField]] = params(sortByKey).map(_.map(bindSortField).filter(_.isDefined).map(_.get))
       val direction: Option[SortDirection] = param(sortDirectionKey).flatMap(bindSortDirection)
 
       (field, direction) match {
@@ -50,7 +51,7 @@ object CaseSort {
 
     override def unbind(key: String, query: CaseSort): String = {
       Seq[String](
-        stringBinder.unbind(sortByKey, query.field.toString),
+        query.field.map(value => stringBinder.unbind(sortByKey, value.toString)).mkString("&"),
         stringBinder.unbind(sortDirectionKey, query.direction.toString)
       ).mkString("&")
 
