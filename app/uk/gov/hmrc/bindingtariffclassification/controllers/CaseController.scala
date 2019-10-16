@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.bindingtariffclassification.controllers
 
+import akka.stream.Materializer
+import akka.util.ByteString
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, Result}
@@ -26,10 +28,18 @@ import uk.gov.hmrc.bindingtariffclassification.service.CaseService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future.successful
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import play.api.http.HttpEntity
+import play.core.j.JavaResultExtractor
 
 @Singleton
 class CaseController @Inject()(appConfig: AppConfig,
-                               caseService: CaseService) extends CommonController {
+                               caseService: CaseService,
+                               mat: Materializer
+                              ) extends CommonController {
+  private val logger : Logger = LoggerFactory.getLogger(classOf[CaseController])
+
 
   import RESTFormatters.{formatCase, formatNewCase}
 
@@ -39,15 +49,17 @@ class CaseController @Inject()(appConfig: AppConfig,
     caseService.deleteAll() map (_ => NoContent) recover recovery
   }
 
-  def create: Action[JsValue] = Action.async(parse.json) { implicit request =>
-    withJsonBody[NewCaseRequest] { caseRequest: NewCaseRequest =>
-      for {
-        r <- caseService.nextCaseReference(caseRequest.application.`type`)
-        c <- caseService.insert(caseRequest.toCase(r))
-        _ <- caseService.addInitialSampleStatusIfExists(c)
-      } yield Created(Json.toJson(c))
-    } recover recovery
-  }
+  def create: Action[JsValue] = Action.async(parse.json) { implicit request => {
+      withJsonBody[NewCaseRequest] { caseRequest: NewCaseRequest =>
+          for {
+            r <- caseService.nextCaseReference(caseRequest.application.`type`)
+            c <- caseService.insert(caseRequest.toCase(r))
+            _ <- caseService.addInitialSampleStatusIfExists(c)
+          } yield Created(Json.toJson(c))
+      } recover recovery map {result => {
+          logger.debug(s"Case creation Result : ${result}"); result
+      }}
+  }}
 
   def update(reference: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[Case] { caseRequest: Case =>
