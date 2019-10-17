@@ -30,13 +30,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future.successful
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import play.api.http.HttpEntity
-import play.core.j.JavaResultExtractor
 
 @Singleton
 class CaseController @Inject()(appConfig: AppConfig,
-                               caseService: CaseService,
-                               mat: Materializer
+                               caseService: CaseService
                               ) extends CommonController {
   private val logger : Logger = LoggerFactory.getLogger(classOf[CaseController])
 
