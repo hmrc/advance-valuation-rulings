@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.bindingtariffclassification.controllers
 
-import play.api.Logger
+import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json._
 import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.bindingtariffclassification.model.JsErrorResponse
@@ -28,12 +28,16 @@ import scala.concurrent.Future.successful
 import scala.util.{Failure, Success, Try}
 
 trait CommonController extends BaseController {
+  private val logger : Logger = LoggerFactory.getLogger(classOf[CommonController])
 
   override protected def withJsonBody[T]
   (f: T => Future[Result])(implicit request: Request[JsValue], m: Manifest[T], reads: Reads[T]): Future[Result] = {
     Try(request.body.validate[T]) match {
       case Success(JsSuccess(payload, _)) => f(payload)
-      case Success(JsError(errs)) => successful(BadRequest(JsErrorResponse(INVALID_REQUEST_PAYLOAD, JsError.toJson(errs))))
+      case Success(JsError(errs)) => {
+        logger.debug(s"JSON deserialisation failure : ${JsError.toJson(errs)}")
+        successful(BadRequest(JsErrorResponse(INVALID_REQUEST_PAYLOAD, JsError.toJson(errs))))
+      }
       case Failure(e) => successful(BadRequest(JsErrorResponse(UNKNOWN_ERROR, e.getMessage)))
     }
   }
@@ -43,7 +47,7 @@ trait CommonController extends BaseController {
   }
 
   private[controllers] def handleException(e: Throwable) = {
-    Logger.error(s"An unexpected error occurred: ${e.getMessage}", e)
+    play.api.Logger.error(s"An unexpected error occurred: ${e.getMessage}", e)
     InternalServerError(JsErrorResponse(UNKNOWN_ERROR, "An unexpected error occurred"))
   }
 
