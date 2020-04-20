@@ -195,7 +195,7 @@ class CaseSpec extends BaseFeatureSpec {
           Some("phone"),
           Some(Address("Street Name", "Town", Some("County"), Some("P0ST C05E")))
         )
-      responseCase.application.asLiabilityOrder.boardsFileNumber.get shouldBe Some("BFN 1234567")
+      responseCase.application.asLiabilityOrder.boardsFileNumber shouldBe Some("BFN 1234567")
     }
 
   }
