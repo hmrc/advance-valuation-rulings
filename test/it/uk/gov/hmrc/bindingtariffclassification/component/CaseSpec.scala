@@ -177,7 +177,6 @@ class CaseSpec extends BaseFeatureSpec {
         .header(CONTENT_TYPE, JSON)
         .postData(c2WithExtraFieldsJson.toString()).asString
 
-      println(c2WithExtraFields)
       Then("The response code should be created")
       result.code shouldEqual CREATED
 
@@ -186,6 +185,17 @@ class CaseSpec extends BaseFeatureSpec {
       responseCase.reference shouldBe "204400001"
       responseCase.status shouldBe CaseStatus.NEW
       responseCase.application.asLiabilityOrder.btiReference shouldBe Some("BTI-REFERENCE")
+      responseCase.application.asLiabilityOrder.repaymentClaim.get.dvrNumber shouldBe Some("DVR-123456")
+      responseCase.application.asLiabilityOrder.repaymentClaim.get.dateForRepayment.get should roughlyBe(Instant.now())
+      responseCase.application.asLiabilityOrder.dateOfReceipt.get should roughlyBe(Instant.now())
+
+      responseCase.application.asLiabilityOrder.traderContactDetails.get shouldBe
+        TraderContactDetails(
+          Some("email"),
+          Some("phone"),
+          Some(Address("Street Name", "Town", Some("County"), Some("P0ST C05E")))
+        )
+      responseCase.application.asLiabilityOrder.boardsFileNumber.get shouldBe Some("BFN 1234567")
     }
 
   }

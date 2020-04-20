@@ -99,7 +99,17 @@ object CaseData {
       entryDate = Some(Instant.now()),
       traderCommodityCode = Some("6666666666"),
       officerCommodityCode = Some("0987654321"),
-      btiReference = Some("BTI-REFERENCE")
+      btiReference = Some("BTI-REFERENCE"),
+      repaymentClaim = Some(RepaymentClaim(
+        dvrNumber = Some("DVR-123456"),
+        dateForRepayment = Some(Instant.now()))),
+      dateOfReceipt = Some(Instant.now()),
+      traderContactDetails = Some(TraderContactDetails(
+        Some("email"),
+        Some("phone"),
+        Some(Address("Street Name", "Town", Some("County"), Some("P0ST C05E"))))
+      ),
+      boardsFileNumber = Some("BFN 1234567")
     )
   }
 
