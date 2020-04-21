@@ -7,7 +7,7 @@ object AppDependencies {
     "uk.gov.hmrc" %% "bootstrap-play-25"          % "4.12.0",
     "uk.gov.hmrc" %% "crypto"                     % "5.3.0",
     "uk.gov.hmrc" %% "play-json-union-formatter"  % "1.5.0",
-    "uk.gov.hmrc" %% "simple-reactivemongo"       % "7.20.0-play-25",
+    "uk.gov.hmrc" %% "simple-reactivemongo"       % "7.22.0-play-25",
     "io.megl"     %% "play-json-extra"            % "2.4.3",
     ws
   )
@@ -21,7 +21,7 @@ object AppDependencies {
     "org.scalaj"             %% "scalaj-http"         % "2.4.1"         % scope,
     "org.scalatestplus.play" %% "scalatestplus-play"  % "2.0.1"         % scope,
     "uk.gov.hmrc"            %% "hmrctest"            % "3.8.0-play-25" % scope,
-    "uk.gov.hmrc"            %% "reactivemongo-test"  % "4.14.0-play-25" % scope
+    "uk.gov.hmrc"            %% "reactivemongo-test"  % "4.16.0-play-25" % scope
   )
 
 }
