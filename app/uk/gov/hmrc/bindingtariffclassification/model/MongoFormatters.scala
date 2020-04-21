@@ -46,6 +46,10 @@ object MongoFormatters {
   implicit val formatSequence: OFormat[Sequence] = Json.format[Sequence]
 
   // `Case` formatters
+  implicit val formatRepaymentClaim: OFormat[RepaymentClaim] = Json.format[RepaymentClaim]
+  implicit val formatAddress: OFormat[Address] = Json.format[Address]
+  implicit val formatTraderContactDetails: OFormat[TraderContactDetails] = Json.format[TraderContactDetails]
+
   implicit val formatOperator: OFormat[Operator] = Json.format[Operator]
   implicit val formatCaseStatus: Format[CaseStatus.Value] = EnumJson.format(CaseStatus)
   implicit val formatPseudoCaseStatus: Format[PseudoCaseStatus.Value] = EnumJson.format(PseudoCaseStatus)

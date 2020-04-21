@@ -18,6 +18,7 @@ package uk.gov.hmrc.bindingtariffclassification.component
 
 import org.scalatest._
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.{Case, Event, Sequence}
 import uk.gov.hmrc.bindingtariffclassification.repository.{CaseMongoRepository, EventMongoRepository, SchedulerLockMongoRepository, SequenceMongoRepository}
@@ -29,6 +30,10 @@ import scala.concurrent.duration._
 abstract class BaseFeatureSpec extends FeatureSpec
   with Matchers with GivenWhenThen with GuiceOneServerPerSuite
   with BeforeAndAfterEach with BeforeAndAfterAll {
+
+  override lazy val app = GuiceApplicationBuilder()
+    .configure("mongodb.uri" -> "mongodb://localhost:27017/test-ClassificationMongoRepositoryTest")
+    .build()
 
   protected val timeout: FiniteDuration = 2.seconds
 

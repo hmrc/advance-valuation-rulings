@@ -47,6 +47,11 @@ class CaseSpec extends BaseFeatureSpec {
     decision = Some(createDecision()),
     attachments = Seq(createAttachment,createAttachmentWithOperator),
     keywords = Set("BIKE", "MTB", "HARDTAIL"))
+  private val c2CreateWithExtraFields = createNewCase(app = createLiabilityOrderWithExtraFields)
+  private val c2WithExtraFields = createCase(r = "case_ref_2", app = createLiabilityOrderWithExtraFields,
+    decision = Some(createDecision()),
+    attachments = Seq(createAttachment,createAttachmentWithOperator),
+    keywords = Set("BIKE", "MTB", "HARDTAIL"))
   private val c3 = createNewCaseWithExtraFields()
   private val c4 = createNewCase(app = createBTIApplicationWithAllFields)
   private val c5 = createCase(r = "case_ref_5", app = createBasicBTIApplication.copy(holder = eORIDetailForNintedo))
@@ -79,6 +84,8 @@ class CaseSpec extends BaseFeatureSpec {
   private val c1UpdatedJson = Json.toJson(c1_updated)
   private val c3Json = Json.toJson(c3)
   private val c4Json = Json.toJson(c4)
+  private val c2WithExtraFieldsJson = Json.toJson(c2WithExtraFields)
+  private val c2CreateWithExtraFieldsJson = Json.toJson(c2CreateWithExtraFields)
 
   feature("Delete All") {
 
@@ -164,6 +171,34 @@ class CaseSpec extends BaseFeatureSpec {
       responseCase.application.asBTI.importOrExport shouldBe Some(EXPORT)
     }
 
+    scenario("Create a new liability case with new fields DIT-1962") {
+
+      When("I create a new liability case")
+      val result: HttpResponse[String] = Http(s"$serviceUrl/cases")
+        .header(apiTokenKey, appConfig.authorization)
+        .header(CONTENT_TYPE, JSON)
+        .postData(c2CreateWithExtraFieldsJson.toString()).asString
+
+      Then("The response code should be created")
+      result.code shouldEqual CREATED
+
+      And("The case is returned in the JSON response")
+      val responseCase = Json.parse(result.body).as[Case]
+      responseCase.reference shouldBe "204400001"
+      responseCase.status shouldBe CaseStatus.NEW
+      responseCase.application.asLiabilityOrder.btiReference shouldBe Some("BTI-REFERENCE")
+      responseCase.application.asLiabilityOrder.repaymentClaim.get.dvrNumber shouldBe Some("DVR-123456")
+      responseCase.application.asLiabilityOrder.repaymentClaim.get.dateForRepayment.get should roughlyBe(Instant.now())
+      responseCase.application.asLiabilityOrder.dateOfReceipt.get should roughlyBe(Instant.now())
+
+      responseCase.application.asLiabilityOrder.traderContactDetails.get shouldBe
+        TraderContactDetails(
+          Some("email"),
+          Some("phone"),
+          Some(Address("Street Name", "Town", Some("County"), Some("P0ST C05E")))
+        )
+    }
+
   }
 
 
@@ -199,6 +234,23 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe c1UpdatedJson
     }
 
+    scenario("Update an existing case with new fields DIT-1962") {
+
+      Given("There is an existing case in the database")
+      storeCases(c2)
+
+      When("I update an existing case")
+      val result = Http(s"$serviceUrl/cases/${c2.reference}")
+        .header(apiTokenKey, appConfig.authorization)
+        .header(CONTENT_TYPE, JSON)
+        .put(c2WithExtraFieldsJson.toString()).asString
+
+      Then("Response should be OK")
+      result.code shouldEqual OK
+
+      And("The case is returned in the JSON response")
+      Json.parse(result.body) shouldBe c2WithExtraFieldsJson
+    }
   }
 
 

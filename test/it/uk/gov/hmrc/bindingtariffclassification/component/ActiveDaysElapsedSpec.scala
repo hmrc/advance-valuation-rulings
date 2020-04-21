@@ -40,8 +40,8 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
     .bindings(bind[AppConfig].to[AppConfigWithAFixedDate])
     .disable[com.kenshoo.play.metrics.PlayModule]
     .configure("metrics.enabled" -> false)
+    .configure("mongodb.uri" -> "mongodb://localhost:27017/test-ClassificationMongoRepositoryTest")
     .injector()
-
 
   private val job: ActiveDaysElapsedJob = injector.instanceOf[ActiveDaysElapsedJob]
 

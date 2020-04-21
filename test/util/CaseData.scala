@@ -89,6 +89,29 @@ object CaseData {
     )
   }
 
+  def createLiabilityOrderWithExtraFields: LiabilityOrder = {
+    LiabilityOrder(
+      contact = createContact,
+      status = LiabilityStatus.LIVE,
+      traderName = "Acme Corp.",
+      goodName = Some("Large Iron Anvil"),
+      entryNumber = Some("23-SGD"),
+      entryDate = Some(Instant.now()),
+      traderCommodityCode = Some("6666666666"),
+      officerCommodityCode = Some("0987654321"),
+      btiReference = Some("BTI-REFERENCE"),
+      repaymentClaim = Some(RepaymentClaim(
+        dvrNumber = Some("DVR-123456"),
+        dateForRepayment = Some(Instant.now()))),
+      dateOfReceipt = Some(Instant.now()),
+      traderContactDetails = Some(TraderContactDetails(
+        Some("email"),
+        Some("phone"),
+        Some(Address("Street Name", "Town", Some("County"), Some("P0ST C05E"))))
+      )
+    )
+  }
+
   def createAgentDetails: AgentDetails = {
     AgentDetails(
       eoriDetails = createEORIDetails.copy(businessName = "Frank Agent-Smith"),

@@ -31,6 +31,10 @@ object RESTFormatters {
   Json.toJson(Map[String, Option[String]]("" -> Some("")))
 
   // `Case` formatters
+  implicit val formatRepaymentClaim: OFormat[RepaymentClaim] = Json.format[RepaymentClaim]
+  implicit val formatAddress: OFormat[Address] = Json.format[Address]
+  implicit val formatTraderContactDetails: OFormat[TraderContactDetails] = Json.format[TraderContactDetails]
+
   implicit val formatCaseStatus: Format[CaseStatus.Value] = EnumJson.format(CaseStatus)
   implicit val formatApplicationType: Format[ApplicationType.Value] = EnumJson.format(ApplicationType)
   implicit val formatLiabilityStatus: Format[LiabilityStatus.Value] = EnumJson.format(LiabilityStatus)
