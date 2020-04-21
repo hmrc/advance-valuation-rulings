@@ -108,8 +108,7 @@ object CaseData {
         Some("email"),
         Some("phone"),
         Some(Address("Street Name", "Town", Some("County"), Some("P0ST C05E"))))
-      ),
-      boardsFileNumber = Some("BFN 1234567")
+      )
     )
   }
 
