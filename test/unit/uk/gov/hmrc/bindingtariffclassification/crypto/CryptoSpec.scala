@@ -20,13 +20,12 @@ import java.util.UUID
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
-import org.scalatest.mockito.MockitoSugar
+import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.crypto.{CompositeSymmetricCrypto, Crypted, PlainText}
-import uk.gov.hmrc.play.test.UnitSpec
 import util.CaseData._
 
-class CryptoSpec extends UnitSpec with MockitoSugar {
+class CryptoSpec extends BaseSpec {
 
   private val simmetricCrypto = mock[CompositeSymmetricCrypto]
   private val crypto = new Crypto(simmetricCrypto)
@@ -37,7 +36,6 @@ class CryptoSpec extends UnitSpec with MockitoSugar {
 
   private val bti = createBTIApplicationWithAllFields
   private val lo = createLiabilityOrder
-  private val filter = CaseFilter(traderName = Some("name"))
 
   private def expectedEncryptedBti(k: String, letter: Option[Attachment]): BTIApplication = {
     bti.copy(
@@ -52,10 +50,6 @@ class CryptoSpec extends UnitSpec with MockitoSugar {
     lo.copy(
       contact = encContacts(k)
     )
-  }
-
-  private def expectedEncryptedSearchFilter(k: String): CaseFilter = {
-    filter.copy(traderName = Some(k))
   }
 
   "encrypt()" should {

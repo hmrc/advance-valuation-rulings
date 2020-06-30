@@ -19,14 +19,12 @@ package uk.gov.hmrc.bindingtariffclassification.repository
 import java.time.{Clock, Instant, ZoneOffset}
 
 import org.mockito.BDDMockito._
-import org.scalatest.mockito.MockitoSugar
 import play.api.libs.json.{JsNull, JsString, Json}
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.sort.{CaseSortField, SortDirection}
-import uk.gov.hmrc.play.test.UnitSpec
 
-class CaseSearchMapperSpec extends UnitSpec with MockitoSugar {
+class CaseSearchMapperSpec extends BaseMongoIndexSpec {
 
   private val config = mock[AppConfig]
 

@@ -16,28 +16,24 @@
 
 package uk.gov.hmrc.bindingtariffclassification.controllers
 
-import akka.stream.Materializer
 import org.mockito.Mockito.when
-import org.scalatest.mockito.MockitoSugar
 import play.api.http.Status._
 import play.api.test.FakeRequest
+import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.scheduler.{ActiveDaysElapsedJob, ReferredDaysElapsedJob, Scheduler}
 import uk.gov.hmrc.http.HttpVerbs
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 import scala.concurrent.Future.{failed, successful}
 
-class SchedulerControllerSpec extends UnitSpec with WithFakeApplication with MockitoSugar {
-
-  private implicit val mat: Materializer = fakeApplication.materializer
+class SchedulerControllerSpec extends BaseSpec {
 
   private val appConfig = mock[AppConfig]
   private val scheduler = mock[Scheduler]
 
   private val fakeRequest = FakeRequest(method = HttpVerbs.PUT, path = "/scheduler/days-elapsed")
 
-  private val controller = new SchedulerController(appConfig, scheduler)
+  private val controller = new SchedulerController(appConfig, scheduler, parser, mcc)
 
   "Increment Active Days Elapsed" should {
 

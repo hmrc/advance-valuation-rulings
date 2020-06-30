@@ -25,7 +25,7 @@ import org.mockito.Mockito._
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mockito.MockitoSugar
+import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.{AppConfig, JobConfig}
 import uk.gov.hmrc.bindingtariffclassification.connector.BankHolidaysConnector
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
@@ -33,13 +33,12 @@ import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.service.{CaseService, EventService}
 import uk.gov.hmrc.bindingtariffclassification.sort.CaseSortField
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.test.UnitSpec
 import util.CaseData
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class ActiveDaysElapsedJobTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach {
+class ActiveDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
 
   private val caseService = mock[CaseService]
   private val eventService = mock[EventService]

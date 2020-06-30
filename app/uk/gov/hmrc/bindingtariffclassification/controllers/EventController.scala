@@ -28,12 +28,18 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 @Singleton
-class EventController @Inject()(appConfig: AppConfig, eventService: EventService, caseService: CaseService) extends CommonController {
+class EventController @Inject()(
+                                 appConfig: AppConfig,
+                                 eventService: EventService,
+                                 caseService: CaseService,
+                                 parser: BodyParsers.Default,
+                                 mcc: MessagesControllerComponents
+                               ) extends CommonController(mcc) {
 
-  lazy private val testModeFilter = TestMode.actionFilter(appConfig)
+  lazy private val testModeFilter = TestMode.actionFilter(appConfig, parser)
 
   def deleteAll(): Action[AnyContent] = testModeFilter.async { implicit request =>
-    eventService.deleteAll() map ( _ => NoContent ) recover recovery
+    eventService.deleteAll() map (_ => NoContent) recover recovery
   }
 
   def search(search: EventSearch, pagination: Pagination): Action[AnyContent] = Action.async { implicit request =>

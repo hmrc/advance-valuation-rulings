@@ -19,7 +19,6 @@ package uk.gov.hmrc.bindingtariffclassification
 import javax.inject.{Inject, Provider}
 import play.api.inject.Binding
 import play.api.{Configuration, Environment}
-import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.crypto.LocalCrypto
 import uk.gov.hmrc.bindingtariffclassification.repository.{CaseMongoRepository, CaseRepository, EncryptedCaseMongoRepository}
 import uk.gov.hmrc.bindingtariffclassification.scheduler._
@@ -27,9 +26,11 @@ import uk.gov.hmrc.crypto.CompositeSymmetricCrypto
 
 class Module extends play.api.inject.Module {
 
+  def isMongoEncryptionEnabled(configuration: Configuration): Boolean =
+    configuration.get[Boolean]("mongodb.encryption.enabled")
+
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
-    val appConfig = new AppConfig(configuration, environment)
-    val repositoryBinding: Binding[CaseRepository] = if (appConfig.mongoEncryption.enabled) {
+    val repositoryBinding: Binding[CaseRepository] = if (isMongoEncryptionEnabled(configuration)) {
       bind[CaseRepository].to[EncryptedCaseMongoRepository]
     } else {
       bind[CaseRepository].to[CaseMongoRepository]
@@ -45,8 +46,9 @@ class Module extends play.api.inject.Module {
 
 }
 
-class ScheduledJobProvider @Inject()(activeDaysElapsedJob: ActiveDaysElapsedJob,
-                                     referredDaysElapsedJob: ReferredDaysElapsedJob)
-  extends Provider[ScheduledJobs] {
+class ScheduledJobProvider @Inject()(
+                                      activeDaysElapsedJob: ActiveDaysElapsedJob,
+                                     referredDaysElapsedJob: ReferredDaysElapsedJob
+                                    ) extends Provider[ScheduledJobs] {
   override def get(): ScheduledJobs = ScheduledJobs(Set(activeDaysElapsedJob, referredDaysElapsedJob))
 }

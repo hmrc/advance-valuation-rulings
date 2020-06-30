@@ -16,31 +16,26 @@
 
 package uk.gov.hmrc.bindingtariffclassification.controllers
 
-import akka.stream.Materializer
 import org.mockito.ArgumentMatchers.{any, refEq}
 import org.mockito.Mockito.when
-import org.scalatest.Matchers
-import org.scalatest.mockito.MockitoSugar
 import play.api.http.Status._
 import play.api.libs.json.Json.toJson
 import play.api.test.FakeRequest
 import reactivemongo.bson.BSONDocument
 import reactivemongo.core.errors.DatabaseException
+import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.RESTFormatters._
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.service.CaseService
 import uk.gov.hmrc.bindingtariffclassification.sort.{CaseSortField, SortDirection}
 import uk.gov.hmrc.http.HttpVerbs
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 import util.CaseData
 
 import scala.concurrent.Future
 import scala.concurrent.Future._
 
-class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoSugar with Matchers {
-
-  private implicit val mat: Materializer = fakeApplication.materializer
+class CaseControllerSpec extends BaseSpec {
 
   private val newCase: NewCaseRequest = CaseData.createNewCase()
   private val c1: Case = CaseData.createCase()
@@ -51,7 +46,7 @@ class CaseControllerSpec extends UnitSpec with WithFakeApplication with MockitoS
 
   private val fakeRequest = FakeRequest()
 
-  private val controller = new CaseController(appConfig, caseService)
+  private val controller = new CaseController(appConfig, caseService, parser, mcc)
 
   "deleteAll()" should {
 

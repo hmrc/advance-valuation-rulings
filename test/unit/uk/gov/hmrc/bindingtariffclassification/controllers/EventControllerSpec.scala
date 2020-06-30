@@ -19,28 +19,24 @@ package uk.gov.hmrc.bindingtariffclassification.controllers
 import java.time.Instant
 import java.util.UUID
 
-import akka.stream.Materializer
 import org.mockito.Mockito.{verifyNoMoreInteractions, when}
 import org.mockito.{ArgumentMatchers, Mockito}
-import org.scalatest.mockito.MockitoSugar
-import org.scalatest.{BeforeAndAfterEach, Matchers}
+import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
 import play.api.libs.json.Json.toJson
 import play.api.mvc.Result
 import play.api.test.FakeRequest
+import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.RESTFormatters._
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.service.{CaseService, EventService}
 import uk.gov.hmrc.http.HttpVerbs
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 import util.EventData
 
 import scala.concurrent.Future._
 
-class EventControllerSpec extends UnitSpec with WithFakeApplication with MockitoSugar with Matchers with BeforeAndAfterEach {
-
-  private implicit val mat: Materializer = fakeApplication.materializer
+class EventControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
   private val caseReference = UUID.randomUUID().toString
 
@@ -53,7 +49,7 @@ class EventControllerSpec extends UnitSpec with WithFakeApplication with Mockito
   private val fakeRequest = FakeRequest()
   private val appConfig = mock[AppConfig]
 
-  private val controller = new EventController(appConfig, eventService, casesService)
+  private val controller = new EventController(appConfig, eventService, casesService, parser, mcc)
 
   override protected def afterEach(): Unit = {
     super.afterEach()

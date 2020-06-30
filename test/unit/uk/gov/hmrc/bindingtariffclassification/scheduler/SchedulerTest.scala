@@ -27,17 +27,16 @@ import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.Eventually
-import org.scalatest.mockito.MockitoSugar
+import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.SchedulerRunEvent
 import uk.gov.hmrc.bindingtariffclassification.repository.SchedulerLockRepository
-import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future.successful
 import scala.concurrent.duration._
 
-class SchedulerTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach with Eventually {
+class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
 
   private val zone: ZoneId = ZoneOffset.UTC
   private val schedulerRepository = mock[SchedulerLockRepository]
@@ -78,14 +77,12 @@ class SchedulerTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach w
     captor.getValue
   }
 
-  private def runTheJobImmediately: Answer[Cancellable] = new Answer[Cancellable] {
-    override def answer(invocation: InvocationOnMock): Cancellable = {
-      val arg: Runnable = invocation.getArgument(2)
-      if (arg != null) {
-        arg.run()
-      }
-      Cancellable.alreadyCancelled
+  private def runTheJobImmediately: Answer[Cancellable] = (invocation: InvocationOnMock) => {
+    val arg: Runnable = invocation.getArgument(2)
+    if (arg != null) {
+      arg.run()
     }
+    Cancellable.alreadyCancelled
   }
 
   override protected def beforeEach(): Unit = {

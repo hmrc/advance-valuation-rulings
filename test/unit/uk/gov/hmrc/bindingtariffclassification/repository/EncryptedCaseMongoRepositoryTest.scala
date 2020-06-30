@@ -20,15 +20,13 @@ import org.mockito.BDDMockito.given
 import org.mockito.Mockito
 import org.mockito.Mockito.verify
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mockito.MockitoSugar
 import uk.gov.hmrc.bindingtariffclassification.crypto.Crypto
 import uk.gov.hmrc.bindingtariffclassification.model.reporting.{CaseReport, ReportResult}
 import uk.gov.hmrc.bindingtariffclassification.model.{Case, CaseSearch, Paged, Pagination}
-import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.Future.successful
 
-class EncryptedCaseMongoRepositoryTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach {
+class EncryptedCaseMongoRepositoryTest extends BaseMongoIndexSpec with BeforeAndAfterEach {
 
   private val rawCase = mock[Case]
   private val rawCaseSaved = mock[Case]

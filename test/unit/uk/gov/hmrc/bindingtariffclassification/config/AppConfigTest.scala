@@ -18,15 +18,15 @@ package uk.gov.hmrc.bindingtariffclassification.config
 
 import java.time.{LocalTime, ZoneOffset}
 
-import play.api.{Configuration, Environment}
-import uk.gov.hmrc.play.test.UnitSpec
+import play.api.Configuration
+import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 
 import scala.concurrent.duration._
 
-class AppConfigTest extends UnitSpec {
+class AppConfigTest extends BaseSpec {
 
   private def configWith(pairs: (String, String)*): AppConfig = {
-    new AppConfig(Configuration.from(pairs.map(e => e._1 -> e._2).toMap), Environment.simple())
+    new AppConfig(Configuration.from(pairs.map(e => e._1 -> e._2).toMap), serviceConfig)
   }
 
   "Config" should {
@@ -35,12 +35,12 @@ class AppConfigTest extends UnitSpec {
       configWith().clock.getZone shouldBe ZoneOffset.UTC
     }
 
-    "build 'isTestMode" in {
+    "build 'isTestMode'" in {
       configWith("testMode" -> "true").isTestMode shouldBe true
       configWith("testMode" -> "false").isTestMode shouldBe false
     }
 
-    "build 'ActiveDaysElapsedConfig" in {
+    "build 'ActiveDaysElapsedConfig'" in {
       val config = configWith(
         "scheduler.active-days-elapsed.run-time" -> "00:00",
         "scheduler.active-days-elapsed.interval" -> "1d"
@@ -49,7 +49,7 @@ class AppConfigTest extends UnitSpec {
       config.interval shouldBe 1.days
     }
 
-    "build 'ReferredDaysElapsedConfig" in {
+    "build 'ReferredDaysElapsedConfig'" in {
       val config = configWith(
         "scheduler.referred-days-elapsed.run-time" -> "00:00",
         "scheduler.referred-days-elapsed.interval" -> "1d"
@@ -58,12 +58,9 @@ class AppConfigTest extends UnitSpec {
       config.interval shouldBe 1.days
     }
 
-    "build 'bankHolidaysUrl" in {
-      configWith(
-        "microservice.services.bank-holidays.protocol" -> "https",
-        "microservice.services.bank-holidays.host" -> "www.host.co.uk",
-        "microservice.services.bank-holidays.port" -> "123"
-      ).bankHolidaysUrl shouldBe "https://www.host.co.uk:123"
+    "build 'bankHolidaysUrl'" in {
+      //take expected from application.conf
+      configWith().bankHolidaysUrl shouldBe "http://localhost:9587"
     }
 
     "build 'upsert-permitted-agents'" in {
@@ -71,36 +68,43 @@ class AppConfigTest extends UnitSpec {
       configWith("upsert-permitted-agents" -> "").upsertAgents shouldBe Seq.empty
     }
 
-    "build 'mongoEncryption' " in {
-
+    "build 'mongoEncryption' with default" in {
       configWith().mongoEncryption shouldBe MongoEncryption()
+    }
 
+    "build 'mongoEncryption' with false" in {
       configWith(
         "mongodb.encryption.enabled" -> "false"
       ).mongoEncryption shouldBe MongoEncryption()
+    }
 
+    "build 'mongoEncryption' with value not boolean" in {
       configWith(
         "mongodb.encryption.key" -> "ABC"
       ).mongoEncryption shouldBe MongoEncryption()
+    }
 
+    "build 'mongoEncryption' with value false and key ABC" in {
       configWith(
         "mongodb.encryption.enabled" -> "false",
         "mongodb.encryption.key" -> "ABC"
       ).mongoEncryption shouldBe MongoEncryption()
+    }
 
-
+    "build 'mongoEncryption' with value true and key ABC" in {
       configWith(
         "mongodb.encryption.enabled" -> "true",
         "mongodb.encryption.key" -> "ABC"
       ).mongoEncryption shouldBe MongoEncryption(enabled = true, key = Some("ABC"))
+    }
 
+    "build 'mongoEncryption' with value true and without key" in {
       val caught = intercept[RuntimeException] {
         configWith(
           "mongodb.encryption.enabled" -> "true"
         ).mongoEncryption
       }
       caught.getMessage shouldBe s"Could not find config key 'mongodb.encryption.key'"
-
     }
 
     "build 'case reference configuration" in {

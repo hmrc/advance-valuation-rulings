@@ -21,36 +21,32 @@ import java.time.LocalDate
 import akka.actor.ActorSystem
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get}
 import org.mockito.BDDMockito.given
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mockito.MockitoSugar
-import play.api.Environment
+import org.scalatest.BeforeAndAfterAll
 import play.api.http.Status
 import play.api.libs.ws.WSClient
+import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.http.ProxyHttpClient
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.audit.DefaultAuditConnector
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
+import uk.gov.hmrc.play.audit.http.HttpAuditing
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class BankHolidaysConnectorTest extends UnitSpec with WiremockTestServer
-  with MockitoSugar with WithFakeApplication with BeforeAndAfterEach with ResourceFiles {
+class BankHolidaysConnectorTest extends BaseSpec with WiremockTestServer with BeforeAndAfterAll {
 
   private val config = mock[AppConfig]
 
   private implicit val headers: HeaderCarrier = HeaderCarrier()
-  private implicit val actorSystem = ActorSystem("test")
+  private implicit val actorSystem: ActorSystem = ActorSystem("test")
 
   private val wsClient: WSClient = fakeApplication.injector.instanceOf[WSClient]
-  private val environment = fakeApplication.injector.instanceOf[Environment]
-  private val auditConnector = new DefaultAuditConnector(fakeApplication.configuration, environment)
-  private val hmrcProxyHttpClient = new ProxyHttpClient(fakeApplication.configuration, auditConnector, wsClient)
+  private val httpAuditEvent = fakeApplication.injector.instanceOf[HttpAuditing]
+  private val hmrcProxyHttpClient = new ProxyHttpClient(fakeApplication.configuration, httpAuditEvent, wsClient)
 
   private val connector = new BankHolidaysConnector(config, hmrcProxyHttpClient)
 
-  override protected def beforeEach(): Unit = {
-    super.beforeEach()
+  override protected def beforeAll(): Unit = {
+    super.beforeAll()
     given(config.bankHolidaysUrl).willReturn(wireMockUrl)
   }
 

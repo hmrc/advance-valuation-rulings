@@ -137,7 +137,7 @@ class CaseMongoRepository @Inject()(mongoDbProvider: MongoDbProvider, mapper: Se
     removeAll().map(_ => ())
   }
 
-  override def incrementDaysElapsed(increment: Double = 1): Future[Int] = {
+  override def incrementDaysElapsed(increment: Double): Future[Int] = {
     val statuses = List(OPEN, NEW)
     collection.update(
       selector = BSONDocument(

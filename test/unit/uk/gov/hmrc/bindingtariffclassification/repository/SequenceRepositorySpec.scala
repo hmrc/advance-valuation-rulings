@@ -36,7 +36,7 @@ class SequenceRepositorySpec extends BaseMongoIndexSpec
   with MongoSpecSupport
   with Eventually { self =>
 
-  private val mongoDbProvider = new MongoDbProvider {
+  private val mongoDbProvider: MongoDbProvider = new MongoDbProvider {
     override val mongo: () => DB = self.mongo
   }
 

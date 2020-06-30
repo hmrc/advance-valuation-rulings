@@ -18,16 +18,19 @@ package uk.gov.hmrc.bindingtariffclassification.controllers
 
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json._
-import play.api.mvc.{Request, Result}
+import play.api.mvc.{MessagesControllerComponents, Request, Result}
 import uk.gov.hmrc.bindingtariffclassification.model.JsErrorResponse
 import uk.gov.hmrc.bindingtariffclassification.model.ErrorCode._
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.{BackendController, BaseController}
 
 import scala.concurrent.Future
 import scala.concurrent.Future.successful
 import scala.util.{Failure, Success, Try}
 
-trait CommonController extends BaseController {
+class CommonController(
+                        mcc: MessagesControllerComponents
+                      ) extends BackendController(mcc) {
+
   private val logger : Logger = LoggerFactory.getLogger(classOf[CommonController])
 
   override protected def withJsonBody[T]
