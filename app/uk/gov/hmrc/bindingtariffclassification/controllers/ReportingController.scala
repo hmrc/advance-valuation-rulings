@@ -31,7 +31,7 @@ class ReportingController @Inject()(
                                      mcc: MessagesControllerComponents
                                    ) extends CommonController(mcc) {
 
-  def report(report: CaseReport): Action[AnyContent] = Action.async { implicit request =>
+  def report(report: CaseReport): Action[AnyContent] = Action.async {
     reportService.generate(report) map { result => Ok(Json.toJson(result))}
   }
 

@@ -25,5 +25,4 @@ case class ReportResult
 )
 object ReportResult {
   def apply(group: (CaseReportGroup, Option[String]), value: Seq[Int]): ReportResult = ReportResult(Map(group), value)
-  def apply(group: Seq[(CaseReportGroup, String)], value: Seq[Int]): ReportResult = ReportResult(group.toMap.mapValues(Some(_)), value)
 }

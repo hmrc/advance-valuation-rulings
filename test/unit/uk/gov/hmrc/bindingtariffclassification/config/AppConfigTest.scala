@@ -113,6 +113,15 @@ class AppConfigTest extends BaseSpec {
       configWith("liability-reference-offset" -> "20").liabilityReferenceOffset shouldBe 20
     }
 
+    "throw and exception when key is missing for duration" in {
+      val keyToPass = "run-time"
+      val caught = intercept[RuntimeException] {
+        configWith().getDuration(keyToPass)
+      }
+
+      caught.getMessage shouldBe s"Could not find config key '$keyToPass'"
+    }
+
   }
 
 }

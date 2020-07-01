@@ -38,15 +38,15 @@ class EventController @Inject()(
 
   lazy private val testModeFilter = TestMode.actionFilter(appConfig, parser)
 
-  def deleteAll(): Action[AnyContent] = testModeFilter.async { implicit request =>
+  def deleteAll(): Action[AnyContent] = testModeFilter.async {
     eventService.deleteAll() map (_ => NoContent) recover recovery
   }
 
-  def search(search: EventSearch, pagination: Pagination): Action[AnyContent] = Action.async { implicit request =>
+  def search(search: EventSearch, pagination: Pagination): Action[AnyContent] = Action.async {
     eventService.search(search, pagination) map { events: Paged[Event] => Ok(Json.toJson(events)) } recover recovery
   }
 
-  def getByCaseReference(caseRef: String, pagination: Pagination): Action[AnyContent] = Action.async { implicit request =>
+  def getByCaseReference(caseRef: String, pagination: Pagination): Action[AnyContent] = Action.async {
     eventService.search(EventSearch(Some(Set(caseRef))), pagination) map { events: Paged[Event] => Ok(Json.toJson(events)) } recover recovery
   }
 

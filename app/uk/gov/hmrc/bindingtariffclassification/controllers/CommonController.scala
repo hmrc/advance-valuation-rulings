@@ -19,9 +19,9 @@ package uk.gov.hmrc.bindingtariffclassification.controllers
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json._
 import play.api.mvc.{MessagesControllerComponents, Request, Result}
-import uk.gov.hmrc.bindingtariffclassification.model.JsErrorResponse
 import uk.gov.hmrc.bindingtariffclassification.model.ErrorCode._
-import uk.gov.hmrc.play.bootstrap.controller.{BackendController, BaseController}
+import uk.gov.hmrc.bindingtariffclassification.model.JsErrorResponse
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
 import scala.concurrent.Future
 import scala.concurrent.Future.successful

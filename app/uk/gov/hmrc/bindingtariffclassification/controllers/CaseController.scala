@@ -39,7 +39,7 @@ class CaseController @Inject()(appConfig: AppConfig,
   lazy private val testModeFilter = TestMode.actionFilter(appConfig, parser)
   private val logger: Logger = LoggerFactory.getLogger(classOf[CaseController])
 
-  def deleteAll(): Action[AnyContent] = testModeFilter.async { implicit request =>
+  def deleteAll(): Action[AnyContent] = testModeFilter.async {
     caseService.deleteAll() map (_ => NoContent) recover recovery
   }
 
@@ -75,11 +75,11 @@ class CaseController @Inject()(appConfig: AppConfig,
     case _ => NotFound(JsErrorResponse(NOTFOUND, "Case not found"))
   }
 
-  def get(search: CaseSearch, pagination: Pagination): Action[AnyContent] = Action.async { implicit request =>
+  def get(search: CaseSearch, pagination: Pagination): Action[AnyContent] = Action.async {
     caseService.get(search, pagination) map { cases => Ok(Json.toJson(cases)) } recover recovery
   }
 
-  def getByReference(reference: String): Action[AnyContent] = Action.async { implicit request =>
+  def getByReference(reference: String): Action[AnyContent] = Action.async {
     caseService.getByReference(reference) map handleNotFound recover recovery
   }
 
