@@ -17,11 +17,9 @@
 package uk.gov.hmrc.bindingtariffclassification.crypto
 
 import org.mockito.Mockito
-import org.scalatest.mockito.MockitoSugar
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.{AppConfig, MongoEncryption}
 import uk.gov.hmrc.crypto.PlainText
-import uk.gov.hmrc.play.test.UnitSpec
 
 class LocalCryptoSpec extends BaseSpec {
 
