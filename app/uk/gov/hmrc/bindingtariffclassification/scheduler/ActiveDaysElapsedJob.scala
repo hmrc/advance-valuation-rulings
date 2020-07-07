@@ -35,10 +35,12 @@ import scala.concurrent.Future._
 import scala.concurrent.duration._
 
 @Singleton
-class ActiveDaysElapsedJob @Inject()(appConfig: AppConfig,
-                                     caseService: CaseService,
-                                     eventService: EventService,
-                                     bankHolidaysConnector: BankHolidaysConnector) extends ScheduledJob {
+class ActiveDaysElapsedJob @Inject()(
+                                      appConfig: AppConfig,
+                                      caseService: CaseService,
+                                      eventService: EventService,
+                                      bankHolidaysConnector: BankHolidaysConnector
+                                    ) extends ScheduledJob {
 
   private implicit val config: AppConfig = appConfig
   private implicit val carrier: HeaderCarrier = HeaderCarrier()
@@ -68,8 +70,22 @@ class ActiveDaysElapsedJob @Inject()(appConfig: AppConfig,
     }
   }
 
+  private def getStartDate(c: Case): LocalDate = {
+      if (c.application.isLiabilityOrder) {
+        val liability = c.application.asLiabilityOrder
+        if (liability.dateOfReceipt.isDefined) {
+          LocalDateTime.ofInstant(liability.dateOfReceipt.get, ZoneOffset.UTC).toLocalDate
+        } else {
+          //when liability doesn't have date of receipt use case create date
+          LocalDateTime.ofInstant(c.createdDate, ZoneOffset.UTC).toLocalDate
+        }
+      } else {
+        LocalDateTime.ofInstant(c.createdDate, ZoneOffset.UTC).toLocalDate
+      }
+  }
+
   private def refreshDaysElapsed(c: Case)(implicit bankHolidays: Set[LocalDate]): Future[Unit] = {
-    val createdDate: LocalDate = LocalDateTime.ofInstant(c.createdDate, ZoneOffset.UTC).toLocalDate
+    lazy val createdDate: LocalDate = getStartDate(c)
     val daysSinceCreated: Long = ChronoUnit.DAYS.between(createdDate, LocalDate.now(appConfig.clock))
 
     // Working days between the created date and Now

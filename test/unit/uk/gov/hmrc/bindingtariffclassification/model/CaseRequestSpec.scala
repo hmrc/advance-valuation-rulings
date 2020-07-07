@@ -19,7 +19,7 @@ package uk.gov.hmrc.bindingtariffclassification.model
 import java.time.Instant
 
 import org.mockito.Mockito.when
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.play.test.UnitSpec
 import util.CaseData
 import util.Matchers.roughlyBe
