@@ -16,47 +16,47 @@
 
 package uk.gov.hmrc.bindingtariffclassification.controllers
 
-import akka.stream.Materializer
-import akka.util.ByteString
 import javax.inject.{Inject, Singleton}
+import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, AnyContent, Result}
+import play.api.mvc._
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.ErrorCode.NOTFOUND
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.service.CaseService
+import RESTFormatters._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future.successful
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 @Singleton
 class CaseController @Inject()(appConfig: AppConfig,
-                               caseService: CaseService
-                              ) extends CommonController {
-  private val logger : Logger = LoggerFactory.getLogger(classOf[CaseController])
+                               caseService: CaseService,
+                               parser: BodyParsers.Default,
+                               mcc: MessagesControllerComponents
+                              ) extends CommonController(mcc) {
 
+  lazy private val testModeFilter = TestMode.actionFilter(appConfig, parser)
+  private val logger: Logger = LoggerFactory.getLogger(classOf[CaseController])
 
-  import RESTFormatters.{formatCase, formatNewCase}
-
-  lazy private val testModeFilter = TestMode.actionFilter(appConfig)
-
-  def deleteAll(): Action[AnyContent] = testModeFilter.async { implicit request =>
+  def deleteAll(): Action[AnyContent] = testModeFilter.async {
     caseService.deleteAll() map (_ => NoContent) recover recovery
   }
 
   def create: Action[JsValue] = Action.async(parse.json) { implicit request => {
-      withJsonBody[NewCaseRequest] { caseRequest: NewCaseRequest =>
-          for {
-            r <- caseService.nextCaseReference(caseRequest.application.`type`)
-            c <- caseService.insert(caseRequest.toCase(r))
-            _ <- caseService.addInitialSampleStatusIfExists(c)
-          } yield Created(Json.toJson(c))
-      } recover recovery map {result => {
-          logger.debug(s"Case creation Result : ${result}"); result
-      }}
-  }}
+    withJsonBody[NewCaseRequest] { caseRequest: NewCaseRequest =>
+      for {
+        r <- caseService.nextCaseReference(caseRequest.application.`type`)
+        c <- caseService.insert(caseRequest.toCase(r))
+        _ <- caseService.addInitialSampleStatusIfExists(c)
+      } yield Created(Json.toJson(c)(RESTFormatters.formatCase))
+    } recover recovery map { result => {
+      logger.debug(s"Case creation Result : ${result}");
+      result
+    }
+    }
+  }
+  }
 
   def update(reference: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[Case] { caseRequest: Case =>
@@ -70,17 +70,17 @@ class CaseController @Inject()(appConfig: AppConfig,
     } recover recovery
   }
 
-  def get(search: CaseSearch, pagination: Pagination): Action[AnyContent] = Action.async { implicit request =>
-    caseService.get(search, pagination) map { cases => Ok(Json.toJson(cases)) } recover recovery
-  }
-
-  def getByReference(reference: String): Action[AnyContent] = Action.async { implicit request =>
-    caseService.getByReference(reference) map handleNotFound recover recovery
-  }
-
   private[controllers] def handleNotFound: PartialFunction[Option[Case], Result] = {
     case Some(c: Case) => Ok(Json.toJson(c))
     case _ => NotFound(JsErrorResponse(NOTFOUND, "Case not found"))
+  }
+
+  def get(search: CaseSearch, pagination: Pagination): Action[AnyContent] = Action.async {
+    caseService.get(search, pagination) map { cases => Ok(Json.toJson(cases)) } recover recovery
+  }
+
+  def getByReference(reference: String): Action[AnyContent] = Action.async {
+    caseService.getByReference(reference) map handleNotFound recover recovery
   }
 
 }

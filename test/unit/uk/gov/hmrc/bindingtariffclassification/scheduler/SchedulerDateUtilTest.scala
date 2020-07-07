@@ -20,13 +20,12 @@ import java.time._
 
 import org.mockito.BDDMockito.given
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mockito.MockitoSugar
+import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
-import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.duration._
 
-class SchedulerDateUtilTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach {
+class SchedulerDateUtilTest extends BaseSpec with BeforeAndAfterEach {
 
   private val zone = ZoneOffset.UTC
   private val clock: Clock = Clock.fixed(instant("2019-01-01T12:00:00").plusNanos((Math.random()*1000).toInt), zone)

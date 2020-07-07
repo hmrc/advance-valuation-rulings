@@ -17,14 +17,13 @@
 package uk.gov.hmrc.bindingtariffclassification.service
 
 import org.mockito.Mockito.when
-import org.scalatest.mockito.MockitoSugar
+import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.model.{Event, EventSearch, Paged, Pagination}
 import uk.gov.hmrc.bindingtariffclassification.repository.EventRepository
-import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.Future.successful
 
-class EventServiceSpec extends UnitSpec with MockitoSugar {
+class EventServiceSpec extends BaseSpec {
 
   final private val e1 = mock[Event]
   final private val e2 = mock[Event]

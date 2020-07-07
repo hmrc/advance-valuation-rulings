@@ -40,8 +40,9 @@ class EventRepositorySpec extends BaseMongoIndexSpec
   with MongoSpecSupport
   with Eventually {
   self =>
+  private val mongoErrorCode = 11000
 
-  private val mongoDbProvider = new MongoDbProvider {
+  private val mongoDbProvider: MongoDbProvider = new MongoDbProvider {
     override val mongo: () => DB = self.mongo
   }
 
@@ -106,7 +107,7 @@ class EventRepositorySpec extends BaseMongoIndexSpec
       val caught = intercept[DatabaseException] {
         await(repository.insert(updated))
       }
-      caught.code shouldBe Some(11000)
+      caught.code shouldBe Some(mongoErrorCode)
 
       collectionSize shouldBe 1
       await(repository.collection.find(selectorById(updated)).one[Event]) shouldBe Some(e)
@@ -218,7 +219,7 @@ class EventRepositorySpec extends BaseMongoIndexSpec
         await(repository.insert(e2))
       }
 
-      caught.code shouldBe Some(11000)
+      caught.code shouldBe Some(mongoErrorCode)
 
       collectionSize shouldBe 1
     }

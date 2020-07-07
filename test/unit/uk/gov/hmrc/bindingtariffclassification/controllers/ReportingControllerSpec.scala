@@ -16,30 +16,23 @@
 
 package uk.gov.hmrc.bindingtariffclassification.controllers
 
-import akka.stream.Materializer
 import org.mockito.BDDMockito.given
 import org.mockito.Mockito
-import org.scalatest.mockito.MockitoSugar
-import org.scalatest.{BeforeAndAfterEach, Matchers}
+import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
 import play.api.test.FakeRequest
-import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
+import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.model.reporting.{CaseReport, ReportResult}
 import uk.gov.hmrc.bindingtariffclassification.service.ReportService
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 import scala.concurrent.Future
 
-class ReportingControllerSpec extends UnitSpec with WithFakeApplication with MockitoSugar with Matchers with BeforeAndAfterEach {
-
-  private implicit val mat: Materializer = fakeApplication.materializer
+class ReportingControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
   private val reportService = mock[ReportService]
 
   private val fakeRequest = FakeRequest()
-  private val appConfig = mock[AppConfig]
-
-  private val controller = new ReportingController(reportService)
+  private val controller = new ReportingController(reportService, mcc)
 
   override protected def afterEach(): Unit = {
     super.afterEach()

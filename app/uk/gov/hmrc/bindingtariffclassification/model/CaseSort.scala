@@ -17,7 +17,6 @@
 package uk.gov.hmrc.bindingtariffclassification.model
 
 import play.api.mvc.QueryStringBindable
-import uk.gov.hmrc.bindingtariffclassification.model.CaseFilter.referenceKey
 import uk.gov.hmrc.bindingtariffclassification.sort.CaseSortField.CaseSortField
 import uk.gov.hmrc.bindingtariffclassification.sort.SortDirection
 import uk.gov.hmrc.bindingtariffclassification.sort.SortDirection.SortDirection

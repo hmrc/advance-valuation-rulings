@@ -19,7 +19,6 @@ package uk.gov.hmrc.bindingtariffclassification.model
 import java.time.Instant
 
 import play.api.libs.json._
-import play.json.extra.Jsonx
 import uk.gov.hmrc.bindingtariffclassification.utils.JsonUtil
 import uk.gov.hmrc.play.json.Union
 
@@ -79,7 +78,7 @@ object MongoFormatters {
   implicit val formatCancellation: OFormat[Cancellation] = Json.format[Cancellation]
   implicit val formatDecision: OFormat[Decision] = Json.format[Decision]
   implicit val formatSample: OFormat[Sample] = Json.format[Sample]
-  implicit val formatCase: OFormat[Case] = JsonUtil.convertToOFormat(Jsonx.formatCaseClass[Case])
+  implicit val formatCase: OFormat[Case] = JsonUtil.convertToOFormat(Json.using[Json.WithDefaultValues].format[Case])
 
   // `Event` formatters
   implicit val formatCaseStatusChange: OFormat[CaseStatusChange] = Json.format[CaseStatusChange]

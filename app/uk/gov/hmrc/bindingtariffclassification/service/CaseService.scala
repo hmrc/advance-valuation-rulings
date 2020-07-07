@@ -29,10 +29,12 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 @Singleton
-class CaseService @Inject()(appConfig: AppConfig,
+class CaseService @Inject()(
+                             appConfig: AppConfig,
                             caseRepository: CaseRepository,
                             sequenceRepository: SequenceRepository,
-                            eventService: EventService) {
+                            eventService: EventService
+                           ) {
 
   def insert(c: Case): Future[Case] = {
     caseRepository.insert(c)

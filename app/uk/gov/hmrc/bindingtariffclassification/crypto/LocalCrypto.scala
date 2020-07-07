@@ -23,7 +23,7 @@ import uk.gov.hmrc.crypto.{AesCrypto, CompositeSymmetricCrypto, Decrypter}
 @Singleton
 class LocalCrypto @Inject()(appConfig: AppConfig) extends CompositeSymmetricCrypto {
 
-  override protected lazy val currentCrypto = new AesCrypto {
+  override protected lazy val currentCrypto: AesCrypto = new AesCrypto {
     override protected lazy val encryptionKey: String = {
       appConfig.mongoEncryption.key match {
         case Some(k) if appConfig.mongoEncryption.enabled => k

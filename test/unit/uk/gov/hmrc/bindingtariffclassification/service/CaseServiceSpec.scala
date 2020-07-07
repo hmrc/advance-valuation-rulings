@@ -18,18 +18,14 @@ package uk.gov.hmrc.bindingtariffclassification.service
 
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mockito.MockitoSugar
+import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.repository.{CaseRepository, SequenceRepository}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.Future.successful
 
-class CaseServiceSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach {
-
-  private implicit val hc: HeaderCarrier = HeaderCarrier()
+class CaseServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
   private val c1 = mock[Case]
   private val c1Saved = mock[Case]

@@ -19,47 +19,56 @@ package uk.gov.hmrc.bindingtariffclassification.config
 import java.time.{Clock, LocalTime}
 
 import javax.inject._
-import play.api.Mode.Mode
-import play.api.{Configuration, Environment, Logger}
-import uk.gov.hmrc.play.config.ServicesConfig
+import play.api.{Configuration, Logger}
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.{Duration, FiniteDuration}
 
 @Singleton
-class AppConfig @Inject()(val runModeConfiguration: Configuration, environment: Environment) extends ServicesConfig {
+class AppConfig @Inject()(
+                           val configuration: Configuration,
+                           config: ServicesConfig
+                         ) {
 
-  override protected def mode: Mode = environment.mode
+  private def configNotFoundError(key: String): Nothing =
+    throw new RuntimeException(s"Could not find config key '$key'")
 
-  lazy val isTestMode: Boolean = getBooleanConfig("testMode", default = false)
+  def getDuration(key: String): Duration =
+    configuration.getOptional[String](key).map(Duration.create).getOrElse(configNotFoundError(key))
 
-  lazy val caseReferenceStart: Long = runModeConfiguration.getLong("case-reference-start").get
-  lazy val btiReferenceOffset: Long = runModeConfiguration.getLong("bti-reference-offset").get
-  lazy val liabilityReferenceOffset: Long = runModeConfiguration.getLong("liability-reference-offset").get
+  lazy val isTestMode: Boolean = getBooleanConfig("testMode")
+
+  lazy val caseReferenceStart: Long = configuration.get[Long]("case-reference-start")
+  lazy val btiReferenceOffset: Long = configuration.get[Long]("bti-reference-offset")
+  lazy val liabilityReferenceOffset: Long = configuration.get[Long]("liability-reference-offset")
 
   lazy val clock: Clock = Clock.systemUTC()
 
   lazy val activeDaysElapsed: JobConfig = JobConfig(
-    LocalTime.parse(getString("scheduler.active-days-elapsed.run-time")),
+    LocalTime.parse(configuration.get[String]("scheduler.active-days-elapsed.run-time")),
     getDuration("scheduler.active-days-elapsed.interval").asInstanceOf[FiniteDuration]
   )
 
   lazy val referredDaysElapsed: JobConfig = JobConfig(
-    LocalTime.parse(getString("scheduler.referred-days-elapsed.run-time")),
+    LocalTime.parse(configuration.get[String]("scheduler.referred-days-elapsed.run-time")),
     getDuration("scheduler.referred-days-elapsed.interval").asInstanceOf[FiniteDuration]
   )
 
-  lazy val authorization: String = getString("auth.api-token")
+  lazy val authorization: String = configuration.get[String]("auth.api-token")
 
-  private def getBooleanConfig(key: String, default: Boolean): Boolean = {
-    runModeConfiguration.getBoolean(key).getOrElse(default)
+  private def getBooleanConfig(key: String, default: Boolean = false): Boolean = {
+    configuration.getOptional[Boolean](key).getOrElse(default)
   }
 
-  def bankHolidaysUrl: String = baseUrl("bank-holidays")
+  def bankHolidaysUrl: String = config.baseUrl("bank-holidays")
 
-  lazy val upsertAgents: Seq[String] = getString("upsert-permitted-agents").split(",").filter(_.nonEmpty)
+  lazy val upsertAgents: Seq[String] = configuration.get[String]("upsert-permitted-agents").split(",").filter(_.nonEmpty)
+
+  def getString(key: String): String =
+    configuration.getOptional[String](key).getOrElse(configNotFoundError(key))
 
   lazy val mongoEncryption: MongoEncryption = {
-    val encryptionEnabled = getBooleanConfig("mongodb.encryption.enabled", default = false)
+    val encryptionEnabled = getBooleanConfig("mongodb.encryption.enabled")
     val encryptionKey = {
       if (encryptionEnabled) Some(getString("mongodb.encryption.key"))
       else None

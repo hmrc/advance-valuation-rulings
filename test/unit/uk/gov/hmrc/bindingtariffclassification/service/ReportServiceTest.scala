@@ -23,16 +23,15 @@ import org.mockito.ArgumentMatchers._
 import org.mockito.BDDMockito._
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mockito.MockitoSugar
+import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.model.reporting._
 import uk.gov.hmrc.bindingtariffclassification.repository.{CaseRepository, EventRepository}
-import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.Future
 
-class ReportServiceTest extends UnitSpec with MockitoSugar with BeforeAndAfterEach {
+class ReportServiceTest extends BaseSpec with BeforeAndAfterEach {
 
   private val caseRepository = mock[CaseRepository]
   private val eventRepository = mock[EventRepository]
@@ -156,7 +155,7 @@ class ReportServiceTest extends UnitSpec with MockitoSugar with BeforeAndAfterEa
     }
   }
 
-  def statusChange(reference: String, from: CaseStatus, to: CaseStatus) = Event(
+  def statusChange(reference: String, from: CaseStatus, to: CaseStatus): Event = Event(
     details = CaseStatusChange(
       from = from,
       to = to

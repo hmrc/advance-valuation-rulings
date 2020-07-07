@@ -18,7 +18,7 @@ package uk.gov.hmrc.bindingtariffclassification.component
 
 import java.time._
 
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.bindingtariffclassification.component.utils.AppConfigWithAFixedDate

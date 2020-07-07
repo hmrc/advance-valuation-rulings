@@ -17,7 +17,6 @@
 package uk.gov.hmrc.bindingtariffclassification.model
 
 import play.api.libs.json._
-import play.json.extra.{InvariantFormat, Jsonx}
 import uk.gov.hmrc.bindingtariffclassification.model.reporting.{CaseReportGroup, ReportResult}
 import uk.gov.hmrc.play.json.Union
 
@@ -25,7 +24,7 @@ object RESTFormatters {
 
   case class Something(value: String)
 
-  implicit val formatSomething = Json.format[Something]
+  implicit val formatSomething: OFormat[Something] = Json.format[Something]
 
   Json.toJson(Something(""))
   Json.toJson(Map[String, Option[String]]("" -> Some("")))
@@ -73,7 +72,7 @@ object RESTFormatters {
   implicit val formatDecision: OFormat[Decision] = Json.format[Decision]
   implicit val formatSample: OFormat[Sample] = Json.format[Sample]
 
-  implicit val formatCase: InvariantFormat[Case] = Jsonx.formatCaseClass[Case]
+  implicit val formatCase: OFormat[Case] = Json.using[Json.WithDefaultValues].format[Case]
   implicit val formatNewCase: OFormat[NewCaseRequest] = Json.format[NewCaseRequest]
 
   // `Event` formatters

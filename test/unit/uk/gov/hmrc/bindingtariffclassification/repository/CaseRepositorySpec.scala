@@ -20,7 +20,6 @@ import java.time._
 
 import org.mockito.BDDMockito.given
 import org.scalatest.concurrent.Eventually
-import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import play.api.libs.json.{JsObject, Json}
 import reactivemongo.api.indexes.Index
@@ -45,8 +44,7 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
   with BeforeAndAfterAll
   with BeforeAndAfterEach
   with MongoSpecSupport
-  with Eventually
-  with MockitoSugar {
+  with Eventually {
   self =>
 
   private val conflict = 11000
@@ -693,7 +691,7 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
       await(repository.insert(newCase2))
       collectionSize shouldBe 2
 
-      await(repository.incrementDaysElapsed()) shouldBe 2
+      await(repository.incrementDaysElapsed(1)) shouldBe 2
 
       await(repository.collection.find(selectorByReference(newCase1)).one[Case]).map(_.daysElapsed) shouldBe Some(1)
       await(repository.collection.find(selectorByReference(newCase2)).one[Case]).map(_.daysElapsed) shouldBe Some(2)
@@ -707,7 +705,7 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
       await(repository.insert(openCase2))
       collectionSize shouldBe 2
 
-      await(repository.incrementDaysElapsed()) shouldBe 2
+      await(repository.incrementDaysElapsed(1)) shouldBe 2
 
       await(repository.collection.find(selectorByReference(openCase1)).one[Case]).map(_.daysElapsed) shouldBe Some(1)
       await(repository.collection.find(selectorByReference(openCase2)).one[Case]).map(_.daysElapsed) shouldBe Some(2)
@@ -719,7 +717,7 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
       await(repository.insert(otherCase))
       collectionSize shouldBe 1
 
-      await(repository.incrementDaysElapsed()) shouldBe 0
+      await(repository.incrementDaysElapsed(1)) shouldBe 0
     }
   }
 

@@ -20,14 +20,14 @@ import akka.actor.ActorSystem
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.libs.ws.{WSClient, WSProxyServer}
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.play.audit.http.HttpAuditing
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 import uk.gov.hmrc.play.http.ws.{WSProxy, WSProxyConfiguration}
 
 @Singleton
-class ProxyHttpClient @Inject()(conf: Configuration, auditConnector: AuditConnector, wsClient: WSClient)
+class ProxyHttpClient @Inject()(conf: Configuration, httpAuditing: HttpAuditing, wsClient: WSClient)
                                (implicit actorSystem: ActorSystem)
-  extends DefaultHttpClient(conf, auditConnector, wsClient, actorSystem) with WSProxy {
+  extends DefaultHttpClient(conf, httpAuditing, wsClient, actorSystem) with WSProxy {
 
   override def wsProxyServer: Option[WSProxyServer] = {
     WSProxyConfiguration(configPrefix = "proxy", configuration = conf)
