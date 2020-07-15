@@ -8,7 +8,7 @@ object AppDependencies {
     "uk.gov.hmrc"                 %% "bootstrap-play-26"          % "1.7.0",
     "uk.gov.hmrc"                 %% "crypto"                     % "5.6.0",
     "uk.gov.hmrc"                 %% "play-json-union-formatter"  % "1.11.0",
-    "uk.gov.hmrc"                 %% "simple-reactivemongo"       % "7.29.0-play-26",
+    "uk.gov.hmrc"                 %% "simple-reactivemongo"       % "7.30.0-play-26",
     ws
   )
 
