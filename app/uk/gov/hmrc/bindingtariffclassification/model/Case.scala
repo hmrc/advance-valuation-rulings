@@ -35,6 +35,6 @@ case class Case
   attachments: Seq[Attachment] = Seq.empty,
   keywords: Set[String] = Set.empty,
   sample: Sample = Sample(),
-  dateOfMigration: Option[Instant] = None,
+  dateOfExtract: Option[Instant] = None,
   migratedDaysElapsed: Option[Long] = None
 )
