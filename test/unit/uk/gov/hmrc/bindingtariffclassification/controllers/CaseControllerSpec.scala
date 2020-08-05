@@ -16,9 +16,12 @@
 
 package uk.gov.hmrc.bindingtariffclassification.controllers
 
+import org.mockito.{ArgumentCaptor, Mockito}
 import org.mockito.ArgumentMatchers.{any, refEq}
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{verify, when}
+import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
+import play.api.libs.json.{JsObject, Json}
 import play.api.libs.json.Json.toJson
 import play.api.test.FakeRequest
 import reactivemongo.bson.BSONDocument
@@ -35,7 +38,11 @@ import util.CaseData
 import scala.concurrent.Future
 import scala.concurrent.Future._
 
-class CaseControllerSpec extends BaseSpec {
+class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach{
+
+  override protected def beforeEach() = {
+    Mockito.reset(caseService)
+  }
 
   private val newCase: NewCaseRequest = CaseData.createNewCase()
   private val c1: Case = CaseData.createCase()
@@ -96,6 +103,7 @@ class CaseControllerSpec extends BaseSpec {
       jsonBodyOf(result) shouldEqual toJson(c1)
     }
 
+
     "return 400 when the JSON request payload is not a Case" in {
       val body = """{"a":"b"}"""
       val result = await(controller.create()(fakeRequest.withBody(toJson(body))))
@@ -140,6 +148,24 @@ class CaseControllerSpec extends BaseSpec {
 
       status(result) shouldEqual OK
       jsonBodyOf(result) shouldEqual toJson(c1)
+    }
+
+    "return 200 when the case has been updated successfully with new fields from migration" in {
+
+      val caseWithNewFields = c1.copy(migratedDaysElapsed = Some(5))
+      when(appConfig.upsertAgents).thenReturn(Seq("agent"))
+      when(caseService.update(caseWithNewFields, upsert = true)).thenReturn(successful(Some(c1)))
+
+      val newCaseJson = toJson(caseWithNewFields)
+      val captor = ArgumentCaptor.forClass(classOf[Case])
+
+      val result = await(controller.update(c1.reference)(fakeRequest.withBody(newCaseJson).withHeaders("User-Agent" -> "agent")))
+
+      verify(caseService).update(captor.capture(), upsert = any[Boolean])
+      val createdCase: Case = captor.getValue
+
+      createdCase.migratedDaysElapsed shouldBe Some(5)
+      status(result) shouldEqual OK
     }
 
     "return 400 when the JSON request payload is not a case" in {

@@ -34,5 +34,7 @@ case class Case
   decision: Option[Decision] = None,
   attachments: Seq[Attachment] = Seq.empty,
   keywords: Set[String] = Set.empty,
-  sample: Sample = Sample()
+  sample: Sample = Sample(),
+  dateOfMigration: Option[Instant] = None,
+  migratedDaysElapsed: Option[Long] = None
 )
