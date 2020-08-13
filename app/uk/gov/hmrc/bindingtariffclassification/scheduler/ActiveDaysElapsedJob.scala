@@ -70,7 +70,11 @@ class ActiveDaysElapsedJob @Inject()(
     }
   }
 
-  private def getStartDate(c: Case): LocalDate = {
+  private def getTrackingStartDate(c: Case): LocalDate = {
+    if (c.dateOfExtract.isDefined) {
+      // For migrated cases, we only track the case history after the date of extraction
+      LocalDateTime.ofInstant(c.dateOfExtract.get, ZoneOffset.UTC).toLocalDate
+    } else {
       if (c.application.isLiabilityOrder) {
         val liability = c.application.asLiabilityOrder
         if (liability.dateOfReceipt.isDefined) {
@@ -82,15 +86,16 @@ class ActiveDaysElapsedJob @Inject()(
       } else {
         LocalDateTime.ofInstant(c.createdDate, ZoneOffset.UTC).toLocalDate
       }
+    }
   }
 
   private def refreshDaysElapsed(c: Case)(implicit bankHolidays: Set[LocalDate]): Future[Unit] = {
-    lazy val createdDate: LocalDate = getStartDate(c)
-    val daysSinceCreated: Long = ChronoUnit.DAYS.between(createdDate, LocalDate.now(appConfig.clock))
+    lazy val trackingStartDate: LocalDate = getTrackingStartDate(c)
+    val daysTracked: Long = ChronoUnit.DAYS.between(trackingStartDate, LocalDate.now(appConfig.clock))
 
-    // Working days between the created date and Now
-    val workingDays: Seq[Instant] = (0L until daysSinceCreated)
-      .map(createdDate.plusDays)
+    // Working days between when the case was tracked and Now
+    val workingDaysTracked: Seq[Instant] = (0L until daysTracked)
+      .map(trackingStartDate.plusDays)
       .filterNot(bankHoliday)
       .filterNot(weekend)
       .map(toInstant)
@@ -102,15 +107,20 @@ class ActiveDaysElapsedJob @Inject()(
       // Generate a timeline of the Case Status over time
       statusTimeline: StatusTimeline = StatusTimeline.from(events.results)
 
-      // Filter down to the days the case was not Referred
-      actionableDays: Seq[Instant] = workingDays
+      // Filter down to the days the case was not Referred or Suspended
+      trackedActionableDays: Seq[Instant] = workingDaysTracked
         .filterNot(statusTimeline.statusOn(_).contains(CaseStatus.REFERRED))
         .filterNot(statusTimeline.statusOn(_).contains(CaseStatus.SUSPENDED))
 
-      // Update the case
-      _ <- caseService.update(c.copy(daysElapsed = actionableDays.size), upsert = false)
+      trackedDaysElapsed = trackedActionableDays.length.toLong
+      untrackedDaysElapsed = c.migratedDaysElapsed.getOrElse(0L)
 
-      _ = Logger.info(s"DaysElapsedJob: Updated Days Elapsed of Case [${c.reference}] from [${c.daysElapsed}] to [${actionableDays.size}]")
+      totalDaysElapsed = trackedDaysElapsed + untrackedDaysElapsed
+
+      // Update the case
+      _ <- caseService.update(c.copy(daysElapsed = totalDaysElapsed), upsert = false)
+
+      _ = Logger.info(s"DaysElapsedJob: Updated Days Elapsed of Case [${c.reference}] from [${c.daysElapsed}] to [${trackedActionableDays.size}]")
     } yield ()
   }
 
