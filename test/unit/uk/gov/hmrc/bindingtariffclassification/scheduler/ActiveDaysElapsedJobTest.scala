@@ -274,6 +274,22 @@ class ActiveDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
 
       verify(caseService, times(2)).update(any[Case], refEq(false))
     }
+
+    "Update Days Elapsed - for a case that has been migrated" in {
+      givenNoBankHolidays()
+
+      givenTodaysDateIs("2020-07-03T00:00:00")
+
+      givenUpdatingACaseReturnsItself()
+      givenAPageOfCases(1, 1, 1, aCaseWith(
+        reference = "reference-1-migrated", createdDate = "2020-07-01T00:00:00", dateOfExtract = Some("2020-07-03T12:00:00")))
+      givenThereAreNoEventsFor("reference-1-migrated")
+
+      await(newJob.execute())
+
+      theCasesUpdated.daysElapsed shouldBe 0
+    }
+
   }
 
   private def theCasesUpdated: Case = {
@@ -297,10 +313,11 @@ class ActiveDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
     given(eventService.search(EventSearch(Some(Set(reference)), Some(Set(EventType.CASE_STATUS_CHANGE))), pagination)) willReturn Future.successful(Paged.empty[Event])
   }
 
-  private def aCaseWith(reference: String, createdDate: String): Case = CaseData.createCase().copy(
+  private def aCaseWith(reference: String, createdDate: String, dateOfExtract: Option[String] = None): Case = CaseData.createCase().copy(
     reference = reference,
     createdDate = LocalDateTime.parse(createdDate).atZone(ZoneOffset.UTC).toInstant,
-    daysElapsed = 0
+    daysElapsed = 0,
+    dateOfExtract = dateOfExtract.map(LocalDateTime.parse(_).atZone(ZoneOffset.UTC).toInstant)
   )
 
   private def aStatusChangeWith(date: String, status: CaseStatus): Event = {
