@@ -45,7 +45,7 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
   private val bankHolidaysConnector = mock[BankHolidaysConnector]
   private val appConfig = mock[AppConfig]
   private val caseSearch = CaseSearch(
-    filter = CaseFilter(statuses = Some(Set(PseudoCaseStatus.REFERRED))),
+    filter = CaseFilter(statuses = Some(Set(PseudoCaseStatus.REFERRED, PseudoCaseStatus.SUSPENDED))),
     sort = Some(CaseSort(Set(CaseSortField.REFERENCE)))
   )
 

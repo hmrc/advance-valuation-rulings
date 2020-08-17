@@ -33,6 +33,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.Future._
 import scala.concurrent.duration._
+
 @Singleton
 class ReferredDaysElapsedJob @Inject()(appConfig: AppConfig,
                                        caseService: CaseService,
@@ -43,7 +44,7 @@ class ReferredDaysElapsedJob @Inject()(appConfig: AppConfig,
   private implicit val carrier: HeaderCarrier = HeaderCarrier()
   private lazy val jobConfig = appConfig.referredDaysElapsed
   private lazy val criteria = CaseSearch(
-    filter = CaseFilter(statuses = Some(Set(PseudoCaseStatus.REFERRED))),
+    filter = CaseFilter(statuses = Some(Set(PseudoCaseStatus.REFERRED, PseudoCaseStatus.SUSPENDED))),
     sort = Some(CaseSort(Set(CaseSortField.REFERENCE)))
   )
 
