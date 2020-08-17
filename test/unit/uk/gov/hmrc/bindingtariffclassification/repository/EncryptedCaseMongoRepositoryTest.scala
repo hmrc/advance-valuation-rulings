@@ -65,13 +65,6 @@ class EncryptedCaseMongoRepositoryTest extends BaseMongoIndexSpec with BeforeAnd
     }
   }
 
-  "Increment Days Elapsed" should {
-    "Delegate to Repository" in {
-      given(underlyingRepo.incrementDaysElapsed(1)) willReturn successful(1)
-      await(repo.incrementDaysElapsed(1)) shouldBe 1
-    }
-  }
-
   "Get By Reference" should {
     "Encrypt and delegate to Repository" in {
       given(underlyingRepo.getByReference("ref")) willReturn successful(Some(encryptedCaseSaved))
