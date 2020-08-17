@@ -77,7 +77,7 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
 
   "Scheduled Job 'Execute'" should {
 
-    "Update Days Elapsed - for no cases" in {
+    "Update Referred Days Elapsed - for no cases" in {
       givenNoBankHolidays()
       givenTodaysDateIs("2019-01-01T00:00:00")
 
@@ -86,7 +86,7 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
       await(newJob.execute())
     }
 
-    "Update Days Elapsed - for case referred today" in {
+    "Update Referred Days Elapsed - for case referred today" in {
       givenNoBankHolidays()
       givenTodaysDateIs("2019-01-01T00:00:00")
 
@@ -99,7 +99,7 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
       theCasesUpdated.referredDaysElapsed shouldBe 0
     }
 
-    "Update Days Elapsed - for case created one working day ago" in {
+    "Update Referred Days Elapsed - for case created one working day ago" in {
       givenNoBankHolidays()
       givenTodaysDateIs("2019-01-02T00:00:00")
 
@@ -112,7 +112,7 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
       theCasesUpdated.referredDaysElapsed shouldBe 1
     }
 
-    "Update Days Elapsed - for case created multiple working days ago" in {
+    "Update Referred Days Elapsed - for case created multiple working days ago" in {
       givenNoBankHolidays()
       givenTodaysDateIs("2019-01-04T00:00:00")
 
@@ -125,7 +125,7 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
       theCasesUpdated.referredDaysElapsed shouldBe 3
     }
 
-    "Update Days Elapsed - excluding weekends" in {
+    "Update Referred Days Elapsed - excluding weekends" in {
       givenNoBankHolidays()
       givenTodaysDateIs("2019-01-07T00:00:00")
 
@@ -138,7 +138,7 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
       theCasesUpdated.referredDaysElapsed shouldBe 0
     }
 
-    "Update Days Elapsed - excluding bank holidays" in {
+    "Update Referred Days Elapsed - excluding bank holidays" in {
       givenABankHolidayOn("2019-01-01")
       givenTodaysDateIs("2019-01-02T00:00:00")
 
@@ -151,7 +151,7 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
       theCasesUpdated.referredDaysElapsed shouldBe 0
     }
 
-    "Update Days Elapsed - excluding non-referred days" in {
+    "Update Referred Days Elapsed - no valid referral event" in {
       givenNoBankHolidays()
       givenTodaysDateIs("2019-01-04T00:00:00")
 
@@ -164,7 +164,7 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
       theCasesUpdated.referredDaysElapsed shouldBe 0
     }
 
-    "Update Days Elapsed - excluding multiple non-referred days" in {
+    "Update Referred Days Elapsed - most recent event is not a referral event" in {
       givenNoBankHolidays()
       givenTodaysDateIs("2019-01-04T00:00:00")
 
@@ -178,10 +178,10 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
 
       await(newJob.execute())
 
-      theCasesUpdated.referredDaysElapsed shouldBe 1
+      theCasesUpdated.referredDaysElapsed shouldBe 0
     }
 
-    "Update Days Elapsed - excluding multiple non-referred events on the same day" in {
+    "Update Referred Days Elapsed - excluding non-referred events on the same day" in {
       givenNoBankHolidays()
       givenTodaysDateIs("2019-01-05T00:00:00")
 
@@ -194,10 +194,44 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
 
       await(newJob.execute())
 
-      theCasesUpdated.referredDaysElapsed shouldBe 2
+      theCasesUpdated.referredDaysElapsed shouldBe 3
     }
 
-    "Update Days Elapsed - for multiple cases" in {
+    "Update Referred Days Elapsed - use the latest referral period" in {
+      givenNoBankHolidays()
+      givenTodaysDateIs("2019-01-05T00:00:00")
+
+      givenUpdatingACaseReturnsItself()
+      givenAPageOfCases(1, 1, 1, aCaseWith(reference = "reference", createdDate = "2019-01-01T00:00:00"))
+      givenAPageOfEventsFor("reference", 1, 1,
+        aStatusChangeWith(date = "2019-01-01T00:00:00", status = CaseStatus.OPEN),
+        aStatusChangeWith(date = "2019-01-02T00:00:00", status = CaseStatus.REFERRED),
+        aStatusChangeWith(date = "2019-01-03T00:00:00", status = CaseStatus.OPEN),
+        aStatusChangeWith(date = "2019-01-04T00:00:00", status = CaseStatus.REFERRED),
+      )
+
+      await(newJob.execute())
+
+      theCasesUpdated.referredDaysElapsed shouldBe 1
+    }
+
+    "Update Referred Days Elapsed - suspended case" in {
+      givenNoBankHolidays()
+      givenTodaysDateIs("2019-01-05T00:00:00")
+
+      givenUpdatingACaseReturnsItself()
+      givenAPageOfCases(1, 1, 1, aCaseWith(reference = "reference", createdDate = "2019-01-01T00:00:00"))
+      givenAPageOfEventsFor("reference", 1, 1,
+        aStatusChangeWith(date = "2019-01-01T00:00:00", status = CaseStatus.OPEN),
+        aStatusChangeWith(date = "2019-01-02T00:00:00", status = CaseStatus.SUSPENDED),
+      )
+
+      await(newJob.execute())
+
+      theCasesUpdated.referredDaysElapsed shouldBe 3
+    }
+
+    "Update Referred Days Elapsed - for multiple cases" in {
       givenNoBankHolidays()
       givenTodaysDateIs("2019-01-01T00:00:00")
 
@@ -214,7 +248,7 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
       verify(caseService, times(2)).update(any[Case], refEq(false))
     }
 
-    "Update Days Elapsed - for multiple pages of cases" in {
+    "Update Referred Days Elapsed - for multiple pages of cases" in {
       givenNoBankHolidays()
       givenTodaysDateIs("2019-01-01T00:00:00")
 
