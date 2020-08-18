@@ -120,7 +120,7 @@ class ActiveDaysElapsedJob @Inject()(
       // Update the case
       _ <- caseService.update(c.copy(daysElapsed = totalDaysElapsed), upsert = false)
 
-      _ = Logger.info(s"DaysElapsedJob: Updated Days Elapsed of Case [${c.reference}] from [${c.daysElapsed}] to [${trackedActionableDays.size}]")
+      _ = Logger.info(s"DaysElapsedJob: Updated Days Elapsed of Case [${c.reference}] from [${c.daysElapsed}] to [$totalDaysElapsed]")
     } yield ()
   }
 
