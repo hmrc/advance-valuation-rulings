@@ -23,6 +23,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.connector.BankHolidaysConnector
+import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.service.{CaseService, EventService}
 import uk.gov.hmrc.bindingtariffclassification.sort.CaseSortField
@@ -71,14 +72,14 @@ class ReferredDaysElapsedJob @Inject()(appConfig: AppConfig,
   private def getReferralStartDate(c: Case): Future[Option[LocalDate]] =
     for {
       eventSearch <- eventService.search(
-        search = EventSearch(Some(Set(c.reference)), Some(Set(EventType.CASE_STATUS_CHANGE))),
+        search = EventSearch(Some(Set(c.reference)), Some(Set(EventType.CASE_STATUS_CHANGE, EventType.CASE_REFERRAL))),
         pagination = Pagination(1, Integer.MAX_VALUE))
 
       startTimestamp = eventSearch.results
-        .filter(_.details.isInstanceOf[CaseStatusChange])
+        .filter(_.details.isInstanceOf[FieldChange[CaseStatus]])
         .sortBy(_.timestamp)(Ordering[Instant].reverse)
         .headOption
-        .filter(event => Set(CaseStatus.REFERRED, CaseStatus.SUSPENDED).contains(event.details.asInstanceOf[CaseStatusChange].to))
+        .filter(event => Set(CaseStatus.REFERRED, CaseStatus.SUSPENDED).contains(event.details.asInstanceOf[FieldChange[CaseStatus]].to))
         .map(_.timestamp)
 
     } yield startTimestamp.map(LocalDateTime.ofInstant(_, ZoneOffset.UTC).toLocalDate)
