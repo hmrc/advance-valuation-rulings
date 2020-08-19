@@ -35,7 +35,7 @@ abstract class BaseFeatureSpec extends FeatureSpec
     .configure("mongodb.uri" -> "mongodb://localhost:27017/test-ClassificationMongoRepositoryTest")
     .build()
 
-  protected val timeout: FiniteDuration = 2.seconds
+  protected val timeout: FiniteDuration = 5.seconds
 
   protected lazy val appConfig: AppConfig = app.injector.instanceOf[AppConfig]
 

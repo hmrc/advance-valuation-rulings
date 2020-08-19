@@ -40,8 +40,6 @@ trait CaseRepository {
 
   def update(c: Case, upsert: Boolean): Future[Option[Case]]
 
-  def incrementDaysElapsed(increment: Double): Future[Int]
-
   def getByReference(reference: String): Future[Option[Case]]
 
   def get(search: CaseSearch, pagination: Pagination): Future[Paged[Case]]
@@ -61,8 +59,6 @@ class EncryptedCaseMongoRepository @Inject()(repository: CaseMongoRepository, cr
   override def insert(c: Case): Future[Case] = repository.insert(encrypt(c)).map(decrypt)
 
   override def update(c: Case, upsert: Boolean): Future[Option[Case]] = repository.update(encrypt(c), upsert).map(_.map(decrypt))
-
-  override def incrementDaysElapsed(increment: Double): Future[Int] = repository.incrementDaysElapsed(increment)
 
   override def getByReference(reference: String): Future[Option[Case]] = repository.getByReference(reference).map(_.map(decrypt))
 
@@ -135,21 +131,6 @@ class CaseMongoRepository @Inject()(mongoDbProvider: MongoDbProvider, mapper: Se
 
   override def deleteAll(): Future[Unit] = {
     removeAll().map(_ => ())
-  }
-
-  override def incrementDaysElapsed(increment: Double): Future[Int] = {
-    val statuses = List(OPEN, NEW)
-    collection.update(
-      selector = BSONDocument(
-        "status" -> BSONDocument(
-          "$in" -> BSONArray(statuses.map(s => BSONString(s.toString)))
-        )
-      ),
-      update = BSONDocument(
-        "$inc" -> BSONDocument("daysElapsed" -> BSONDouble(increment))
-      ),
-      multi = true
-    ).map(_.nModified)
   }
 
   override def generateReport(report: CaseReport): Future[Seq[ReportResult]] = {

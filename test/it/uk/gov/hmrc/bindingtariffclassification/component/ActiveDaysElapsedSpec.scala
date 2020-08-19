@@ -165,6 +165,28 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
       Then("The Days Elapsed should be correct")
       daysElapsedForCase("valid-ref") shouldBe 0
     }
+
+    scenario("Calculates elapsed days for migrated cases") {
+      Given("There are migrated cases with mixed statuses in the database")
+
+      givenThereIs(aMigratedCaseWith(reference = "mref-20181220", status = OPEN, createdDate = "2018-12-20", dateOfExtract = "2019-01-21", migratedDaysElapsed = 19L))
+      givenThereIs(aMigratedCaseWith(reference = "mref-20181230", status = NEW, createdDate = "2018-12-30", dateOfExtract = "2019-01-21", migratedDaysElapsed = 10L))
+      givenThereIs(aMigratedCaseWith(reference = "mref-20181231", status = OPEN, createdDate = "2018-12-31", dateOfExtract = "2019-01-30", migratedDaysElapsed = 8L))
+      givenThereIs(aMigratedCaseWith(reference = "mref-20190110", status = NEW, createdDate = "2019-01-10", dateOfExtract = "2019-01-30", migratedDaysElapsed = 5L))
+      givenThereIs(aMigratedCaseWith(reference = "mref-20190115", status = NEW, createdDate = "2019-01-15", dateOfExtract = "2019-02-03", migratedDaysElapsed = 1L))
+      givenThereIs(aMigratedCaseWith(reference = "mcompleted", status = COMPLETED, createdDate = "2019-01-20", dateOfExtract = "2019-01-30", migratedDaysElapsed = 1L))
+
+      When("The job runs")
+      result(job.execute(), timeout)
+
+      Then("The Days Elapsed should be correct")
+      daysElapsedForCase("mref-20181220") shouldBe 29
+      daysElapsedForCase("mref-20181230") shouldBe 20
+      daysElapsedForCase("mref-20181231") shouldBe 11
+      daysElapsedForCase("mref-20190110") shouldBe 8
+      daysElapsedForCase("mref-20190115") shouldBe 1
+      daysElapsedForCase("mcompleted") shouldBe -1 // Unchanged
+    }
   }
 
 
@@ -178,6 +200,13 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
       createdDate = LocalDate.parse(createdDate).atStartOfDay().toInstant(ZoneOffset.UTC),
       status = status,
       daysElapsed = -1
+    )
+  }
+
+  private def aMigratedCaseWith(reference: String, createdDate: String, status: CaseStatus, dateOfExtract: String, migratedDaysElapsed: Long): Case = {
+    aCaseWith(reference, createdDate, status).copy(
+      dateOfExtract = Some(LocalDate.parse(dateOfExtract).atStartOfDay().toInstant(ZoneOffset.UTC)),
+      migratedDaysElapsed = Some(migratedDaysElapsed)
     )
   }
 

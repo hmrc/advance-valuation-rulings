@@ -274,6 +274,98 @@ class ActiveDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
 
       verify(caseService, times(2)).update(any[Case], refEq(false))
     }
+
+    "Update Days Elapsed - for a migrated case extracted today with zero migrated days elapsed" in {
+      givenNoBankHolidays()
+      givenTodaysDateIs("2020-07-03T00:00:00")
+
+      givenUpdatingACaseReturnsItself()
+      givenAPageOfCases(1, 1, 1,
+        aMigratedCaseWith(
+          reference = "reference",
+          createdDate = "2020-07-01T00:00:00",
+          dateOfExtract = "2020-07-03T00:00:00",
+          migratedDaysElapsed = 0L))
+      givenThereAreNoEventsFor("reference")
+
+      await(newJob.execute())
+
+      theCasesUpdated.daysElapsed shouldBe 0L
+    }
+
+    "Update Days Elapsed - for a migrated case extracted today with a non-zero migrated days elapsed" in {
+      givenNoBankHolidays()
+      givenTodaysDateIs("2020-07-03T00:00:00")
+
+      givenUpdatingACaseReturnsItself()
+      givenAPageOfCases(1, 1, 1,
+        aMigratedCaseWith(
+          reference = "reference",
+          createdDate = "2020-07-01T00:00:00",
+          dateOfExtract = "2020-07-03T00:00:00",
+          migratedDaysElapsed = 2L))
+      givenThereAreNoEventsFor("reference")
+
+      await(newJob.execute())
+
+      theCasesUpdated.daysElapsed shouldBe 2L
+    }
+
+    "Update Days Elapsed - for a migrated case extracted 2 days ago with a zero migrated days elapsed" in {
+      givenNoBankHolidays()
+      givenTodaysDateIs("2020-07-03T00:00:00")
+
+      givenUpdatingACaseReturnsItself()
+      givenAPageOfCases(1, 1, 1,
+        aMigratedCaseWith(
+          reference = "reference",
+          createdDate = "2020-06-29T00:00:00",
+          dateOfExtract = "2020-07-01T00:00:00",
+          migratedDaysElapsed = 0L))
+      givenThereAreNoEventsFor("reference")
+
+      await(newJob.execute())
+
+      theCasesUpdated.daysElapsed shouldBe 2L
+    }
+
+    "Update Days Elapsed - for a migrated case extracted 2 days ago with a non-zero migrated days elapsed" in {
+      givenNoBankHolidays()
+      givenTodaysDateIs("2020-07-03T00:00:00")
+
+      givenUpdatingACaseReturnsItself()
+      givenAPageOfCases(1, 1, 1,
+        aMigratedCaseWith(
+          reference = "reference",
+          createdDate = "2020-06-29T00:00:00",
+          dateOfExtract = "2020-07-01T00:00:00",
+          migratedDaysElapsed = 2L))
+      givenThereAreNoEventsFor("reference")
+
+      await(newJob.execute())
+
+      theCasesUpdated.daysElapsed shouldBe 4L
+    }
+
+    "Update Days Elapsed - for a migrated referred case" in {
+      givenNoBankHolidays()
+      givenTodaysDateIs("2020-07-03T00:00:00")
+
+      givenUpdatingACaseReturnsItself()
+      givenAPageOfCases(1, 1, 1,
+        aMigratedCaseWith(
+          reference = "reference",
+          createdDate = "2020-06-29T00:00:00",
+          dateOfExtract = "2020-07-01T00:00:00",
+          migratedDaysElapsed = 1L))
+      givenAPageOfEventsFor("reference", 1, 1,
+        aStatusChangeWith(date = "2020-06-30T00:00:00", status = CaseStatus.REFERRED),
+      )
+
+      await(newJob.execute())
+
+      theCasesUpdated.daysElapsed shouldBe 1L
+    }
   }
 
   private def theCasesUpdated: Case = {
@@ -302,6 +394,12 @@ class ActiveDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
     createdDate = LocalDateTime.parse(createdDate).atZone(ZoneOffset.UTC).toInstant,
     daysElapsed = 0
   )
+
+  private def aMigratedCaseWith(reference: String, createdDate: String, dateOfExtract: String, migratedDaysElapsed: Long): Case =
+    aCaseWith(reference, createdDate).copy(
+      dateOfExtract = Some(LocalDateTime.parse(dateOfExtract).atZone(ZoneOffset.UTC).toInstant),
+      migratedDaysElapsed = Some(migratedDaysElapsed)
+    )
 
   private def aStatusChangeWith(date: String, status: CaseStatus): Event = {
     val e = mock[Event]
