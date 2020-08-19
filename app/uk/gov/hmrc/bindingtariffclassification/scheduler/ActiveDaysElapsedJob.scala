@@ -100,9 +100,11 @@ class ActiveDaysElapsedJob @Inject()(
       .filterNot(weekend)
       .map(toInstant)
 
+    val caseStatusChangeEventTypes = Set(EventType.CASE_STATUS_CHANGE, EventType.CASE_REFERRAL, EventType.CASE_COMPLETED, EventType.CASE_CANCELLATION)
+
     for {
       // Get the Status Change events for that case
-      events <- eventService.search(EventSearch(Some(Set(c.reference)), Some(Set(EventType.CASE_STATUS_CHANGE))), Pagination(1, Integer.MAX_VALUE))
+      events <- eventService.search(EventSearch(Some(Set(c.reference)), Some(caseStatusChangeEventTypes)), Pagination(1, Integer.MAX_VALUE))
 
       // Generate a timeline of the Case Status over time
       statusTimeline: StatusTimeline = StatusTimeline.from(events.results)
