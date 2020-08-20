@@ -108,10 +108,20 @@ class ReferredDaysElapsedJob @Inject()(appConfig: AppConfig,
         }
 
       // Update the case
-      _ <- caseService.update(c.copy(referredDaysElapsed = referredDaysElapsed), upsert = false)
-
-      _ = Logger.info(s"$name: Updated Referred Days Elapsed of Case [${c.reference}] from [${c.referredDaysElapsed}] to [$referredDaysElapsed]")
+      updatedCase <- caseService.update(c.copy(referredDaysElapsed = referredDaysElapsed), upsert = false)
+      _ = logResult(c, updatedCase)
     } yield ()
+  }
+
+  private def logResult(original: Case, updated: Option[Case]): Unit = {
+    updated match {
+      case Some(c) if original.referredDaysElapsed != c.referredDaysElapsed =>
+        Logger.info(s"$name: Updated Referred Days Elapsed of Case [${original.reference}] from [${original.referredDaysElapsed}] to [${c.referredDaysElapsed}]")
+      case None =>
+        Logger.warn(s"$name: Failed to update Referred Days Elapsed of Case [${original.reference}]")
+      case _ =>
+        ()
+    }
   }
 
 }

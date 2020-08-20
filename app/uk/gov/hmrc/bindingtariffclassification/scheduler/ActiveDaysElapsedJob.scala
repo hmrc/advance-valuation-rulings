@@ -120,10 +120,19 @@ class ActiveDaysElapsedJob @Inject()(
       totalDaysElapsed = trackedDaysElapsed + untrackedDaysElapsed
 
       // Update the case
-      _ <- caseService.update(c.copy(daysElapsed = totalDaysElapsed), upsert = false)
-
-      _ = Logger.info(s"DaysElapsedJob: Updated Days Elapsed of Case [${c.reference}] from [${c.daysElapsed}] to [$totalDaysElapsed]")
+      updatedCase <- caseService.update(c.copy(daysElapsed = totalDaysElapsed), upsert = false)
+      _ = logResult(c, updatedCase)
     } yield ()
   }
 
+  private def logResult(original: Case, updated: Option[Case]): Unit = {
+    updated match {
+      case Some(c) if original.daysElapsed != c.daysElapsed =>
+        Logger.info(s"$name: Updated Days Elapsed of Case [${original.reference}] from [${original.daysElapsed}] to [${c.daysElapsed}]")
+      case None =>
+        Logger.warn(s"$name: Failed to update Days Elapsed of Case [${original.reference}]")
+      case _ =>
+        ()
+    }
+  }
 }
