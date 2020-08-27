@@ -25,7 +25,6 @@ import play.api.http.HttpVerbs
 import play.api.http.Status._
 import play.api.libs.json.Json
 import scalaj.http.{Http, HttpResponse}
-import uk.gov.hmrc.bindingtariffclassification.model.ImportExport.EXPORT
 import uk.gov.hmrc.bindingtariffclassification.model.RESTFormatters._
 import uk.gov.hmrc.bindingtariffclassification.model._
 import util.CaseData._
@@ -62,10 +61,10 @@ class CaseSpec extends BaseFeatureSpec {
   private val c9 = createCase(decision = Some(createDecision(justification = "this LLLLaptoppp")))
   private val c10 = createCase(keywords = Set("MTB", "BICYCLE"))
   private val c11 = createCase(decision = Some(createDecision(
-      goodsDescription = "LAPTOP",
-      effectiveStartDate = Some(Instant.now().minus(3, ChronoUnit.DAYS)),
-      effectiveEndDate = Some(Instant.now().minus(1, ChronoUnit.DAYS)))
-    ),
+    goodsDescription = "LAPTOP",
+    effectiveStartDate = Some(Instant.now().minus(3, ChronoUnit.DAYS)),
+    effectiveEndDate = Some(Instant.now().minus(1, ChronoUnit.DAYS)))
+  ),
     status = CaseStatus.COMPLETED)
   private val c12 = createCase(decision = Some(createDecision(
     goodsDescription = "SPANNER",
@@ -130,7 +129,6 @@ class CaseSpec extends BaseFeatureSpec {
       val responseCase = Json.parse(result.body).as[Case]
       responseCase.reference shouldBe "504400001"
       responseCase.status shouldBe CaseStatus.NEW
-      responseCase.application.asBTI.importOrExport shouldBe None
     }
 
     scenario("Extra fields are ignored when creating a case") {
@@ -168,7 +166,6 @@ class CaseSpec extends BaseFeatureSpec {
       val responseCase = Json.parse(result.body).as[Case]
       responseCase.reference shouldBe "504400001"
       responseCase.status shouldBe CaseStatus.NEW
-      responseCase.application.asBTI.importOrExport shouldBe Some(EXPORT)
     }
 
     scenario("Create a new liability case with new fields DIT-1962") {
