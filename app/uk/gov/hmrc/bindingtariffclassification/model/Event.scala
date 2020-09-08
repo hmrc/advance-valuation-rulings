@@ -98,6 +98,13 @@ case class CompletedCaseStatusChange
   override val `type`: EventType.Value = EventType.CASE_COMPLETED
 }
 
+case class CaseCreated
+(
+  comment: String
+) extends Details {
+  override val `type`: EventType = EventType.CASE_CREATED
+}
+
 case class AppealAdded
 (
   appealType: AppealType,
@@ -184,4 +191,5 @@ object EventType extends Enumeration {
   val NOTE = Value
   val SAMPLE_STATUS_CHANGE = Value
   val SAMPLE_RETURN_CHANGE = Value
+  val CASE_CREATED = Value
 }
