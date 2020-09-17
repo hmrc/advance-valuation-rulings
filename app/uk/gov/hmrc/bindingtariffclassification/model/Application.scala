@@ -47,6 +47,7 @@ case class BTIApplication
   knownLegalProceedings: Option[String] = None,
   envisagedCommodityCode: Option[String] = None,
   sampleToBeProvided: Boolean = false,
+  sampleIsHazardous: Option[Boolean] = None,
   sampleToBeReturned: Boolean = false
 ) extends Application {
   override val `type`: model.ApplicationType.Value = ApplicationType.BTI
