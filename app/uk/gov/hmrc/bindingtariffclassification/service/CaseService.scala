@@ -79,5 +79,7 @@ class CaseService @Inject()(
 
   def deleteAll(): Future[Unit] = {
     caseRepository.deleteAll()
+    sequenceRepository.deleteSequenceByName("ATaR Case Reference")
+    sequenceRepository.deleteSequenceByName("Other Case Reference")
   }
 }

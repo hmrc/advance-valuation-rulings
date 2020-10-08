@@ -58,7 +58,7 @@ class CaseServiceSpec extends BaseSpec with BeforeAndAfterEach {
       }
 
       "Case is a Liability" in {
-        when(sequenceRepository.incrementAndGetByName("Other Case Reference")).thenReturn(successful(Sequence("OtherCaseReference", 5)))
+        when(sequenceRepository.incrementAndGetByName("Other Case Reference")).thenReturn(successful(Sequence("Other Case Reference", 5)))
         when(appConfig.otherCaseReferenceOffset).thenReturn(2000)
         await(service.nextCaseReference(ApplicationType.LIABILITY_ORDER)) shouldBe "2005"
       }
@@ -70,8 +70,12 @@ class CaseServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
     "return () and clear the database collection" in {
       when(caseRepository.deleteAll()).thenReturn(successful(()))
+      when(sequenceRepository.deleteSequenceByName("ATaR Case Reference")).thenReturn(successful(()))
+      when(sequenceRepository.deleteSequenceByName("Other Case Reference")).thenReturn(successful(()))
       await(service.deleteAll()) shouldBe ((): Unit)
       verify(caseRepository, times(1)).deleteAll()
+      verify(sequenceRepository, times(1)).deleteSequenceByName("ATaR Case Reference")
+      verify(sequenceRepository, times(1)).deleteSequenceByName("Other Case Reference")
     }
 
     "propagate any error" in {

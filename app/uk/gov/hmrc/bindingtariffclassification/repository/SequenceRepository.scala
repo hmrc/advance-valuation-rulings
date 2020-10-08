@@ -36,6 +36,8 @@ trait SequenceRepository {
   def getByName(name: String): Future[Sequence]
 
   def incrementAndGetByName(name: String): Future[Sequence]
+
+  def deleteSequenceByName(name: String): Future[Unit]
 }
 
 @Singleton
@@ -65,6 +67,11 @@ class SequenceMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
 
   override def insert(e: Sequence): Future[Sequence] = {
     createOne(e)
+  }
+
+  override def deleteSequenceByName(name: String): Future[Unit] = {
+    remove(("name", Json.obj("$eq" -> name)))
+      .map(_ => ())
   }
 
   private def valueOrStartSequence(name: String): Option[Sequence] => Future[Sequence] = {
