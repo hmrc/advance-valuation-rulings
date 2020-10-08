@@ -127,7 +127,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       And("The case is returned in the JSON response")
       val responseCase = Json.parse(result.body).as[Case]
-      responseCase.reference shouldBe "504400001"
+      responseCase.reference shouldBe "600000001"
       responseCase.status shouldBe CaseStatus.NEW
     }
 
@@ -143,7 +143,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       And("The case is returned in the JSON response")
       val responseCase = Json.parse(result.body).as[Case]
-      responseCase.reference shouldBe "504400001"
+      responseCase.reference shouldBe "600000001"
       responseCase.status shouldBe CaseStatus.NEW
       responseCase.createdDate should roughlyBe(Instant.now())
       responseCase.assignee shouldBe None
@@ -164,7 +164,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       And("The case is returned in the JSON response")
       val responseCase = Json.parse(result.body).as[Case]
-      responseCase.reference shouldBe "504400001"
+      responseCase.reference shouldBe "600000001"
       responseCase.status shouldBe CaseStatus.NEW
     }
 
@@ -181,7 +181,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       And("The case is returned in the JSON response")
       val responseCase = Json.parse(result.body).as[Case]
-      responseCase.reference shouldBe "204400001"
+      responseCase.reference shouldBe "800000001"
       responseCase.status shouldBe CaseStatus.NEW
       responseCase.application.asLiabilityOrder.btiReference shouldBe Some("BTI-REFERENCE")
       responseCase.application.asLiabilityOrder.repaymentClaim.get.dvrNumber shouldBe Some("DVR-123456")
