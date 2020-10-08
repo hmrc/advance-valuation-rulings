@@ -108,9 +108,8 @@ class AppConfigTest extends BaseSpec {
     }
 
     "build 'case reference configuration" in {
-      configWith("case-reference-start" -> "1").caseReferenceStart shouldBe 1
-      configWith("bti-reference-offset" -> "10").btiReferenceOffset shouldBe 10
-      configWith("liability-reference-offset" -> "20").liabilityReferenceOffset shouldBe 20
+      configWith("atar-case-reference-offset" -> "10").atarCaseReferenceOffset shouldBe 10
+      configWith("other-case-reference-offset" -> "20").otherCaseReferenceOffset shouldBe 20
     }
 
     "throw and exception when key is missing for duration" in {

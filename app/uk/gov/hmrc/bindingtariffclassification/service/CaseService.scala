@@ -48,13 +48,21 @@ class CaseService @Inject()(
     Future.successful((): Unit)
   }
 
-  def nextCaseReference(applicationType: ApplicationType): Future[String] = {
-    sequenceRepository.incrementAndGetByName("case").map {
-      _.value + appConfig.caseReferenceStart + (applicationType match {
-        case ApplicationType.BTI => appConfig.btiReferenceOffset
-        case ApplicationType.LIABILITY_ORDER => appConfig.liabilityReferenceOffset
-      })
-    }.map(_.toString)
+  def nextCaseReference(applicationType: ApplicationType.Value): Future[String] = {
+    val nextCaseReference = applicationType match {
+      case ApplicationType.BTI =>
+        getNextInSequence("ATaR Case Reference", appConfig.atarCaseReferenceOffset)
+      case _ =>
+        getNextInSequence("Other Case Reference", appConfig.otherCaseReferenceOffset)
+    }
+
+    nextCaseReference.map(_.toString)
+  }
+
+  private def getNextInSequence(sequenceName: String, offset: Long): Future[Long] = {
+    sequenceRepository.incrementAndGetByName(sequenceName).map {
+      _.value + offset
+    }
   }
 
   def update(c: Case, upsert: Boolean): Future[Option[Case]] = {

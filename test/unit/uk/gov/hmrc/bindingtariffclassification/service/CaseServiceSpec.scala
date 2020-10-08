@@ -40,29 +40,27 @@ class CaseServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
   override protected def afterEach(): Unit = {
     super.afterEach()
-    reset(caseRepository, appConfig)
+    reset(caseRepository, sequenceRepository, appConfig)
   }
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
   }
 
-  "nextReference()" should {
+  "nextCaseReference()" should {
 
     "generate a new reference" when {
 
-      "Case is a BTI" in {
-        when(appConfig.caseReferenceStart).thenReturn(100)
-        when(sequenceRepository.incrementAndGetByName("case")).thenReturn(successful(Sequence("case", 10)))
-        when(appConfig.btiReferenceOffset).thenReturn(1)
-        await(service.nextCaseReference(ApplicationType.BTI)) shouldBe "111"
+      "Case is an ATaR" in {
+        when(sequenceRepository.incrementAndGetByName("ATaR Case Reference")).thenReturn(successful(Sequence("ATaR Case Reference", 10)))
+        when(appConfig.atarCaseReferenceOffset).thenReturn(1000)
+        await(service.nextCaseReference(ApplicationType.BTI)) shouldBe "1010"
       }
 
       "Case is a Liability" in {
-        when(appConfig.caseReferenceStart).thenReturn(100)
-        when(sequenceRepository.incrementAndGetByName("case")).thenReturn(successful(Sequence("case", 10)))
-        when(appConfig.liabilityReferenceOffset).thenReturn(2)
-        await(service.nextCaseReference(ApplicationType.LIABILITY_ORDER)) shouldBe "112"
+        when(sequenceRepository.incrementAndGetByName("Other Case Reference")).thenReturn(successful(Sequence("OtherCaseReference", 5)))
+        when(appConfig.otherCaseReferenceOffset).thenReturn(2000)
+        await(service.nextCaseReference(ApplicationType.LIABILITY_ORDER)) shouldBe "2005"
       }
     }
 
@@ -73,6 +71,7 @@ class CaseServiceSpec extends BaseSpec with BeforeAndAfterEach {
     "return () and clear the database collection" in {
       when(caseRepository.deleteAll()).thenReturn(successful(()))
       await(service.deleteAll()) shouldBe ((): Unit)
+      verify(caseRepository, times(1)).deleteAll()
     }
 
     "propagate any error" in {
