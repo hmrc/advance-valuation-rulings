@@ -16,13 +16,12 @@
 
 package uk.gov.hmrc.bindingtariffclassification.model
 
+import uk.gov.hmrc.bindingtariffclassification.model.RESTFormatters._
 import uk.gov.hmrc.play.test.UnitSpec
 import util.CaseData
-import MongoFormatters._
-
 import play.api.libs.json._
 
-class MongoFormattersSpec extends UnitSpec{
+class RestFormattersSpec extends UnitSpec{
 
   "BTIApplication format " should {
 
@@ -33,7 +32,6 @@ class MongoFormattersSpec extends UnitSpec{
     "Deserialise related BTIs from an array" in {
       formatBTIApplication.reads(json) shouldBe a[JsSuccess[_]]
       formatBTIApplication.reads(json).get.relatedBTIReference shouldBe List("12345678")
-
     }
 
     "Deserialise related BTI from a nullable String" in {
