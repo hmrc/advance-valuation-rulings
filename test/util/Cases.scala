@@ -34,7 +34,7 @@ object Cases {
     "name", "email", Some("phone")
   )
   private val btiApplicationExample = BTIApplication(
-    eoriDetailsExample, contactExample, Some(eoriAgentDetailsExample), offline = false, "Laptop", "Personal Computer", None, None, None, None, None, None
+    eoriDetailsExample, contactExample, Some(eoriAgentDetailsExample), offline = false, "Laptop", "Personal Computer", None, None, None, Nil, None, None
   )
   private val liabilityApplicationExample = LiabilityOrder(
     contactExample, Some("good name"), LiabilityStatus.LIVE, "trader name"
@@ -88,7 +88,7 @@ object Cases {
                      confidentialInformation: Option[String] = None,
                      otherInformation: Option[String] = None,
                      reissuedBTIReference: Option[String] = None,
-                     relatedBTIReference: Option[String] = None,
+                     relatedBTIReference: List[String] = Nil,
                      knownLegalProceedings: Option[String] = None,
                      envisagedCommodityCode: Option[String] = None,
                      sampleToBeProvided: Boolean = false,
@@ -129,7 +129,7 @@ object Cases {
   def withOptionalApplicationFields(confidentialInformation: Option[String] = None,
                                     otherInformation: Option[String] = None,
                                     reissuedBTIReference: Option[String] = None,
-                                    relatedBTIReference: Option[String] = None,
+                                    relatedBTIReference: List[String] = Nil,
                                     knownLegalProceedings: Option[String] = None,
                                     envisagedCommodityCode: Option[String] = None): Case => Case = { c =>
     c.copy(

@@ -49,7 +49,7 @@ object CaseData {
       confidentialInformation = Some("This phone has a secret processor."),
       otherInformation = Some("The phone comes in multiple colors"),
       reissuedBTIReference = Some("BTI123"),
-      relatedBTIReference = Some("BTI987"),
+      relatedBTIReference = List("BTI987"),
       knownLegalProceedings = Some("Someone is suing me!"),
       envisagedCommodityCode = Some("12345"),
       sampleToBeProvided = true,
