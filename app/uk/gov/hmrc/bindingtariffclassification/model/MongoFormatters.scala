@@ -18,7 +18,6 @@ package uk.gov.hmrc.bindingtariffclassification.model
 
 import java.time.Instant
 
-import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.bindingtariffclassification.utils.JsonUtil
 import uk.gov.hmrc.play.json.Union
@@ -67,17 +66,7 @@ object MongoFormatters {
   implicit val formatContact: OFormat[Contact] = Json.format[Contact]
 
   implicit val formatLiabilityOrder: OFormat[LiabilityOrder] = Json.format[LiabilityOrder]
-
-  val oldStyleBTIApplicationReads: Reads[JsObject] = {
-    for {
-      btiReference <- (__ \ 'relatedBTIReference).json.pick[JsValue]
-      pruned <- (__ \ 'relatedBTIReference).json.prune
-    } yield pruned + ("relatedBTIReference" -> Json.arr(btiReference))
-  }
-
-  val btiApplicationReads: Reads[BTIApplication] = Json.using[Json.WithDefaultValues].reads[BTIApplication].orElse(Json.reads[BTIApplication].compose(oldStyleBTIApplicationReads))
-  implicit val formatBTIApplication: Format[BTIApplication] = Format(btiApplicationReads, Json.writes[BTIApplication])
-
+  implicit val formatBTIApplication: OFormat[BTIApplication] = Json.format[BTIApplication]
   implicit val formatApplication: Format[Application] = Union.from[Application]("type")
     .and[BTIApplication](ApplicationType.BTI.toString)
     .and[LiabilityOrder](ApplicationType.LIABILITY_ORDER.toString)

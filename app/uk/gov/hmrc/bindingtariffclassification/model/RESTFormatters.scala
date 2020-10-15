@@ -60,17 +60,7 @@ object RESTFormatters {
   implicit val formatContact: OFormat[Contact] = Json.format[Contact]
 
   implicit val formatLiabilityOrder: OFormat[LiabilityOrder] = Json.format[LiabilityOrder]
-
-  val oldStyleBTIApplicationReads: Reads[JsObject] = {
-    for {
-      btiReference <- (__ \ 'relatedBTIReference).json.pick[JsValue]
-      pruned <- (__ \ 'relatedBTIReference).json.prune
-    } yield pruned + ("relatedBTIReference" -> Json.arr(btiReference))
-  }
-
-  val btiApplicationReads: Reads[BTIApplication] = Json.using[Json.WithDefaultValues].reads[BTIApplication].orElse(Json.reads[BTIApplication].compose(oldStyleBTIApplicationReads))
-  implicit val formatBTIApplication: Format[BTIApplication] = Format(btiApplicationReads, Json.writes[BTIApplication])
-
+  implicit val formatBTIApplication: OFormat[BTIApplication] = Json.format[BTIApplication]
   implicit val formatApplication: Format[Application] = Union.from[Application]("type")
     .and[BTIApplication](ApplicationType.BTI.toString)
     .and[LiabilityOrder](ApplicationType.LIABILITY_ORDER.toString)

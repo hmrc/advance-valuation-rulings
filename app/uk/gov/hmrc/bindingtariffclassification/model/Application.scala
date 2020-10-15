@@ -43,7 +43,7 @@ case class BTIApplication
   confidentialInformation: Option[String] = None,
   otherInformation: Option[String] = None,
   reissuedBTIReference: Option[String] = None,
-  relatedBTIReference: List[String] = Nil,
+  relatedBTIReference: Option[String] = None,
   knownLegalProceedings: Option[String] = None,
   envisagedCommodityCode: Option[String] = None,
   sampleToBeProvided: Boolean = false,
