@@ -34,7 +34,7 @@ object Cases {
     "name", "email", Some("phone")
   )
   private val btiApplicationExample = BTIApplication(
-    eoriDetailsExample, contactExample, Some(eoriAgentDetailsExample), offline = false, "Laptop", "Personal Computer", None, None, None, None, None, None
+    eoriDetailsExample, contactExample, Some(eoriAgentDetailsExample), offline = false, "Laptop", "Personal Computer", None, None, None, None, Nil, None, None
   )
   private val liabilityApplicationExample = LiabilityOrder(
     contactExample, Some("good name"), LiabilityStatus.LIVE, "trader name"
