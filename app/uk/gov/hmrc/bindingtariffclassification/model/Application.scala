@@ -44,6 +44,7 @@ case class BTIApplication
   otherInformation: Option[String] = None,
   reissuedBTIReference: Option[String] = None,
   relatedBTIReference: Option[String] = None,
+  relatedBTIReferences: List[String] = Nil,
   knownLegalProceedings: Option[String] = None,
   envisagedCommodityCode: Option[String] = None,
   sampleToBeProvided: Boolean = false,
