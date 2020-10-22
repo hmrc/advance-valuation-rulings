@@ -92,6 +92,7 @@ object MongoFormatters {
   implicit val formatQueueChange: OFormat[QueueChange] = Json.format[QueueChange]
   implicit val formatNote: OFormat[Note] = Json.format[Note]
   implicit val formatCaseCreated: OFormat[CaseCreated] = Json.format[CaseCreated]
+  implicit val formatExpertAdviceReceived: OFormat[ExpertAdviceReceived] = Json.format[ExpertAdviceReceived]
 
   implicit val formatEventDetail: Format[Details] = Union.from[Details]("type")
     .and[CaseStatusChange](EventType.CASE_STATUS_CHANGE.toString)
@@ -107,6 +108,7 @@ object MongoFormatters {
     .and[QueueChange](EventType.QUEUE_CHANGE.toString)
     .and[Note](EventType.NOTE.toString)
     .and[CaseCreated](EventType.CASE_CREATED.toString)
+    .and[ExpertAdviceReceived](EventType.EXPERT_ADVICE_RECEIVED.toString)
     .format
 
 
