@@ -176,6 +176,12 @@ case class SampleReturnChange
   override val `type`: EventType.Value = EventType.SAMPLE_RETURN_CHANGE
 }
 
+case class ExpertAdviceReceived
+(
+  comment: String
+) extends Details {
+  override val `type`: EventType.Value = EventType.EXPERT_ADVICE_RECEIVED
+}
 
 object EventType extends Enumeration {
   type EventType = Value
@@ -192,4 +198,5 @@ object EventType extends Enumeration {
   val SAMPLE_STATUS_CHANGE = Value
   val SAMPLE_RETURN_CHANGE = Value
   val CASE_CREATED = Value
+  val EXPERT_ADVICE_RECEIVED = Value
 }
