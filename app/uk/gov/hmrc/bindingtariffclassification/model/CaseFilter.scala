@@ -26,7 +26,7 @@ case class CaseFilter
 (
   reference: Option[Set[String]] = None,
   applicationType: Option[Set[ApplicationType]] = None,
-  queueId: Option[String] = None,
+  queueId: Option[Set[String]] = None,
   eori: Option[String] = None,
   assigneeId: Option[String] = None,
   statuses: Option[Set[PseudoCaseStatus]] = None,
@@ -68,7 +68,7 @@ object CaseFilter {
           CaseFilter(
             reference = params(referenceKey),
             applicationType = params(applicationTypeKey).map(_.map(bindApplicationType).filter(_.isDefined).map(_.get)),
-            queueId = param(queueIdKey),
+            queueId = params(queueIdKey),
             eori = param(eoriKey),
             assigneeId = param(assigneeIdKey),
             statuses = params(statusKey).map(_.map(bindPseudoCaseStatus).filter(_.isDefined).map(_.get)),
@@ -87,7 +87,7 @@ object CaseFilter {
       Seq(
         filter.reference.map(_.map(s => stringBinder.unbind(referenceKey, s.toString)).mkString("&")),
         filter.applicationType.map(_.map(s => stringBinder.unbind(applicationTypeKey, s.toString)).mkString("&")),
-        filter.queueId.map(stringBinder.unbind(queueIdKey, _)),
+        filter.queueId.map(_.map(s => stringBinder.unbind(queueIdKey, s.toString)).mkString("&")),
         filter.eori.map(stringBinder.unbind(eoriKey, _)),
         filter.assigneeId.map(stringBinder.unbind(assigneeIdKey, _)),
         filter.statuses.map(_.map(s => stringBinder.unbind(statusKey, s.toString)).mkString("&")),

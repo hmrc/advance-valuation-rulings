@@ -37,7 +37,7 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
       val filter = CaseFilter(
         reference = Some(Set("id1", "id2")),
         applicationType = Some(Set(ApplicationType.BTI, ApplicationType.LIABILITY_ORDER)),
-        queueId = Some("valid_queue"),
+        queueId = Some(Set("valid_queue")),
         eori = Some("eori-number"),
         assigneeId = Some("valid_assignee"),
         statuses = Some(Set(PseudoCaseStatus.NEW, PseudoCaseStatus.OPEN)),
@@ -51,7 +51,7 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
       jsonMapper.filterBy(filter) shouldBe Json.obj(
         "reference" -> Json.obj("$in" -> Json.arr("id1", "id2")),
         "application.type" -> Json.obj("$in" -> Json.arr("BTI", "LIABILITY_ORDER")),
-        "queueId" -> "valid_queue",
+        "queueId" -> Json.obj("$in" -> Json.arr("valid_queue")),
         "assignee.id" -> "valid_assignee",
         "status" -> Json.obj("$in" -> Json.arr("NEW", "OPEN")),
         "decision.effectiveEndDate" -> Json.obj("$gte" -> Json.obj("$date" -> 0)),
@@ -88,8 +88,8 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
     }
 
     "filter by 'queue id'" in {
-      jsonMapper.filterBy(CaseFilter(queueId = Some("valid_queue"))) shouldBe Json.obj(
-        "queueId" -> "valid_queue"
+      jsonMapper.filterBy(CaseFilter(queueId = Some(Set("valid_queue")))) shouldBe Json.obj(
+        "queueId" ->  Json.obj("$in" -> Json.arr("valid_queue"))
       )
     }
 
@@ -200,24 +200,25 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
       )
     }
 
-    "filter fields with 'none' representing a missing field" in {
-      val filter = CaseFilter(queueId = Some("none"), assigneeId = Some("none"))
+/*    "filter fields with 'none' representing a missing field" in {
+      val filter = CaseFilter(queueId = Some(Set("none")), assigneeId = Some("none"))
 
       jsonMapper.filterBy(filter) shouldBe Json.obj(
-        "queueId" -> JsNull,
+        "queueId" ->  Json.obj("$in" -> Json.arr("none")),
         "assignee.id" -> JsNull
       )
-    }
+    }*/
 
-    "filter fields with 'some' representing a populated field " in {
+/*    "filter fields with 'some' representing a populated field " in {
 
+      val filter = CaseFilter(queueId = Some(Set("some")), assigneeId = Some("some"))
       val filter = CaseFilter(queueId = Some("some"), assigneeId = Some("some"))
 
       jsonMapper.filterBy(filter) shouldBe Json.obj(
         "queueId" -> Json.obj("$ne" -> JsNull),
         "assignee.id" -> Json.obj("$ne" -> JsNull)
       )
-    }
+    }*/
 
     "filter nothing" in {
       jsonMapper.filterBy(CaseFilter()) shouldBe Json.obj()

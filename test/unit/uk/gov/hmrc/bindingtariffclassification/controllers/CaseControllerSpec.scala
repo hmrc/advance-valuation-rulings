@@ -208,7 +208,7 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach{
 
     // TODO: test all possible combinations
 
-    val queueId = Some("valid_queueId")
+    val queueId = Some(Set("valid_queueId"))
     val assigneeId = Some("valid_assigneeId")
 
     val search = CaseSearch(

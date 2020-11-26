@@ -33,7 +33,7 @@ class CaseSearchTest extends UnitSpec {
     reference = Some(Set("id1", "id2")),
     applicationType = Some(Set(ApplicationType.BTI, ApplicationType.LIABILITY_ORDER)),
     traderName = Some("trader-name"),
-    queueId = Some("queue-id"),
+    queueId = Some(Set("queue-id")),
     eori = Some("eori-number"),
     assigneeId = Some("assignee-id"),
     statuses = Some(Set(PseudoCaseStatus.NEW, PseudoCaseStatus.OPEN)),

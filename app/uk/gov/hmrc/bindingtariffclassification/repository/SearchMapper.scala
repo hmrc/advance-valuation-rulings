@@ -48,7 +48,7 @@ class SearchMapper @Inject()(appConfig: AppConfig) {
     val params = Seq[Option[(String, JsValue)]](
       filter.reference.map("reference" -> inArray[String](_)),
       filter.applicationType.map(filteringByApplicationType),
-      filter.queueId.map("queueId" -> mappingNoneOrSome(_)),
+      filter.queueId.map("queueId" -> inArray[String](_)),
       filter.assigneeId.map("assignee.id" -> mappingNoneOrSome(_)),
       filter.traderName.map(traderName => either(
         "application.holder.businessName" -> contains(traderName),
