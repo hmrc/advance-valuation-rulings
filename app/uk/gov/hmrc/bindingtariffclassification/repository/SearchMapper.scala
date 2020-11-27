@@ -20,7 +20,7 @@ import java.time.Instant
 
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json.JsValueWrapper
-import play.api.libs.json._
+import play.api.libs.json.{Json, _}
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.ApplicationType.ApplicationType
 import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatInstant
@@ -48,7 +48,7 @@ class SearchMapper @Inject()(appConfig: AppConfig) {
     val params = Seq[Option[(String, JsValue)]](
       filter.reference.map("reference" -> inArray[String](_)),
       filter.applicationType.map(filteringByApplicationType),
-      filter.queueId.map("queueId" -> inArray[String](_)),
+      filter.queueId.map("queueId" -> inArrayOrNone[String](_)),
       filter.assigneeId.map("assignee.id" -> mappingNoneOrSome(_)),
       filter.traderName.map(traderName => either(
         "application.holder.businessName" -> contains(traderName),
@@ -113,6 +113,14 @@ class SearchMapper @Inject()(appConfig: AppConfig) {
   private def inArray[T](values: TraversableOnce[T])(implicit writes: Writes[T]): JsObject = JsObject(Map(
     "$in" -> JsArray(values.toSeq.map(writes.writes)))
   )
+
+  private def inArrayOrNone[T](values: TraversableOnce[T])(implicit writes: Writes[T]):JsValue = {
+    if (values.exists(_ == "none")) JsNull else
+    if (values.exists(_ == "some")) Json.obj("$ne" -> JsNull) else
+      JsObject(
+        Map("$in" -> JsArray(values.toSeq.map(writes.writes)))
+      )
+  }
 
   private def mappingNoneOrSome: String => JsValue = {
     case "none" => JsNull

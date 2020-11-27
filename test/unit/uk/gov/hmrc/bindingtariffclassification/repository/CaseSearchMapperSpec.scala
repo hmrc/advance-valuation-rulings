@@ -200,25 +200,24 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
       )
     }
 
-/*    "filter fields with 'none' representing a missing field" in {
+    "filter fields with 'none' representing a missing field" in {
       val filter = CaseFilter(queueId = Some(Set("none")), assigneeId = Some("none"))
 
       jsonMapper.filterBy(filter) shouldBe Json.obj(
-        "queueId" ->  Json.obj("$in" -> Json.arr("none")),
+        "queueId" -> JsNull,
         "assignee.id" -> JsNull
       )
-    }*/
+    }
 
-/*    "filter fields with 'some' representing a populated field " in {
+    "filter fields with 'some' representing a populated field " in {
 
       val filter = CaseFilter(queueId = Some(Set("some")), assigneeId = Some("some"))
-      val filter = CaseFilter(queueId = Some("some"), assigneeId = Some("some"))
 
       jsonMapper.filterBy(filter) shouldBe Json.obj(
         "queueId" -> Json.obj("$ne" -> JsNull),
         "assignee.id" -> Json.obj("$ne" -> JsNull)
       )
-    }*/
+    }
 
     "filter nothing" in {
       jsonMapper.filterBy(CaseFilter()) shouldBe Json.obj()
