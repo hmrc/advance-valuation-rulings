@@ -83,6 +83,38 @@ class EventRepositorySpec extends BaseMongoIndexSpec
 
   }
 
+  "delete" should {
+    "clear events by case reference" in {
+      val e1 = createNoteEvent("REF_1")
+      val e2 = createCaseStatusChangeEvent("REF_1")
+      val e3 = createCaseStatusChangeEvent("REF_2")
+
+      await(repository.insert(e1))
+      await(repository.insert(e2))
+      await(repository.insert(e3))
+      collectionSize shouldBe 3
+
+      await(repository.delete(EventSearch(caseReference = Some(Set("REF_1")))))
+      collectionSize shouldBe 1
+      await(repository.collection.find(selectorById(e1)).one[Event]) shouldBe None
+      await(repository.collection.find(selectorById(e2)).one[Event]) shouldBe None
+      await(repository.collection.find(selectorById(e3)).one[Event]) shouldBe Some(e3)
+    }
+
+    "clear events by event type" in {
+      val e1 = createNoteEvent("REF_1")
+      val e2 = createCaseStatusChangeEvent("REF_2")
+
+      await(repository.insert(e1))
+      await(repository.insert(e2))
+      collectionSize shouldBe 2
+
+      await(repository.delete(EventSearch(`type` = Some(Set(EventType.NOTE)))))
+      collectionSize shouldBe 1
+      await(repository.collection.find(selectorById(e2)).one[Event]) shouldBe Some(e2)
+    }
+  }
+
   "insert" should {
 
     "insert a new document in the collection" in {

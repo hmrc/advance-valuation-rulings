@@ -37,4 +37,8 @@ class EventService @Inject()(repository: EventRepository) {
     repository.deleteAll()
   }
 
+  def deleteCaseEvents(caseReference: String): Future[Unit] = {
+    repository.delete(EventSearch(caseReference = Some(Set(caseReference))))
+  }
+
 }

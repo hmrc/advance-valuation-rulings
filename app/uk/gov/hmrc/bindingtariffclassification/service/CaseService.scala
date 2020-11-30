@@ -21,7 +21,6 @@ import java.util.UUID
 
 import javax.inject._
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
-import uk.gov.hmrc.bindingtariffclassification.model.ApplicationType.ApplicationType
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.repository.{CaseRepository, SequenceRepository}
 
@@ -81,5 +80,9 @@ class CaseService @Inject()(
     caseRepository.deleteAll()
     sequenceRepository.deleteSequenceByName("ATaR Case Reference")
     sequenceRepository.deleteSequenceByName("Other Case Reference")
+  }
+
+  def delete(reference: String): Future[Unit] = {
+    caseRepository.delete(reference)
   }
 }
