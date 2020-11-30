@@ -19,7 +19,7 @@ package uk.gov.hmrc.bindingtariffclassification.repository
 import java.time.{Clock, Instant, ZoneOffset}
 
 import org.mockito.BDDMockito._
-import play.api.libs.json.{JsNull, JsString, Json}
+import play.api.libs.json._
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.sort.{CaseSortField, SortDirection}
@@ -204,7 +204,7 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
       val filter = CaseFilter(queueId = Some(Set("none")), assigneeId = Some("none"))
 
       jsonMapper.filterBy(filter) shouldBe Json.obj(
-        "queueId" -> JsNull,
+        "queueId" -> Json.obj("$in" -> JsArray(Seq(JsNull))),
         "assignee.id" -> JsNull
       )
     }
@@ -219,10 +219,35 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
       )
     }
 
+    "do not filter with 'none' and 'some'" in {
+      val filter = CaseFilter(queueId = Some(Set("none", "some")), assigneeId = Some("none"))
+
+      jsonMapper.filterBy(filter) shouldBe Json.obj(
+        "assignee.id" -> JsNull
+      )
+    }
+
+    "filter fields with 'none' and a queueId '5' representing gateway and queueId 5" in {
+      val filter = CaseFilter(queueId = Some(Set("none", "5")), assigneeId = Some("none"))
+
+      jsonMapper.filterBy(filter) shouldBe Json.obj(
+        "queueId" -> Json.obj("$in" -> JsArray(Seq(JsNull, JsString("5")))),
+        "assignee.id" -> JsNull
+      )
+    }
+
+    "filter fields with 'some' and a queueId '5' representing not null and queueId 5" in {
+      val filter = CaseFilter(queueId = Some(Set("some", "5")), assigneeId = Some("none"))
+
+      jsonMapper.filterBy(filter) shouldBe Json.obj(
+        "queueId" -> Json.obj("$ne" -> JsNull),
+        "assignee.id" ->  JsNull
+      )
+    }
+
     "filter nothing" in {
       jsonMapper.filterBy(CaseFilter()) shouldBe Json.obj()
     }
-
   }
 
   "SortBy " should {
