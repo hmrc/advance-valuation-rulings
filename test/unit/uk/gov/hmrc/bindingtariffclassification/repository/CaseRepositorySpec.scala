@@ -216,20 +216,20 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
     val caseWithQueueY = createCase().copy(queueId = queueIdY)
 
     "return an empty sequence when there are no matches" in {
-      val search = CaseSearch(CaseFilter(queueId = unknownQueueId))
+      val search = CaseSearch(CaseFilter(queueId = unknownQueueId.map(Set(_))))
 
       store(caseWithEmptyQueue, caseWithQueueX1)
       await(repository.get(search, Pagination())).results shouldBe Seq.empty
     }
 
     "return the expected document when there is one match" in {
-      val search = CaseSearch(CaseFilter(queueId = queueIdX))
+      val search = CaseSearch(CaseFilter(queueId = queueIdX.map(Set(_))))
       store(caseWithEmptyQueue, caseWithQueueX1, caseWithQueueY)
       await(repository.get(search, Pagination())).results shouldBe Seq(caseWithQueueX1)
     }
 
     "return the expected documents when there are multiple matches" in {
-      val search = CaseSearch(CaseFilter(queueId = queueIdX))
+      val search = CaseSearch(CaseFilter(queueId = queueIdX.map(Set(_))))
 
       store(caseWithEmptyQueue, caseWithQueueX1, caseWithQueueX2, caseWithQueueY)
       await(repository.get(search, Pagination())).results shouldBe Seq(caseWithQueueX1, caseWithQueueX2)
@@ -667,7 +667,7 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
     val caseWithQyAndAxAndSy = createCase().copy(queueId = queueIdY, assignee = Some(assigneeX), status = statusY)
 
     "filter as expected" in {
-      val search = CaseSearch(CaseFilter(queueId = queueIdX, assigneeId = Some(assigneeX.id), statuses = Some(Set(PseudoCaseStatus.NEW))))
+      val search = CaseSearch(CaseFilter(queueId = queueIdX.map(Set(_)), assigneeId = Some(assigneeX.id), statuses = Some(Set(PseudoCaseStatus.NEW))))
 
       store(
         caseWithNoQueueAndNoAssignee,
