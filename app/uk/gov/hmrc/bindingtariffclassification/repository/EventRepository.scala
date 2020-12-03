@@ -20,8 +20,9 @@ import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json._
 import reactivemongo.bson.BSONObjectID
+import reactivemongo.play.json.ImplicitBSONHandlers._
 import reactivemongo.play.json.collection.JSONCollection
-import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatEvent
+import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters._
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.mongo.ReactiveRepository
 
@@ -36,6 +37,8 @@ trait EventRepository {
   def search(search: EventSearch, pagination: Pagination): Future[Paged[Event]]
 
   def deleteAll(): Future[Unit]
+
+  def delete(search: EventSearch): Future[Unit]
 }
 
 @Singleton
@@ -65,20 +68,33 @@ class EventMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
   }
 
   override def search(search: EventSearch, pagination: Pagination): Future[Paged[Event]] = {
-    import MongoFormatters._
+    getMany(selector(search), defaultSortBy, pagination)
+  }
 
+  override def deleteAll(): Future[Unit] = {
+    removeAll().map(_ => ())
+  }
+
+  override def delete(search: EventSearch): Future[Unit] = {
+    val delete = collection.delete()
+    for {
+      elems <- delete.element(q = selector(search), limit = None)
+      _ <- delete.many(Seq(elems))
+    } yield ()
+  }
+
+  private def selector(search: EventSearch): JsObject = {
     val queries = Seq[JsObject]()
       .++(search.caseReference.map(r => Json.obj("caseReference" -> in(r))))
       .++(search.`type`.map(t => Json.obj("details.type" -> in(t))))
       .++(search.timestampMin.map(t => Json.obj("timestamp" -> Json.obj("$gte" -> t))))
       .++(search.timestampMax.map(t => Json.obj("timestamp" -> Json.obj("$lte" -> t))))
 
-    val query = if(queries.nonEmpty) JsObject(Seq("$and" -> JsArray(queries))) else Json.obj()
-    getMany(query, defaultSortBy, pagination)
-  }
-
-  override def deleteAll(): Future[Unit] = {
-    removeAll().map(_ => ())
+    queries match {
+      case Nil => Json.obj()
+      case single :: Nil => single
+      case many => JsObject(Seq("$and" -> JsArray(many)))
+    }
   }
 
 }

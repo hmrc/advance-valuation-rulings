@@ -20,11 +20,10 @@ import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json.toJson
 import play.api.libs.json._
 import reactivemongo.api.indexes.Index
-import reactivemongo.bson.{BSONArray, BSONDocument, BSONDouble, BSONObjectID, BSONString}
+import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.ImplicitBSONHandlers._
 import reactivemongo.play.json.collection.JSONCollection
 import uk.gov.hmrc.bindingtariffclassification.crypto.Crypto
-import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.{NEW, OPEN}
 import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatCase
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.model.reporting.CaseReportGroup.CaseReportGroup
@@ -45,6 +44,8 @@ trait CaseRepository {
   def get(search: CaseSearch, pagination: Pagination): Future[Paged[Case]]
 
   def deleteAll(): Future[Unit]
+
+  def delete(reference: String): Future[Unit]
 
   def generateReport(report: CaseReport): Future[Seq[ReportResult]]
 }
@@ -67,6 +68,8 @@ class EncryptedCaseMongoRepository @Inject()(repository: CaseMongoRepository, cr
   }
 
   override def deleteAll(): Future[Unit] = repository.deleteAll()
+
+  override def delete(reference: String): Future[Unit] = repository.delete(reference)
 
   private def enryptSearch(search: CaseSearch) = {
     val eoriEnc: Option[String] = search.filter.eori.map(crypto.encryptString)
@@ -131,6 +134,10 @@ class CaseMongoRepository @Inject()(mongoDbProvider: MongoDbProvider, mapper: Se
 
   override def deleteAll(): Future[Unit] = {
     removeAll().map(_ => ())
+  }
+
+  override def delete(reference: String): Future[Unit] = {
+    remove("reference" -> reference).map(_ => ())
   }
 
   override def generateReport(report: CaseReport): Future[Seq[ReportResult]] = {

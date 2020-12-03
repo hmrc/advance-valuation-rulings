@@ -16,12 +16,11 @@
 
 package uk.gov.hmrc.bindingtariffclassification.controllers
 
-import org.mockito.{ArgumentCaptor, Mockito}
 import org.mockito.ArgumentMatchers.{any, refEq}
 import org.mockito.Mockito.{verify, when}
+import org.mockito.{ArgumentCaptor, Mockito}
 import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
-import play.api.libs.json.{JsObject, Json}
 import play.api.libs.json.Json.toJson
 import play.api.test.FakeRequest
 import reactivemongo.bson.BSONDocument
@@ -60,7 +59,7 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach{
     val req = FakeRequest(method = HttpVerbs.DELETE, path = "/cases")
 
     "return 403 if the test mode is disabled" in {
-
+      when(appConfig.isTestMode).thenReturn(false)
       val result = await(controller.deleteAll()(req))
 
       status(result) shouldEqual FORBIDDEN
@@ -83,6 +82,41 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach{
       when(caseService.deleteAll()).thenReturn(failed(error))
 
       val result = await(controller.deleteAll()(req))
+
+      status(result) shouldEqual INTERNAL_SERVER_ERROR
+      jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
+    }
+
+  }
+
+  "delete()" should {
+
+    val req = FakeRequest(method = HttpVerbs.DELETE, path = "/cases/ref")
+
+    "return 403 if the test mode is disabled" in {
+      when(appConfig.isTestMode).thenReturn(false)
+      val result = await(controller.delete("ref")(req))
+
+      status(result) shouldEqual FORBIDDEN
+      jsonBodyOf(result).toString() shouldEqual s"""{"code":"FORBIDDEN","message":"You are not allowed to call ${req.method} ${req.path}"}"""
+    }
+
+    "return 204 if the test mode is enabled" in {
+      when(appConfig.isTestMode).thenReturn(true)
+      when(caseService.delete(refEq("ref"))).thenReturn(successful(()))
+
+      val result = await(controller.delete("ref")(req))
+
+      status(result) shouldEqual NO_CONTENT
+    }
+
+    "return 500 when an error occurred" in {
+      val error = new RuntimeException
+
+      when(appConfig.isTestMode).thenReturn(true)
+      when(caseService.delete(refEq("ref"))).thenReturn(failed(error))
+
+      val result = await(controller.delete("ref")(req))
 
       status(result) shouldEqual INTERNAL_SERVER_ERROR
       jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""

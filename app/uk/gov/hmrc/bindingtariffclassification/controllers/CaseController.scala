@@ -22,9 +22,9 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.ErrorCode.NOTFOUND
+import uk.gov.hmrc.bindingtariffclassification.model.RESTFormatters._
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.service.CaseService
-import RESTFormatters._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future.successful
@@ -41,6 +41,10 @@ class CaseController @Inject()(appConfig: AppConfig,
 
   def deleteAll(): Action[AnyContent] = testModeFilter.async {
     caseService.deleteAll() map (_ => NoContent) recover recovery
+  }
+
+  def delete(reference: String): Action[AnyContent] = testModeFilter.async {
+    caseService.delete(reference) map (_ => NoContent) recover recovery
   }
 
   def create: Action[JsValue] = Action.async(parse.json) { implicit request => {

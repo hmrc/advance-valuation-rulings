@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.bindingtariffclassification.service
 
+import org.mockito.ArgumentMatchers.{any, refEq}
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
@@ -83,6 +84,24 @@ class CaseServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
       val caught = intercept[RuntimeException] {
         await(service.deleteAll())
+      }
+      caught shouldBe emulatedFailure
+    }
+  }
+
+  "delete()" should {
+    "return () and delegate to the repository" in {
+      when(caseRepository.delete(refEq("ref"))).thenReturn(successful(()))
+      await(service.delete("ref")) shouldBe ((): Unit)
+      verify(caseRepository, times(1)).delete(refEq("ref"))
+      verify(sequenceRepository, never()).deleteSequenceByName(any[String])
+    }
+
+    "propagate any error" in {
+      when(caseRepository.delete(refEq("ref"))).thenThrow(emulatedFailure)
+
+      val caught = intercept[RuntimeException] {
+        await(service.delete("ref"))
       }
       caught shouldBe emulatedFailure
     }

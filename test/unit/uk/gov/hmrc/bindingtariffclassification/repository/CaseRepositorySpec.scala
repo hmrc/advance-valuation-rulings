@@ -91,6 +91,26 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
   }
 
+  "delete" should {
+
+    "remove the matching case" in {
+      val c1 = createCase(r = "REF_1")
+      val c2 = createCase(r = "REF_2")
+
+      val size = collectionSize
+
+      store(c1, c2)
+      collectionSize shouldBe 2 + size
+
+      await(repository.delete("REF_1")) shouldBe ((): Unit)
+      collectionSize shouldBe 1 + size
+
+      await(repository.collection.find(selectorByReference(c1)).one[Case]) shouldBe None
+      await(repository.collection.find(selectorByReference(c2)).one[Case]) shouldBe Some(c2)
+    }
+
+  }
+
   "insert" should {
 
     "insert a new document in the collection" in {

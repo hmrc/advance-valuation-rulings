@@ -42,6 +42,10 @@ class EventController @Inject()(
     eventService.deleteAll() map (_ => NoContent) recover recovery
   }
 
+  def deleteCaseEvents(caseReference: String): Action[AnyContent] = testModeFilter.async {
+    eventService.deleteCaseEvents(caseReference) map (_ => NoContent) recover recovery
+  }
+
   def search(search: EventSearch, pagination: Pagination): Action[AnyContent] = Action.async {
     eventService.search(search, pagination) map { events: Paged[Event] => Ok(Json.toJson(events)) } recover recovery
   }

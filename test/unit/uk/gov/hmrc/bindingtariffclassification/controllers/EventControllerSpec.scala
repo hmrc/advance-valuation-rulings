@@ -19,6 +19,7 @@ package uk.gov.hmrc.bindingtariffclassification.controllers
 import java.time.Instant
 import java.util.UUID
 
+import org.mockito.ArgumentMatchers.refEq
 import org.mockito.Mockito.{verifyNoMoreInteractions, when}
 import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.BeforeAndAfterEach
@@ -61,7 +62,7 @@ class EventControllerSpec extends BaseSpec with BeforeAndAfterEach {
     val req = FakeRequest(method = HttpVerbs.DELETE, path = "/events")
 
     "return 403 if the test mode is disabled" in {
-
+      when(appConfig.isTestMode).thenReturn(false)
       val result = await(controller.deleteAll()(req))
 
       status(result) shouldEqual FORBIDDEN
@@ -84,6 +85,41 @@ class EventControllerSpec extends BaseSpec with BeforeAndAfterEach {
       when(eventService.deleteAll()).thenReturn(failed(error))
 
       val result = await(controller.deleteAll()(req))
+
+      status(result) shouldEqual INTERNAL_SERVER_ERROR
+      jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
+    }
+
+  }
+
+  "deleteCaseEvents()" should {
+
+    val req = FakeRequest(method = HttpVerbs.DELETE, path = "/events/ref")
+
+    "return 403 if the test mode is disabled" in {
+      when(appConfig.isTestMode).thenReturn(false)
+      val result = await(controller.deleteCaseEvents("ref")(req))
+
+      status(result) shouldEqual FORBIDDEN
+      jsonBodyOf(result).toString() shouldEqual s"""{"code":"FORBIDDEN","message":"You are not allowed to call ${req.method} ${req.path}"}"""
+    }
+
+    "return 204 if the test mode is enabled" in {
+      when(appConfig.isTestMode).thenReturn(true)
+      when(eventService.deleteCaseEvents(refEq("ref"))).thenReturn(successful(()))
+
+      val result = await(controller.deleteCaseEvents("ref")(req))
+
+      status(result) shouldEqual NO_CONTENT
+    }
+
+    "return 500 when an error occurred" in {
+      val error = new RuntimeException
+
+      when(appConfig.isTestMode).thenReturn(true)
+      when(eventService.deleteCaseEvents(refEq("ref"))).thenReturn(failed(error))
+
+      val result = await(controller.deleteCaseEvents("ref")(req))
 
       status(result) shouldEqual INTERNAL_SERVER_ERROR
       jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""

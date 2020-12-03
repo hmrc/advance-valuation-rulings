@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.bindingtariffclassification.service
 
-import org.mockito.Mockito.when
+import org.mockito.ArgumentMatchers.refEq
+import org.mockito.Mockito.{times, verify, when}
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.model.{Event, EventSearch, Paged, Pagination}
 import uk.gov.hmrc.bindingtariffclassification.repository.EventRepository
@@ -38,6 +39,7 @@ class EventServiceSpec extends BaseSpec {
     "return () and clear the database collection" in {
       when(repository.deleteAll()).thenReturn(successful(()))
       await(service.deleteAll()) shouldBe ((): Unit)
+      verify(repository, times(1)).deleteAll()
     }
 
     "propagate any error" in {
@@ -45,6 +47,24 @@ class EventServiceSpec extends BaseSpec {
 
       val caught = intercept[RuntimeException] {
         await(service.deleteAll())
+      }
+      caught shouldBe emulatedFailure
+    }
+  }
+
+  "deleteCaseEvents()" should {
+
+    "return () and delete to the repository" in {
+      when(repository.delete(refEq(EventSearch(caseReference = Some(Set("ref")))))).thenReturn(successful(()))
+      await(service.deleteCaseEvents("ref")) shouldBe ((): Unit)
+      verify(repository, times(1)).delete(refEq(EventSearch(caseReference = Some(Set("ref")))))
+    }
+
+    "propagate any error" in {
+      when(repository.delete(refEq(EventSearch(caseReference = Some(Set("ref")))))).thenThrow(emulatedFailure)
+
+      val caught = intercept[RuntimeException] {
+        await(service.deleteCaseEvents("ref"))
       }
       caught shouldBe emulatedFailure
     }

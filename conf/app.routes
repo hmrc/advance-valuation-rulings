@@ -17,5 +17,7 @@ GET           /report                         @uk.gov.hmrc.bindingtariffclassifi
 # admin/test endpoints
 DELETE        /cases                            @uk.gov.hmrc.bindingtariffclassification.controllers.CaseController.deleteAll()
 DELETE        /events                           @uk.gov.hmrc.bindingtariffclassification.controllers.EventController.deleteAll()
+DELETE        /case/:reference                  @uk.gov.hmrc.bindingtariffclassification.controllers.CaseController.delete(reference: String)
+DELETE        /events/:reference                @uk.gov.hmrc.bindingtariffclassification.controllers.EventController.deleteCaseEvents(reference: String)
 PUT           /scheduler/days-elapsed           @uk.gov.hmrc.bindingtariffclassification.controllers.SchedulerController.incrementActiveDaysElapsed()
 PUT           /scheduler/referred-days-elapsed  @uk.gov.hmrc.bindingtariffclassification.controllers.SchedulerController.incrementReferredDaysElapsed()
