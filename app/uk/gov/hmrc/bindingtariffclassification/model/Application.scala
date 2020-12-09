@@ -49,7 +49,8 @@ case class BTIApplication
   envisagedCommodityCode: Option[String] = None,
   sampleToBeProvided: Boolean = false,
   sampleIsHazardous: Option[Boolean] = None,
-  sampleToBeReturned: Boolean = false
+  sampleToBeReturned: Boolean = false,
+  applicationPdf: Option[Attachment] = None
 ) extends Application {
   override val `type`: model.ApplicationType.Value = ApplicationType.BTI
 }
