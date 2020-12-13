@@ -21,6 +21,7 @@ import java.time.Instant
 import uk.gov.hmrc.bindingtariffclassification.model
 import uk.gov.hmrc.bindingtariffclassification.model.ApplicationType.ApplicationType
 import uk.gov.hmrc.bindingtariffclassification.model.LiabilityStatus.LiabilityStatus
+import uk.gov.hmrc.bindingtariffclassification.model.MiscCaseType.MiscCaseType
 
 sealed trait Application {
   val `type`: ApplicationType
@@ -28,8 +29,13 @@ sealed trait Application {
 
   def isBTI: Boolean = isInstanceOf[BTIApplication]
   def isLiabilityOrder: Boolean = isInstanceOf[LiabilityOrder]
+  def isCorrespondence: Boolean = isInstanceOf[CorrespondenceApplication]
+  def isMisc: Boolean = isInstanceOf[MiscApplication]
+
   def asBTI: BTIApplication = asInstanceOf[BTIApplication]
   def asLiabilityOrder: LiabilityOrder = asInstanceOf[LiabilityOrder]
+  def asCorrespondence: CorrespondenceApplication = asInstanceOf[CorrespondenceApplication]
+  def asMisc: MiscApplication = asInstanceOf[MiscApplication]
 }
 
 case class BTIApplication
@@ -73,6 +79,36 @@ case class LiabilityOrder
   override val `type`: model.ApplicationType.Value = ApplicationType.LIABILITY_ORDER
 }
 
+case class CorrespondenceApplication(correspondenceStarter: Option[String],
+                                       agentName: Option[String],
+                                       address: Address,
+                                       override val contact: Contact,
+                                       fax: Option[String] = None,
+                                       offline: Boolean,
+                                       summary: String,
+                                       detailedDescription: String,
+                                       relatedBTIReference: Option[String] = None,
+                                       relatedBTIReferences: List[String] = Nil,
+                                       sampleToBeProvided: Boolean,
+                                       sampleToBeReturned: Boolean,
+                                       messagesLogged: List[Message] = Nil)
+      extends Application {
+    override val `type`: model.ApplicationType.Value = ApplicationType.CORRESPONDENCE
+  }
+
+case class MiscApplication(override val contact: Contact,
+                             offline: Boolean,
+                             name: String,
+                             contactName: Option[String],
+                             caseType: MiscCaseType,
+                             detailedDescription: Option[String],
+                             sampleToBeProvided: Boolean,
+                             sampleToBeReturned: Boolean,
+                             messagesLogged: List[Message] = Nil)
+      extends Application {
+    override val `type`: model.ApplicationType.Value = ApplicationType.MISCELLANEOUS
+  }
+
 case class EORIDetails
 (
   eori: String,
@@ -97,6 +133,8 @@ case class Contact
   phone: Option[String]
 )
 
+case class Message(name: String, date: Instant, message: String)
+
 object LiabilityStatus extends Enumeration {
   type LiabilityStatus = Value
   val LIVE, NON_LIVE = Value
@@ -104,5 +142,5 @@ object LiabilityStatus extends Enumeration {
 
 object ApplicationType extends Enumeration {
   type ApplicationType = Value
-  val BTI, LIABILITY_ORDER = Value
+  val BTI, LIABILITY_ORDER, CORRESPONDENCE, MISCELLANEOUS = Value
 }
