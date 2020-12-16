@@ -111,6 +111,34 @@ object CaseData {
     )
   }
 
+  def createCorrespondenceApplication: CorrespondenceApplication = {
+    CorrespondenceApplication(
+      None,
+      None,
+      Address("s", "s", None, None),
+      Contact("name", "email", None),
+      None,
+      offline = false,
+      "Laptop",
+      "Personal Computer",
+      sampleToBeProvided = false,
+      sampleToBeReturned = false
+    )
+  }
+
+  def createMiscApplication: MiscApplication = {
+    MiscApplication(
+      Contact("name", "email", None),
+      offline = false,
+      "name",
+      None,
+      MiscCaseType.HARMONISED,
+      None,
+      sampleToBeProvided = false,
+      sampleToBeReturned = false,
+    )
+  }
+
   def createAgentDetails: AgentDetails = {
     AgentDetails(
       eoriDetails = createEORIDetails.copy(businessName = "Frank Agent-Smith"),
