@@ -209,7 +209,8 @@ object CaseData {
   def createAttachment: Attachment = {
     Attachment(
       id = RandomGenerator.randomUUID(),
-      public = true
+      public = true,
+      shouldPublishToRulings = true
     )
   }
 
@@ -217,7 +218,8 @@ object CaseData {
     Attachment(
       id = RandomGenerator.randomUUID(),
       public = true,
-      operator = Some(Operator(id = "0", Some("OperatorName")))
+      operator = Some(Operator(id = "0", Some("OperatorName"))),
+      shouldPublishToRulings = false
     )
   }
 

@@ -28,7 +28,7 @@ object Cases {
     "eori", "trader-business-name", "line1", "line2", "line3", "postcode", "country"
   )
   private val eoriAgentDetailsExample = AgentDetails(EORIDetails(
-    "eori", "agent-business-name", "line1", "line2", "line3", "postcode", "country"), Some(Attachment("letter-id", public = true, None, Instant.now()))
+    "eori", "agent-business-name", "line1", "line2", "line3", "postcode", "country"), Some(Attachment("letter-id", public = true, None, Instant.now(), shouldPublishToRulings = false))
   )
   private val contactExample = Contact(
     "name", "email", Some("phone")

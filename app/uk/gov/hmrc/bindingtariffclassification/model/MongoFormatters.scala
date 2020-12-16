@@ -61,7 +61,7 @@ object MongoFormatters {
   implicit val formatApplicationType: Format[ApplicationType.Value] = EnumJson.format(ApplicationType)
   implicit val formatLiabilityStatus: Format[LiabilityStatus.Value] = EnumJson.format(LiabilityStatus)
   implicit val miscCaseType: Format[MiscCaseType.Value] = EnumJson.format(MiscCaseType)
-  implicit val formatAttachment: OFormat[Attachment] = Json.format[Attachment]
+  implicit val formatAttachment: OFormat[Attachment] = Json.using[Json.WithDefaultValues].format[Attachment]
   implicit val formatEORIDetails: OFormat[EORIDetails] = Json.format[EORIDetails]
   implicit val formatAgentDetails: OFormat[AgentDetails] = Json.format[AgentDetails]
   implicit val formatContact: OFormat[Contact] = Json.format[Contact]
