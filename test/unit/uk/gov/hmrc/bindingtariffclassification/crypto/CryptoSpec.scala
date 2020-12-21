@@ -33,9 +33,12 @@ class CryptoSpec extends BaseSpec {
   private def encEori(k: String) = EORIDetails(k, "John Lewis", k, k, k, k, k)
   private def encAgentEori(k: String) = EORIDetails(k, "Frank Agent-Smith", k, k, k, k, k)
   private def encContacts(k: String) = Contact(k, k, Some(k))
+  private def encAddress(k: String) = Address(k, k, Some(k), Some(k))
 
   private val bti = createBTIApplicationWithAllFields
   private val lo = createLiabilityOrder
+  private val misc = createMiscApplication
+  private val corres = createCorrespondenceApplication
 
   private def expectedEncryptedBti(k: String, letter: Option[Attachment]): BTIApplication = {
     bti.copy(
@@ -49,6 +52,22 @@ class CryptoSpec extends BaseSpec {
   private def expectedEncryptedLiabilityOrder(k: String): LiabilityOrder = {
     lo.copy(
       contact = encContacts(k)
+    )
+  }
+
+  private def expectedEncryptedMiscApplication(k: String): MiscApplication = {
+    misc.copy(
+      contact = encContacts(k),
+      contactName = Some(k),
+      name = k
+    )
+  }
+
+  private def expectedEncryptedCorrespondenceApplication(k: String): CorrespondenceApplication = {
+    corres.copy(
+      contact = encContacts(k),
+      agentName = Some(k),
+      address = encAddress(k)
     )
   }
 
@@ -69,6 +88,18 @@ class CryptoSpec extends BaseSpec {
       enc shouldBe c.copy(application = expectedEncryptedLiabilityOrder(k))
     }
 
+    "encrypt Miscellaneous applications" in {
+      val c = createCase(app = misc)
+      val enc = crypto.encrypt(c)
+      enc shouldBe c.copy(application = expectedEncryptedMiscApplication(k))
+    }
+
+    "encrypt Correspondence applications" in {
+      val c = createCase(app = corres)
+      val enc = crypto.encrypt(c)
+      enc shouldBe c.copy(application = expectedEncryptedCorrespondenceApplication(k))
+    }
+
   }
 
   "decrypt()" should {
@@ -86,6 +117,18 @@ class CryptoSpec extends BaseSpec {
       val c = createCase(app = lo)
       val dec = crypto.decrypt(c)
       dec shouldBe c.copy(application = expectedEncryptedLiabilityOrder(k))
+    }
+
+    "decrypt Misc applications" in {
+      val c = createCase(app = misc)
+      val dec = crypto.decrypt(c)
+      dec shouldBe c.copy(application = expectedEncryptedMiscApplication(k))
+    }
+
+    "decrypt Correspondence applications" in {
+      val c = createCase(app = corres)
+      val dec = crypto.decrypt(c)
+      dec shouldBe c.copy(application = expectedEncryptedCorrespondenceApplication(k))
     }
 
   }

@@ -114,9 +114,9 @@ object CaseData {
   def createCorrespondenceApplication: CorrespondenceApplication = {
     CorrespondenceApplication(
       None,
-      None,
-      Address("s", "s", None, None),
-      Contact("name", "email", None),
+      Some("agent"),
+      createAddress,
+      createContact,
       None,
       offline = false,
       "Laptop",
@@ -128,10 +128,10 @@ object CaseData {
 
   def createMiscApplication: MiscApplication = {
     MiscApplication(
-      Contact("name", "email", None),
+      createContact,
       offline = false,
       "name",
-      None,
+      Some("contactName"),
       MiscCaseType.HARMONISED,
       None,
       sampleToBeProvided = false,
@@ -152,6 +152,15 @@ object CaseData {
       "23, Leyton St", "Leeds", "West Yorkshire",
       "LS4 99AA",
       "GB")
+  }
+
+  def createAddress: Address = {
+    Address(
+      "23, Leyton St",
+      "Leeds",
+      Some("West Yorkshire"),
+      Some("LS4 99AA")
+    )
   }
 
   def eORIDetailForNintedo: EORIDetails = {
