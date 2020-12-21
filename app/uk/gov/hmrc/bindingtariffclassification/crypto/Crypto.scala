@@ -63,6 +63,15 @@ class Crypto @Inject()(crypto: CompositeSymmetricCrypto) {
     a.copy(eoriDetails = applyCrypto(a.eoriDetails)(f))
   }
 
+  private def applyCrypto(a: Address)(f: String => String): Address = {
+    a.copy(
+      buildingAndStreet = f(a.buildingAndStreet),
+      townOrCity = f(a.townOrCity),
+      county = a.county.map(f(_)),
+      postCode = a.postCode.map(f(_))
+    )
+  }
+
   private def applyCrypto(c: Case)(f: String => String): Case = {
 
     import ApplicationType._
@@ -83,6 +92,24 @@ class Crypto @Inject()(crypto: CompositeSymmetricCrypto) {
         c.copy(
           application = l.copy(
             contact = applyCrypto(l.contact)(f)
+          )
+        )
+      case MISCELLANEOUS =>
+        val misc = c.application.asMisc
+        c.copy(
+          application = misc.copy(
+            contact = applyCrypto(misc.contact)(f),
+            contactName = misc.contactName.map(f(_)),
+            name = f(misc.name)
+          )
+        )
+      case CORRESPONDENCE =>
+        val corres = c.application.asCorrespondence
+        c.copy(
+          application = corres.copy(
+            contact = applyCrypto(corres.contact)(f),
+            agentName = corres.agentName.map(f(_)),
+            address = applyCrypto(corres.address)(f)
           )
         )
       case t: ApplicationType =>

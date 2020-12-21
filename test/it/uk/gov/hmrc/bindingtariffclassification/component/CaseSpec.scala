@@ -217,8 +217,9 @@ class CaseSpec extends BaseFeatureSpec {
       responseCase.status shouldBe CaseStatus.NEW
       responseCase.application.asCorrespondence.summary shouldBe "Laptop"
       responseCase.application.asCorrespondence.detailedDescription shouldBe "Personal Computer"
-      responseCase.application.asCorrespondence.address shouldBe Address("s", "s", None, None)
-      responseCase.application.asCorrespondence.contact shouldBe Contact("name", "email", None)
+      responseCase.application.asCorrespondence.address shouldBe Address("23, Leyton St", "Leeds", Some("West Yorkshire"), Some("LS4 99AA"))
+      responseCase.application.asCorrespondence.contact shouldBe Contact("Maurizio", "maurizio@me.com", Some("0123456789"))
+      responseCase.application.asCorrespondence.agentName shouldBe Some("agent")
       responseCase.application.asCorrespondence.sampleToBeProvided shouldBe false
       responseCase.application.asCorrespondence.sampleToBeReturned shouldBe false
     }
@@ -239,8 +240,9 @@ class CaseSpec extends BaseFeatureSpec {
       responseCase.reference shouldBe "800000001"
       responseCase.status shouldBe CaseStatus.NEW
       responseCase.application.asMisc.name shouldBe "name"
+      responseCase.application.asMisc.contactName shouldBe Some("contactName")
       responseCase.application.asMisc.caseType shouldBe MiscCaseType.HARMONISED
-      responseCase.application.asMisc.contact shouldBe Contact("name", "email", None)
+      responseCase.application.asMisc.contact shouldBe Contact("Maurizio", "maurizio@me.com", Some("0123456789"))
       responseCase.application.asMisc.sampleToBeProvided shouldBe false
       responseCase.application.asMisc.sampleToBeReturned shouldBe false
     }
