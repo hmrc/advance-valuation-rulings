@@ -19,6 +19,7 @@ package uk.gov.hmrc.bindingtariffclassification.model
 object MiscCaseType extends Enumeration {
   type MiscCaseType = Value
 
+  val APPEALS        = Value("Appeals")
   val HARMONISED     = Value("Harmonised systems")
   val IB             = Value("IB")
   val NOMENCLATURE   = Value("Nomenclature")
