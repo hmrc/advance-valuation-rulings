@@ -118,7 +118,6 @@ object CaseData {
       createAddress,
       createContact,
       None,
-      offline = false,
       "Laptop",
       "Personal Computer",
       sampleToBeProvided = false,
@@ -129,7 +128,6 @@ object CaseData {
   def createMiscApplication: MiscApplication = {
     MiscApplication(
       createContact,
-      offline = false,
       "name",
       Some("contactName"),
       MiscCaseType.HARMONISED,
