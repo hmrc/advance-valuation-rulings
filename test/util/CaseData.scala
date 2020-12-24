@@ -107,7 +107,9 @@ object CaseData {
         Some("email"),
         Some("phone"),
         Some(Address("Street Name", "Town", Some("County"), Some("P0ST C05E"))))
-      )
+      ),
+      agentName = Some("agent"),
+      port = Some("port")
     )
   }
 
