@@ -198,6 +198,9 @@ class CaseSpec extends BaseFeatureSpec {
           Some("phone"),
           Some(Address("Street Name", "Town", Some("County"), Some("P0ST C05E")))
         )
+
+      responseCase.application.asLiabilityOrder.agentName shouldBe Some("agent")
+      responseCase.application.asLiabilityOrder.port shouldBe Some("port")
     }
 
     scenario("Create a new Correspondence case") {
