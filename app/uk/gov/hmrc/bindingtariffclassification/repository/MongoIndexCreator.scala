@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,24 +21,18 @@ import reactivemongo.api.indexes.IndexType.Ascending
 
 trait MongoIndexCreator {
 
-  protected def createSingleFieldAscendingIndex(indexFieldKey: String, isUnique: Boolean): Index = {
-
+  protected def createSingleFieldAscendingIndex(indexFieldKey: String, isUnique: Boolean): Index =
     createCompoundIndex(
       fieldNames = Seq(indexFieldKey),
-      isUnique = isUnique
+      isUnique   = isUnique
     )
-  }
 
-  protected def createCompoundIndex(fieldNames: Seq[String],
-                                    isUnique: Boolean,
-                                    isBackground: Boolean = false): Index = {
-
+  protected def createCompoundIndex(fieldNames: Seq[String], isUnique: Boolean, isBackground: Boolean = false): Index =
     Index(
-      key = fieldNames.map(_ -> Ascending),
-      name = Some(s"${fieldNames.mkString("-")}_Index"),
-      unique = isUnique,
+      key        = fieldNames.map(_ -> Ascending),
+      name       = Some(s"${fieldNames.mkString("-")}_Index"),
+      unique     = isUnique,
       background = isBackground
     )
-  }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,13 @@ import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.crypto.{AesCrypto, CompositeSymmetricCrypto, Decrypter}
 
 @Singleton
-class LocalCrypto @Inject()(appConfig: AppConfig) extends CompositeSymmetricCrypto {
+class LocalCrypto @Inject() (appConfig: AppConfig) extends CompositeSymmetricCrypto {
 
   override protected lazy val currentCrypto: AesCrypto = new AesCrypto {
     override protected lazy val encryptionKey: String = {
       appConfig.mongoEncryption.key match {
         case Some(k) if appConfig.mongoEncryption.enabled => k
-        case _ => throw new RuntimeException("Missing config: 'mongodb.encryption.enabled'")
+        case _                                            => throw new RuntimeException("Missing config: 'mongodb.encryption.enabled'")
       }
     }
   }

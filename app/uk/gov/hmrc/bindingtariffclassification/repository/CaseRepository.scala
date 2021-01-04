@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ trait CaseRepository {
 }
 
 @Singleton
-class EncryptedCaseMongoRepository @Inject()(repository: CaseMongoRepository, crypto: Crypto) extends CaseRepository {
+class EncryptedCaseMongoRepository @Inject() (repository: CaseMongoRepository, crypto: Crypto) extends CaseRepository {
 
   private def encrypt: Case => Case = crypto.encrypt
 
@@ -59,13 +59,14 @@ class EncryptedCaseMongoRepository @Inject()(repository: CaseMongoRepository, cr
 
   override def insert(c: Case): Future[Case] = repository.insert(encrypt(c)).map(decrypt)
 
-  override def update(c: Case, upsert: Boolean): Future[Option[Case]] = repository.update(encrypt(c), upsert).map(_.map(decrypt))
+  override def update(c: Case, upsert: Boolean): Future[Option[Case]] =
+    repository.update(encrypt(c), upsert).map(_.map(decrypt))
 
-  override def getByReference(reference: String): Future[Option[Case]] = repository.getByReference(reference).map(_.map(decrypt))
+  override def getByReference(reference: String): Future[Option[Case]] =
+    repository.getByReference(reference).map(_.map(decrypt))
 
-  override def get(search: CaseSearch, pagination: Pagination): Future[Paged[Case]] = {
+  override def get(search: CaseSearch, pagination: Pagination): Future[Paged[Case]] =
     repository.get(enryptSearch(search), pagination).map(_.map(decrypt))
-  }
 
   override def deleteAll(): Future[Unit] = repository.deleteAll()
 
@@ -80,11 +81,14 @@ class EncryptedCaseMongoRepository @Inject()(repository: CaseMongoRepository, cr
 }
 
 @Singleton
-class CaseMongoRepository @Inject()(mongoDbProvider: MongoDbProvider, mapper: SearchMapper)
-  extends ReactiveRepository[Case, BSONObjectID](
-    collectionName = "cases",
-    mongo = mongoDbProvider.mongo,
-    domainFormat = MongoFormatters.formatCase) with CaseRepository with MongoCrudHelper[Case] {
+class CaseMongoRepository @Inject() (mongoDbProvider: MongoDbProvider, mapper: SearchMapper)
+    extends ReactiveRepository[Case, BSONObjectID](
+      collectionName = "cases",
+      mongo          = mongoDbProvider.mongo,
+      domainFormat   = MongoFormatters.formatCase
+    )
+    with CaseRepository
+    with MongoCrudHelper[Case] {
 
   override val mongoCollection: JSONCollection = collection
 
@@ -101,85 +105,81 @@ class CaseMongoRepository @Inject()(mongoDbProvider: MongoDbProvider, mapper: Se
     "keywords"
   )
 
-  override def indexes: Seq[Index] = {
+  override def indexes: Seq[Index] =
     // TODO: We need to add relevant indexes for each possible search
     // TODO: We should add compound indexes for searches involving multiple fields
-    uniqueSingleFieldIndexes.map(createSingleFieldAscendingIndex(_, isUnique = true)) ++
+    uniqueSingleFieldIndexes.map(createSingleFieldAscendingIndex(_, isUnique      = true)) ++
       nonUniqueSingleFieldIndexes.map(createSingleFieldAscendingIndex(_, isUnique = false))
-  }
 
-  override def insert(c: Case): Future[Case] = {
+  override def insert(c: Case): Future[Case] =
     createOne(c)
-  }
 
-  override def update(c: Case, upsert: Boolean): Future[Option[Case]] = {
+  override def update(c: Case, upsert: Boolean): Future[Option[Case]] =
     updateDocument(
       selector = mapper.reference(c.reference),
-      update = c,
-      upsert = upsert
+      update   = c,
+      upsert   = upsert
     )
-  }
 
-  override def getByReference(reference: String): Future[Option[Case]] = {
+  override def getByReference(reference: String): Future[Option[Case]] =
     getOne(selector = mapper.reference(reference))
-  }
 
-  override def get(search: CaseSearch, pagination: Pagination): Future[Paged[Case]] = {
+  override def get(search: CaseSearch, pagination: Pagination): Future[Paged[Case]] =
     getMany(
       filterBy = mapper.filterBy(search.filter),
-      sortBy = search.sort.map(mapper.sortBy).getOrElse(Json.obj()),
+      sortBy   = search.sort.map(mapper.sortBy).getOrElse(Json.obj()),
       pagination
     )
-  }
 
-  override def deleteAll(): Future[Unit] = {
+  override def deleteAll(): Future[Unit] =
     removeAll().map(_ => ())
-  }
 
-  override def delete(reference: String): Future[Unit] = {
+  override def delete(reference: String): Future[Unit] =
     remove("reference" -> reference).map(_ => ())
-  }
 
   override def generateReport(report: CaseReport): Future[Seq[ReportResult]] = {
     import MongoFormatters.formatInstant
     import collection.BatchCommands.AggregationFramework._
 
     def groupField: CaseReportGroup => (String, String) = {
-      case CaseReportGroup.QUEUE => (CaseReportGroup.QUEUE.toString, "queueId")
+      case CaseReportGroup.QUEUE            => (CaseReportGroup.QUEUE.toString, "queueId")
       case CaseReportGroup.APPLICATION_TYPE => (CaseReportGroup.APPLICATION_TYPE.toString, "application.type")
     }
 
-
     val reportField = report.field match {
-      case CaseReportField.ACTIVE_DAYS_ELAPSED => "daysElapsed"
+      case CaseReportField.ACTIVE_DAYS_ELAPSED   => "daysElapsed"
       case CaseReportField.REFERRED_DAYS_ELAPSED => "referredDaysElapsed"
     }
 
-
     val groupFields: Seq[(String, String)] = report.group.map(groupField).toSeq
-    val group: PipelineOperator = GroupMulti(groupFields: _*)("field" -> PushField(reportField))
-    
+    val group: PipelineOperator            = GroupMulti(groupFields: _*)("field" -> PushField(reportField))
 
     val filters = Seq[JsObject]()
       .++(report.filter.decisionStartDate.map { range =>
-        Json.obj("decision.effectiveStartDate" -> Json.obj(
-          "$lte" -> toJson(range.max),
-          "$gte" -> toJson(range.min)
-        ))
+        Json.obj(
+          "decision.effectiveStartDate" -> Json.obj(
+            "$lte" -> toJson(range.max),
+            "$gte" -> toJson(range.min)
+          )
+        )
       })
       .++(report.filter.status.map { statuses =>
-        Json.obj("status" -> Json.obj(
-          "$in" -> JsArray(statuses.map(_.toString).map(JsString).toSeq)
-        ))
+        Json.obj(
+          "status" -> Json.obj(
+            "$in" -> JsArray(statuses.map(_.toString).map(JsString).toSeq)
+          )
+        )
       })
       .++(report.filter.applicationType.map { types =>
-        Json.obj("application.type" -> Json.obj(
-          "$in" -> JsArray(types.map(_.toString).map(JsString).toSeq)
-        ))
+        Json.obj(
+          "application.type" -> Json.obj(
+            "$in" -> JsArray(types.map(_.toString).map(JsString).toSeq)
+          )
+        )
       })
       .++(report.filter.assigneeId.map {
-        case "none" =>  Json.obj("assignee.id" -> JsNull)
-        case a =>   Json.obj("assignee.id" -> a)
+        case "none" => Json.obj("assignee.id" -> JsNull)
+        case a      => Json.obj("assignee.id" -> a)
       })
       .++(report.filter.reference.map { references =>
         Json.obj("reference" -> Json.obj("$in" -> JsArray(references.map(JsString).toSeq)))
@@ -194,16 +194,17 @@ class CaseMongoRepository @Inject()(mongoDbProvider: MongoDbProvider, mapper: Se
         (Match(Json.obj("$and" -> JsArray(s))), List(group))
     }
 
-    collection.aggregateWith[JsObject]()(_ => aggregation)
+    collection
+      .aggregateWith[JsObject]()(_ => aggregation)
       .collect[List](Int.MaxValue, reactivemongo.api.Cursor.FailOnError())
       .map {
         _.map { obj: JsObject =>
           val id: JsObject = obj.value("_id").as[JsObject]
           val fields: Map[CaseReportGroup, Option[String]] = groupFields.map {
             case (field, _) if id.value.contains(field) =>
-              CaseReportGroup.withName(field) -> Option(
-                id.value(field)).filter(_.isInstanceOf[JsString]).map(_.as[JsString].value
-              )
+              CaseReportGroup.withName(field) -> Option(id.value(field))
+                .filter(_.isInstanceOf[JsString])
+                .map(_.as[JsString].value)
             case (field, _) =>
               CaseReportGroup.withName(field) -> None
           }.toMap

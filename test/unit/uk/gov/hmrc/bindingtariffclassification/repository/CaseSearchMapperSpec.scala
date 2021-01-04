@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,41 +35,49 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
     "filter by all fields " in {
 
       val filter = CaseFilter(
-        reference = Some(Set("id1", "id2")),
+        reference       = Some(Set("id1", "id2")),
         applicationType = Some(Set(ApplicationType.BTI, ApplicationType.LIABILITY_ORDER)),
-        queueId = Some(Set("valid_queue")),
-        eori = Some("eori-number"),
-        assigneeId = Some("valid_assignee"),
-        statuses = Some(Set(PseudoCaseStatus.NEW, PseudoCaseStatus.OPEN)),
-        traderName = Some("trader_name"),
-        minDecisionEnd = Some(Instant.EPOCH),
-        commodityCode = Some(12345.toString),
+        queueId         = Some(Set("valid_queue")),
+        eori            = Some("eori-number"),
+        assigneeId      = Some("valid_assignee"),
+        statuses        = Some(Set(PseudoCaseStatus.NEW, PseudoCaseStatus.OPEN)),
+        traderName      = Some("trader_name"),
+        minDecisionEnd  = Some(Instant.EPOCH),
+        commodityCode   = Some(12345.toString),
         decisionDetails = Some("strawberry"),
-        keywords = Some(Set("MTB", "BIKE"))
+        keywords        = Some(Set("MTB", "BIKE"))
       )
 
       jsonMapper.filterBy(filter) shouldBe Json.obj(
-        "reference" -> Json.obj("$in" -> Json.arr("id1", "id2")),
-        "application.type" -> Json.obj("$in" -> Json.arr("BTI", "LIABILITY_ORDER")),
-        "queueId" -> Json.obj("$in" -> Json.arr("valid_queue")),
-        "assignee.id" -> "valid_assignee",
-        "status" -> Json.obj("$in" -> Json.arr("NEW", "OPEN")),
-        "decision.effectiveEndDate" -> Json.obj("$gte" -> Json.obj("$date" -> 0)),
+        "reference"                     -> Json.obj("$in" -> Json.arr("id1", "id2")),
+        "application.type"              -> Json.obj("$in" -> Json.arr("BTI", "LIABILITY_ORDER")),
+        "queueId"                       -> Json.obj("$in" -> Json.arr("valid_queue")),
+        "assignee.id"                   -> "valid_assignee",
+        "status"                        -> Json.obj("$in" -> Json.arr("NEW", "OPEN")),
+        "decision.effectiveEndDate"     -> Json.obj("$gte" -> Json.obj("$date" -> 0)),
         "decision.bindingCommodityCode" -> Json.obj("$regex" -> "^12345\\d*"),
         "$and" -> Json.arr(
-          Json.obj("$or" -> Json.arr(
-            Json.obj("application.holder.businessName" -> Json.obj("$regex" -> ".*trader_name.*", "$options" -> "i")),
-            Json.obj("application.traderName" -> Json.obj("$regex" -> ".*trader_name.*", "$options" -> "i"))
-          )),
-          Json.obj("$or" -> Json.arr(
-            Json.obj("decision.goodsDescription" -> Json.obj("$regex" -> ".*strawberry.*", "$options" -> "i")),
-            Json.obj("decision.methodCommercialDenomination" -> Json.obj("$regex" -> ".*strawberry.*", "$options" -> "i")),
-            Json.obj("decision.justification" -> Json.obj("$regex" -> ".*strawberry.*", "$options" -> "i"))
-          )),
-          Json.obj("$or" -> Json.arr(
-            Json.obj("application.holder.eori" -> JsString("eori-number")),
-            Json.obj("application.agent.eoriDetails.eori" -> JsString("eori-number"))
-          ))
+          Json.obj(
+            "$or" -> Json.arr(
+              Json.obj("application.holder.businessName" -> Json.obj("$regex" -> ".*trader_name.*", "$options" -> "i")),
+              Json.obj("application.traderName"          -> Json.obj("$regex" -> ".*trader_name.*", "$options" -> "i"))
+            )
+          ),
+          Json.obj(
+            "$or" -> Json.arr(
+              Json.obj("decision.goodsDescription" -> Json.obj("$regex" -> ".*strawberry.*", "$options" -> "i")),
+              Json.obj(
+                "decision.methodCommercialDenomination" -> Json.obj("$regex" -> ".*strawberry.*", "$options" -> "i")
+              ),
+              Json.obj("decision.justification" -> Json.obj("$regex" -> ".*strawberry.*", "$options" -> "i"))
+            )
+          ),
+          Json.obj(
+            "$or" -> Json.arr(
+              Json.obj("application.holder.eori"            -> JsString("eori-number")),
+              Json.obj("application.agent.eoriDetails.eori" -> JsString("eori-number"))
+            )
+          )
         ),
         "keywords" -> Json.obj("$all" -> Json.arr("MTB", "BIKE"))
       )
@@ -82,21 +90,22 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
     }
 
     "filter by 'application type'" in {
-      jsonMapper.filterBy(CaseFilter(applicationType = Some(Set(ApplicationType.BTI, ApplicationType.LIABILITY_ORDER)))) shouldBe Json.obj(
-        "application.type" -> Json.obj("$in" -> Json.arr("BTI", "LIABILITY_ORDER"))
-      )
+      jsonMapper.filterBy(CaseFilter(applicationType = Some(Set(ApplicationType.BTI, ApplicationType.LIABILITY_ORDER)))) shouldBe Json
+        .obj(
+          "application.type" -> Json.obj("$in" -> Json.arr("BTI", "LIABILITY_ORDER"))
+        )
     }
 
     "filter by 'queue id'" in {
       jsonMapper.filterBy(CaseFilter(queueId = Some(Set("valid_queue")))) shouldBe Json.obj(
-        "queueId" ->  Json.obj("$in" -> Json.arr("valid_queue"))
+        "queueId" -> Json.obj("$in" -> Json.arr("valid_queue"))
       )
     }
 
     "filter by 'eori'" in {
       jsonMapper.filterBy(CaseFilter(eori = Some("eori-number"))) shouldBe Json.obj(
         "$or" -> Json.arr(
-          Json.obj("application.holder.eori" -> JsString("eori-number")),
+          Json.obj("application.holder.eori"            -> JsString("eori-number")),
           Json.obj("application.agent.eoriDetails.eori" -> JsString("eori-number"))
         )
       )
@@ -109,45 +118,50 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
     }
 
     "filter by 'status' - with concrete statuses only" in {
-      jsonMapper.filterBy(CaseFilter(statuses = Some(Set(PseudoCaseStatus.NEW, PseudoCaseStatus.OPEN)))) shouldBe Json.obj(
-        "status" -> Json.obj(
-          "$in" -> Json.arr("NEW", "OPEN")
+      jsonMapper.filterBy(CaseFilter(statuses = Some(Set(PseudoCaseStatus.NEW, PseudoCaseStatus.OPEN)))) shouldBe Json
+        .obj(
+          "status" -> Json.obj(
+            "$in" -> Json.arr("NEW", "OPEN")
+          )
         )
-      )
     }
 
     "filter by 'status' - with pseudo statuses only" in {
       given(config.clock) willReturn Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)
 
-      jsonMapper.filterBy(CaseFilter(statuses = Some(Set(PseudoCaseStatus.LIVE, PseudoCaseStatus.EXPIRED)))) shouldBe Json.obj(
-        "$or" -> Json.arr(
-          Json.obj(
-            "status" -> "COMPLETED",
-            "decision.effectiveEndDate" -> Json.obj("$gte" -> Json.obj("$date" -> 0))
-          ),
-          Json.obj(
-            "status" -> "COMPLETED",
-            "decision.effectiveEndDate" -> Json.obj("$lte" -> Json.obj("$date" -> 0))
+      jsonMapper.filterBy(CaseFilter(statuses = Some(Set(PseudoCaseStatus.LIVE, PseudoCaseStatus.EXPIRED)))) shouldBe Json
+        .obj(
+          "$or" -> Json.arr(
+            Json.obj(
+              "status"                    -> "COMPLETED",
+              "decision.effectiveEndDate" -> Json.obj("$gte" -> Json.obj("$date" -> 0))
+            ),
+            Json.obj(
+              "status"                    -> "COMPLETED",
+              "decision.effectiveEndDate" -> Json.obj("$lte" -> Json.obj("$date" -> 0))
+            )
           )
         )
-      )
     }
 
     "filter by 'status' - with status type mix" in {
       given(config.clock) willReturn Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)
 
-      val filter = jsonMapper.filterBy(CaseFilter(
-        statuses = Some(Set(PseudoCaseStatus.NEW, PseudoCaseStatus.OPEN, PseudoCaseStatus.LIVE, PseudoCaseStatus.EXPIRED)))
+      val filter = jsonMapper.filterBy(
+        CaseFilter(
+          statuses =
+            Some(Set(PseudoCaseStatus.NEW, PseudoCaseStatus.OPEN, PseudoCaseStatus.LIVE, PseudoCaseStatus.EXPIRED))
+        )
       )
 
       filter shouldBe Json.obj(
         "$or" -> Json.arr(
           Json.obj(
-            "status" -> "COMPLETED",
+            "status"                    -> "COMPLETED",
             "decision.effectiveEndDate" -> Json.obj("$gte" -> Json.obj("$date" -> 0))
           ),
           Json.obj(
-            "status" -> "COMPLETED",
+            "status"                    -> "COMPLETED",
             "decision.effectiveEndDate" -> Json.obj("$lte" -> Json.obj("$date" -> 0))
           ),
           Json.obj(
@@ -172,7 +186,7 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
         "$or" ->
           Json.arr(
             Json.obj("application.holder.businessName" -> Json.obj("$regex" -> ".*trader_name.*", "$options" -> "i")),
-            Json.obj("application.traderName" -> Json.obj("$regex" -> ".*trader_name.*", "$options" -> "i"))
+            Json.obj("application.traderName"          -> Json.obj("$regex" -> ".*trader_name.*", "$options" -> "i"))
           )
       )
     }
@@ -194,7 +208,9 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
         "$or" ->
           Json.arr(
             Json.obj("decision.goodsDescription" -> Json.obj("$regex" -> ".*strawberry.*", "$options" -> "i")),
-            Json.obj("decision.methodCommercialDenomination" -> Json.obj("$regex" -> ".*strawberry.*", "$options" -> "i")),
+            Json.obj(
+              "decision.methodCommercialDenomination" -> Json.obj("$regex" -> ".*strawberry.*", "$options" -> "i")
+            ),
             Json.obj("decision.justification" -> Json.obj("$regex" -> ".*strawberry.*", "$options" -> "i"))
           )
       )
@@ -204,7 +220,7 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
       val filter = CaseFilter(queueId = Some(Set("none")), assigneeId = Some("none"))
 
       jsonMapper.filterBy(filter) shouldBe Json.obj(
-        "queueId" -> Json.obj("$in" -> JsArray(Seq(JsNull))),
+        "queueId"     -> Json.obj("$in" -> JsArray(Seq(JsNull))),
         "assignee.id" -> JsNull
       )
     }
@@ -214,7 +230,7 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
       val filter = CaseFilter(queueId = Some(Set("some")), assigneeId = Some("some"))
 
       jsonMapper.filterBy(filter) shouldBe Json.obj(
-        "queueId" -> Json.obj("$ne" -> JsNull),
+        "queueId"     -> Json.obj("$ne" -> JsNull),
         "assignee.id" -> Json.obj("$ne" -> JsNull)
       )
     }
@@ -231,7 +247,7 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
       val filter = CaseFilter(queueId = Some(Set("none", "5")), assigneeId = Some("none"))
 
       jsonMapper.filterBy(filter) shouldBe Json.obj(
-        "queueId" -> Json.obj("$in" -> JsArray(Seq(JsNull, JsString("5")))),
+        "queueId"     -> Json.obj("$in" -> JsArray(Seq(JsNull, JsString("5")))),
         "assignee.id" -> JsNull
       )
     }
@@ -240,8 +256,8 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
       val filter = CaseFilter(queueId = Some(Set("some", "5")), assigneeId = Some("none"))
 
       jsonMapper.filterBy(filter) shouldBe Json.obj(
-        "queueId" -> Json.obj("$ne" -> JsNull),
-        "assignee.id" ->  JsNull
+        "queueId"     -> Json.obj("$ne" -> JsNull),
+        "assignee.id" -> JsNull
       )
     }
 
@@ -255,7 +271,7 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
     "sort by passed field and default direction to descending(-1)" in {
 
       val sort = CaseSort(
-        field = Set(CaseSortField.COMMODITY_CODE),
+        field     = Set(CaseSortField.COMMODITY_CODE),
         direction = SortDirection.DESCENDING
       )
 
@@ -265,7 +281,7 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
     "sort by passed field and set direction ascending(1)" in {
 
       val sort = CaseSort(
-        field = Set(CaseSortField.DAYS_ELAPSED),
+        field     = Set(CaseSortField.DAYS_ELAPSED),
         direction = SortDirection.ASCENDING
       )
 
@@ -275,18 +291,17 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
     "sort by decision start date and set direction descending" in {
 
       val sort = CaseSort(
-        field = Set(CaseSortField.DECISION_START_DATE),
+        field     = Set(CaseSortField.DECISION_START_DATE),
         direction = SortDirection.ASCENDING
       )
 
       jsonMapper.sortBy(sort) shouldBe Json.obj("decision.effectiveStartDate" -> 1)
     }
 
-
     "sort by created date and set direction descending" in {
 
       val sort = CaseSort(
-        field = Set(CaseSortField.CREATED_DATE),
+        field     = Set(CaseSortField.CREATED_DATE),
         direction = SortDirection.DESCENDING
       )
 
@@ -296,7 +311,7 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
     "sort by reference " in {
 
       val sort = CaseSort(
-        field = Set(CaseSortField.REFERENCE),
+        field     = Set(CaseSortField.REFERENCE),
         direction = SortDirection.DESCENDING
       )
 
@@ -306,7 +321,7 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
     "sort by goods name and set direction descending" in {
 
       val sort = CaseSort(
-        field = Set(CaseSortField.GOODS_NAME),
+        field     = Set(CaseSortField.GOODS_NAME),
         direction = SortDirection.ASCENDING
       )
 
@@ -316,7 +331,7 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
     "sort by case status and set direction ascending" in {
 
       val sort = CaseSort(
-        field = Set(CaseSortField.STATUS),
+        field     = Set(CaseSortField.STATUS),
         direction = SortDirection.ASCENDING
       )
 
@@ -326,7 +341,7 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
     "sort by case status and set direction descending" in {
 
       val sort = CaseSort(
-        field = Set(CaseSortField.STATUS),
+        field     = Set(CaseSortField.STATUS),
         direction = SortDirection.DESCENDING
       )
 
@@ -348,7 +363,7 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
 
     "convert to Json" in {
 
-      val fieldName = "employee"
+      val fieldName  = "employee"
       val fieldValue = "Alex"
 
       jsonMapper.updateField(fieldName, fieldValue) shouldBe Json.obj(

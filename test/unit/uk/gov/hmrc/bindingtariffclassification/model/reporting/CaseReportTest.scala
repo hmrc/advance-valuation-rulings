@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,18 +28,22 @@ class CaseReportTest extends UnitSpec {
 
   private val report = CaseReport(
     filter = CaseReportFilter(
-      decisionStartDate = Some(InstantRange(
-        min = Instant.EPOCH,
-        max = Instant.EPOCH.plusSeconds(1)
-      )),
-      referralDate = Some(InstantRange(
-        min = Instant.EPOCH,
-        max = Instant.EPOCH.plusSeconds(1)
-      )),
-      reference = Some(Set("reference1", "reference2")),
-      status = Some(Set(CaseStatus.OPEN, CaseStatus.NEW)),
+      decisionStartDate = Some(
+        InstantRange(
+          min = Instant.EPOCH,
+          max = Instant.EPOCH.plusSeconds(1)
+        )
+      ),
+      referralDate = Some(
+        InstantRange(
+          min = Instant.EPOCH,
+          max = Instant.EPOCH.plusSeconds(1)
+        )
+      ),
+      reference       = Some(Set("reference1", "reference2")),
+      status          = Some(Set(CaseStatus.OPEN, CaseStatus.NEW)),
       applicationType = Some(Set(ApplicationType.BTI, ApplicationType.LIABILITY_ORDER)),
-      assigneeId = Some("assignee_123")
+      assigneeId      = Some("assignee_123")
     ),
     field = CaseReportField.ACTIVE_DAYS_ELAPSED,
     group = Set(CaseReportGroup.QUEUE)
@@ -48,14 +52,14 @@ class CaseReportTest extends UnitSpec {
   private val params: Map[String, Seq[String]] = Map(
     "min_decision_start" -> Seq("1970-01-01T00:00:00Z"),
     "max_decision_start" -> Seq("1970-01-01T00:00:01Z"),
-    "min_referral_date" -> Seq("1970-01-01T00:00:00Z"),
-    "max_referral_date" -> Seq("1970-01-01T00:00:01Z"),
-    "report_field" -> Seq("active-days-elapsed"),
-    "report_group" -> Seq("queue-id"),
-    "reference" -> Seq("reference1,reference2"),
-    "status" -> Seq("OPEN", "NEW"),
-    "application_type" -> Seq("BTI", "LIABILITY_ORDER"),
-    "assignee_id" -> Seq("assignee_123")
+    "min_referral_date"  -> Seq("1970-01-01T00:00:00Z"),
+    "max_referral_date"  -> Seq("1970-01-01T00:00:01Z"),
+    "report_field"       -> Seq("active-days-elapsed"),
+    "report_group"       -> Seq("queue-id"),
+    "reference"          -> Seq("reference1,reference2"),
+    "status"             -> Seq("OPEN", "NEW"),
+    "application_type"   -> Seq("BTI", "LIABILITY_ORDER"),
+    "assignee_id"        -> Seq("assignee_123")
   )
 
   /**

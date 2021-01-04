@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,13 +26,13 @@ import uk.gov.hmrc.bindingtariffclassification.service.ReportService
 import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
-class ReportingController @Inject()(
-                                     reportService: ReportService,
-                                     mcc: MessagesControllerComponents
-                                   ) extends CommonController(mcc) {
+class ReportingController @Inject() (
+  reportService: ReportService,
+  mcc: MessagesControllerComponents
+) extends CommonController(mcc) {
 
   def report(report: CaseReport): Action[AnyContent] = Action.async {
-    reportService.generate(report) map { result => Ok(Json.toJson(result))}
+    reportService.generate(report) map { result => Ok(Json.toJson(result)) }
   }
 
 }

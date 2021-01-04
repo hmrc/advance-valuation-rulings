@@ -30,13 +30,13 @@ import util.EventData._
 
 class EventSpec extends BaseFeatureSpec {
 
-  override lazy val port = 14682
+  override lazy val port   = 14682
   protected val serviceUrl = s"http://localhost:$port"
 
   private val caseRef = UUID.randomUUID().toString
-  private val c1 = createCase(r = caseRef)
-  private val e1 = createCaseStatusChangeEvent(caseReference = caseRef)
-  private val e2 = createNoteEvent(caseReference = caseRef)
+  private val c1      = createCase(r = caseRef)
+  private val e1      = createCaseStatusChangeEvent(caseReference = caseRef)
+  private val e2      = createNoteEvent(caseReference = caseRef)
 
   feature("Delete All") {
 
@@ -183,7 +183,8 @@ class EventSpec extends BaseFeatureSpec {
       val result = Http(s"$serviceUrl/cases/$caseRef/events")
         .header(apiTokenKey, appConfig.authorization)
         .header(CONTENT_TYPE, ContentTypes.JSON)
-        .postData(Json.toJson(payload).toString()).asString
+        .postData(Json.toJson(payload).toString())
+        .asString
 
       Then("The response code should be created")
       result.code shouldEqual Status.CREATED
@@ -206,7 +207,8 @@ class EventSpec extends BaseFeatureSpec {
       val result = Http(s"$serviceUrl/cases/$caseRef/events")
         .header(apiTokenKey, appConfig.authorization)
         .header(CONTENT_TYPE, ContentTypes.JSON)
-        .postData(Json.toJson(payload).toString()).asString
+        .postData(Json.toJson(payload).toString())
+        .asString
 
       Then("The response code should be CREATED")
       result.code shouldEqual Status.CREATED

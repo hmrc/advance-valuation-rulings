@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,11 +34,12 @@ import util.EventData._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class EventRepositorySpec extends BaseMongoIndexSpec
-  with BeforeAndAfterAll
-  with BeforeAndAfterEach
-  with MongoSpecSupport
-  with Eventually {
+class EventRepositorySpec
+    extends BaseMongoIndexSpec
+    with BeforeAndAfterAll
+    with BeforeAndAfterEach
+    with MongoSpecSupport
+    with Eventually {
   self =>
   private val mongoErrorCode = 11000
 
@@ -48,9 +49,8 @@ class EventRepositorySpec extends BaseMongoIndexSpec
 
   private val repository = createMongoRepo
 
-  private def createMongoRepo = {
+  private def createMongoRepo =
     new EventMongoRepository(mongoDbProvider)
-  }
 
   private val e: Event = createNoteEvent("")
 
@@ -65,9 +65,11 @@ class EventRepositorySpec extends BaseMongoIndexSpec
     await(repository.drop)
   }
 
-  private def collectionSize: Int = {
-    await(repository.collection.count(selector = None, limit = Some(0), skip = 0, hint = None, readConcern = ReadConcern.Local)).toInt
-  }
+  private def collectionSize: Int =
+    await(
+      repository.collection
+        .count(selector = None, limit = Some(0), skip = 0, hint = None, readConcern = ReadConcern.Local)
+    ).toInt
 
   "deleteAll()" should {
 
@@ -78,7 +80,7 @@ class EventRepositorySpec extends BaseMongoIndexSpec
       collectionSize shouldBe 1 + size
 
       await(repository.deleteAll()) shouldBe ((): Unit)
-      collectionSize shouldBe size
+      collectionSize                shouldBe size
     }
 
   }
@@ -95,7 +97,7 @@ class EventRepositorySpec extends BaseMongoIndexSpec
       collectionSize shouldBe 3
 
       await(repository.delete(EventSearch(caseReference = Some(Set("REF_1")))))
-      collectionSize shouldBe 1
+      collectionSize                                                 shouldBe 1
       await(repository.collection.find(selectorById(e1)).one[Event]) shouldBe None
       await(repository.collection.find(selectorById(e2)).one[Event]) shouldBe None
       await(repository.collection.find(selectorById(e3)).one[Event]) shouldBe Some(e3)
@@ -110,7 +112,7 @@ class EventRepositorySpec extends BaseMongoIndexSpec
       collectionSize shouldBe 2
 
       await(repository.delete(EventSearch(`type` = Some(Set(EventType.NOTE)))))
-      collectionSize shouldBe 1
+      collectionSize                                                 shouldBe 1
       await(repository.collection.find(selectorById(e2)).one[Event]) shouldBe Some(e2)
     }
   }
@@ -121,7 +123,7 @@ class EventRepositorySpec extends BaseMongoIndexSpec
       collectionSize shouldBe 0
 
       await(repository.insert(e)) shouldBe e
-      collectionSize shouldBe 1
+      collectionSize              shouldBe 1
 
       await(repository.collection.find(selectorById(e)).one[Event]) shouldBe Some(e)
     }
@@ -130,7 +132,7 @@ class EventRepositorySpec extends BaseMongoIndexSpec
       collectionSize shouldBe 0
 
       await(repository.insert(e)) shouldBe e
-      collectionSize shouldBe 1
+      collectionSize              shouldBe 1
 
       await(repository.collection.find(selectorById(e)).one[Event]) shouldBe Some(e)
 
@@ -141,7 +143,7 @@ class EventRepositorySpec extends BaseMongoIndexSpec
       }
       caught.code shouldBe Some(mongoErrorCode)
 
-      collectionSize shouldBe 1
+      collectionSize                                                      shouldBe 1
       await(repository.collection.find(selectorById(updated)).one[Event]) shouldBe Some(e)
     }
   }
@@ -168,29 +170,58 @@ class EventRepositorySpec extends BaseMongoIndexSpec
       await(repository.insert(e2))
       collectionSize shouldBe 2
 
-      await(repository.search(EventSearch(Some(Set("REF_1")), Some(Set(EventType.NOTE))), Pagination())) shouldBe Paged(Seq(e1), Pagination(), 1)
-      await(repository.search(EventSearch(Some(Set("REF_1")), Some(Set(EventType.CASE_STATUS_CHANGE))), Pagination())) shouldBe Paged(Seq(e2), Pagination(), 1)
+      await(repository.search(EventSearch(Some(Set("REF_1")), Some(Set(EventType.NOTE))), Pagination())) shouldBe Paged(
+        Seq(e1),
+        Pagination(),
+        1
+      )
+      await(repository.search(EventSearch(Some(Set("REF_1")), Some(Set(EventType.CASE_STATUS_CHANGE))), Pagination())) shouldBe Paged(
+        Seq(e2),
+        Pagination(),
+        1
+      )
     }
 
     "retrieve all expected events from the collection by timestamp" in {
-      val timestamp1 = LocalDate.of(2019,1,1).atStartOfDay(ZoneOffset.UTC).toInstant
-      val timestamp2 = LocalDate.of(2020,1,1).atStartOfDay(ZoneOffset.UTC).toInstant
-      val e1 = createNoteEvent("REF_1", date = timestamp1)
-      val e2 = createCaseStatusChangeEvent("REF_2", date = timestamp2)
+      val timestamp1 = LocalDate.of(2019, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant
+      val timestamp2 = LocalDate.of(2020, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant
+      val e1         = createNoteEvent("REF_1", date = timestamp1)
+      val e2         = createCaseStatusChangeEvent("REF_2", date = timestamp2)
 
       await(repository.insert(e1))
       await(repository.insert(e2))
       collectionSize shouldBe 2
 
-      await(repository.search(EventSearch(timestampMin = Some(timestamp1)), Pagination())) shouldBe Paged(Seq(e2, e1), Pagination(), 2)
-      await(repository.search(EventSearch(timestampMin = Some(timestamp2)), Pagination())) shouldBe Paged(Seq(e2), Pagination(), 1)
-      await(repository.search(EventSearch(timestampMax = Some(timestamp1)), Pagination())) shouldBe Paged(Seq(e1), Pagination(), 1)
-      await(repository.search(EventSearch(timestampMax = Some(timestamp2)), Pagination())) shouldBe Paged(Seq(e2, e1), Pagination(), 2)
-      await(repository.search(EventSearch(timestampMin = Some(timestamp1), timestampMax = Some(timestamp2)), Pagination())) shouldBe Paged(Seq(e2, e1), Pagination(), 2)
-      await(repository.search(EventSearch(timestampMin = Some(timestamp1), timestampMax = Some(timestamp1)), Pagination())) shouldBe Paged(Seq(e1), Pagination(), 1)
-      await(repository.search(EventSearch(timestampMin = Some(timestamp2), timestampMax = Some(timestamp2)), Pagination())) shouldBe Paged(Seq(e2), Pagination(), 1)
+      await(repository.search(EventSearch(timestampMin = Some(timestamp1)), Pagination())) shouldBe Paged(
+        Seq(e2, e1),
+        Pagination(),
+        2
+      )
+      await(repository.search(EventSearch(timestampMin = Some(timestamp2)), Pagination())) shouldBe Paged(
+        Seq(e2),
+        Pagination(),
+        1
+      )
+      await(repository.search(EventSearch(timestampMax = Some(timestamp1)), Pagination())) shouldBe Paged(
+        Seq(e1),
+        Pagination(),
+        1
+      )
+      await(repository.search(EventSearch(timestampMax = Some(timestamp2)), Pagination())) shouldBe Paged(
+        Seq(e2, e1),
+        Pagination(),
+        2
+      )
+      await(
+        repository.search(EventSearch(timestampMin = Some(timestamp1), timestampMax = Some(timestamp2)), Pagination())
+      ) shouldBe Paged(Seq(e2, e1), Pagination(), 2)
+      await(
+        repository.search(EventSearch(timestampMin = Some(timestamp1), timestampMax = Some(timestamp1)), Pagination())
+      ) shouldBe Paged(Seq(e1), Pagination(), 1)
+      await(
+        repository.search(EventSearch(timestampMin = Some(timestamp2), timestampMax = Some(timestamp2)), Pagination())
+      ) shouldBe Paged(Seq(e2), Pagination(), 1)
     }
-
 
     "retrieve all expected events from the collection sorted by default date descending" in {
 
@@ -232,8 +263,8 @@ class EventRepositorySpec extends BaseMongoIndexSpec
       await(repository.insert(createExtendedUseStatusChangeEvent("ref")))
       await(repository.insert(createNoteEvent("ref")))
       await(repository.search(EventSearch(), Pagination(pageSize = 1))).size shouldBe 1
-      await(repository.search(EventSearch(), Pagination(page = 2, pageSize = 1))).size shouldBe 1
-      await(repository.search(EventSearch(), Pagination(page = 3, pageSize = 1))).size shouldBe 0
+      await(repository.search(EventSearch(), Pagination(page     = 2, pageSize = 1))).size shouldBe 1
+      await(repository.search(EventSearch(), Pagination(page     = 3, pageSize = 1))).size shouldBe 0
     }
 
   }
@@ -242,7 +273,7 @@ class EventRepositorySpec extends BaseMongoIndexSpec
 
     "have a unique index based on the field 'id' " in {
       val eventId = RandomGenerator.randomUUID()
-      val e1 = e.copy(id = eventId)
+      val e1      = e.copy(id = eventId)
       await(repository.insert(e1))
       collectionSize shouldBe 1
 
@@ -261,10 +292,10 @@ class EventRepositorySpec extends BaseMongoIndexSpec
       import scala.concurrent.duration._
 
       val expectedIndexes = List(
-        Index(key = Seq("id" -> Ascending), name = Some("id_Index"), unique = true),
+        Index(key = Seq("id"            -> Ascending), name = Some("id_Index"), unique = true),
         Index(key = Seq("caseReference" -> Ascending), name = Some("caseReference_Index"), unique = false),
-        Index(key = Seq("type" -> Ascending), name = Some("type_Index"), unique = false),
-        Index(key = Seq("_id" -> Ascending), name = Some("_id_"))
+        Index(key = Seq("type"          -> Ascending), name = Some("type_Index"), unique = false),
+        Index(key = Seq("_id"           -> Ascending), name = Some("_id_"))
       )
 
       val repo = createMongoRepo
@@ -277,11 +308,9 @@ class EventRepositorySpec extends BaseMongoIndexSpec
       await(repo.drop)
     }
 
-
   }
 
-  private def selectorById(e: Event) = {
+  private def selectorById(e: Event) =
     BSONDocument("id" -> e.id)
-  }
 
 }

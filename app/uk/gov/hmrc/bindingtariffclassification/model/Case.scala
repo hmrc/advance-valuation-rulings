@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,21 +20,20 @@ import java.time.Instant
 
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
 
-case class Case
-(
+case class Case(
   reference: String,
   status: CaseStatus,
-  createdDate: Instant = Instant.now(),
-  daysElapsed: Long = 0,
-  referredDaysElapsed: Long = 0,
+  createdDate: Instant                 = Instant.now(),
+  daysElapsed: Long                    = 0,
+  referredDaysElapsed: Long            = 0,
   caseBoardsFileNumber: Option[String] = None,
-  assignee: Option[Operator] = None,
-  queueId: Option[String] = None,
+  assignee: Option[Operator]           = None,
+  queueId: Option[String]              = None,
   application: Application,
-  decision: Option[Decision] = None,
-  attachments: Seq[Attachment] = Seq.empty,
-  keywords: Set[String] = Set.empty,
-  sample: Sample = Sample(),
-  dateOfExtract: Option[Instant] = None,
+  decision: Option[Decision]        = None,
+  attachments: Seq[Attachment]      = Seq.empty,
+  keywords: Set[String]             = Set.empty,
+  sample: Sample                    = Sample(),
+  dateOfExtract: Option[Instant]    = None,
   migratedDaysElapsed: Option[Long] = None
 )

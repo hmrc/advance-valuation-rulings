@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,16 @@
 
 package uk.gov.hmrc.bindingtariffclassification.sort
 
-
 object CaseSortField extends Enumeration {
   type CaseSortField = Value
 
-  val REFERENCE = Value("reference")
-  val DAYS_ELAPSED = Value("days-elapsed")
-  val COMMODITY_CODE = Value("commodity-code")
-  val CREATED_DATE = Value("created-date")
+  val REFERENCE           = Value("reference")
+  val DAYS_ELAPSED        = Value("days-elapsed")
+  val COMMODITY_CODE      = Value("commodity-code")
+  val CREATED_DATE        = Value("created-date")
   val DECISION_START_DATE = Value("decision-start-date")
-  val APPLICATION_STATUS = Value("application.status")
-  val APPLICATION_TYPE = Value("application.type")
-  val GOODS_NAME = Value("application.goodName")
-  val STATUS = Value("status")
+  val APPLICATION_STATUS  = Value("application.status")
+  val APPLICATION_TYPE    = Value("application.type")
+  val GOODS_NAME          = Value("application.goodName")
+  val STATUS              = Value("status")
 }

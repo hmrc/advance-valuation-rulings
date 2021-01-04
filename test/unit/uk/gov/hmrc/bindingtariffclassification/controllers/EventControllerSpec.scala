@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ class EventControllerSpec extends BaseSpec with BeforeAndAfterEach {
   private val casesService = mock[CaseService]
 
   private val fakeRequest = FakeRequest()
-  private val appConfig = mock[AppConfig]
+  private val appConfig   = mock[AppConfig]
 
   private val controller = new EventController(appConfig, eventService, casesService, parser, mcc)
 
@@ -66,7 +66,8 @@ class EventControllerSpec extends BaseSpec with BeforeAndAfterEach {
       val result = await(controller.deleteAll()(req))
 
       status(result) shouldEqual FORBIDDEN
-      jsonBodyOf(result).toString() shouldEqual s"""{"code":"FORBIDDEN","message":"You are not allowed to call ${req.method} ${req.path}"}"""
+      jsonBodyOf(result)
+        .toString() shouldEqual s"""{"code":"FORBIDDEN","message":"You are not allowed to call ${req.method} ${req.path}"}"""
     }
 
     "return 204 if the test mode is enabled" in {
@@ -101,7 +102,8 @@ class EventControllerSpec extends BaseSpec with BeforeAndAfterEach {
       val result = await(controller.deleteCaseEvents("ref")(req))
 
       status(result) shouldEqual FORBIDDEN
-      jsonBodyOf(result).toString() shouldEqual s"""{"code":"FORBIDDEN","message":"You are not allowed to call ${req.method} ${req.path}"}"""
+      jsonBodyOf(result)
+        .toString() shouldEqual s"""{"code":"FORBIDDEN","message":"You are not allowed to call ${req.method} ${req.path}"}"""
     }
 
     "return 204 if the test mode is enabled" in {
@@ -130,7 +132,8 @@ class EventControllerSpec extends BaseSpec with BeforeAndAfterEach {
   "getByCaseReference()" should {
 
     "return 200 with the expected events" in {
-      when(eventService.search(EventSearch(Some(Set(caseReference))), Pagination())).thenReturn(successful(Paged(Seq(e1, e2))))
+      when(eventService.search(EventSearch(Some(Set(caseReference))), Pagination()))
+        .thenReturn(successful(Paged(Seq(e1, e2))))
 
       val result = await(controller.getByCaseReference(caseReference, Pagination())(fakeRequest))
 
@@ -139,7 +142,8 @@ class EventControllerSpec extends BaseSpec with BeforeAndAfterEach {
     }
 
     "return 200 with an empty sequence when there are no events for a specific case" in {
-      when(eventService.search(EventSearch(Some(Set(caseReference))), Pagination())).thenReturn(successful(Paged.empty[Event]))
+      when(eventService.search(EventSearch(Some(Set(caseReference))), Pagination()))
+        .thenReturn(successful(Paged.empty[Event]))
 
       val result = await(controller.getByCaseReference(caseReference, Pagination())(fakeRequest))
 
@@ -183,11 +187,17 @@ class EventControllerSpec extends BaseSpec with BeforeAndAfterEach {
   }
 
   "create" should {
-    val note = Note("note")
+    val note      = Note("note")
     val timestamp = Instant.EPOCH
-    val userId = "user-id"
-    val newEvent = NewEventRequest(note, Operator(userId, Some("user name")), timestamp)
-    val event = Event(id = "id", details = note, Operator(userId, Some("user name")), caseReference = caseReference, timestamp = timestamp)
+    val userId    = "user-id"
+    val newEvent  = NewEventRequest(note, Operator(userId, Some("user name")), timestamp)
+    val event = Event(
+      id      = "id",
+      details = note,
+      Operator(userId, Some("user name")),
+      caseReference = caseReference,
+      timestamp     = timestamp
+    )
 
     "return 201 Created" in {
       val aCase = mock[Case]
@@ -195,7 +205,7 @@ class EventControllerSpec extends BaseSpec with BeforeAndAfterEach {
       when(casesService.getByReference(caseReference)).thenReturn(successful(Some(aCase)))
       when(eventService.insert(ArgumentMatchers.any[Event])).thenReturn(successful(event))
 
-      val request = fakeRequest.withBody(toJson(newEvent))
+      val request        = fakeRequest.withBody(toJson(newEvent))
       val result: Result = await(controller.create(caseReference)(request))
 
       status(result) shouldEqual CREATED
@@ -205,7 +215,7 @@ class EventControllerSpec extends BaseSpec with BeforeAndAfterEach {
     "return 404 Not Found for invalid Reference" in {
       when(casesService.getByReference(caseReference)).thenReturn(successful(None))
 
-      val request = fakeRequest.withBody(toJson(newEvent))
+      val request        = fakeRequest.withBody(toJson(newEvent))
       val result: Result = await(controller.create(caseReference)(request))
 
       verifyNoMoreInteractions(eventService)

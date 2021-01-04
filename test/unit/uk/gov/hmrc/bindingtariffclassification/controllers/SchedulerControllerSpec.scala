@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,8 @@ class SchedulerControllerSpec extends BaseSpec {
       val result = await(controller.incrementActiveDaysElapsed()(fakeRequest))
 
       status(result) shouldEqual FORBIDDEN
-      jsonBodyOf(result).toString() shouldEqual s"""{"code":"FORBIDDEN","message":"You are not allowed to call ${fakeRequest.method} ${fakeRequest.path}"}"""
+      jsonBodyOf(result)
+        .toString() shouldEqual s"""{"code":"FORBIDDEN","message":"You are not allowed to call ${fakeRequest.method} ${fakeRequest.path}"}"""
     }
 
     "return 204 if the test mode is enabled and the scheduler executed successfully" in {
@@ -72,7 +73,8 @@ class SchedulerControllerSpec extends BaseSpec {
       val result = await(controller.incrementReferredDaysElapsed()(fakeRequest))
 
       status(result) shouldEqual FORBIDDEN
-      jsonBodyOf(result).toString() shouldEqual s"""{"code":"FORBIDDEN","message":"You are not allowed to call ${fakeRequest.method} ${fakeRequest.path}"}"""
+      jsonBodyOf(result)
+        .toString() shouldEqual s"""{"code":"FORBIDDEN","message":"You are not allowed to call ${fakeRequest.method} ${fakeRequest.path}"}"""
     }
 
     "return 204 if the test mode is enabled and the scheduler executed successfully" in {

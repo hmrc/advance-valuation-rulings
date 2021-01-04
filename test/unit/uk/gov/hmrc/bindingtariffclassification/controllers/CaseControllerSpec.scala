@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,18 +37,17 @@ import util.CaseData
 import scala.concurrent.Future
 import scala.concurrent.Future._
 
-class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach{
+class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
-  override protected def beforeEach() = {
+  override protected def beforeEach() =
     Mockito.reset(caseService)
-  }
 
   private val newCase: NewCaseRequest = CaseData.createNewCase()
-  private val c1: Case = CaseData.createCase()
-  private val c2: Case = CaseData.createCase()
+  private val c1: Case                = CaseData.createCase()
+  private val c2: Case                = CaseData.createCase()
 
   private val caseService = mock[CaseService]
-  private val appConfig = mock[AppConfig]
+  private val appConfig   = mock[AppConfig]
 
   private val fakeRequest = FakeRequest()
 
@@ -63,7 +62,8 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach{
       val result = await(controller.deleteAll()(req))
 
       status(result) shouldEqual FORBIDDEN
-      jsonBodyOf(result).toString() shouldEqual s"""{"code":"FORBIDDEN","message":"You are not allowed to call ${req.method} ${req.path}"}"""
+      jsonBodyOf(result)
+        .toString() shouldEqual s"""{"code":"FORBIDDEN","message":"You are not allowed to call ${req.method} ${req.path}"}"""
     }
 
     "return 204 if the test mode is enabled" in {
@@ -98,7 +98,8 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach{
       val result = await(controller.delete("ref")(req))
 
       status(result) shouldEqual FORBIDDEN
-      jsonBodyOf(result).toString() shouldEqual s"""{"code":"FORBIDDEN","message":"You are not allowed to call ${req.method} ${req.path}"}"""
+      jsonBodyOf(result)
+        .toString() shouldEqual s"""{"code":"FORBIDDEN","message":"You are not allowed to call ${req.method} ${req.path}"}"""
     }
 
     "return 204 if the test mode is enabled" in {
@@ -129,7 +130,7 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach{
     "return 201 when the case has been created successfully" in {
       when(caseService.nextCaseReference(ApplicationType.BTI)).thenReturn(successful("1"))
       when(caseService.insert(any[Case])).thenReturn(successful(c1))
-      when(caseService.addInitialSampleStatusIfExists(any[Case])).thenReturn(Future.successful(():Unit))
+      when(caseService.addInitialSampleStatusIfExists(any[Case])).thenReturn(Future.successful((): Unit))
 
       val result = await(controller.create()(fakeRequest.withBody(toJson(newCase))))
 
@@ -137,9 +138,8 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach{
       jsonBodyOf(result) shouldEqual toJson(c1)
     }
 
-
     "return 400 when the JSON request payload is not a Case" in {
-      val body = """{"a":"b"}"""
+      val body   = """{"a":"b"}"""
       val result = await(controller.create()(fakeRequest.withBody(toJson(body))))
 
       status(result) shouldEqual BAD_REQUEST
@@ -148,8 +148,8 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach{
     "return 500 when an error occurred" in {
       val error = new DatabaseException {
         override def originalDocument: Option[BSONDocument] = None
-        override def code: Option[Int] = Some(11000)
-        override def message: String = "duplicate value for db index"
+        override def code: Option[Int]                      = Some(11000)
+        override def message: String                        = "duplicate value for db index"
       }
 
       when(caseService.nextCaseReference(ApplicationType.BTI)).thenReturn(successful("1"))
@@ -178,7 +178,8 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach{
       when(appConfig.upsertAgents).thenReturn(Seq("agent"))
       when(caseService.update(c1, upsert = true)).thenReturn(successful(Some(c1)))
 
-      val result = await(controller.update(c1.reference)(fakeRequest.withBody(toJson(c1)).withHeaders("User-Agent" -> "agent")))
+      val result =
+        await(controller.update(c1.reference)(fakeRequest.withBody(toJson(c1)).withHeaders("User-Agent" -> "agent")))
 
       status(result) shouldEqual OK
       jsonBodyOf(result) shouldEqual toJson(c1)
@@ -191,9 +192,10 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach{
       when(caseService.update(caseWithNewFields, upsert = true)).thenReturn(successful(Some(c1)))
 
       val newCaseJson = toJson(caseWithNewFields)
-      val captor = ArgumentCaptor.forClass(classOf[Case])
+      val captor      = ArgumentCaptor.forClass(classOf[Case])
 
-      val result = await(controller.update(c1.reference)(fakeRequest.withBody(newCaseJson).withHeaders("User-Agent" -> "agent")))
+      val result =
+        await(controller.update(c1.reference)(fakeRequest.withBody(newCaseJson).withHeaders("User-Agent" -> "agent")))
 
       verify(caseService).update(captor.capture(), upsert = any[Boolean])
       val createdCase: Case = captor.getValue
@@ -203,7 +205,7 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach{
     }
 
     "return 400 when the JSON request payload is not a case" in {
-      val body = """{"a":"b"}"""
+      val body   = """{"a":"b"}"""
       val result = await(controller.update("")(fakeRequest.withBody(toJson(body))))
 
       status(result) shouldEqual BAD_REQUEST
@@ -213,7 +215,8 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach{
       val result = await(controller.update("ABC")(fakeRequest.withBody(toJson(c1))))
 
       status(result) shouldEqual BAD_REQUEST
-      jsonBodyOf(result).toString() shouldEqual """{"code":"INVALID_REQUEST_PAYLOAD","message":"Invalid case reference"}"""
+      jsonBodyOf(result)
+        .toString() shouldEqual """{"code":"INVALID_REQUEST_PAYLOAD","message":"Invalid case reference"}"""
     }
 
     "return 404 when there are no cases with the provided reference" in {
@@ -242,12 +245,17 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach{
 
     // TODO: test all possible combinations
 
-    val queueId = Some(Set("valid_queueId"))
+    val queueId    = Some(Set("valid_queueId"))
     val assigneeId = Some("valid_assigneeId")
 
     val search = CaseSearch(
-      filter = CaseFilter(queueId = queueId, assigneeId = assigneeId, statuses = Some(Set(PseudoCaseStatus.NEW, PseudoCaseStatus.OPEN))),
-      sort = Some(CaseSort(field = Set(CaseSortField.DAYS_ELAPSED), direction = SortDirection.DESCENDING)))
+      filter = CaseFilter(
+        queueId    = queueId,
+        assigneeId = assigneeId,
+        statuses   = Some(Set(PseudoCaseStatus.NEW, PseudoCaseStatus.OPEN))
+      ),
+      sort = Some(CaseSort(field = Set(CaseSortField.DAYS_ELAPSED), direction = SortDirection.DESCENDING))
+    )
 
     val pagination = Pagination()
 
@@ -271,7 +279,7 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach{
 
     "return 500 when an error occurred" in {
       val search = CaseSearch(CaseFilter(), None)
-      val error = new RuntimeException
+      val error  = new RuntimeException
 
       when(caseService.get(refEq(search), refEq(pagination))).thenReturn(failed(error))
 

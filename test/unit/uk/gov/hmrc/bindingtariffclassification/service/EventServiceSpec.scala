@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ class EventServiceSpec extends BaseSpec {
   final private val e2 = mock[Event]
 
   private val repository = mock[EventRepository]
-  private val service = new EventService(repository)
+  private val service    = new EventService(repository)
 
   final val emulatedFailure = new RuntimeException("Emulated failure.")
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,21 +24,21 @@ import uk.gov.hmrc.bindingtariffclassification.scheduler.{ActiveDaysElapsedJob, 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
-class SchedulerController @Inject()(
-                                     appConfig: AppConfig,
-                                     scheduler: Scheduler,
-                                     parser: BodyParsers.Default,
-                                     mcc: MessagesControllerComponents
-                                   ) extends CommonController(mcc) {
+class SchedulerController @Inject() (
+  appConfig: AppConfig,
+  scheduler: Scheduler,
+  parser: BodyParsers.Default,
+  mcc: MessagesControllerComponents
+) extends CommonController(mcc) {
 
   lazy private val testModeFilter = TestMode.actionFilter(appConfig, parser)
 
   def incrementActiveDaysElapsed(): Action[AnyContent] = testModeFilter.async {
-    scheduler.execute(classOf[ActiveDaysElapsedJob]) map (_ => NoContent ) recover recovery
+    scheduler.execute(classOf[ActiveDaysElapsedJob]) map (_ => NoContent) recover recovery
   }
 
   def incrementReferredDaysElapsed(): Action[AnyContent] = testModeFilter.async {
-    scheduler.execute(classOf[ReferredDaysElapsedJob]) map (_ => NoContent ) recover recovery
+    scheduler.execute(classOf[ReferredDaysElapsedJob]) map (_ => NoContent) recover recovery
   }
 
 }

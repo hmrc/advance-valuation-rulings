@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,16 +34,16 @@ class CaseRequestSpec extends UnitSpec with MockitoSugar {
     "Convert NewCaseRequest To A Case" in {
       when(application.asBTI).thenReturn(CaseData.createBasicBTIApplication)
       val c = NewCaseRequest(application, attachments).toCase("reference")
-      c.status shouldBe CaseStatus.NEW
-      c.createdDate should roughlyBe(Instant.now())
-      c.daysElapsed shouldBe 0
-      c.assignee shouldBe None
-      c.queueId shouldBe None
+      c.status               shouldBe CaseStatus.NEW
+      c.createdDate          should roughlyBe(Instant.now())
+      c.daysElapsed          shouldBe 0
+      c.assignee             shouldBe None
+      c.queueId              shouldBe None
       c.caseBoardsFileNumber shouldBe None
-      c.decision shouldBe None
-      c.application shouldBe application
-      c.attachments shouldBe attachments
-      c.sample.status shouldBe None
+      c.decision             shouldBe None
+      c.application          shouldBe application
+      c.attachments          shouldBe attachments
+      c.sample.status        shouldBe None
     }
 
     "Convert NewCaseRequest To A Case with sample provided" in {

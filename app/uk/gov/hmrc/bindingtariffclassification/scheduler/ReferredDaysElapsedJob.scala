@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,17 +36,19 @@ import scala.concurrent.Future._
 import scala.concurrent.duration._
 
 @Singleton
-class ReferredDaysElapsedJob @Inject()(appConfig: AppConfig,
-                                       caseService: CaseService,
-                                       eventService: EventService,
-                                       bankHolidaysConnector: BankHolidaysConnector) extends ScheduledJob {
+class ReferredDaysElapsedJob @Inject() (
+  appConfig: AppConfig,
+  caseService: CaseService,
+  eventService: EventService,
+  bankHolidaysConnector: BankHolidaysConnector
+) extends ScheduledJob {
 
-  private implicit val config: AppConfig = appConfig
+  private implicit val config: AppConfig      = appConfig
   private implicit val carrier: HeaderCarrier = HeaderCarrier()
-  private lazy val jobConfig = appConfig.referredDaysElapsed
+  private lazy val jobConfig                  = appConfig.referredDaysElapsed
   private lazy val criteria = CaseSearch(
     filter = CaseFilter(statuses = Some(Set(PseudoCaseStatus.REFERRED, PseudoCaseStatus.SUSPENDED))),
-    sort = Some(CaseSort(Set(CaseSortField.REFERENCE)))
+    sort   = Some(CaseSort(Set(CaseSortField.REFERENCE)))
   )
 
   override val name: String = "ReferredDaysElapsed"
@@ -55,31 +57,38 @@ class ReferredDaysElapsedJob @Inject()(appConfig: AppConfig,
 
   override def firstRunTime: LocalTime = jobConfig.elapseTime
 
-  override def execute(): Future[Unit] = for {
-    bankHolidays <- bankHolidaysConnector.get()
-    _ <- process(1)(bankHolidays)
-  } yield ()
+  override def execute(): Future[Unit] =
+    for {
+      bankHolidays <- bankHolidaysConnector.get()
+      _            <- process(1)(bankHolidays)
+    } yield ()
 
-  private def process(page: Int)(implicit bankHolidays: Set[LocalDate]): Future[Unit] = {
+  private def process(page: Int)(implicit bankHolidays: Set[LocalDate]): Future[Unit] =
     caseService.get(criteria, Pagination(page = page)) flatMap { pager =>
       sequence(pager.results.map(refreshReferredDaysElapsed)).map(_ => pager)
     } flatMap {
       case pager if pager.hasNextPage => process(page + 1)
-      case _ => successful(())
+      case _                          => successful(())
     }
-  }
 
   private def getReferralStartDate(c: Case): Future[Option[LocalDate]] =
     for {
       eventSearch <- eventService.search(
-        search = EventSearch(Some(Set(c.reference)), Some(Set(EventType.CASE_STATUS_CHANGE, EventType.CASE_REFERRAL))),
-        pagination = Pagination(1, Integer.MAX_VALUE))
+                      search = EventSearch(
+                        Some(Set(c.reference)),
+                        Some(Set(EventType.CASE_STATUS_CHANGE, EventType.CASE_REFERRAL))
+                      ),
+                      pagination = Pagination(1, Integer.MAX_VALUE)
+                    )
 
       startTimestamp = eventSearch.results
         .filter(_.details.isInstanceOf[FieldChange[CaseStatus]])
         .sortBy(_.timestamp)(Ordering[Instant].reverse)
         .headOption
-        .filter(event => Set(CaseStatus.REFERRED, CaseStatus.SUSPENDED).contains(event.details.asInstanceOf[FieldChange[CaseStatus]].to))
+        .filter(event =>
+          Set(CaseStatus.REFERRED, CaseStatus.SUSPENDED)
+            .contains(event.details.asInstanceOf[FieldChange[CaseStatus]].to)
+        )
         .map(_.timestamp)
 
     } yield startTimestamp.map(LocalDateTime.ofInstant(_, ZoneOffset.UTC).toLocalDate)
@@ -96,7 +105,7 @@ class ReferredDaysElapsedJob @Inject()(appConfig: AppConfig,
     referredDaysElapsed
   }
 
-  private def refreshReferredDaysElapsed(c: Case)(implicit bankHolidays: Set[LocalDate]): Future[Unit] = {
+  private def refreshReferredDaysElapsed(c: Case)(implicit bankHolidays: Set[LocalDate]): Future[Unit] =
     for {
       referralStartDate <- getReferralStartDate(c)
 
@@ -111,17 +120,17 @@ class ReferredDaysElapsedJob @Inject()(appConfig: AppConfig,
       updatedCase <- caseService.update(c.copy(referredDaysElapsed = referredDaysElapsed), upsert = false)
       _ = logResult(c, updatedCase)
     } yield ()
-  }
 
-  private def logResult(original: Case, updated: Option[Case]): Unit = {
+  private def logResult(original: Case, updated: Option[Case]): Unit =
     updated match {
       case Some(c) if original.referredDaysElapsed != c.referredDaysElapsed =>
-        Logger.info(s"$name: Updated Referred Days Elapsed of Case [${original.reference}] from [${original.referredDaysElapsed}] to [${c.referredDaysElapsed}]")
+        Logger.info(
+          s"$name: Updated Referred Days Elapsed of Case [${original.reference}] from [${original.referredDaysElapsed}] to [${c.referredDaysElapsed}]"
+        )
       case None =>
         Logger.warn(s"$name: Failed to update Referred Days Elapsed of Case [${original.reference}]")
       case _ =>
         ()
     }
-  }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,13 +41,13 @@ import scala.concurrent.duration._
 
 class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
 
-  private val caseService = mock[CaseService]
-  private val eventService = mock[EventService]
+  private val caseService           = mock[CaseService]
+  private val eventService          = mock[EventService]
   private val bankHolidaysConnector = mock[BankHolidaysConnector]
-  private val appConfig = mock[AppConfig]
+  private val appConfig             = mock[AppConfig]
   private val caseSearch = CaseSearch(
     filter = CaseFilter(statuses = Some(Set(PseudoCaseStatus.REFERRED, PseudoCaseStatus.SUSPENDED))),
-    sort = Some(CaseSort(Set(CaseSortField.REFERENCE)))
+    sort   = Some(CaseSort(Set(CaseSortField.REFERENCE)))
   )
 
   override def afterEach(): Unit = {
@@ -93,7 +93,12 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
 
       givenUpdatingACaseReturnsItself()
       givenAPageOfCases(1, 1, 1, aCaseWith(reference = "reference", createdDate = "2019-01-01T00:00:00"))
-      givenAPageOfEventsFor("reference", 1, 1, aStatusChangeWith(date = "2019-01-01T00:00:00", status = CaseStatus.REFERRED))
+      givenAPageOfEventsFor(
+        "reference",
+        1,
+        1,
+        aStatusChangeWith(date = "2019-01-01T00:00:00", status = CaseStatus.REFERRED)
+      )
 
       await(newJob.execute())
 
@@ -106,7 +111,12 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
 
       givenUpdatingACaseReturnsItself()
       givenAPageOfCases(1, 1, 1, aCaseWith(reference = "reference", createdDate = "2019-01-01T00:00:00"))
-      givenAPageOfEventsFor("reference", 1, 1, aStatusChangeWith(date = "2019-01-01T00:00:00", status = CaseStatus.REFERRED))
+      givenAPageOfEventsFor(
+        "reference",
+        1,
+        1,
+        aStatusChangeWith(date = "2019-01-01T00:00:00", status = CaseStatus.REFERRED)
+      )
 
       await(newJob.execute())
 
@@ -119,7 +129,12 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
 
       givenUpdatingACaseReturnsItself()
       givenAPageOfCases(1, 1, 1, aCaseWith(reference = "reference", createdDate = "2019-01-01T00:00:00"))
-      givenAPageOfEventsFor("reference", 1, 1, aStatusChangeWith(date = "2019-01-01T00:00:00", status = CaseStatus.REFERRED))
+      givenAPageOfEventsFor(
+        "reference",
+        1,
+        1,
+        aStatusChangeWith(date = "2019-01-01T00:00:00", status = CaseStatus.REFERRED)
+      )
 
       await(newJob.execute())
 
@@ -132,7 +147,12 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
 
       givenUpdatingACaseReturnsItself()
       givenAPageOfCases(1, 1, 1, aCaseWith(reference = "reference", createdDate = "2019-01-05T00:00:00"))
-      givenAPageOfEventsFor("reference", 1, 1, aStatusChangeWith(date = "2019-01-05T00:00:00", status = CaseStatus.REFERRED))
+      givenAPageOfEventsFor(
+        "reference",
+        1,
+        1,
+        aStatusChangeWith(date = "2019-01-05T00:00:00", status = CaseStatus.REFERRED)
+      )
 
       await(newJob.execute())
 
@@ -145,7 +165,12 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
 
       givenUpdatingACaseReturnsItself()
       givenAPageOfCases(1, 1, 1, aCaseWith(reference = "reference", createdDate = "2019-01-01T00:00:00"))
-      givenAPageOfEventsFor("reference", 1, 1, aStatusChangeWith(date = "2019-01-01T00:00:00", status = CaseStatus.REFERRED))
+      givenAPageOfEventsFor(
+        "reference",
+        1,
+        1,
+        aStatusChangeWith(date = "2019-01-01T00:00:00", status = CaseStatus.REFERRED)
+      )
 
       await(newJob.execute())
 
@@ -157,7 +182,7 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
       givenTodaysDateIs("2019-01-04T00:00:00")
 
       givenUpdatingACaseReturnsItself()
-      givenAPageOfCases(1, 1, 1, aCaseWith(reference = "reference", createdDate = "2019-01-01T00:00:00"))
+      givenAPageOfCases(1, 1, 1, aCaseWith(reference                  = "reference", createdDate      = "2019-01-01T00:00:00"))
       givenAPageOfEventsFor("reference", 1, 1, aStatusChangeWith(date = "2019-01-01T00:00:00", status = CaseStatus.NEW))
 
       await(newJob.execute())
@@ -171,7 +196,10 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
 
       givenUpdatingACaseReturnsItself()
       givenAPageOfCases(1, 1, 1, aCaseWith(reference = "reference", createdDate = "2019-01-01T00:00:00"))
-      givenAPageOfEventsFor("reference", 1, 1,
+      givenAPageOfEventsFor(
+        "reference",
+        1,
+        1,
         aStatusChangeWith(date = "2019-01-01T00:00:00", status = CaseStatus.OPEN),
         aStatusChangeWith(date = "2019-01-02T00:00:00", status = CaseStatus.REFERRED),
         aStatusChangeWith(date = "2019-01-03T00:00:00", status = CaseStatus.OPEN)
@@ -188,7 +216,10 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
 
       givenUpdatingACaseReturnsItself()
       givenAPageOfCases(1, 1, 1, aCaseWith(reference = "reference", createdDate = "2019-01-01T00:00:00"))
-      givenAPageOfEventsFor("reference", 1, 1,
+      givenAPageOfEventsFor(
+        "reference",
+        1,
+        1,
         aStatusChangeWith(date = "2019-01-02T00:00:00", status = CaseStatus.OPEN),
         aStatusChangeWith(date = "2019-01-02T12:00:00", status = CaseStatus.REFERRED)
       )
@@ -204,11 +235,14 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
 
       givenUpdatingACaseReturnsItself()
       givenAPageOfCases(1, 1, 1, aCaseWith(reference = "reference", createdDate = "2019-01-01T00:00:00"))
-      givenAPageOfEventsFor("reference", 1, 1,
+      givenAPageOfEventsFor(
+        "reference",
+        1,
+        1,
         aStatusChangeWith(date = "2019-01-01T00:00:00", status = CaseStatus.OPEN),
         aStatusChangeWith(date = "2019-01-02T00:00:00", status = CaseStatus.REFERRED),
         aStatusChangeWith(date = "2019-01-03T00:00:00", status = CaseStatus.OPEN),
-        aStatusChangeWith(date = "2019-01-04T00:00:00", status = CaseStatus.REFERRED),
+        aStatusChangeWith(date = "2019-01-04T00:00:00", status = CaseStatus.REFERRED)
       )
 
       await(newJob.execute())
@@ -222,9 +256,12 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
 
       givenUpdatingACaseReturnsItself()
       givenAPageOfCases(1, 1, 1, aCaseWith(reference = "reference", createdDate = "2019-01-01T00:00:00"))
-      givenAPageOfEventsFor("reference", 1, 1,
+      givenAPageOfEventsFor(
+        "reference",
+        1,
+        1,
         aStatusChangeWith(date = "2019-01-01T00:00:00", status = CaseStatus.OPEN),
-        aStatusChangeWith(date = "2019-01-02T00:00:00", status = CaseStatus.SUSPENDED),
+        aStatusChangeWith(date = "2019-01-02T00:00:00", status = CaseStatus.SUSPENDED)
       )
 
       await(newJob.execute())
@@ -237,7 +274,10 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
       givenTodaysDateIs("2019-01-01T00:00:00")
 
       givenUpdatingACaseReturnsItself()
-      givenAPageOfCases(1, 2, 2,
+      givenAPageOfCases(
+        1,
+        2,
+        2,
         aCaseWith(reference = "reference-1", createdDate = "2019-01-01T00:00:00"),
         aCaseWith(reference = "reference-2", createdDate = "2019-01-02T00:00:00")
       )
@@ -279,21 +319,34 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
 
   private def givenAPageOfEventsFor(reference: String, page: Int, totalEvents: Int, events: Event*): Unit = {
     val pagination = Pagination(page = page, pageSize = Integer.MAX_VALUE)
-    given(eventService.search(EventSearch(Some(Set(reference)), Some(Set(EventType.CASE_STATUS_CHANGE, EventType.CASE_REFERRAL))), pagination)) willReturn
+    given(
+      eventService.search(
+        EventSearch(Some(Set(reference)), Some(Set(EventType.CASE_STATUS_CHANGE, EventType.CASE_REFERRAL))),
+        pagination
+      )
+    ) willReturn
       Future.successful(Paged(events, pagination, totalEvents))
   }
 
   private def givenThereAreNoEventsFor(reference: String): Unit = {
     val pagination = Pagination(pageSize = Integer.MAX_VALUE)
-    given(eventService.search(EventSearch(Some(Set(reference)), Some(Set(EventType.CASE_STATUS_CHANGE, EventType.CASE_REFERRAL))), pagination)) willReturn
+    given(
+      eventService.search(
+        EventSearch(Some(Set(reference)), Some(Set(EventType.CASE_STATUS_CHANGE, EventType.CASE_REFERRAL))),
+        pagination
+      )
+    ) willReturn
       Future.successful(Paged.empty[Event])
   }
 
-  private def aCaseWith(reference: String, createdDate: String): Case = CaseData.createCase().copy(
-    reference = reference,
-    createdDate = LocalDateTime.parse(createdDate).atZone(ZoneOffset.UTC).toInstant,
-    referredDaysElapsed = 0
-  )
+  private def aCaseWith(reference: String, createdDate: String): Case =
+    CaseData
+      .createCase()
+      .copy(
+        reference           = reference,
+        createdDate         = LocalDateTime.parse(createdDate).atZone(ZoneOffset.UTC).toInstant,
+        referredDaysElapsed = 0
+      )
 
   private def aStatusChangeWith(date: String, status: CaseStatus): Event = {
     val e = mock[Event]
@@ -302,26 +355,25 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
     e
   }
 
-  private def newJob: ReferredDaysElapsedJob = new ReferredDaysElapsedJob(appConfig, caseService, eventService, bankHolidaysConnector)
+  private def newJob: ReferredDaysElapsedJob =
+    new ReferredDaysElapsedJob(appConfig, caseService, eventService, bankHolidaysConnector)
 
-  private def givenABankHolidayOn(date: String*): Unit = {
+  private def givenABankHolidayOn(date: String*): Unit =
     when(bankHolidaysConnector.get()(any[HeaderCarrier])).thenReturn(date.map(LocalDate.parse).toSet)
-  }
 
-  private def givenNoBankHolidays(): Unit = {
+  private def givenNoBankHolidays(): Unit =
     when(bankHolidaysConnector.get()(any[HeaderCarrier])).thenReturn(Set.empty[LocalDate])
-  }
 
   private def givenTodaysDateIs(date: String): Unit = {
     val zone: ZoneId = ZoneOffset.UTC
-    val instant = LocalDateTime.parse(date).atZone(zone).toInstant
+    val instant      = LocalDateTime.parse(date).atZone(zone).toInstant
     given(appConfig.clock).willReturn(Clock.fixed(instant, zone))
   }
 
-  private def givenUpdatingACaseReturnsItself(): Unit = {
+  private def givenUpdatingACaseReturnsItself(): Unit =
     given(caseService.update(any[Case], any[Boolean])).will(new Answer[Future[Option[Case]]] {
-      override def answer(invocation: InvocationOnMock): Future[Option[Case]] = Future.successful(Option(invocation.getArgument[Case](0)))
+      override def answer(invocation: InvocationOnMock): Future[Option[Case]] =
+        Future.successful(Option(invocation.getArgument[Case](0)))
     })
-  }
 
 }

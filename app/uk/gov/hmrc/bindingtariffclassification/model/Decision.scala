@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,17 @@ package uk.gov.hmrc.bindingtariffclassification.model
 
 import java.time.Instant
 
-case class Decision
-(
+case class Decision(
   bindingCommodityCode: String,
   effectiveStartDate: Option[Instant] = None,
-  effectiveEndDate: Option[Instant] = None,
+  effectiveEndDate: Option[Instant]   = None,
   justification: String,
   goodsDescription: String,
-  methodSearch: Option[String] = None,
+  methodSearch: Option[String]                 = None,
   methodCommercialDenomination: Option[String] = None,
-  methodExclusion: Option[String] = None,
-  appeal: Seq[Appeal] = Seq.empty,
-  cancellation: Option[Cancellation] = None,
-  explanation: Option[String] = None,
-  decisionPdf: Option[Attachment] = None
+  methodExclusion: Option[String]              = None,
+  appeal: Seq[Appeal]                          = Seq.empty,
+  cancellation: Option[Cancellation]           = None,
+  explanation: Option[String]                  = None,
+  decisionPdf: Option[Attachment]              = None
 )

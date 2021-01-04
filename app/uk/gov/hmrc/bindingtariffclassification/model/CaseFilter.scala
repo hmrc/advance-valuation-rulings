@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,36 +22,35 @@ import play.api.mvc.QueryStringBindable
 import uk.gov.hmrc.bindingtariffclassification.model.ApplicationType.ApplicationType
 import uk.gov.hmrc.bindingtariffclassification.model.PseudoCaseStatus.PseudoCaseStatus
 
-case class CaseFilter
-(
-  reference: Option[Set[String]] = None,
+case class CaseFilter(
+  reference: Option[Set[String]]                = None,
   applicationType: Option[Set[ApplicationType]] = None,
-  queueId: Option[Set[String]] = None,
-  eori: Option[String] = None,
-  assigneeId: Option[String] = None,
-  statuses: Option[Set[PseudoCaseStatus]] = None,
-  traderName: Option[String] = None,
-  minDecisionEnd: Option[Instant] = None,
-  commodityCode: Option[String] = None,
-  decisionDetails: Option[String] = None,
-  keywords: Option[Set[String]] = None,
-  migrated: Option[Boolean] = None
+  queueId: Option[Set[String]]                  = None,
+  eori: Option[String]                          = None,
+  assigneeId: Option[String]                    = None,
+  statuses: Option[Set[PseudoCaseStatus]]       = None,
+  traderName: Option[String]                    = None,
+  minDecisionEnd: Option[Instant]               = None,
+  commodityCode: Option[String]                 = None,
+  decisionDetails: Option[String]               = None,
+  keywords: Option[Set[String]]                 = None,
+  migrated: Option[Boolean]                     = None
 )
 
 object CaseFilter {
 
-  private val referenceKey = "reference"
+  private val referenceKey       = "reference"
   private val applicationTypeKey = "application_type"
-  private val queueIdKey = "queue_id"
-  private val eoriKey = "eori"
-  private val assigneeIdKey = "assignee_id"
-  private val statusKey = "status"
-  private val traderNameKey = "trader_name"
-  private val minDecisionEndKey = "min_decision_end"
-  private val commodityCodeKey = "commodity_code"
+  private val queueIdKey         = "queue_id"
+  private val eoriKey            = "eori"
+  private val assigneeIdKey      = "assignee_id"
+  private val statusKey          = "status"
+  private val traderNameKey      = "trader_name"
+  private val minDecisionEndKey  = "min_decision_end"
+  private val commodityCodeKey   = "commodity_code"
   private val decisionDetailsKey = "decision_details"
-  private val keywordKey = "keyword"
-  private val migratedKey = "migrated"
+  private val keywordKey         = "keyword"
+  private val migratedKey        = "migrated"
 
   implicit def bindable(
     implicit
@@ -66,24 +65,24 @@ object CaseFilter {
       Some(
         Right(
           CaseFilter(
-            reference = params(referenceKey),
+            reference       = params(referenceKey),
             applicationType = params(applicationTypeKey).map(_.map(bindApplicationType).filter(_.isDefined).map(_.get)),
-            queueId = params(queueIdKey),
-            eori = param(eoriKey),
-            assigneeId = param(assigneeIdKey),
-            statuses = params(statusKey).map(_.map(bindPseudoCaseStatus).filter(_.isDefined).map(_.get)),
-            traderName = param(traderNameKey),
-            minDecisionEnd = param(minDecisionEndKey).flatMap(bindInstant),
-            commodityCode = param(commodityCodeKey),
+            queueId         = params(queueIdKey),
+            eori            = param(eoriKey),
+            assigneeId      = param(assigneeIdKey),
+            statuses        = params(statusKey).map(_.map(bindPseudoCaseStatus).filter(_.isDefined).map(_.get)),
+            traderName      = param(traderNameKey),
+            minDecisionEnd  = param(minDecisionEndKey).flatMap(bindInstant),
+            commodityCode   = param(commodityCodeKey),
             decisionDetails = param(decisionDetailsKey),
-            keywords = params(keywordKey).map(_.map(_.toUpperCase)),
-            migrated = boolBinder.bind(migratedKey, requestParams).flatMap(_.toOption)
+            keywords        = params(keywordKey).map(_.map(_.toUpperCase)),
+            migrated        = boolBinder.bind(migratedKey, requestParams).flatMap(_.toOption)
           )
         )
       )
     }
 
-    override def unbind(key: String, filter: CaseFilter): String = {
+    override def unbind(key: String, filter: CaseFilter): String =
       Seq(
         filter.reference.map(_.map(s => stringBinder.unbind(referenceKey, s.toString)).mkString("&")),
         filter.applicationType.map(_.map(s => stringBinder.unbind(applicationTypeKey, s.toString)).mkString("&")),
@@ -98,6 +97,5 @@ object CaseFilter {
         filter.keywords.map(_.map(s => stringBinder.unbind(keywordKey, s.toString)).mkString("&")),
         filter.migrated.map(boolBinder.unbind(migratedKey, _))
       ).filter(_.isDefined).map(_.get).mkString("&")
-    }
   }
 }

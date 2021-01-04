@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +18,18 @@ package uk.gov.hmrc.bindingtariffclassification.model
 
 import play.api.mvc.QueryStringBindable
 
-
-case class CaseSearch
-(
-  filter: CaseFilter = CaseFilter(),
+case class CaseSearch(
+  filter: CaseFilter     = CaseFilter(),
   sort: Option[CaseSort] = None
 )
 
 object CaseSearch {
 
-  implicit def bindable(implicit
-                        filterBinder: QueryStringBindable[CaseFilter],
-                        sortBinder: QueryStringBindable[CaseSort]
-                       ): QueryStringBindable[CaseSearch] = new QueryStringBindable[CaseSearch] {
+  implicit def bindable(
+    implicit
+    filterBinder: QueryStringBindable[CaseFilter],
+    sortBinder: QueryStringBindable[CaseSort]
+  ): QueryStringBindable[CaseSearch] = new QueryStringBindable[CaseSearch] {
 
     override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, CaseSearch]] = {
 
@@ -48,12 +47,11 @@ object CaseSearch {
       )
     }
 
-    override def unbind(key: String, search: CaseSearch): String = {
+    override def unbind(key: String, search: CaseSearch): String =
       Seq[String](
         filterBinder.unbind(key, search.filter),
         search.sort.map(sortBinder.unbind(key, _)).getOrElse("")
       ).filter(_.trim.nonEmpty).mkString("&")
-    }
 
   }
 

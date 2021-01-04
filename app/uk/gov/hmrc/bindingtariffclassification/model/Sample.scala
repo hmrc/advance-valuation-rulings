@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,8 @@ package uk.gov.hmrc.bindingtariffclassification.model
 import uk.gov.hmrc.bindingtariffclassification.model.SampleReturn.SampleReturn
 import uk.gov.hmrc.bindingtariffclassification.model.SampleStatus.SampleStatus
 
-case class Sample
-(
-  status: Option[SampleStatus] = None,
-  requestedBy: Option[Operator] = None,
+case class Sample(
+  status: Option[SampleStatus]       = None,
+  requestedBy: Option[Operator]      = None,
   returnStatus: Option[SampleReturn] = None
 )
-
-

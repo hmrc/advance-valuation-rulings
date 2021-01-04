@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,16 @@
 
 package uk.gov.hmrc.bindingtariffclassification.model
 
-case class NewCaseRequest
-(
+case class NewCaseRequest(
   application: Application,
   attachments: Seq[Attachment] = Seq.empty
 ) {
   def toCase(reference: String) = Case(
     reference = reference,
-    status = CaseStatus.NEW,
-    sample = if (application.isBTI && application.asBTI.sampleToBeProvided) Sample(status = Some(SampleStatus.AWAITING)) else Sample(),
+    status    = CaseStatus.NEW,
+    sample =
+      if (application.isBTI && application.asBTI.sampleToBeProvided) Sample(status = Some(SampleStatus.AWAITING))
+      else Sample(),
     application = application,
     attachments = attachments
   )

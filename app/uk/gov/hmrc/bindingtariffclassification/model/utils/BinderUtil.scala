@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,38 +32,30 @@ import scala.util.Try
 
 object BinderUtil {
 
-  def bindCaseReportGroup(value: String): Option[CaseReportGroup] = {
+  def bindCaseReportGroup(value: String): Option[CaseReportGroup] =
     CaseReportGroup.values.find(_.toString == value)
-  }
 
-  def bindCaseReportField(value: String): Option[CaseReportField] = {
+  def bindCaseReportField(value: String): Option[CaseReportField] =
     CaseReportField.values.find(_.toString == value)
-  }
 
-  def bindSortField(value: String): Option[CaseSortField] = {
+  def bindSortField(value: String): Option[CaseSortField] =
     CaseSortField.values.find(_.toString == value)
-  }
 
-  def bindSortDirection(value: String): Option[SortDirection] = {
+  def bindSortDirection(value: String): Option[SortDirection] =
     SortDirection.values.find(_.toString == value)
-  }
 
-  def bindPseudoCaseStatus(value: String): Option[PseudoCaseStatus] = {
+  def bindPseudoCaseStatus(value: String): Option[PseudoCaseStatus] =
     PseudoCaseStatus.values.find(_.toString.equalsIgnoreCase(value))
-  }
 
-  def bindApplicationType(value: String): Option[ApplicationType] = {
+  def bindApplicationType(value: String): Option[ApplicationType] =
     ApplicationType.values.find(_.toString.equalsIgnoreCase(value))
-  }
 
   def bindInstant(value: String): Option[Instant] = Try(Instant.parse(value)).toOption
 
-  def params(name: String)(implicit requestParams: Map[String, Seq[String]]): Option[Set[String]] = {
+  def params(name: String)(implicit requestParams: Map[String, Seq[String]]): Option[Set[String]] =
     requestParams.get(name).map(_.flatMap(_.split(",")).toSet).filterNot(_.exists(_.isEmpty))
-  }
 
-  def param(name: String)(implicit requestParams: Map[String, Seq[String]]): Option[String] = {
+  def param(name: String)(implicit requestParams: Map[String, Seq[String]]): Option[String] =
     params(name).map(_.head)
-  }
 
 }

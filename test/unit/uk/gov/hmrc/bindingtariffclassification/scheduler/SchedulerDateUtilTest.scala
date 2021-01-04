@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,10 @@ import scala.concurrent.duration._
 
 class SchedulerDateUtilTest extends BaseSpec with BeforeAndAfterEach {
 
-  private val zone = ZoneOffset.UTC
-  private val clock: Clock = Clock.fixed(instant("2019-01-01T12:00:00").plusNanos((Math.random()*1000).toInt), zone)
+  private val zone              = ZoneOffset.UTC
+  private val clock: Clock      = Clock.fixed(instant("2019-01-01T12:00:00").plusNanos((Math.random() * 1000).toInt), zone)
   private val config: AppConfig = mock[AppConfig]
-  private val util = new SchedulerDateUtil(config)
+  private val util              = new SchedulerDateUtil(config)
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
@@ -151,12 +151,10 @@ class SchedulerDateUtilTest extends BaseSpec with BeforeAndAfterEach {
     }
   }
 
-  private def instant(datetime: String): Instant = {
+  private def instant(datetime: String): Instant =
     LocalDateTime.parse(datetime).atZone(zone).toInstant
-  }
 
-  private def time(datetime: String): LocalTime = {
+  private def time(datetime: String): LocalTime =
     LocalTime.parse(datetime)
-  }
 
 }

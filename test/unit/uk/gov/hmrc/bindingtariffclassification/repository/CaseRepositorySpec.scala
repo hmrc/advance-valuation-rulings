@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,11 +40,12 @@ import util.Cases._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class CaseRepositorySpec extends BaseMongoIndexSpec
-  with BeforeAndAfterAll
-  with BeforeAndAfterEach
-  with MongoSpecSupport
-  with Eventually {
+class CaseRepositorySpec
+    extends BaseMongoIndexSpec
+    with BeforeAndAfterAll
+    with BeforeAndAfterEach
+    with MongoSpecSupport
+    with Eventually {
   self =>
 
   private val conflict = 11000
@@ -53,13 +54,14 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
     override val mongo: () => DB = self.mongo
   }
 
-  private val config = mock[AppConfig]
+  private val config     = mock[AppConfig]
   private val repository = newMongoRepository
 
-  private def newMongoRepository: CaseMongoRepository = new CaseMongoRepository(mongoDbProvider, new SearchMapper(config))
+  private def newMongoRepository: CaseMongoRepository =
+    new CaseMongoRepository(mongoDbProvider, new SearchMapper(config))
 
-  private val case1: Case = createCase()
-  private val case2: Case = createCase()
+  private val case1: Case     = createCase()
+  private val case2: Case     = createCase()
   private val liabCase1: Case = createCase(app = createLiabilityOrder)
 
   override def beforeEach(): Unit = {
@@ -73,9 +75,11 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
     await(repository.drop)
   }
 
-  private def collectionSize: Int = {
-    await(repository.collection.count(selector = None, limit = Some(0), skip = 0, hint = None, readConcern = ReadConcern.Local)).toInt
-  }
+  private def collectionSize: Int =
+    await(
+      repository.collection
+        .count(selector = None, limit = Some(0), skip = 0, hint = None, readConcern = ReadConcern.Local)
+    ).toInt
 
   "deleteAll" should {
 
@@ -86,7 +90,7 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
       collectionSize shouldBe 2 + size
 
       await(repository.deleteAll()) shouldBe ((): Unit)
-      collectionSize shouldBe size
+      collectionSize                shouldBe size
     }
 
   }
@@ -103,7 +107,7 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
       collectionSize shouldBe 2 + size
 
       await(repository.delete("REF_1")) shouldBe ((): Unit)
-      collectionSize shouldBe 1 + size
+      collectionSize                    shouldBe 1 + size
 
       await(repository.collection.find(selectorByReference(c1)).one[Case]) shouldBe None
       await(repository.collection.find(selectorByReference(c2)).one[Case]) shouldBe Some(c2)
@@ -116,8 +120,8 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
     "insert a new document in the collection" in {
       val size = collectionSize
 
-      await(repository.insert(case1)) shouldBe case1
-      collectionSize shouldBe 1 + size
+      await(repository.insert(case1))                                         shouldBe case1
+      collectionSize                                                          shouldBe 1 + size
       await(repository.collection.find(selectorByReference(case1)).one[Case]) shouldBe Some(case1)
     }
 
@@ -189,11 +193,17 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
     }
 
     "return all cases from the collection sorted in complex order, when specified" in {
-      val search = CaseSearch(sort = Some(CaseSort(Set(CaseSortField.APPLICATION_TYPE, CaseSortField.APPLICATION_STATUS, CaseSortField.DAYS_ELAPSED),
-        SortDirection.DESCENDING)))
+      val search = CaseSearch(sort =
+        Some(
+          CaseSort(
+            Set(CaseSortField.APPLICATION_TYPE, CaseSortField.APPLICATION_STATUS, CaseSortField.DAYS_ELAPSED),
+            SortDirection.DESCENDING
+          )
+        )
+      )
 
-      val oldCase = case1.copy(daysElapsed = 1)
-      val newCase = case2.copy(daysElapsed = 0)
+      val oldCase  = case1.copy(daysElapsed = 1)
+      val newCase  = case2.copy(daysElapsed = 0)
       val liabCase = liabCase1
       await(repository.insert(oldCase))
       await(repository.insert(newCase))
@@ -226,14 +236,14 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
   "get by queueId" should {
 
-    val queueIdX = Some("queue_x")
-    val queueIdY = Some("queue_y")
+    val queueIdX       = Some("queue_x")
+    val queueIdY       = Some("queue_y")
     val unknownQueueId = Some("unknown_queue_id")
 
     val caseWithEmptyQueue = createCase()
-    val caseWithQueueX1 = createCase().copy(queueId = queueIdX)
-    val caseWithQueueX2 = createCase().copy(queueId = queueIdX)
-    val caseWithQueueY = createCase().copy(queueId = queueIdY)
+    val caseWithQueueX1    = createCase().copy(queueId = queueIdX)
+    val caseWithQueueX2    = createCase().copy(queueId = queueIdX)
+    val caseWithQueueY     = createCase().copy(queueId = queueIdY)
 
     "return an empty sequence when there are no matches" in {
       val search = CaseSearch(CaseFilter(queueId = unknownQueueId.map(Set(_))))
@@ -260,12 +270,12 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
   "get by minDecisionDate" should {
 
     val futureDate = LocalDate.of(3000, 1, 1).atStartOfDay().toInstant(ZoneOffset.UTC)
-    val pastDate = LocalDate.of(1970, 1, 1).atStartOfDay().toInstant(ZoneOffset.UTC)
+    val pastDate   = LocalDate.of(1970, 1, 1).atStartOfDay().toInstant(ZoneOffset.UTC)
 
-    val decisionExpired = createDecision(effectiveEndDate = Some(pastDate))
-    val decisionFuture = createDecision(effectiveEndDate = Some(futureDate))
-    val caseWithExpiredDecision = createCase(decision = Some(decisionExpired))
-    val caseWithFutureDecision = createCase(decision = Some(decisionFuture))
+    val decisionExpired         = createDecision(effectiveEndDate = Some(pastDate))
+    val decisionFuture          = createDecision(effectiveEndDate = Some(futureDate))
+    val caseWithExpiredDecision = createCase(decision             = Some(decisionExpired))
+    val caseWithFutureDecision  = createCase(decision             = Some(decisionFuture))
 
     "return an empty sequence when there are no matches" in {
       val search = CaseSearch(CaseFilter(minDecisionEnd = Some(Instant.now())))
@@ -283,14 +293,14 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
   "get by assigneeId" should {
 
-    val assigneeX = Operator("assignee_x")
-    val assigneeY = Operator("assignee_y")
+    val assigneeX       = Operator("assignee_x")
+    val assigneeY       = Operator("assignee_y")
     val unknownAssignee = Operator("unknown_assignee_id")
 
     val caseWithEmptyAssignee = createCase()
-    val caseWithAssigneeX1 = createCase().copy(assignee = Some(assigneeX))
-    val caseWithAssigneeX2 = createCase().copy(assignee = Some(assigneeX))
-    val caseWithAssigneeY1 = createCase().copy(assignee = Some(assigneeY))
+    val caseWithAssigneeX1    = createCase().copy(assignee = Some(assigneeX))
+    val caseWithAssigneeX2    = createCase().copy(assignee = Some(assigneeX))
+    val caseWithAssigneeY1    = createCase().copy(assignee = Some(assigneeY))
 
     "return an empty sequence when there are no matches" in {
       val search = CaseSearch(CaseFilter(assigneeId = Some(unknownAssignee.id)))
@@ -354,8 +364,16 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
     val now = LocalDateTime.of(2019, 1, 1, 0, 0).toInstant(ZoneOffset.UTC)
 
     val newCase = createCase(r = "new", status = CaseStatus.NEW)
-    val liveCase = createCase(r = "live", status = CaseStatus.COMPLETED, decision = Some(createDecision(effectiveEndDate = Some(now.plusSeconds(1)))))
-    val expiredCase = createCase(r = "expired", status = CaseStatus.COMPLETED, decision = Some(createDecision(effectiveEndDate = Some(now.minusSeconds(1)))))
+    val liveCase = createCase(
+      r        = "live",
+      status   = CaseStatus.COMPLETED,
+      decision = Some(createDecision(effectiveEndDate = Some(now.plusSeconds(1))))
+    )
+    val expiredCase = createCase(
+      r        = "expired",
+      status   = CaseStatus.COMPLETED,
+      decision = Some(createDecision(effectiveEndDate = Some(now.minusSeconds(1))))
+    )
 
     "return an empty sequence when there are no matches" in {
       given(config.clock) willReturn Clock.fixed(now, ZoneOffset.UTC)
@@ -398,15 +416,23 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
     }
 
     "return the expected document when there is one match" in {
-      val search = CaseSearch(CaseFilter(statuses = Some(Set(PseudoCaseStatus.NEW, PseudoCaseStatus.REFERRED, PseudoCaseStatus.SUSPENDED))))
+      val search = CaseSearch(
+        CaseFilter(statuses = Some(Set(PseudoCaseStatus.NEW, PseudoCaseStatus.REFERRED, PseudoCaseStatus.SUSPENDED)))
+      )
       store(caseWithStatusX1, caseWithStatusY1, caseWithStatusZ1, caseWithStatusW1)
       await(repository.get(search, Pagination())).results shouldBe Seq(caseWithStatusX1)
     }
 
     "return the expected documents when there are multiple matches" in {
-      val search = CaseSearch(CaseFilter(statuses = Some(Set(PseudoCaseStatus.NEW, PseudoCaseStatus.DRAFT, PseudoCaseStatus.OPEN))))
+      val search = CaseSearch(
+        CaseFilter(statuses = Some(Set(PseudoCaseStatus.NEW, PseudoCaseStatus.DRAFT, PseudoCaseStatus.OPEN)))
+      )
       store(caseWithStatusX1, caseWithStatusX2, caseWithStatusY1, caseWithStatusZ1, caseWithStatusW1)
-      await(repository.get(search, Pagination())).results shouldBe Seq(caseWithStatusX1, caseWithStatusX2, caseWithStatusY1)
+      await(repository.get(search, Pagination())).results shouldBe Seq(
+        caseWithStatusX1,
+        caseWithStatusX2,
+        caseWithStatusY1
+      )
     }
 
   }
@@ -433,7 +459,11 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
     "return the expected documents when there are multiple matches" in {
       val search = CaseSearch(CaseFilter(reference = Some(Set("x1", "x2", "y1"))))
       store(caseWithReferenceX1, caseWithReferenceX2, caseWithReferenceY1, caseWithReferenceZ1, caseWithReferenceW1)
-      await(repository.get(search, Pagination())).results shouldBe Seq(caseWithReferenceX1, caseWithReferenceX2, caseWithReferenceY1)
+      await(repository.get(search, Pagination())).results shouldBe Seq(
+        caseWithReferenceX1,
+        caseWithReferenceX2,
+        caseWithReferenceY1
+      )
     }
 
   }
@@ -493,7 +523,7 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
   "get by trader name" should {
 
     val novakApp = createBasicBTIApplication.copy(holder = createEORIDetails.copy(businessName = "Novak Djokovic"))
-    val caseX = createCase(app = novakApp)
+    val caseX    = createCase(app                        = novakApp)
 
     "return an empty sequence when there are no matches" in {
       store(case1, caseX)
@@ -505,19 +535,27 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
       store(case1, caseX)
 
       // full name search
-      await(repository.get(CaseSearch(CaseFilter(traderName = Some("Novak Djokovic"))), Pagination())).results shouldBe Seq(caseX)
+      await(repository.get(CaseSearch(CaseFilter(traderName = Some("Novak Djokovic"))), Pagination())).results shouldBe Seq(
+        caseX
+      )
 
       // substring search
-      await(repository.get(CaseSearch(CaseFilter(traderName = Some("Novak"))), Pagination())).results shouldBe Seq(caseX)
-      await(repository.get(CaseSearch(CaseFilter(traderName = Some("Djokovic"))), Pagination())).results shouldBe Seq(caseX)
+      await(repository.get(CaseSearch(CaseFilter(traderName = Some("Novak"))), Pagination())).results shouldBe Seq(
+        caseX
+      )
+      await(repository.get(CaseSearch(CaseFilter(traderName = Some("Djokovic"))), Pagination())).results shouldBe Seq(
+        caseX
+      )
 
       // case-insensitive
-      await(repository.get(CaseSearch(CaseFilter(traderName = Some("novak djokovic"))), Pagination())).results shouldBe Seq(caseX)
+      await(repository.get(CaseSearch(CaseFilter(traderName = Some("novak djokovic"))), Pagination())).results shouldBe Seq(
+        caseX
+      )
     }
 
     "return the expected documents when there are multiple matches" in {
       val novakApp2 = createBasicBTIApplication.copy(holder = createEORIDetails.copy(businessName = "Novak Djokovic 2"))
-      val caseX2 = createCase(app = novakApp2)
+      val caseX2    = createCase(app                        = novakApp2)
       store(caseX, caseX2)
 
       val search = CaseSearch(CaseFilter(traderName = Some("Novak Djokovic")))
@@ -528,14 +566,15 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
   "get by eori" should {
 
     val holderEori = "01234"
-    val agentEori = "98765"
+    val agentEori  = "98765"
 
     val agentDetails = createAgentDetails.copy(eoriDetails = createEORIDetails.copy(eori = agentEori))
 
     val holderApp = createBasicBTIApplication.copy(holder = createEORIDetails.copy(eori = holderEori), agent = None)
-    val agentApp = createBTIApplicationWithAllFields.copy(holder = createEORIDetails.copy(eori = holderEori), agent = Some(agentDetails))
+    val agentApp = createBTIApplicationWithAllFields
+      .copy(holder = createEORIDetails.copy(eori = holderEori), agent = Some(agentDetails))
 
-    val agentCase = createCase(app = agentApp)
+    val agentCase  = createCase(app = agentApp)
     val holderCase = createCase(app = holderApp)
 
     "return an empty sequence when there are no matches" in {
@@ -553,16 +592,19 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
     "return the expected documents when there are multiple matches" in {
       store(agentCase, holderCase)
 
-      await(repository.get(CaseSearch(CaseFilter(eori = Some("01234"))), Pagination())).results shouldBe Seq(agentCase, holderCase)
+      await(repository.get(CaseSearch(CaseFilter(eori = Some("01234"))), Pagination())).results shouldBe Seq(
+        agentCase,
+        holderCase
+      )
     }
 
   }
 
   "get by decision details" should {
 
-    val c1 = createCase(decision = Some(createDecision(goodsDescription = "Amazing HTC smartphone")))
+    val c1 = createCase(decision = Some(createDecision(goodsDescription             = "Amazing HTC smartphone")))
     val c2 = createCase(decision = Some(createDecision(methodCommercialDenomination = Some("amazing football shoes"))))
-    val c3 = createCase(decision = Some(createDecision(justification = "this is absolutely AAAAMAZINGGGG")))
+    val c3 = createCase(decision = Some(createDecision(justification                = "this is absolutely AAAAMAZINGGGG")))
 
     "return an empty sequence when there are no matches" in {
       store(case1, c1, c2, c3)
@@ -571,12 +613,18 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
     "return the expected document when there is one match" in {
       store(case1, c1, c2, c3)
-      await(repository.get(CaseSearch(CaseFilter(decisionDetails = Some("Football"))), Pagination())).results shouldBe Seq(c2)
+      await(repository.get(CaseSearch(CaseFilter(decisionDetails = Some("Football"))), Pagination())).results shouldBe Seq(
+        c2
+      )
     }
 
     "return the expected documents when there are multiple matches" in {
       store(case1, c1, c2, c3)
-      await(repository.get(CaseSearch(CaseFilter(decisionDetails = Some("amazing"))), Pagination())).results shouldBe Seq(c1, c2, c3)
+      await(repository.get(CaseSearch(CaseFilter(decisionDetails = Some("amazing"))), Pagination())).results shouldBe Seq(
+        c1,
+        c2,
+        c3
+      )
     }
   }
 
@@ -620,13 +668,14 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
     "not filter on type when both specified in search" in {
       store(case1, case2, liabCase1)
-      val search = CaseSearch(CaseFilter(applicationType = Some(Set(ApplicationType.BTI, ApplicationType.LIABILITY_ORDER))))
+      val search =
+        CaseSearch(CaseFilter(applicationType = Some(Set(ApplicationType.BTI, ApplicationType.LIABILITY_ORDER))))
       await(repository.get(search, Pagination())).results shouldBe Seq(case1, case2, liabCase1)
     }
   }
 
   "get by migration status" should {
-    val case1Migrated = case1.copy(dateOfExtract = Some(Instant.now()))
+    val case1Migrated     = case1.copy(dateOfExtract     = Some(Instant.now()))
     val liabCase1Migrated = liabCase1.copy(dateOfExtract = Some(Instant.now()))
 
     "return only migrated cases when specified in search" in {
@@ -664,8 +713,8 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
       store(case1)
       store(case2)
       await(repository.get(CaseSearch(), Pagination(pageSize = 1))).size shouldBe 1
-      await(repository.get(CaseSearch(), Pagination(page = 2, pageSize = 1))).size shouldBe 1
-      await(repository.get(CaseSearch(), Pagination(page = 3, pageSize = 1))).size shouldBe 0
+      await(repository.get(CaseSearch(), Pagination(page     = 2, pageSize = 1))).size shouldBe 1
+      await(repository.get(CaseSearch(), Pagination(page     = 3, pageSize = 1))).size shouldBe 0
     }
   }
 
@@ -673,21 +722,27 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
     val assigneeX = Operator("assignee_x")
     val assigneeY = Operator("assignee_y")
-    val queueIdX = Some("queue_x")
-    val queueIdY = Some("queue_y")
-    val statusX = CaseStatus.NEW
-    val statusY = CaseStatus.OPEN
+    val queueIdX  = Some("queue_x")
+    val queueIdY  = Some("queue_y")
+    val statusX   = CaseStatus.NEW
+    val statusY   = CaseStatus.OPEN
 
     val caseWithNoQueueAndNoAssignee = createCase()
-    val caseWithQxAndAxAndSx = createCase().copy(queueId = queueIdX, assignee = Some(assigneeX), status = statusX)
-    val caseWithQxAndAxAndSy = createCase().copy(queueId = queueIdX, assignee = Some(assigneeX), status = statusY)
-    val caseWithQxAndAyAndSx = createCase().copy(queueId = queueIdX, assignee = Some(assigneeY), status = statusX)
-    val caseWithQxAndAyAndSy = createCase().copy(queueId = queueIdX, assignee = Some(assigneeY), status = statusY)
-    val caseWithQyAndAxAndSx = createCase().copy(queueId = queueIdY, assignee = Some(assigneeX), status = statusX)
-    val caseWithQyAndAxAndSy = createCase().copy(queueId = queueIdY, assignee = Some(assigneeX), status = statusY)
+    val caseWithQxAndAxAndSx         = createCase().copy(queueId = queueIdX, assignee = Some(assigneeX), status = statusX)
+    val caseWithQxAndAxAndSy         = createCase().copy(queueId = queueIdX, assignee = Some(assigneeX), status = statusY)
+    val caseWithQxAndAyAndSx         = createCase().copy(queueId = queueIdX, assignee = Some(assigneeY), status = statusX)
+    val caseWithQxAndAyAndSy         = createCase().copy(queueId = queueIdX, assignee = Some(assigneeY), status = statusY)
+    val caseWithQyAndAxAndSx         = createCase().copy(queueId = queueIdY, assignee = Some(assigneeX), status = statusX)
+    val caseWithQyAndAxAndSy         = createCase().copy(queueId = queueIdY, assignee = Some(assigneeX), status = statusY)
 
     "filter as expected" in {
-      val search = CaseSearch(CaseFilter(queueId = queueIdX.map(Set(_)), assigneeId = Some(assigneeX.id), statuses = Some(Set(PseudoCaseStatus.NEW))))
+      val search = CaseSearch(
+        CaseFilter(
+          queueId    = queueIdX.map(Set(_)),
+          assigneeId = Some(assigneeX.id),
+          statuses   = Some(Set(PseudoCaseStatus.NEW))
+        )
+      )
 
       store(
         caseWithNoQueueAndNoAssignee,
@@ -738,8 +793,8 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
       val report = CaseReport(
         filter = CaseReportFilter(),
-        group = Set(CaseReportGroup.QUEUE),
-        field = CaseReportField.ACTIVE_DAYS_ELAPSED
+        group  = Set(CaseReportGroup.QUEUE),
+        field  = CaseReportField.ACTIVE_DAYS_ELAPSED
       )
 
       val results = await(repository.generateReport(report))
@@ -765,16 +820,33 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
       val report = CaseReport(
         filter = CaseReportFilter(),
-        group = Set(CaseReportGroup.QUEUE, CaseReportGroup.APPLICATION_TYPE),
-        field = CaseReportField.ACTIVE_DAYS_ELAPSED
+        group  = Set(CaseReportGroup.QUEUE, CaseReportGroup.APPLICATION_TYPE),
+        field  = CaseReportField.ACTIVE_DAYS_ELAPSED
       )
 
       val results = await(repository.generateReport(report))
       results should have length 4
-      results should contain(ReportResult(Map(CaseReportGroup.QUEUE -> Some("queue-1"), CaseReportGroup.APPLICATION_TYPE -> Some("BTI")), Seq(1, 2)))
-      results should contain(ReportResult(Map(CaseReportGroup.QUEUE -> Some("queue-2"), CaseReportGroup.APPLICATION_TYPE -> Some("BTI")), Seq(3)))
-      results should contain(ReportResult(Map(CaseReportGroup.QUEUE -> Some("queue-2"), CaseReportGroup.APPLICATION_TYPE -> Some("LIABILITY_ORDER")), Seq(5)))
-      results should contain(ReportResult(Map(CaseReportGroup.QUEUE -> None, CaseReportGroup.APPLICATION_TYPE -> Some("BTI")), Seq(4)))
+      results should contain(
+        ReportResult(
+          Map(CaseReportGroup.QUEUE -> Some("queue-1"), CaseReportGroup.APPLICATION_TYPE -> Some("BTI")),
+          Seq(1, 2)
+        )
+      )
+      results should contain(
+        ReportResult(
+          Map(CaseReportGroup.QUEUE -> Some("queue-2"), CaseReportGroup.APPLICATION_TYPE -> Some("BTI")),
+          Seq(3)
+        )
+      )
+      results should contain(
+        ReportResult(
+          Map(CaseReportGroup.QUEUE -> Some("queue-2"), CaseReportGroup.APPLICATION_TYPE -> Some("LIABILITY_ORDER")),
+          Seq(5)
+        )
+      )
+      results should contain(
+        ReportResult(Map(CaseReportGroup.QUEUE -> None, CaseReportGroup.APPLICATION_TYPE -> Some("BTI")), Seq(4))
+      )
     }
 
     "report on active days elapsed" in {
@@ -787,8 +859,8 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
       val report = CaseReport(
         filter = CaseReportFilter(),
-        group = Set(CaseReportGroup.QUEUE),
-        field = CaseReportField.ACTIVE_DAYS_ELAPSED
+        group  = Set(CaseReportGroup.QUEUE),
+        field  = CaseReportField.ACTIVE_DAYS_ELAPSED
       )
 
       val results = await(repository.generateReport(report))
@@ -806,8 +878,8 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
       val report = CaseReport(
         filter = CaseReportFilter(),
-        group = Set(CaseReportGroup.QUEUE),
-        field = CaseReportField.REFERRED_DAYS_ELAPSED
+        group  = Set(CaseReportGroup.QUEUE),
+        field  = CaseReportField.REFERRED_DAYS_ELAPSED
       )
 
       val results = await(repository.generateReport(report))
@@ -817,8 +889,9 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
     "filter on Decision Start Date" in {
       val date = LocalDate.of(2019, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant
-      val c1 = aCase(withoutQueue(), withActiveDaysElapsed(1), withDecision(effectiveStartDate = Some(date)))
-      val c2 = aCase(withoutQueue(), withActiveDaysElapsed(2), withDecision(effectiveStartDate = Some(date.plusSeconds(1))))
+      val c1   = aCase(withoutQueue(), withActiveDaysElapsed(1), withDecision(effectiveStartDate = Some(date)))
+      val c2 =
+        aCase(withoutQueue(), withActiveDaysElapsed(2), withDecision(effectiveStartDate = Some(date.plusSeconds(1))))
 
       await(repository.insert(c1))
       await(repository.insert(c2))
@@ -826,11 +899,11 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
       val report = CaseReport(
         filter = CaseReportFilter(decisionStartDate = Some(InstantRange(date, date))),
-        group = Set(CaseReportGroup.QUEUE),
-        field = CaseReportField.ACTIVE_DAYS_ELAPSED
+        group  = Set(CaseReportGroup.QUEUE),
+        field  = CaseReportField.ACTIVE_DAYS_ELAPSED
       )
 
-      await(repository.generateReport(report)) shouldBe Seq(ReportResult(CaseReportGroup.QUEUE ->None, Seq(1)))
+      await(repository.generateReport(report)) shouldBe Seq(ReportResult(CaseReportGroup.QUEUE -> None, Seq(1)))
     }
 
     "filter on status" in {
@@ -843,12 +916,11 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
       val report = CaseReport(
         filter = CaseReportFilter(status = Some(Set(CaseStatus.NEW))),
-        group = Set(CaseReportGroup.QUEUE),
-        field = CaseReportField.ACTIVE_DAYS_ELAPSED
+        group  = Set(CaseReportGroup.QUEUE),
+        field  = CaseReportField.ACTIVE_DAYS_ELAPSED
       )
       await(repository.generateReport(report)) shouldBe Seq(ReportResult(CaseReportGroup.QUEUE -> None, Seq(1)))
     }
-
 
     "filter on mulitple statuses" in {
       val c1 = aCase(withoutQueue(), withActiveDaysElapsed(1), withStatus(CaseStatus.NEW))
@@ -859,9 +931,9 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
       collectionSize shouldBe 2
 
       val report = CaseReport(
-        filter = CaseReportFilter(status = Some(Set(CaseStatus.NEW,CaseStatus.OPEN))),
-        group = Set(CaseReportGroup.QUEUE),
-        field = CaseReportField.ACTIVE_DAYS_ELAPSED
+        filter = CaseReportFilter(status = Some(Set(CaseStatus.NEW, CaseStatus.OPEN))),
+        group  = Set(CaseReportGroup.QUEUE),
+        field  = CaseReportField.ACTIVE_DAYS_ELAPSED
       )
       await(repository.generateReport(report)) shouldBe Seq(ReportResult(CaseReportGroup.QUEUE -> None, Seq(1, 2)))
     }
@@ -876,8 +948,8 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
       val report = CaseReport(
         filter = CaseReportFilter(applicationType = Some(Set(ApplicationType.BTI))),
-        group = Set(CaseReportGroup.QUEUE),
-        field = CaseReportField.ACTIVE_DAYS_ELAPSED
+        group  = Set(CaseReportGroup.QUEUE),
+        field  = CaseReportField.ACTIVE_DAYS_ELAPSED
       )
       await(repository.generateReport(report)) shouldBe Seq(ReportResult(CaseReportGroup.QUEUE -> None, Seq(2)))
     }
@@ -892,15 +964,15 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
       val report = CaseReport(
         filter = CaseReportFilter(applicationType = Some(Set(ApplicationType.BTI, ApplicationType.LIABILITY_ORDER))),
-        group = Set(CaseReportGroup.QUEUE),
-        field = CaseReportField.ACTIVE_DAYS_ELAPSED
+        group  = Set(CaseReportGroup.QUEUE),
+        field  = CaseReportField.ACTIVE_DAYS_ELAPSED
       )
       await(repository.generateReport(report)) shouldBe Seq(ReportResult(CaseReportGroup.QUEUE -> None, Seq(1, 2)))
     }
 
     "filter on assignee" in {
-      val c1 = aCase(withoutQueue(), withActiveDaysElapsed(1), withAssignee(Some(Operator(id="123"))))
-      val c2 = aCase(withoutQueue(), withActiveDaysElapsed(2),  withAssignee(Some(Operator(id="456"))))
+      val c1 = aCase(withoutQueue(), withActiveDaysElapsed(1), withAssignee(Some(Operator(id = "123"))))
+      val c2 = aCase(withoutQueue(), withActiveDaysElapsed(2), withAssignee(Some(Operator(id = "456"))))
 
       await(repository.insert(c1))
       await(repository.insert(c2))
@@ -908,12 +980,11 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
       val report = CaseReport(
         filter = CaseReportFilter(assigneeId = Some("123")),
-        group = Set(CaseReportGroup.QUEUE),
-        field = CaseReportField.ACTIVE_DAYS_ELAPSED
+        group  = Set(CaseReportGroup.QUEUE),
+        field  = CaseReportField.ACTIVE_DAYS_ELAPSED
       )
       await(repository.generateReport(report)) shouldBe Seq(ReportResult(CaseReportGroup.QUEUE -> None, Seq(1)))
     }
-
 
     "filter on Reference" in {
       val c1 = aCase(withoutQueue(), withActiveDaysElapsed(1), withReference("1"))
@@ -925,8 +996,8 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
       val report = CaseReport(
         filter = CaseReportFilter(reference = Some(Set("1"))),
-        group = Set(CaseReportGroup.QUEUE),
-        field = CaseReportField.ACTIVE_DAYS_ELAPSED
+        group  = Set(CaseReportGroup.QUEUE),
+        field  = CaseReportField.ACTIVE_DAYS_ELAPSED
       )
       await(repository.generateReport(report)) shouldBe Seq(ReportResult(CaseReportGroup.QUEUE -> None, Seq(1)))
     }
@@ -941,8 +1012,8 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
 
       val report = CaseReport(
         filter = CaseReportFilter(reference = Some(Set("1", "2"))),
-        group = Set(CaseReportGroup.QUEUE),
-        field = CaseReportField.ACTIVE_DAYS_ELAPSED
+        group  = Set(CaseReportGroup.QUEUE),
+        field  = CaseReportField.ACTIVE_DAYS_ELAPSED
       )
 
       await(repository.generateReport(report)) shouldBe Seq(ReportResult(CaseReportGroup.QUEUE -> None, Seq(1, 2)))
@@ -965,16 +1036,15 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
     }
 
     "store dates as Mongo Dates" in {
-      val date = Instant.now()
+      val date    = Instant.now()
       val oldCase = case1.copy(createdDate = date)
       val newCase = case2.copy(createdDate = date.plusSeconds(1))
       await(repository.insert(oldCase))
       await(repository.insert(newCase))
 
-
       def selectAllWithSort(dir: Int): Future[Seq[Case]] = getMany(Json.obj(), Json.obj("createdDate" -> dir))
 
-      await(selectAllWithSort(1)) shouldBe Seq(oldCase, newCase)
+      await(selectAllWithSort(1))  shouldBe Seq(oldCase, newCase)
       await(selectAllWithSort(-1)) shouldBe Seq(newCase, oldCase)
     }
 
@@ -983,16 +1053,32 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
       import scala.concurrent.duration._
 
       val expectedIndexes = List(
-        Index(key = Seq("_id" -> Ascending), name = Some("_id_")),
+        Index(key = Seq("_id"       -> Ascending), name = Some("_id_")),
         Index(key = Seq("reference" -> Ascending), name = Some("reference_Index"), unique = true),
-        Index(key = Seq("queueId" -> Ascending), name = Some("queueId_Index"), unique = false),
-        Index(key = Seq("application.holder.eori" -> Ascending), name = Some("application.holder.eori_Index"), unique = false),
-        Index(key = Seq("application.agent.eoriDetails.eori" -> Ascending), name = Some("application.agent.eoriDetails.eori_Index"), unique = false),
+        Index(key = Seq("queueId"   -> Ascending), name = Some("queueId_Index"), unique = false),
+        Index(
+          key    = Seq("application.holder.eori" -> Ascending),
+          name   = Some("application.holder.eori_Index"),
+          unique = false
+        ),
+        Index(
+          key    = Seq("application.agent.eoriDetails.eori" -> Ascending),
+          name   = Some("application.agent.eoriDetails.eori_Index"),
+          unique = false
+        ),
         Index(key = Seq("daysElapsed" -> Ascending), name = Some("daysElapsed_Index"), unique = false),
         Index(key = Seq("assignee.id" -> Ascending), name = Some("assignee.id_Index"), unique = false),
-        Index(key = Seq("decision.effectiveEndDate" -> Ascending), name = Some("decision.effectiveEndDate_Index"), unique = false),
-        Index(key = Seq("decision.bindingCommodityCode" -> Ascending), name = Some("decision.bindingCommodityCode_Index"), unique = false),
-        Index(key = Seq("status" -> Ascending), name = Some("status_Index"), unique = false),
+        Index(
+          key    = Seq("decision.effectiveEndDate" -> Ascending),
+          name   = Some("decision.effectiveEndDate_Index"),
+          unique = false
+        ),
+        Index(
+          key    = Seq("decision.bindingCommodityCode" -> Ascending),
+          name   = Some("decision.bindingCommodityCode_Index"),
+          unique = false
+        ),
+        Index(key = Seq("status"   -> Ascending), name = Some("status_Index"), unique   = false),
         Index(key = Seq("keywords" -> Ascending), name = Some("keywords_Index"), unique = false)
       )
 
@@ -1007,20 +1093,17 @@ class CaseRepositorySpec extends BaseMongoIndexSpec
     }
   }
 
-  protected def getMany(filterBy: JsObject, sortBy: JsObject): Future[Seq[Case]] = {
+  protected def getMany(filterBy: JsObject, sortBy: JsObject): Future[Seq[Case]] =
     repository.collection
       .find[JsObject, Case](filterBy)
       .sort(sortBy)
       .cursor[Case]()
       .collect[Seq](Int.MaxValue, Cursor.FailOnError[Seq[Case]]())
-  }
 
-  private def selectorByReference(c: Case) = {
+  private def selectorByReference(c: Case) =
     BSONDocument("reference" -> c.reference)
-  }
 
-  private def store(cases: Case*): Unit = {
+  private def store(cases: Case*): Unit =
     cases.foreach { c: Case => await(repository.insert(c)) }
-  }
 
 }

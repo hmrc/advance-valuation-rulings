@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,11 +36,14 @@ trait SchedulerLockRepository {
 }
 
 @Singleton
-class SchedulerLockMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
-  extends ReactiveRepository[SchedulerRunEvent, BSONObjectID](
-    collectionName = "scheduler",
-    mongo = mongoDbProvider.mongo,
-    domainFormat = MongoFormatters.formatSchedulerRunEvent) with SchedulerLockRepository with MongoCrudHelper[SchedulerRunEvent] {
+class SchedulerLockMongoRepository @Inject() (mongoDbProvider: MongoDbProvider)
+    extends ReactiveRepository[SchedulerRunEvent, BSONObjectID](
+      collectionName = "scheduler",
+      mongo          = mongoDbProvider.mongo,
+      domainFormat   = MongoFormatters.formatSchedulerRunEvent
+    )
+    with SchedulerLockRepository
+    with MongoCrudHelper[SchedulerRunEvent] {
 
   override val mongoCollection: JSONCollection = collection
 
@@ -48,14 +51,14 @@ class SchedulerLockMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
     createCompoundIndex(Seq("name", "runDate"), isUnique = true)
   )
 
-  override def lock(e: SchedulerRunEvent): Future[Boolean] = {
+  override def lock(e: SchedulerRunEvent): Future[Boolean] =
     createOne(e) map { _ =>
       Logger.debug(s"Took Lock for [${e.name}] at [${e.runDate}]")
       true
-    } recover { case t: Throwable =>
-      Logger.debug(s"Unable to take Lock for [${e.name}] at [${e.runDate}]", t)
-      false
+    } recover {
+      case t: Throwable =>
+        Logger.debug(s"Unable to take Lock for [${e.name}] at [${e.runDate}]", t)
+        false
     }
-  }
 
 }

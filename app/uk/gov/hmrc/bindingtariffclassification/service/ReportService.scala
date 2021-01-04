@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,26 +25,26 @@ import uk.gov.hmrc.bindingtariffclassification.repository.{CaseRepository, Event
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ReportService @Inject()(caseRepository: CaseRepository, eventRepository: EventRepository) {
+class ReportService @Inject() (caseRepository: CaseRepository, eventRepository: EventRepository) {
 
-  def generate(report: CaseReport): Future[Seq[ReportResult]] = {
+  def generate(report: CaseReport): Future[Seq[ReportResult]] =
     for {
       report: CaseReport <- report.filter.referralDate match {
-        case Some(range) => appendReferredCaseReferencesTo(report, range)
-        case None => Future.successful(report)
-      }
+                             case Some(range) => appendReferredCaseReferencesTo(report, range)
+                             case None        => Future.successful(report)
+                           }
 
       report <- caseRepository.generateReport(report)
     } yield report
-  }
 
   private def appendReferredCaseReferencesTo(report: CaseReport, range: InstantRange): Future[CaseReport] = {
-    val caseStatusChangeEventTypes = Set(EventType.CASE_STATUS_CHANGE, EventType.CASE_REFERRAL, EventType.CASE_COMPLETED, EventType.CASE_CANCELLATION)
+    val caseStatusChangeEventTypes =
+      Set(EventType.CASE_STATUS_CHANGE, EventType.CASE_REFERRAL, EventType.CASE_COMPLETED, EventType.CASE_CANCELLATION)
     val filter = report.filter
     val search = EventSearch(
       timestampMin = Some(range.min),
       timestampMax = Some(range.max),
-      `type` = Some(caseStatusChangeEventTypes)
+      `type`       = Some(caseStatusChangeEventTypes)
     )
 
     eventRepository

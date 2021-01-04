@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,5 +20,5 @@ object SortDirection extends Enumeration {
   type SortDirection = Value
 
   val DESCENDING = Value(-1, "desc")
-  val ASCENDING = Value(1, "asc")
+  val ASCENDING  = Value(1, "asc")
 }

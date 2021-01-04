@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,14 +28,14 @@ import scala.concurrent.Future.successful
 
 class CaseServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
-  private val c1 = mock[Case]
+  private val c1      = mock[Case]
   private val c1Saved = mock[Case]
 
-  private val caseRepository = mock[CaseRepository]
+  private val caseRepository     = mock[CaseRepository]
   private val sequenceRepository = mock[SequenceRepository]
-  private val eventService = mock[EventService]
-  private val appConfig = mock[AppConfig]
-  private val service = new CaseService(appConfig, caseRepository, sequenceRepository, eventService)
+  private val eventService       = mock[EventService]
+  private val appConfig          = mock[AppConfig]
+  private val service            = new CaseService(appConfig, caseRepository, sequenceRepository, eventService)
 
   private final val emulatedFailure = new RuntimeException("Emulated failure.")
 
@@ -44,22 +44,23 @@ class CaseServiceSpec extends BaseSpec with BeforeAndAfterEach {
     reset(caseRepository, sequenceRepository, appConfig)
   }
 
-  override protected def beforeEach(): Unit = {
+  override protected def beforeEach(): Unit =
     super.beforeEach()
-  }
 
   "nextCaseReference()" should {
 
     "generate a new reference" when {
 
       "Case is an ATaR" in {
-        when(sequenceRepository.incrementAndGetByName("ATaR Case Reference")).thenReturn(successful(Sequence("ATaR Case Reference", 10)))
+        when(sequenceRepository.incrementAndGetByName("ATaR Case Reference"))
+          .thenReturn(successful(Sequence("ATaR Case Reference", 10)))
         when(appConfig.atarCaseReferenceOffset).thenReturn(1000)
         await(service.nextCaseReference(ApplicationType.BTI)) shouldBe "1010"
       }
 
       "Case is a Liability" in {
-        when(sequenceRepository.incrementAndGetByName("Other Case Reference")).thenReturn(successful(Sequence("Other Case Reference", 5)))
+        when(sequenceRepository.incrementAndGetByName("Other Case Reference"))
+          .thenReturn(successful(Sequence("Other Case Reference", 5)))
         when(appConfig.otherCaseReferenceOffset).thenReturn(2000)
         await(service.nextCaseReference(ApplicationType.LIABILITY_ORDER)) shouldBe "2005"
       }
@@ -181,7 +182,7 @@ class CaseServiceSpec extends BaseSpec with BeforeAndAfterEach {
   }
 
   "get()" should {
-    val searchBy = mock[CaseSearch]
+    val searchBy   = mock[CaseSearch]
     val pagination = mock[Pagination]
 
     "return the expected cases" in {

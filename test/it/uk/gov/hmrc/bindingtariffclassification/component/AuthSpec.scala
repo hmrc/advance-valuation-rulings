@@ -22,7 +22,7 @@ import scalaj.http.Http
 
 class AuthSpec extends BaseFeatureSpec {
 
-  override lazy val port = 14684
+  override lazy val port   = 14684
   protected val serviceUrl = s"http://localhost:$port"
 
   feature("Authentication") {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,38 +38,30 @@ import scala.concurrent.duration._
 
 class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
 
-  private val zone: ZoneId = ZoneOffset.UTC
+  private val zone: ZoneId        = ZoneOffset.UTC
   private val schedulerRepository = mock[SchedulerLockRepository]
-  private val job = mock[ScheduledJob]
-  private val actorSystem = mock[ActorSystem]
-  private val internalScheduler = mock[akka.actor.Scheduler]
-  private val config = mock[AppConfig]
-  private val now: Instant = "2018-12-25T12:00:00"
-  private val clock = Clock.fixed(now, zone)
-  private val util = mock[SchedulerDateUtil]
+  private val job                 = mock[ScheduledJob]
+  private val actorSystem         = mock[ActorSystem]
+  private val internalScheduler   = mock[akka.actor.Scheduler]
+  private val config              = mock[AppConfig]
+  private val now: Instant        = "2018-12-25T12:00:00"
+  private val clock               = Clock.fixed(now, zone)
+  private val util                = mock[SchedulerDateUtil]
 
-  private def instant(datetime: String) = {
+  private def instant(datetime: String) =
     LocalDateTime.parse(datetime).atZone(zone).toInstant
-  }
 
-  private implicit def string2Instant: String => Instant = {
-    datetime => instant(datetime)
-  }
+  private implicit def string2Instant: String => Instant = { datetime => instant(datetime) }
 
-  private implicit def string2Time: String => LocalTime = {
-    time => LocalTime.parse(time)
-  }
+  private implicit def string2Time: String => LocalTime = { time => LocalTime.parse(time) }
 
   private implicit def instant2Time: Instant => LocalTime = _.atZone(zone).toLocalTime
 
-
-  private def givenTheLockSucceeds(): Unit = {
+  private def givenTheLockSucceeds(): Unit =
     given(schedulerRepository.lock(any[SchedulerRunEvent])).willReturn(successful(true))
-  }
 
-  private def givenTheLockFails(): Unit = {
+  private def givenTheLockFails(): Unit =
     given(schedulerRepository.lock(any[SchedulerRunEvent])).willReturn(successful(false))
-  }
 
   private def theLockEvent: SchedulerRunEvent = {
     val captor: ArgumentCaptor[SchedulerRunEvent] = ArgumentCaptor.forClass(classOf[SchedulerRunEvent])
@@ -98,9 +90,11 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
   }
 
   private def theSchedule: Schedule = {
-    val intervalCaptor: ArgumentCaptor[FiniteDuration] = ArgumentCaptor.forClass(classOf[FiniteDuration])
+    val intervalCaptor: ArgumentCaptor[FiniteDuration]     = ArgumentCaptor.forClass(classOf[FiniteDuration])
     val initialDelayCaptor: ArgumentCaptor[FiniteDuration] = ArgumentCaptor.forClass(classOf[FiniteDuration])
-    verify(internalScheduler).schedule(initialDelayCaptor.capture(), intervalCaptor.capture(), any[Runnable])(any[ExecutionContext])
+    verify(internalScheduler).schedule(initialDelayCaptor.capture(), intervalCaptor.capture(), any[Runnable])(
+      any[ExecutionContext]
+    )
     Schedule(initialDelayCaptor.getValue, intervalCaptor.getValue)
   }
 
@@ -144,11 +138,11 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
 
       // Then
       val schedule = theSchedule
-      schedule.interval shouldBe 3.seconds
+      schedule.interval     shouldBe 3.seconds
       schedule.initialDelay shouldBe 0.seconds
 
       val lockEvent = theLockEvent
-      lockEvent.name shouldBe "name"
+      lockEvent.name    shouldBe "name"
       lockEvent.runDate shouldBe instant("2018-12-25T12:00:00")
     }
 
@@ -166,11 +160,11 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
 
       // Then
       val schedule = theSchedule
-      schedule.interval shouldBe 3.seconds
+      schedule.interval     shouldBe 3.seconds
       schedule.initialDelay shouldBe 20.seconds
 
       val lockEvent = theLockEvent
-      lockEvent.name shouldBe "name"
+      lockEvent.name    shouldBe "name"
       lockEvent.runDate shouldBe instant("2018-12-25T12:00:10")
     }
 
@@ -204,9 +198,8 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
 
   }
 
-  private def whenTheSchedulerStarts(withJobs: Set[ScheduledJob] = Set(job)): Scheduler = {
+  private def whenTheSchedulerStarts(withJobs: Set[ScheduledJob] = Set(job)): Scheduler =
     new Scheduler(actorSystem, config, schedulerRepository, util, ScheduledJobs(withJobs))
-  }
 
   private case class Schedule(initialDelay: FiniteDuration, interval: FiniteDuration)
 

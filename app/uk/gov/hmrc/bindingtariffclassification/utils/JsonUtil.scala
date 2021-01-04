@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.bindingtariffclassification.utils
 
-import play.api.libs.json.{Format, OFormat, JsObject, JsValue, JsResult}
+import play.api.libs.json.{Format, JsObject, JsResult, JsValue, OFormat}
 
 object JsonUtil {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,44 +29,48 @@ trait MongoCrudHelper[T] extends MongoIndexCreator {
 
   protected val mongoCollection: JSONCollection
 
-  protected def getOne(selector: JsObject)(implicit r: OFormat[T]): Future[Option[T]] = {
+  protected def getOne(selector: JsObject)(implicit r: OFormat[T]): Future[Option[T]] =
     mongoCollection.find[JsObject, T](selector).one[T]
-  }
 
-  protected def getMany(filterBy: JsObject, sortBy: JsObject, pagination: Pagination = Pagination())
-                       (implicit r: OFormat[T]): Future[Paged[T]] = {
+  protected def getMany(filterBy: JsObject, sortBy: JsObject, pagination: Pagination = Pagination())(
+    implicit r: OFormat[T]
+  ): Future[Paged[T]] =
     for {
-      results <- mongoCollection.find[JsObject, T](filterBy)
-        .sort(sortBy)
-        .options(QueryOpts(skipN = (pagination.page -1) * pagination.pageSize, batchSizeN = pagination.pageSize))
-        .cursor[T]()
-        .collect[List](pagination.pageSize, Cursor.FailOnError[List[T]]())
-      count <- mongoCollection.count(Some(filterBy), limit = Some(0), skip = 0, hint = None, readConcern = ReadConcern.Local)
+      results <- mongoCollection
+                  .find[JsObject, T](filterBy)
+                  .sort(sortBy)
+                  .options(
+                    QueryOpts(skipN = (pagination.page - 1) * pagination.pageSize, batchSizeN = pagination.pageSize)
+                  )
+                  .cursor[T]()
+                  .collect[List](pagination.pageSize, Cursor.FailOnError[List[T]]())
+      count <- mongoCollection
+                .count(Some(filterBy), limit = Some(0), skip = 0, hint = None, readConcern = ReadConcern.Local)
     } yield Paged(results, pagination.page, pagination.pageSize, count.toInt)
-  }
 
-  protected def createOne(document: T)(implicit w: OWrites[T]): Future[T] = {
+  protected def createOne(document: T)(implicit w: OWrites[T]): Future[T] =
     mongoCollection.insert(document).map(_ => document)
-  }
 
-  protected def updateDocument(selector: JsObject, update: T, fetchNew: Boolean = true, upsert: Boolean = false)
-                              (implicit returnFormat: OFormat[T]): Future[Option[T]] = {
+  protected def updateDocument(selector: JsObject, update: T, fetchNew: Boolean = true, upsert: Boolean = false)(
+    implicit returnFormat: OFormat[T]
+  ): Future[Option[T]] =
     updateInternal(selector, Json.toJson(update).as[JsObject], fetchNew, upsert)
-  }
 
-  protected def update(selector: JsObject, update: JsObject, fetchNew: Boolean, upsert: Boolean = false)
-                      (implicit returnFormat: OFormat[T]): Future[Option[T]] = {
+  protected def update(selector: JsObject, update: JsObject, fetchNew: Boolean, upsert: Boolean = false)(
+    implicit returnFormat: OFormat[T]
+  ): Future[Option[T]] =
     updateInternal(selector, update, fetchNew, upsert)
-  }
 
-  private def updateInternal(selector: JsObject, update: JsObject, fetchNew: Boolean, upsert: Boolean)
-                            (implicit returnFormat: OFormat[T]): Future[Option[T]] = {
-    mongoCollection.findAndUpdate(
-      selector = selector,
-      update = update,
-      fetchNewObject = fetchNew,
-      upsert = upsert
-    ).map(_.value.map(_.as[T]))
-  }
+  private def updateInternal(selector: JsObject, update: JsObject, fetchNew: Boolean, upsert: Boolean)(
+    implicit returnFormat: OFormat[T]
+  ): Future[Option[T]] =
+    mongoCollection
+      .findAndUpdate(
+        selector       = selector,
+        update         = update,
+        fetchNewObject = fetchNew,
+        upsert         = upsert
+      )
+      .map(_.value.map(_.as[T]))
 
 }

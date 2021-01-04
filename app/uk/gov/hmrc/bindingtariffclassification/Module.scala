@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,9 +46,9 @@ class Module extends play.api.inject.Module {
 
 }
 
-class ScheduledJobProvider @Inject()(
-                                      activeDaysElapsedJob: ActiveDaysElapsedJob,
-                                     referredDaysElapsedJob: ReferredDaysElapsedJob
-                                    ) extends Provider[ScheduledJobs] {
+class ScheduledJobProvider @Inject() (
+  activeDaysElapsedJob: ActiveDaysElapsedJob,
+  referredDaysElapsedJob: ReferredDaysElapsedJob
+) extends Provider[ScheduledJobs] {
   override def get(): ScheduledJobs = ScheduledJobs(Set(activeDaysElapsedJob, referredDaysElapsedJob))
 }

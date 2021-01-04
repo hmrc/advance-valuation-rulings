@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,9 +34,9 @@ import scala.concurrent.Future
 
 class ReportServiceTest extends BaseSpec with BeforeAndAfterEach {
 
-  private val caseRepository = mock[CaseRepository]
+  private val caseRepository  = mock[CaseRepository]
   private val eventRepository = mock[EventRepository]
-  private val service = new ReportService(caseRepository, eventRepository)
+  private val service         = new ReportService(caseRepository, eventRepository)
 
   override def afterEach(): Unit = {
     super.afterEach()
@@ -47,8 +47,8 @@ class ReportServiceTest extends BaseSpec with BeforeAndAfterEach {
     "Delegate to Case Repository for simple report" in {
       val report = CaseReport(
         filter = CaseReportFilter(),
-        group = Set(CaseReportGroup.QUEUE),
-        field = CaseReportField.ACTIVE_DAYS_ELAPSED
+        group  = Set(CaseReportGroup.QUEUE),
+        field  = CaseReportField.ACTIVE_DAYS_ELAPSED
       )
 
       given(caseRepository.generateReport(report)) willReturn Future.successful(Seq.empty[ReportResult])
@@ -67,10 +67,12 @@ class ReportServiceTest extends BaseSpec with BeforeAndAfterEach {
       val report = CaseReport(
         filter = CaseReportFilter(
           reference = Some(Set("ref1")),
-          referralDate = Some(InstantRange(
-            min = Instant.MIN,
-            max = Instant.MAX
-          ))
+          referralDate = Some(
+            InstantRange(
+              min = Instant.MIN,
+              max = Instant.MAX
+            )
+          )
         ),
         group = Set(CaseReportGroup.QUEUE),
         field = CaseReportField.ACTIVE_DAYS_ELAPSED
@@ -79,15 +81,22 @@ class ReportServiceTest extends BaseSpec with BeforeAndAfterEach {
       await(service.generate(report)) shouldBe Seq.empty
 
       theEventSearch shouldBe EventSearch(
-        `type` = Some(Set(EventType.CASE_STATUS_CHANGE, EventType.CASE_REFERRAL, EventType.CASE_COMPLETED, EventType.CASE_CANCELLATION)),
+        `type` = Some(
+          Set(
+            EventType.CASE_STATUS_CHANGE,
+            EventType.CASE_REFERRAL,
+            EventType.CASE_COMPLETED,
+            EventType.CASE_CANCELLATION
+          )
+        ),
         timestampMin = Some(Instant.MIN),
         timestampMax = Some(Instant.MAX)
       )
 
       theReportGenerated shouldBe CaseReport(
         filter = CaseReportFilter(reference = Some(Set("ref1", "ref2"))),
-        group = Set(CaseReportGroup.QUEUE),
-        field = CaseReportField.ACTIVE_DAYS_ELAPSED
+        group  = Set(CaseReportGroup.QUEUE),
+        field  = CaseReportField.ACTIVE_DAYS_ELAPSED
       )
     }
 
@@ -99,10 +108,12 @@ class ReportServiceTest extends BaseSpec with BeforeAndAfterEach {
       val report = CaseReport(
         filter = CaseReportFilter(
           reference = Some(Set("ref1")),
-          referralDate = Some(InstantRange(
-            min = Instant.MIN,
-            max = Instant.MAX
-          ))
+          referralDate = Some(
+            InstantRange(
+              min = Instant.MIN,
+              max = Instant.MAX
+            )
+          )
         ),
         group = Set(CaseReportGroup.QUEUE),
         field = CaseReportField.ACTIVE_DAYS_ELAPSED
@@ -111,15 +122,22 @@ class ReportServiceTest extends BaseSpec with BeforeAndAfterEach {
       await(service.generate(report)) shouldBe Seq.empty
 
       theEventSearch shouldBe EventSearch(
-        `type` = Some(Set(EventType.CASE_STATUS_CHANGE, EventType.CASE_REFERRAL, EventType.CASE_COMPLETED, EventType.CASE_CANCELLATION)),
+        `type` = Some(
+          Set(
+            EventType.CASE_STATUS_CHANGE,
+            EventType.CASE_REFERRAL,
+            EventType.CASE_COMPLETED,
+            EventType.CASE_CANCELLATION
+          )
+        ),
         timestampMin = Some(Instant.MIN),
         timestampMax = Some(Instant.MAX)
       )
 
       theReportGenerated shouldBe CaseReport(
         filter = CaseReportFilter(reference = Some(Set("ref1", "ref2"))),
-        group = Set(CaseReportGroup.QUEUE),
-        field = CaseReportField.ACTIVE_DAYS_ELAPSED
+        group  = Set(CaseReportGroup.QUEUE),
+        field  = CaseReportField.ACTIVE_DAYS_ELAPSED
       )
     }
 
@@ -131,10 +149,12 @@ class ReportServiceTest extends BaseSpec with BeforeAndAfterEach {
       val report = CaseReport(
         filter = CaseReportFilter(
           reference = Some(Set("ref1")),
-          referralDate = Some(InstantRange(
-            min = Instant.MIN,
-            max = Instant.MAX
-          ))
+          referralDate = Some(
+            InstantRange(
+              min = Instant.MIN,
+              max = Instant.MAX
+            )
+          )
         ),
         group = Set(CaseReportGroup.QUEUE),
         field = CaseReportField.ACTIVE_DAYS_ELAPSED
@@ -143,24 +163,31 @@ class ReportServiceTest extends BaseSpec with BeforeAndAfterEach {
       await(service.generate(report)) shouldBe Seq.empty
 
       theEventSearch shouldBe EventSearch(
-        `type` = Some(Set(EventType.CASE_STATUS_CHANGE, EventType.CASE_REFERRAL, EventType.CASE_COMPLETED, EventType.CASE_CANCELLATION)),
+        `type` = Some(
+          Set(
+            EventType.CASE_STATUS_CHANGE,
+            EventType.CASE_REFERRAL,
+            EventType.CASE_COMPLETED,
+            EventType.CASE_CANCELLATION
+          )
+        ),
         timestampMin = Some(Instant.MIN),
         timestampMax = Some(Instant.MAX)
       )
 
       theReportGenerated shouldBe CaseReport(
         filter = CaseReportFilter(reference = Some(Set("ref1"))),
-        group = Set(CaseReportGroup.QUEUE),
-        field = CaseReportField.ACTIVE_DAYS_ELAPSED
+        group  = Set(CaseReportGroup.QUEUE),
+        field  = CaseReportField.ACTIVE_DAYS_ELAPSED
       )
     }
   }
 
   def statusChange(reference: String, from: CaseStatus, to: CaseStatus): Event = Event(
-    details = createCaseStatusChangeEventDetails(from, to),
-    operator = mock[Operator],
+    details       = createCaseStatusChangeEventDetails(from, to),
+    operator      = mock[Operator],
     caseReference = reference,
-    timestamp = Instant.EPOCH
+    timestamp     = Instant.EPOCH
   )
 
   def theEventSearch: EventSearch = {

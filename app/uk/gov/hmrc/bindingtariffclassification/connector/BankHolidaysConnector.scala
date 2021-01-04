@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,20 +31,20 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
 
 @Singleton
-class BankHolidaysConnector @Inject()(appConfig: AppConfig, http: ProxyHttpClient)
-                                     (implicit executionContext: ExecutionContext) {
+class BankHolidaysConnector @Inject() (appConfig: AppConfig, http: ProxyHttpClient)(
+  implicit executionContext: ExecutionContext
+) {
 
-  def get()(implicit headerCarrier: HeaderCarrier): Future[Set[LocalDate]] = {
-    http.GET[BankHolidaysResponse](s"${appConfig.bankHolidaysUrl}/bank-holidays")
+  def get()(implicit headerCarrier: HeaderCarrier): Future[Set[LocalDate]] =
+    http
+      .GET[BankHolidaysResponse](s"${appConfig.bankHolidaysUrl}/bank-holidays")
       .recover(withResourcesFile)
       .map(_.`england-and-wales`.events.map(_.date).toSet)
-  }
-
 
   private def withResourcesFile: PartialFunction[Throwable, BankHolidaysResponse] = {
     case t =>
       Logger.error("Bank Holidays Request Failed", t)
-      val url = getClass.getClassLoader.getResource("bank-holidays-fallback.json")
+      val url     = getClass.getClassLoader.getResource("bank-holidays-fallback.json")
       val content = Source.fromURL(url, "UTF-8").getLines().mkString
       Json.fromJson(Json.parse(content)).get
   }

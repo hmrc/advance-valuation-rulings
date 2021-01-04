@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,11 +30,12 @@ import uk.gov.hmrc.mongo.MongoSpecSupport
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class SequenceRepositorySpec extends BaseMongoIndexSpec
-  with BeforeAndAfterAll
-  with BeforeAndAfterEach
-  with MongoSpecSupport
-  with Eventually { self =>
+class SequenceRepositorySpec
+    extends BaseMongoIndexSpec
+    with BeforeAndAfterAll
+    with BeforeAndAfterEach
+    with MongoSpecSupport
+    with Eventually { self =>
 
   private val mongoDbProvider: MongoDbProvider = new MongoDbProvider {
     override val mongo: () => DB = self.mongo
@@ -42,9 +43,8 @@ class SequenceRepositorySpec extends BaseMongoIndexSpec
 
   private val repository = createMongoRepo
 
-  private def createMongoRepo: SequenceMongoRepository = {
+  private def createMongoRepo: SequenceMongoRepository =
     new SequenceMongoRepository(mongoDbProvider)
-  }
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -58,27 +58,28 @@ class SequenceRepositorySpec extends BaseMongoIndexSpec
     await(repository.drop)
   }
 
-  private def collectionSize: Int = {
-    await(repository.collection.count(selector = None, limit = Some(0), skip = 0, hint = None, readConcern = ReadConcern.Local)).toInt
-  }
+  private def collectionSize: Int =
+    await(
+      repository.collection
+        .count(selector = None, limit = Some(0), skip = 0, hint = None, readConcern = ReadConcern.Local)
+    ).toInt
 
-  private def selectorByName(name: String): BSONDocument = {
+  private def selectorByName(name: String): BSONDocument =
     BSONDocument("name" -> name)
-  }
 
   "insert" should {
     val sequence = Sequence("name", 0)
 
     "insert a new document in the collection" in {
       await(repository.insert(sequence)) shouldBe sequence
-      collectionSize shouldBe 1
+      collectionSize                     shouldBe 1
 
       await(repository.collection.find(selectorByName("name")).one[Sequence]) shouldBe Some(sequence)
     }
 
     "fail to insert a duplicate sequence name" in {
       await(repository.insert(sequence)) shouldBe sequence
-      collectionSize shouldBe 1
+      collectionSize                     shouldBe 1
 
       await(repository.collection.find(selectorByName("name")).one[Sequence]) shouldBe Some(sequence)
 
@@ -88,7 +89,7 @@ class SequenceRepositorySpec extends BaseMongoIndexSpec
         await(repository.insert(updated))
       }.code shouldBe Some(11000)
 
-      collectionSize shouldBe 1
+      collectionSize                                                          shouldBe 1
       await(repository.collection.find(selectorByName("name")).one[Sequence]) shouldBe Some(sequence)
     }
   }
@@ -125,7 +126,7 @@ class SequenceRepositorySpec extends BaseMongoIndexSpec
 
       val expectedIndexes = List(
         Index(key = Seq("name" -> Ascending), name = Some("name_Index"), unique = true),
-        Index(key = Seq("_id" -> Ascending), name = Some("_id_"))
+        Index(key = Seq("_id"  -> Ascending), name = Some("_id_"))
       )
 
       val repo = createMongoRepo

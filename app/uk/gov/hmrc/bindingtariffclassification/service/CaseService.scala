@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,21 +28,28 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 @Singleton
-class CaseService @Inject()(
-                             appConfig: AppConfig,
-                            caseRepository: CaseRepository,
-                            sequenceRepository: SequenceRepository,
-                            eventService: EventService
-                           ) {
+class CaseService @Inject() (
+  appConfig: AppConfig,
+  caseRepository: CaseRepository,
+  sequenceRepository: SequenceRepository,
+  eventService: EventService
+) {
 
-  def insert(c: Case): Future[Case] = {
+  def insert(c: Case): Future[Case] =
     caseRepository.insert(c)
-  }
 
   def addInitialSampleStatusIfExists(c: Case): Future[Unit] = {
     if (c.sample.status.nonEmpty) {
       val details = SampleStatusChange(None, c.sample.status, None)
-      eventService.insert(Event(UUID.randomUUID().toString, details, Operator("-1",Some(c.application.contact.name)), c.reference, Instant.now()))
+      eventService.insert(
+        Event(
+          UUID.randomUUID().toString,
+          details,
+          Operator("-1", Some(c.application.contact.name)),
+          c.reference,
+          Instant.now()
+        )
+      )
     }
     Future.successful((): Unit)
   }
@@ -58,23 +65,19 @@ class CaseService @Inject()(
     nextCaseReference.map(_.toString)
   }
 
-  private def getNextInSequence(sequenceName: String, offset: Long): Future[Long] = {
+  private def getNextInSequence(sequenceName: String, offset: Long): Future[Long] =
     sequenceRepository.incrementAndGetByName(sequenceName).map {
       _.value + offset
     }
-  }
 
-  def update(c: Case, upsert: Boolean): Future[Option[Case]] = {
+  def update(c: Case, upsert: Boolean): Future[Option[Case]] =
     caseRepository.update(c, upsert)
-  }
 
-  def getByReference(reference: String): Future[Option[Case]] = {
+  def getByReference(reference: String): Future[Option[Case]] =
     caseRepository.getByReference(reference)
-  }
 
-  def get(search: CaseSearch, pagination: Pagination): Future[Paged[Case]] = {
+  def get(search: CaseSearch, pagination: Pagination): Future[Paged[Case]] =
     caseRepository.get(search, pagination)
-  }
 
   def deleteAll(): Future[Unit] = {
     caseRepository.deleteAll()
@@ -82,7 +85,6 @@ class CaseService @Inject()(
     sequenceRepository.deleteSequenceByName("Other Case Reference")
   }
 
-  def delete(reference: String): Future[Unit] = {
+  def delete(reference: String): Future[Unit] =
     caseRepository.delete(reference)
-  }
 }

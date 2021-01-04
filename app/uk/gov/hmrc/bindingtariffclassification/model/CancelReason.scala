@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,5 +20,5 @@ object CancelReason extends Enumeration {
   type CancelReason = Value
 
   val ANNULLED, INVALIDATED_CODE_CHANGE, INVALIDATED_EU_MEASURE, INVALIDATED_NATIONAL_MEASURE,
-  INVALIDATED_WRONG_CLASSIFICATION, INVALIDATED_OTHER, OTHER = Value
+    INVALIDATED_WRONG_CLASSIFICATION, INVALIDATED_OTHER, OTHER = Value
 }

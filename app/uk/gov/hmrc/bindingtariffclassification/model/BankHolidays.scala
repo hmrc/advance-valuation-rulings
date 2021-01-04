@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,4 +20,4 @@ import java.time.LocalDate
 
 case class BankHoliday(date: LocalDate)
 case class BankHolidaySet(events: Seq[BankHoliday])
-case class BankHolidaysResponse(`england-and-wales`:BankHolidaySet)
+case class BankHolidaysResponse(`england-and-wales`: BankHolidaySet)

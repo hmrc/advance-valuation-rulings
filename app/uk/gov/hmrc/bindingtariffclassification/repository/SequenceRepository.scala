@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,11 +41,14 @@ trait SequenceRepository {
 }
 
 @Singleton
-class SequenceMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
-  extends ReactiveRepository[Sequence, BSONObjectID](
-    collectionName = "sequences",
-    mongo = mongoDbProvider.mongo,
-    domainFormat = MongoFormatters.formatSequence) with SequenceRepository with MongoCrudHelper[Sequence] {
+class SequenceMongoRepository @Inject() (mongoDbProvider: MongoDbProvider)
+    extends ReactiveRepository[Sequence, BSONObjectID](
+      collectionName = "sequences",
+      mongo          = mongoDbProvider.mongo,
+      domainFormat   = MongoFormatters.formatSequence
+    )
+    with SequenceRepository
+    with MongoCrudHelper[Sequence] {
 
   override val mongoCollection: JSONCollection = collection
 
@@ -53,34 +56,29 @@ class SequenceMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
     createSingleFieldAscendingIndex(indexFieldKey = "name", isUnique = true)
   )
 
-  override def getByName(name: String): Future[Sequence] = {
+  override def getByName(name: String): Future[Sequence] =
     getOne(byName(name)).flatMap(valueOrStartSequence(name))
-  }
 
-  override def incrementAndGetByName(name: String): Future[Sequence] = {
+  override def incrementAndGetByName(name: String): Future[Sequence] =
     update(
       selector = byName(name),
-      update = Json.obj("$inc" -> Json.obj("value" -> 1)),
+      update   = Json.obj("$inc" -> Json.obj("value" -> 1)),
       fetchNew = true
     ).flatMap(valueOrStartSequence(name))
-  }
 
-  override def insert(e: Sequence): Future[Sequence] = {
+  override def insert(e: Sequence): Future[Sequence] =
     createOne(e)
-  }
 
-  override def deleteSequenceByName(name: String): Future[Unit] = {
+  override def deleteSequenceByName(name: String): Future[Unit] =
     remove(("name", Json.obj("$eq" -> name)))
       .map(_ => ())
-  }
 
   private def valueOrStartSequence(name: String): Option[Sequence] => Future[Sequence] = {
     case Some(s: Sequence) => Future.successful(s)
-    case _ => insert(Sequence(name, 1))
+    case _                 => insert(Sequence(name, 1))
   }
 
-  private def byName(name: String) = {
+  private def byName(name: String) =
     Json.obj("name" -> name)
-  }
 
 }

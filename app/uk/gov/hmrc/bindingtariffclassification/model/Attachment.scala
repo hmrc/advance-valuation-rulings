@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,11 @@ package uk.gov.hmrc.bindingtariffclassification.model
 
 import java.time.Instant
 
-case class Attachment
-(
+case class Attachment(
   id: String,
   public: Boolean, // if the attachment is publicly viewable in the public rulings UI
-  operator: Option[Operator] = None,
-  timestamp: Instant = Instant.now(),
-  description: Option[String] = None,
-  shouldPublishToRulings : Boolean = false
+  operator: Option[Operator]      = None,
+  timestamp: Instant              = Instant.now(),
+  description: Option[String]     = None,
+  shouldPublishToRulings: Boolean = false
 )

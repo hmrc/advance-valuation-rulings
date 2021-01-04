@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,48 +33,57 @@ import scala.concurrent.Future.successful
 import scala.concurrent.duration.FiniteDuration
 
 @Singleton
-class Scheduler @Inject()(actorSystem: ActorSystem,
-                          appConfig: AppConfig,
-                          schedulerLockRepository: SchedulerLockRepository,
-                          schedulerDateUtil: SchedulerDateUtil,
-                          scheduledJobs: ScheduledJobs) {
+class Scheduler @Inject() (
+  actorSystem: ActorSystem,
+  appConfig: AppConfig,
+  schedulerLockRepository: SchedulerLockRepository,
+  schedulerDateUtil: SchedulerDateUtil,
+  scheduledJobs: ScheduledJobs
+) {
 
   scheduledJobs.jobs.foreach { job =>
-    Logger.info(s"Scheduling job [${job.name}] to run periodically at [${job.firstRunTime}] with interval [${job.interval.length} ${job.interval.unit}]")
-    actorSystem.scheduler.schedule(durationUntil(nextRunDateFor(job)), job.interval, new Runnable() {
-      override def run(): Unit = {
-        val event = SchedulerRunEvent(job.name, closestRunDateFor(job))
-        Logger.info(s"Scheduled Job [${job.name}]: Acquiring Lock")
-        schedulerLockRepository.lock(event).flatMap {
-          case true =>
-            Logger.info(s"Scheduled Job [${job.name}]: Successfully acquired lock. Starting Job.")
-            job.execute().map { _ =>
-              Logger.info(s"Scheduled Job [${job.name}]: Completed Successfully")
-            } recover { case t: Throwable =>
-              Logger.error(s"Scheduled Job [${job.name}]: Failed", t)
-            }
-          case false =>
-            Logger.info(s"Scheduled Job [${job.name}]: Failed to acquire Lock. It may have been running already.")
-            successful(())
+    Logger.info(
+      s"Scheduling job [${job.name}] to run periodically at [${job.firstRunTime}] with interval [${job.interval.length} ${job.interval.unit}]"
+    )
+    actorSystem.scheduler.schedule(
+      durationUntil(nextRunDateFor(job)),
+      job.interval,
+      new Runnable() {
+        override def run(): Unit = {
+          val event = SchedulerRunEvent(job.name, closestRunDateFor(job))
+          Logger.info(s"Scheduled Job [${job.name}]: Acquiring Lock")
+          schedulerLockRepository.lock(event).flatMap {
+            case true =>
+              Logger.info(s"Scheduled Job [${job.name}]: Successfully acquired lock. Starting Job.")
+              job.execute().map { _ =>
+                Logger.info(s"Scheduled Job [${job.name}]: Completed Successfully")
+              } recover {
+                case t: Throwable =>
+                  Logger.error(s"Scheduled Job [${job.name}]: Failed", t)
+              }
+            case false =>
+              Logger.info(s"Scheduled Job [${job.name}]: Failed to acquire Lock. It may have been running already.")
+              successful(())
+          }
         }
       }
-    })
+    )
   }
 
-  def execute[T](clazz: Class[T]): Future[Unit] = Future.sequence(scheduledJobs.jobs.filter(clazz.isInstance(_)).map(_.execute())).map(_ => ())
+  def execute[T](clazz: Class[T]): Future[Unit] =
+    Future.sequence(scheduledJobs.jobs.filter(clazz.isInstance(_)).map(_.execute())).map(_ => ())
 
-  private def nextRunDateFor(job: ScheduledJob): Instant = {
+  private def nextRunDateFor(job: ScheduledJob): Instant =
     schedulerDateUtil.nextRun(job.firstRunTime, job.interval)
-  }
 
-  private def closestRunDateFor(job: ScheduledJob): Instant = {
+  private def closestRunDateFor(job: ScheduledJob): Instant =
     schedulerDateUtil.closestRun(job.firstRunTime, job.interval)
-  }
 
   private def durationUntil(datetime: Instant): FiniteDuration = {
     val now = Instant.now(appConfig.clock)
 
-    if (datetime.isBefore(now)) throw new IllegalArgumentException(s"Expected a future or present datetime but was [$datetime]")
+    if (datetime.isBefore(now))
+      throw new IllegalArgumentException(s"Expected a future or present datetime but was [$datetime]")
     else FiniteDuration(now.until(datetime, ChronoUnit.SECONDS), TimeUnit.SECONDS)
   }
 

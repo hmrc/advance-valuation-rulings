@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,6 @@ trait MongoDbProvider {
 }
 
 @Singleton
-class MongoDb @Inject()(component: ReactiveMongoComponent) extends MongoDbProvider {
+class MongoDb @Inject() (component: ReactiveMongoComponent) extends MongoDbProvider {
   override val mongo: () => DB = component.mongoConnector.db
 }

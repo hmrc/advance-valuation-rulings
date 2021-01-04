@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,13 +32,12 @@ class ReportingControllerSpec extends BaseSpec with BeforeAndAfterEach {
   private val reportService = mock[ReportService]
 
   private val fakeRequest = FakeRequest()
-  private val controller = new ReportingController(reportService, mcc)
+  private val controller  = new ReportingController(reportService, mcc)
 
   override protected def afterEach(): Unit = {
     super.afterEach()
     Mockito.reset(reportService)
   }
-
 
   "GET report" should {
     "Delegate to service" in {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,8 @@ import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 
 object DateUtil {
 
-  def toInstant(localDate: LocalDate)(implicit appConfig: AppConfig): Instant = localDate.atStartOfDay(appConfig.clock.getZone).toInstant
+  def toInstant(localDate: LocalDate)(implicit appConfig: AppConfig): Instant =
+    localDate.atStartOfDay(appConfig.clock.getZone).toInstant
 
   def bankHoliday(date: LocalDate)(implicit bankHolidays: Set[LocalDate]): Boolean = bankHolidays.contains(date)
 

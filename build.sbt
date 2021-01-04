@@ -8,7 +8,8 @@ import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 
 val appName = "binding-tariff-classification"
 
-lazy val plugins: Seq[Plugins] = Seq(PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory)
+lazy val plugins: Seq[Plugins] =
+  Seq(PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory)
 lazy val playSettings: Seq[Setting[_]] = Seq.empty
 
 lazy val microservice = (project in file("."))
@@ -24,7 +25,7 @@ lazy val microservice = (project in file("."))
     scalaVersion := "2.12.12",
     targetJvm := "jvm-1.8",
     PlayKeys.playDefaultPort := 9580,
-    libraryDependencies ++= (AppDependencies.compile ++ AppDependencies.test).map(_ withSources()),
+    libraryDependencies ++= (AppDependencies.compile ++ AppDependencies.test).map(_ withSources ()),
     evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
     parallelExecution in Test := false,
     fork in Test := true,
@@ -45,6 +46,7 @@ lazy val microservice = (project in file("."))
     addTestReportOption(Test, "test-reports")
   )
   .configs(IntegrationTest)
+  .settings(inConfig(IntegrationTest)(ScalafmtPlugin.scalafmtConfigSettings))
   .settings(inConfig(TemplateItTest)(Defaults.itSettings): _*)
   .settings(
     Keys.fork in IntegrationTest := true,
@@ -53,15 +55,14 @@ lazy val microservice = (project in file("."))
       (baseDirectory in Test).value / "test/util"
     ),
     addTestReportOption(IntegrationTest, "int-test-reports"),
-    parallelExecution in IntegrationTest := false)
-  .settings(
-    resolvers += Resolver.bintrayRepo("hmrc", "releases"),
-    resolvers += Resolver.jcenterRepo)
+    parallelExecution in IntegrationTest := false
+  )
+  .settings(resolvers += Resolver.bintrayRepo("hmrc", "releases"), resolvers += Resolver.jcenterRepo)
 
-lazy val allPhases = "tt->test;test->test;test->compile;compile->compile"
+lazy val allPhases   = "tt->test;test->test;test->compile;compile->compile"
 lazy val allItPhases = "tit->it;it->it;it->compile;compile->compile"
 
-lazy val TemplateTest = config("tt") extend Test
+lazy val TemplateTest   = config("tt") extend Test
 lazy val TemplateItTest = config("tit") extend IntegrationTest
 
 // Coverage configuration
