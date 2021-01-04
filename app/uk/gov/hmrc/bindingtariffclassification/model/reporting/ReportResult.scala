@@ -18,8 +18,7 @@ package uk.gov.hmrc.bindingtariffclassification.model.reporting
 
 import uk.gov.hmrc.bindingtariffclassification.model.reporting.CaseReportGroup.CaseReportGroup
 
-case class ReportResult
-(
+case class ReportResult(
   group: Map[CaseReportGroup, Option[String]],
   value: Seq[Int]
 )

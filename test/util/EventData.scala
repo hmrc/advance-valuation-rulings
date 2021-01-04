@@ -25,54 +25,54 @@ import uk.gov.hmrc.bindingtariffclassification.utils.RandomGenerator
 
 object EventData {
 
-  private def createEvent(caseRef: String, details: Details, date: Instant = Instant.now()): Event = {
+  private def createEvent(caseRef: String, details: Details, date: Instant = Instant.now()): Event =
     Event(
-      id = RandomGenerator.randomUUID(),
-      details = details,
-      operator = Operator(RandomGenerator.randomUUID(), Some("user name")),
+      id            = RandomGenerator.randomUUID(),
+      details       = details,
+      operator      = Operator(RandomGenerator.randomUUID(), Some("user name")),
       caseReference = caseRef,
-      timestamp = date
+      timestamp     = date
     )
-  }
 
-  def createNoteEvent(caseReference: String, date: Instant = Instant.now()): Event = {
+  def createNoteEvent(caseReference: String, date: Instant = Instant.now()): Event =
     createEvent(
       caseRef = caseReference,
       details = Note("This is a random note"),
-      date = date
+      date    = date
     )
-  }
 
-  def createCaseStatusChangeEvent(caseReference: String, from: CaseStatus = DRAFT, to : CaseStatus = NEW, date: Instant = Instant.now()): Event = {
+  def createCaseStatusChangeEvent(
+    caseReference: String,
+    from: CaseStatus = DRAFT,
+    to: CaseStatus   = NEW,
+    date: Instant    = Instant.now()
+  ): Event =
     createEvent(
       caseRef = caseReference,
       details = createCaseStatusChangeEventDetails(from, to),
-      date = date
+      date    = date
     )
-  }
 
-  def createCaseStatusChangeEventDetails(from: CaseStatus, to: CaseStatus): Details = {
+  def createCaseStatusChangeEventDetails(from: CaseStatus, to: CaseStatus): Details =
     to match {
       case CaseStatus.COMPLETED => CompletedCaseStatusChange(from, Some("comment"), None)
-      case CaseStatus.REFERRED => ReferralCaseStatusChange(from, Some("comment"), None, "referredTo", Nil)
-      case CaseStatus.CANCELLED => CancellationCaseStatusChange(from, Some("comment"), None, CancelReason.INVALIDATED_OTHER)
+      case CaseStatus.REFERRED  => ReferralCaseStatusChange(from, Some("comment"), None, "referredTo", Nil)
+      case CaseStatus.CANCELLED =>
+        CancellationCaseStatusChange(from, Some("comment"), None, CancelReason.INVALIDATED_OTHER)
       case _ => CaseStatusChange(from, to, Some("comment"), None)
     }
-  }
 
-  def createExtendedUseStatusChangeEvent(caseReference: String): Event = {
+  def createExtendedUseStatusChangeEvent(caseReference: String): Event =
     createEvent(
       caseRef = caseReference,
       details = ExtendedUseStatusChange(from = true, to = false, comment = Some("comment"))
     )
-  }
 
-  def createQueueChangeEvent(caseReference: String): Event = {
+  def createQueueChangeEvent(caseReference: String): Event =
     createEvent(
       caseRef = caseReference,
       details = QueueChange(from = Some("q1"), to = Some("q2"), comment = Some("comment"))
     )
-  }
 
   def createAssignmentChangeEvent(caseReference: String): Event = {
     val o1 = Operator(RandomGenerator.randomUUID(), Some("user 1"))
@@ -92,8 +92,10 @@ object EventData {
 
   def withCaseReference(reference: String): Event => Event = _.copy(caseReference = reference)
 
-  def withStatusChange(from: CaseStatus, to: CaseStatus): Event =>  Event = _.copy(details = createCaseStatusChangeEventDetails(from, to))
+  def withStatusChange(from: CaseStatus, to: CaseStatus): Event => Event =
+    _.copy(details = createCaseStatusChangeEventDetails(from, to))
 
-  def withTimestamp(date: String): Event => Event = _.copy(timestamp = LocalDateTime.parse(date).atOffset(ZoneOffset.UTC).toInstant)
+  def withTimestamp(date: String): Event => Event =
+    _.copy(timestamp = LocalDateTime.parse(date).atOffset(ZoneOffset.UTC).toInstant)
 
 }

@@ -24,24 +24,21 @@ import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import scala.concurrent.Future
 
 @Singleton
-class AuthFilter @Inject()(appConfig: AppConfig)(implicit override val mat: Materializer) extends Filter {
+class AuthFilter @Inject() (appConfig: AppConfig)(implicit override val mat: Materializer) extends Filter {
 
   private lazy val healthEndpointUri = "/ping/ping"
-  private lazy val authToken = "X-Api-Token"
+  private lazy val authToken         = "X-Api-Token"
 
-  override def apply(f: RequestHeader => Future[Result])(rh: RequestHeader): Future[Result] = {
-
+  override def apply(f: RequestHeader => Future[Result])(rh: RequestHeader): Future[Result] =
     rh.uri match {
       case uri if uri.endsWith(healthEndpointUri) => f(rh)
-      case _ => ensureAuthTokenIsPresent(f, rh)
+      case _                                      => ensureAuthTokenIsPresent(f, rh)
     }
-  }
 
-  private def ensureAuthTokenIsPresent(f: RequestHeader => Future[Result], rh: RequestHeader) = {
+  private def ensureAuthTokenIsPresent(f: RequestHeader => Future[Result], rh: RequestHeader) =
     rh.headers.get(authToken) match {
       case Some(appConfig.authorization) => f(rh)
-      case _ => Future.successful(Results.Forbidden(s"Missing or invalid '$authToken'"))
+      case _                             => Future.successful(Results.Forbidden(s"Missing or invalid '$authToken'"))
     }
-  }
 
 }

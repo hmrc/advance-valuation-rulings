@@ -31,11 +31,12 @@ import uk.gov.hmrc.mongo.MongoSpecSupport
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class SchedulerLockRepositorySpec extends BaseMongoIndexSpec
-  with BeforeAndAfterAll
-  with BeforeAndAfterEach
-  with MongoSpecSupport
-  with Eventually { self =>
+class SchedulerLockRepositorySpec
+    extends BaseMongoIndexSpec
+    with BeforeAndAfterAll
+    with BeforeAndAfterEach
+    with MongoSpecSupport
+    with Eventually { self =>
 
   private val mongoDbProvider: MongoDbProvider = new MongoDbProvider {
     override val mongo: () => DB = self.mongo
@@ -43,9 +44,8 @@ class SchedulerLockRepositorySpec extends BaseMongoIndexSpec
 
   private val repository = newMongoRepo
 
-  private def newMongoRepo: SchedulerLockMongoRepository = {
+  private def newMongoRepo: SchedulerLockMongoRepository =
     new SchedulerLockMongoRepository(mongoDbProvider)
-  }
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -59,24 +59,24 @@ class SchedulerLockRepositorySpec extends BaseMongoIndexSpec
     await(repository.drop)
   }
 
-  private def collectionSize: Int = {
-    await(repository.collection.count(selector = None, limit = Some(0), skip = 0, hint = None, readConcern = ReadConcern.Local)).toInt
-  }
+  private def collectionSize: Int =
+    await(
+      repository.collection
+        .count(selector = None, limit = Some(0), skip = 0, hint = None, readConcern = ReadConcern.Local)
+    ).toInt
 
-  private def selectorByName(name: String): BSONDocument = {
+  private def selectorByName(name: String): BSONDocument =
     BSONDocument("name" -> name)
-  }
 
-  private def date(date: String): Instant = {
+  private def date(date: String): Instant =
     LocalDate.parse(date).atStartOfDay(ZoneId.of("UTC")).toInstant
-  }
 
   "lock" should {
     val event = SchedulerRunEvent("name", date("2018-12-25"))
 
     "insert a new document in the collection" in {
       await(repository.lock(event)) shouldBe true
-      collectionSize shouldBe 1
+      collectionSize                shouldBe 1
 
       await(repository.collection.find(selectorByName("name")).one[SchedulerRunEvent]) shouldBe Some(event)
     }
@@ -85,15 +85,15 @@ class SchedulerLockRepositorySpec extends BaseMongoIndexSpec
       await(repository.lock(event)) shouldBe true
       val event2 = SchedulerRunEvent("name", date("2018-12-26"))
       await(repository.lock(event2)) shouldBe true
-      collectionSize shouldBe 2
+      collectionSize                 shouldBe 2
     }
 
     "fail to insert a duplicate event name & runDate" in {
       await(repository.lock(event)) shouldBe true
-      collectionSize shouldBe 1
+      collectionSize                shouldBe 1
 
       await(repository.lock(event)) shouldBe false
-      collectionSize shouldBe 1
+      collectionSize                shouldBe 1
     }
   }
 
@@ -103,7 +103,7 @@ class SchedulerLockRepositorySpec extends BaseMongoIndexSpec
 
       val expectedIndexes = List(
         Index(key = Seq("name" -> Ascending, "runDate" -> Ascending), name = Some("name_runDate_Index"), unique = true),
-        Index(key = Seq("_id" -> Ascending), name = Some("_id_"))
+        Index(key = Seq("_id"  -> Ascending), name = Some("_id_"))
       )
 
       val repo = newMongoRepo

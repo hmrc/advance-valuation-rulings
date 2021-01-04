@@ -28,17 +28,17 @@ import scala.concurrent.Future.successful
 
 class EncryptedCaseMongoRepositoryTest extends BaseMongoIndexSpec with BeforeAndAfterEach {
 
-  private val rawCase = mock[Case]
-  private val rawCaseSaved = mock[Case]
-  private val encryptedCase = mock[Case]
+  private val rawCase            = mock[Case]
+  private val rawCaseSaved       = mock[Case]
+  private val encryptedCase      = mock[Case]
   private val encryptedCaseSaved = mock[Case]
-  private val search = CaseSearch()
-  private val rawReport = mock[CaseReport]
-  private val rawReportResult = mock[ReportResult]
-  private val pagination = mock[Pagination]
-  private val crypto = mock[Crypto]
-  private val underlyingRepo = mock[CaseMongoRepository]
-  private val repo = new EncryptedCaseMongoRepository(underlyingRepo, crypto)
+  private val search             = CaseSearch()
+  private val rawReport          = mock[CaseReport]
+  private val rawReportResult    = mock[ReportResult]
+  private val pagination         = mock[Pagination]
+  private val crypto             = mock[Crypto]
+  private val underlyingRepo     = mock[CaseMongoRepository]
+  private val repo               = new EncryptedCaseMongoRepository(underlyingRepo, crypto)
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
@@ -61,7 +61,7 @@ class EncryptedCaseMongoRepositoryTest extends BaseMongoIndexSpec with BeforeAnd
   "Update" should {
     "Encrypt and delegate to Repository" in {
       given(underlyingRepo.update(encryptedCase, upsert = true)) willReturn successful(Some(encryptedCaseSaved))
-      await(repo.update(rawCase, upsert = true)) shouldBe Some(rawCaseSaved)
+      await(repo.update(rawCase, upsert                 = true)) shouldBe Some(rawCaseSaved)
     }
   }
 

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.bindingtariffclassification.utils
 
-import play.api.libs.json.{Format, OFormat, JsObject, JsValue, JsResult}
+import play.api.libs.json.{Format, JsObject, JsResult, JsValue, OFormat}
 
 object JsonUtil {
 

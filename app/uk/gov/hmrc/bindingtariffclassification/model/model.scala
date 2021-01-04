@@ -25,16 +25,16 @@ package object model {
 
     type ErrorCode = Value
 
-    val FORBIDDEN = Value("FORBIDDEN")
-    val NOTFOUND = Value("NOT_FOUND")
-    val UNKNOWN_ERROR = Value("UNKNOWN_ERROR")
+    val FORBIDDEN               = Value("FORBIDDEN")
+    val NOTFOUND                = Value("NOT_FOUND")
+    val UNKNOWN_ERROR           = Value("UNKNOWN_ERROR")
     val INVALID_REQUEST_PAYLOAD = Value("INVALID_REQUEST_PAYLOAD")
   }
 
   object JsErrorResponse {
     def apply(errorCode: ErrorCode.Value, message: JsValueWrapper): JsObject =
       Json.obj(
-        "code" -> errorCode.toString,
+        "code"    -> errorCode.toString,
         "message" -> message
       )
   }

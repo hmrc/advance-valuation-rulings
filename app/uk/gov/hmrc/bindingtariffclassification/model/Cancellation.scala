@@ -18,8 +18,7 @@ package uk.gov.hmrc.bindingtariffclassification.model
 
 import uk.gov.hmrc.bindingtariffclassification.model.CancelReason.CancelReason
 
-case class Cancellation
-(
+case class Cancellation(
   reason: CancelReason,
   applicationForExtendedUse: Boolean = false
 )

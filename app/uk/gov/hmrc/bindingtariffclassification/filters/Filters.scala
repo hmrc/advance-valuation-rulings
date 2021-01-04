@@ -21,5 +21,5 @@ import javax.inject._
 import play.api.http.DefaultHttpFilters
 
 @Singleton
-class Filters @Inject()(defaultFilters: MicroserviceFilters, authFilter: AuthFilter)
-  extends DefaultHttpFilters(defaultFilters.filters :+ authFilter: _*)
+class Filters @Inject() (defaultFilters: MicroserviceFilters, authFilter: AuthFilter)
+    extends DefaultHttpFilters(defaultFilters.filters :+ authFilter: _*)

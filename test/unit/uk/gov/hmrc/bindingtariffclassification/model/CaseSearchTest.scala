@@ -25,52 +25,52 @@ import uk.gov.hmrc.play.test.UnitSpec
 class CaseSearchTest extends UnitSpec {
 
   private val sort = CaseSort(
-    field = Set(CaseSortField.DAYS_ELAPSED),
+    field     = Set(CaseSortField.DAYS_ELAPSED),
     direction = SortDirection.DESCENDING
   )
 
   private val filter = CaseFilter(
-    reference = Some(Set("id1", "id2")),
+    reference       = Some(Set("id1", "id2")),
     applicationType = Some(Set(ApplicationType.BTI, ApplicationType.LIABILITY_ORDER)),
-    traderName = Some("trader-name"),
-    queueId = Some(Set("queue-id")),
-    eori = Some("eori-number"),
-    assigneeId = Some("assignee-id"),
-    statuses = Some(Set(PseudoCaseStatus.NEW, PseudoCaseStatus.OPEN)),
-    minDecisionEnd = Some(Instant.EPOCH),
-    keywords = Some(Set("BIKE", "MTB")),
+    traderName      = Some("trader-name"),
+    queueId         = Some(Set("queue-id")),
+    eori            = Some("eori-number"),
+    assigneeId      = Some("assignee-id"),
+    statuses        = Some(Set(PseudoCaseStatus.NEW, PseudoCaseStatus.OPEN)),
+    minDecisionEnd  = Some(Instant.EPOCH),
+    keywords        = Some(Set("BIKE", "MTB")),
     decisionDetails = Some("decision-details")
   )
 
   private val search = CaseSearch(filter = filter, sort = Some(sort))
 
   private val params: Map[String, Seq[String]] = Map(
-    "reference" -> Seq("id1", "id2"),
+    "reference"        -> Seq("id1", "id2"),
     "application_type" -> Seq("BTI", "LIABILITY_ORDER"),
-    "trader_name" -> Seq("trader-name"),
-    "queue_id" -> Seq("queue-id"),
-    "eori" -> Seq("eori-number"),
-    "assignee_id" -> Seq("assignee-id"),
-    "status" -> Seq("NEW", "OPEN"),
+    "trader_name"      -> Seq("trader-name"),
+    "queue_id"         -> Seq("queue-id"),
+    "eori"             -> Seq("eori-number"),
+    "assignee_id"      -> Seq("assignee-id"),
+    "status"           -> Seq("NEW", "OPEN"),
     "min_decision_end" -> Seq("1970-01-01T00:00:00Z"),
     "decision_details" -> Seq("decision-details"),
-    "keyword" -> Seq("bike", "MTB"),
-    "sort_by" -> Seq("days-elapsed"),
-    "sort_direction" -> Seq("desc")
+    "keyword"          -> Seq("bike", "MTB"),
+    "sort_by"          -> Seq("days-elapsed"),
+    "sort_direction"   -> Seq("desc")
   )
 
   private val emptyParams: Map[String, Seq[String]] = Map(
-    "reference" -> Seq(""),
+    "reference"        -> Seq(""),
     "application_type" -> Seq(""),
-    "trader_name" -> Seq(""),
-    "queue_id" -> Seq(""),
-    "eori" -> Seq(""),
-    "assignee_id" -> Seq(""),
-    "status" -> Seq(""),
+    "trader_name"      -> Seq(""),
+    "queue_id"         -> Seq(""),
+    "eori"             -> Seq(""),
+    "assignee_id"      -> Seq(""),
+    "status"           -> Seq(""),
     "min_decision_end" -> Seq(""),
-    "keyword" -> Seq(""),
-    "sort_by" -> Seq(""),
-    "sort_direction" -> Seq("")
+    "keyword"          -> Seq(""),
+    "sort_by"          -> Seq(""),
+    "sort_direction"   -> Seq("")
   )
 
   /**

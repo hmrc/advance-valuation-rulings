@@ -33,7 +33,7 @@ import scala.concurrent.Await.result
 
 class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
 
-  override lazy val port = 14683
+  override lazy val port   = 14683
   protected val serviceUrl = s"http://localhost:$port"
 
   private val injector = new GuiceApplicationBuilder()
@@ -49,12 +49,12 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
     scenario("Calculates elapsed days for OPEN & NEW cases") {
       Given("There are cases with mixed statuses in the database")
 
-      givenThereIs(aCaseWith(reference = "ref-20181220", status = OPEN, createdDate = "2018-12-20"))
-      givenThereIs(aCaseWith(reference = "ref-20181230", status = NEW, createdDate = "2018-12-30"))
-      givenThereIs(aCaseWith(reference = "ref-20190110", status = OPEN, createdDate = "2019-01-10"))
-      givenThereIs(aCaseWith(reference = "ref-20190203", status = NEW, createdDate = "2019-02-03"))
-      givenThereIs(aCaseWith(reference = "ref-20190201", status = NEW, createdDate = "2019-02-01"))
-      givenThereIs(aCaseWith(reference = "completed", status = COMPLETED, createdDate = "2019-02-01"))
+      givenThereIs(aCaseWith(reference = "ref-20181220", status = OPEN, createdDate      = "2018-12-20"))
+      givenThereIs(aCaseWith(reference = "ref-20181230", status = NEW, createdDate       = "2018-12-30"))
+      givenThereIs(aCaseWith(reference = "ref-20190110", status = OPEN, createdDate      = "2019-01-10"))
+      givenThereIs(aCaseWith(reference = "ref-20190203", status = NEW, createdDate       = "2019-02-03"))
+      givenThereIs(aCaseWith(reference = "ref-20190201", status = NEW, createdDate       = "2019-02-01"))
+      givenThereIs(aCaseWith(reference = "completed", status    = COMPLETED, createdDate = "2019-02-01"))
 
       When("The job runs")
       result(job.execute(), timeout)
@@ -65,7 +65,7 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
       daysElapsedForCase("ref-20190110") shouldBe 17
       daysElapsedForCase("ref-20190203") shouldBe 0
       daysElapsedForCase("ref-20190201") shouldBe 1
-      daysElapsedForCase("completed") shouldBe -1 // Unchanged
+      daysElapsedForCase("completed")    shouldBe -1 // Unchanged
     }
 
     scenario("Calculates elapsed days for OPEN & NEW Liability cases") {
@@ -73,15 +73,33 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
 
       //OPEN
       //without date of receipt will take created date
-      givenThereIs(aLiabilityCaseWith(reference = "ref-1", status = OPEN, createdDate = "2018-12-20", dateOfReceipt = None))
+      givenThereIs(
+        aLiabilityCaseWith(reference = "ref-1", status = OPEN, createdDate = "2018-12-20", dateOfReceipt = None)
+      )
       //with date of receipt will take date of receipt
-      givenThereIs(aLiabilityCaseWith(reference = "ref-2", status = OPEN, createdDate = "2018-12-30", dateOfReceipt = Some("2018-12-20")))
+      givenThereIs(
+        aLiabilityCaseWith(
+          reference     = "ref-2",
+          status        = OPEN,
+          createdDate   = "2018-12-30",
+          dateOfReceipt = Some("2018-12-20")
+        )
+      )
 
       //NEW
       //without date of receipt will take created date
-      givenThereIs(aLiabilityCaseWith(reference = "ref-3", status = NEW, createdDate = "2018-12-10", dateOfReceipt = None))
+      givenThereIs(
+        aLiabilityCaseWith(reference = "ref-3", status = NEW, createdDate = "2018-12-10", dateOfReceipt = None)
+      )
       //with date of receipt will take date of receipt
-      givenThereIs(aLiabilityCaseWith(reference = "ref-4", status = NEW, createdDate = "2018-12-20", dateOfReceipt = Some("2018-12-10")))
+      givenThereIs(
+        aLiabilityCaseWith(
+          reference     = "ref-4",
+          status        = NEW,
+          createdDate   = "2018-12-20",
+          dateOfReceipt = Some("2018-12-10")
+        )
+      )
 
       When("The job runs")
       result(job.execute(), timeout)
@@ -96,8 +114,8 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
 
     scenario("Calculates elapsed days for a referred case") {
       Given("A Case which was REFERRED in the past")
-      givenThereIs(aCaseWith(reference = "valid-ref", status = OPEN, createdDate = "2019-01-10"))
-      givenThereIs(aStatusChangeWith(caseReference = "valid-ref", status = REFERRED, date = "2019-01-15"))
+      givenThereIs(aCaseWith(reference             = "valid-ref", status = OPEN, createdDate = "2019-01-10"))
+      givenThereIs(aStatusChangeWith(caseReference = "valid-ref", status = REFERRED, date    = "2019-01-15"))
 
       When("The job runs")
       result(job.execute(), timeout)
@@ -108,8 +126,8 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
 
     scenario("Calculates elapsed days for a case created & referred on the same day") {
       Given("There is case which was REFERRED the day it was created")
-      givenThereIs(aCaseWith(reference = "valid-ref", status = OPEN, createdDate = "2019-02-01"))
-      givenThereIs(aStatusChangeWith(caseReference = "valid-ref", status = REFERRED, date = "2019-02-01"))
+      givenThereIs(aCaseWith(reference             = "valid-ref", status = OPEN, createdDate = "2019-02-01"))
+      givenThereIs(aStatusChangeWith(caseReference = "valid-ref", status = REFERRED, date    = "2019-02-01"))
 
       When("The job runs")
       result(job.execute(), timeout)
@@ -120,8 +138,8 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
 
     scenario("Calculates elapsed days for a case referred today") {
       Given("There is case with a referred case")
-      givenThereIs(aCaseWith(reference = "valid-ref", status = OPEN, createdDate = "2019-02-03"))
-      givenThereIs(aStatusChangeWith(caseReference = "valid-ref", status = REFERRED, date = "2019-02-03"))
+      givenThereIs(aCaseWith(reference             = "valid-ref", status = OPEN, createdDate = "2019-02-03"))
+      givenThereIs(aStatusChangeWith(caseReference = "valid-ref", status = REFERRED, date    = "2019-02-03"))
 
       When("The job runs")
       result(job.execute(), timeout)
@@ -132,8 +150,8 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
 
     scenario("Calculates elapsed days for a suspended case") {
       Given("A Case which was SUSPENDED in the past")
-      givenThereIs(aCaseWith(reference = "valid-ref", status = OPEN, createdDate = "2019-01-10"))
-      givenThereIs(aStatusChangeWith(caseReference = "valid-ref", status = SUSPENDED, date = "2019-01-15"))
+      givenThereIs(aCaseWith(reference             = "valid-ref", status = OPEN, createdDate = "2019-01-10"))
+      givenThereIs(aStatusChangeWith(caseReference = "valid-ref", status = SUSPENDED, date   = "2019-01-15"))
 
       When("The job runs")
       result(job.execute(), timeout)
@@ -144,8 +162,8 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
 
     scenario("Calculates elapsed days for a case created & suspended on the same day") {
       Given("There is case which was REFERRED the day it was created")
-      givenThereIs(aCaseWith(reference = "valid-ref", status = OPEN, createdDate = "2019-02-01"))
-      givenThereIs(aStatusChangeWith(caseReference = "valid-ref", status = SUSPENDED, date = "2019-02-01"))
+      givenThereIs(aCaseWith(reference             = "valid-ref", status = OPEN, createdDate = "2019-02-01"))
+      givenThereIs(aStatusChangeWith(caseReference = "valid-ref", status = SUSPENDED, date   = "2019-02-01"))
 
       When("The job runs")
       result(job.execute(), timeout)
@@ -156,8 +174,8 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
 
     scenario("Calculates elapsed days for a case suspended today") {
       Given("There is case with a referred case")
-      givenThereIs(aCaseWith(reference = "valid-ref", status = OPEN, createdDate = "2019-02-03"))
-      givenThereIs(aStatusChangeWith(caseReference = "valid-ref", status = SUSPENDED, date = "2019-02-03"))
+      givenThereIs(aCaseWith(reference             = "valid-ref", status = OPEN, createdDate = "2019-02-03"))
+      givenThereIs(aStatusChangeWith(caseReference = "valid-ref", status = SUSPENDED, date   = "2019-02-03"))
 
       When("The job runs")
       result(job.execute(), timeout)
@@ -169,12 +187,60 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
     scenario("Calculates elapsed days for migrated cases") {
       Given("There are migrated cases with mixed statuses in the database")
 
-      givenThereIs(aMigratedCaseWith(reference = "mref-20181220", status = OPEN, createdDate = "2018-12-20", dateOfExtract = "2019-01-21", migratedDaysElapsed = 19L))
-      givenThereIs(aMigratedCaseWith(reference = "mref-20181230", status = NEW, createdDate = "2018-12-30", dateOfExtract = "2019-01-21", migratedDaysElapsed = 10L))
-      givenThereIs(aMigratedCaseWith(reference = "mref-20181231", status = OPEN, createdDate = "2018-12-31", dateOfExtract = "2019-01-30", migratedDaysElapsed = 8L))
-      givenThereIs(aMigratedCaseWith(reference = "mref-20190110", status = NEW, createdDate = "2019-01-10", dateOfExtract = "2019-01-30", migratedDaysElapsed = 5L))
-      givenThereIs(aMigratedCaseWith(reference = "mref-20190115", status = NEW, createdDate = "2019-01-15", dateOfExtract = "2019-02-03", migratedDaysElapsed = 1L))
-      givenThereIs(aMigratedCaseWith(reference = "mcompleted", status = COMPLETED, createdDate = "2019-01-20", dateOfExtract = "2019-01-30", migratedDaysElapsed = 1L))
+      givenThereIs(
+        aMigratedCaseWith(
+          reference           = "mref-20181220",
+          status              = OPEN,
+          createdDate         = "2018-12-20",
+          dateOfExtract       = "2019-01-21",
+          migratedDaysElapsed = 19L
+        )
+      )
+      givenThereIs(
+        aMigratedCaseWith(
+          reference           = "mref-20181230",
+          status              = NEW,
+          createdDate         = "2018-12-30",
+          dateOfExtract       = "2019-01-21",
+          migratedDaysElapsed = 10L
+        )
+      )
+      givenThereIs(
+        aMigratedCaseWith(
+          reference           = "mref-20181231",
+          status              = OPEN,
+          createdDate         = "2018-12-31",
+          dateOfExtract       = "2019-01-30",
+          migratedDaysElapsed = 8L
+        )
+      )
+      givenThereIs(
+        aMigratedCaseWith(
+          reference           = "mref-20190110",
+          status              = NEW,
+          createdDate         = "2019-01-10",
+          dateOfExtract       = "2019-01-30",
+          migratedDaysElapsed = 5L
+        )
+      )
+      givenThereIs(
+        aMigratedCaseWith(
+          reference           = "mref-20190115",
+          status              = NEW,
+          createdDate         = "2019-01-15",
+          dateOfExtract       = "2019-02-03",
+          migratedDaysElapsed = 1L
+        )
+      )
+      givenThereIs(
+        aMigratedCaseWith(
+          reference           = "mcompleted",
+          status              = COMPLETED,
+          createdDate         = "2019-01-20",
+          dateOfExtract       = "2019-01-30",
+          migratedDaysElapsed = 1L
+        )
+      )
 
       When("The job runs")
       result(job.execute(), timeout)
@@ -185,52 +251,61 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
       daysElapsedForCase("mref-20181231") shouldBe 11
       daysElapsedForCase("mref-20190110") shouldBe 8
       daysElapsedForCase("mref-20190115") shouldBe 1
-      daysElapsedForCase("mcompleted") shouldBe -1 // Unchanged
+      daysElapsedForCase("mcompleted")    shouldBe -1 // Unchanged
     }
   }
 
-
-  private def toInstant (date : String) = {
+  private def toInstant(date: String) =
     LocalDate.parse(date).atStartOfDay().toInstant(ZoneOffset.UTC)
-  }
 
-  private def aCaseWith(reference: String, createdDate: String, status: CaseStatus): Case = {
+  private def aCaseWith(reference: String, createdDate: String, status: CaseStatus): Case =
     createCase(app = createBasicBTIApplication).copy(
-      reference = reference,
+      reference   = reference,
       createdDate = LocalDate.parse(createdDate).atStartOfDay().toInstant(ZoneOffset.UTC),
-      status = status,
+      status      = status,
       daysElapsed = -1
     )
-  }
 
-  private def aMigratedCaseWith(reference: String, createdDate: String, status: CaseStatus, dateOfExtract: String, migratedDaysElapsed: Long): Case = {
+  private def aMigratedCaseWith(
+    reference: String,
+    createdDate: String,
+    status: CaseStatus,
+    dateOfExtract: String,
+    migratedDaysElapsed: Long
+  ): Case =
     aCaseWith(reference, createdDate, status).copy(
-      dateOfExtract = Some(LocalDate.parse(dateOfExtract).atStartOfDay().toInstant(ZoneOffset.UTC)),
+      dateOfExtract       = Some(LocalDate.parse(dateOfExtract).atStartOfDay().toInstant(ZoneOffset.UTC)),
       migratedDaysElapsed = Some(migratedDaysElapsed)
     )
-  }
 
-  private def aLiabilityCaseWith(reference: String, createdDate: String, status: CaseStatus, dateOfReceipt: Option[String]): Case = {
+  private def aLiabilityCaseWith(
+    reference: String,
+    createdDate: String,
+    status: CaseStatus,
+    dateOfReceipt: Option[String]
+  ): Case = {
     val liability = createLiabilityOrder
     createCase(app = liability).copy(
-      reference = reference,
+      reference   = reference,
       createdDate = LocalDate.parse(createdDate).atStartOfDay().toInstant(ZoneOffset.UTC),
-      status = status,
+      status      = status,
       daysElapsed = -1,
       application = liability.copy(
-        dateOfReceipt = if (dateOfReceipt.isDefined) Some(LocalDate.parse(dateOfReceipt.get).atStartOfDay().toInstant(ZoneOffset.UTC)) else None
+        dateOfReceipt =
+          if (dateOfReceipt.isDefined) Some(LocalDate.parse(dateOfReceipt.get).atStartOfDay().toInstant(ZoneOffset.UTC))
+          else None
       )
     )
   }
 
-  private def aStatusChangeWith(caseReference: String, status: CaseStatus, date: String): Event = {
-    EventData.createCaseStatusChangeEvent(caseReference, from = OPEN, to = status)
+  private def aStatusChangeWith(caseReference: String, status: CaseStatus, date: String): Event =
+    EventData
+      .createCaseStatusChangeEvent(caseReference, from = OPEN, to = status)
       .copy(timestamp = toInstant(date))
-  }
 
-  private def givenThereIs(c: Case): Unit = storeCases(c)
+  private def givenThereIs(c: Case): Unit  = storeCases(c)
   private def givenThereIs(c: Event): Unit = storeEvents(c)
 
-  private def daysElapsedForCase : String => Long = { reference => getCase(reference).map(_.daysElapsed).getOrElse(0)}
+  private def daysElapsedForCase: String => Long = { reference => getCase(reference).map(_.daysElapsed).getOrElse(0) }
 
 }

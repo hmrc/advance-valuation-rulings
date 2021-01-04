@@ -25,9 +25,8 @@ import scala.concurrent.duration._
 
 class AppConfigTest extends BaseSpec {
 
-  private def configWith(pairs: (String, String)*): AppConfig = {
+  private def configWith(pairs: (String, String)*): AppConfig =
     new AppConfig(Configuration.from(pairs.map(e => e._1 -> e._2).toMap), serviceConfig)
-  }
 
   "Config" should {
 
@@ -36,7 +35,7 @@ class AppConfigTest extends BaseSpec {
     }
 
     "build 'isTestMode'" in {
-      configWith("testMode" -> "true").isTestMode shouldBe true
+      configWith("testMode" -> "true").isTestMode  shouldBe true
       configWith("testMode" -> "false").isTestMode shouldBe false
     }
 
@@ -46,7 +45,7 @@ class AppConfigTest extends BaseSpec {
         "scheduler.active-days-elapsed.interval" -> "1d"
       ).activeDaysElapsed
       config.elapseTime shouldBe LocalTime.of(0, 0, 0)
-      config.interval shouldBe 1.days
+      config.interval   shouldBe 1.days
     }
 
     "build 'ReferredDaysElapsedConfig'" in {
@@ -55,7 +54,7 @@ class AppConfigTest extends BaseSpec {
         "scheduler.referred-days-elapsed.interval" -> "1d"
       ).referredDaysElapsed
       config.elapseTime shouldBe LocalTime.of(0, 0, 0)
-      config.interval shouldBe 1.days
+      config.interval   shouldBe 1.days
     }
 
     "build 'bankHolidaysUrl'" in {
@@ -65,7 +64,7 @@ class AppConfigTest extends BaseSpec {
 
     "build 'upsert-permitted-agents'" in {
       configWith("upsert-permitted-agents" -> "x,y").upsertAgents shouldBe Seq("x", "y")
-      configWith("upsert-permitted-agents" -> "").upsertAgents shouldBe Seq.empty
+      configWith("upsert-permitted-agents" -> "").upsertAgents    shouldBe Seq.empty
     }
 
     "build 'mongoEncryption' with default" in {
@@ -87,14 +86,14 @@ class AppConfigTest extends BaseSpec {
     "build 'mongoEncryption' with value false and key ABC" in {
       configWith(
         "mongodb.encryption.enabled" -> "false",
-        "mongodb.encryption.key" -> "ABC"
+        "mongodb.encryption.key"     -> "ABC"
       ).mongoEncryption shouldBe MongoEncryption()
     }
 
     "build 'mongoEncryption' with value true and key ABC" in {
       configWith(
         "mongodb.encryption.enabled" -> "true",
-        "mongodb.encryption.key" -> "ABC"
+        "mongodb.encryption.key"     -> "ABC"
       ).mongoEncryption shouldBe MongoEncryption(enabled = true, key = Some("ABC"))
     }
 
@@ -108,7 +107,7 @@ class AppConfigTest extends BaseSpec {
     }
 
     "build 'case reference configuration" in {
-      configWith("atar-case-reference-offset" -> "10").atarCaseReferenceOffset shouldBe 10
+      configWith("atar-case-reference-offset"  -> "10").atarCaseReferenceOffset  shouldBe 10
       configWith("other-case-reference-offset" -> "20").otherCaseReferenceOffset shouldBe 20
     }
 

@@ -27,9 +27,13 @@ import scala.concurrent.Await.result
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
-abstract class BaseFeatureSpec extends FeatureSpec
-  with Matchers with GivenWhenThen with GuiceOneServerPerSuite
-  with BeforeAndAfterEach with BeforeAndAfterAll {
+abstract class BaseFeatureSpec
+    extends FeatureSpec
+    with Matchers
+    with GivenWhenThen
+    with GuiceOneServerPerSuite
+    with BeforeAndAfterEach
+    with BeforeAndAfterAll {
 
   override lazy val app = GuiceApplicationBuilder()
     .configure("mongodb.uri" -> "mongodb://localhost:27017/test-ClassificationMongoRepositoryTest")
@@ -41,10 +45,11 @@ abstract class BaseFeatureSpec extends FeatureSpec
 
   protected lazy val apiTokenKey = "X-Api-Token"
 
-  private lazy val caseStore: CaseMongoRepository = app.injector.instanceOf[CaseMongoRepository]
-  private lazy val eventStore: EventMongoRepository = app.injector.instanceOf[EventMongoRepository]
+  private lazy val caseStore: CaseMongoRepository         = app.injector.instanceOf[CaseMongoRepository]
+  private lazy val eventStore: EventMongoRepository       = app.injector.instanceOf[EventMongoRepository]
   private lazy val sequenceStore: SequenceMongoRepository = app.injector.instanceOf[SequenceMongoRepository]
-  private lazy val schedulerLockStore: SchedulerLockMongoRepository = app.injector.instanceOf[SchedulerLockMongoRepository]
+  private lazy val schedulerLockStore: SchedulerLockMongoRepository =
+    app.injector.instanceOf[SchedulerLockMongoRepository]
 
   private def dropStores(): Unit = {
     result(caseStore.drop, timeout)
@@ -71,36 +76,29 @@ abstract class BaseFeatureSpec extends FeatureSpec
     dropStores()
   }
 
-  protected def storeCases(cases: Case*): Seq[Case] = {
+  protected def storeCases(cases: Case*): Seq[Case] =
     cases.map { c: Case =>
       // for simplicity encryption is not tested here (because disabled in application.conf)
       result(caseStore.insert(c), timeout)
     }
-  }
 
-  protected def storeEvents(events: Event*): Seq[Event] = {
+  protected def storeEvents(events: Event*): Seq[Event] =
     events.map(e => result(eventStore.insert(e), timeout))
-  }
 
-  protected def storeSequences(sequences: Sequence*): Seq[Sequence] = {
+  protected def storeSequences(sequences: Sequence*): Seq[Sequence] =
     sequences.map(s => result(sequenceStore.insert(s), timeout))
-  }
 
-  protected def caseStoreSize: Int = {
+  protected def caseStoreSize: Int =
     result(caseStore.mongoCollection.count(), timeout)
-  }
 
-  protected def eventStoreSize: Int = {
+  protected def eventStoreSize: Int =
     result(eventStore.mongoCollection.count(), timeout)
-  }
 
-  protected def schedulerLockStoreSize: Int = {
+  protected def schedulerLockStoreSize: Int =
     result(schedulerLockStore.mongoCollection.count(), timeout)
-  }
 
-  protected def getCase(ref: String): Option[Case] = {
+  protected def getCase(ref: String): Option[Case] =
     // for simplicity decryption is not tested here (because disabled in application.conf)
     result(caseStore.getByReference(ref), timeout)
-  }
 
 }

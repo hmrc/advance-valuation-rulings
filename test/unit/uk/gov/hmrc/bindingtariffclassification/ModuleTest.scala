@@ -25,10 +25,11 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 class ModuleTest extends UnitSpec with BeforeAndAfterEach with PlayRunners {
 
-  private def app(conf: (String, Any)*): Application = new GuiceApplicationBuilder()
-    .bindings(new Module)
-    .configure(conf: _*)
-    .build()
+  private def app(conf: (String, Any)*): Application =
+    new GuiceApplicationBuilder()
+      .bindings(new Module)
+      .configure(conf: _*)
+      .build()
 
   "Module 'bind" should {
     "Bind encryption repository" in {
@@ -50,7 +51,8 @@ class ModuleTest extends UnitSpec with BeforeAndAfterEach with PlayRunners {
       val application: Application = app()
       running(application) {
         application.injector
-          .instanceOf[CaseRepository].isInstanceOf[CaseMongoRepository] shouldBe true
+          .instanceOf[CaseRepository]
+          .isInstanceOf[CaseMongoRepository] shouldBe true
       }
     }
 

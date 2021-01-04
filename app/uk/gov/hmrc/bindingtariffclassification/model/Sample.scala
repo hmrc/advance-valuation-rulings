@@ -19,11 +19,8 @@ package uk.gov.hmrc.bindingtariffclassification.model
 import uk.gov.hmrc.bindingtariffclassification.model.SampleReturn.SampleReturn
 import uk.gov.hmrc.bindingtariffclassification.model.SampleStatus.SampleStatus
 
-case class Sample
-(
-  status: Option[SampleStatus] = None,
-  requestedBy: Option[Operator] = None,
+case class Sample(
+  status: Option[SampleStatus]       = None,
+  requestedBy: Option[Operator]      = None,
   returnStatus: Option[SampleReturn] = None
 )
-
-

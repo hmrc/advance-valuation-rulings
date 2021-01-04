@@ -18,5 +18,4 @@ package uk.gov.hmrc.bindingtariffclassification.model
 
 import java.time.Instant
 
-case class RepaymentClaim(dvrNumber: Option[String] = None,
-                          dateForRepayment: Option[Instant] = None)
+case class RepaymentClaim(dvrNumber: Option[String] = None, dateForRepayment: Option[Instant] = None)

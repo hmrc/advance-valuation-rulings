@@ -46,9 +46,9 @@ class Module extends play.api.inject.Module {
 
 }
 
-class ScheduledJobProvider @Inject()(
-                                      activeDaysElapsedJob: ActiveDaysElapsedJob,
-                                     referredDaysElapsedJob: ReferredDaysElapsedJob
-                                    ) extends Provider[ScheduledJobs] {
+class ScheduledJobProvider @Inject() (
+  activeDaysElapsedJob: ActiveDaysElapsedJob,
+  referredDaysElapsedJob: ReferredDaysElapsedJob
+) extends Provider[ScheduledJobs] {
   override def get(): ScheduledJobs = ScheduledJobs(Set(activeDaysElapsedJob, referredDaysElapsedJob))
 }

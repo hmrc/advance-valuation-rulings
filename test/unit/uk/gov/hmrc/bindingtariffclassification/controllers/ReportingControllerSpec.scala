@@ -32,13 +32,12 @@ class ReportingControllerSpec extends BaseSpec with BeforeAndAfterEach {
   private val reportService = mock[ReportService]
 
   private val fakeRequest = FakeRequest()
-  private val controller = new ReportingController(reportService, mcc)
+  private val controller  = new ReportingController(reportService, mcc)
 
   override protected def afterEach(): Unit = {
     super.afterEach()
     Mockito.reset(reportService)
   }
-
 
   "GET report" should {
     "Delegate to service" in {

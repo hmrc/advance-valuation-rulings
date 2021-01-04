@@ -28,13 +28,14 @@ import scala.concurrent.Future.successful
 import scala.util.{Failure, Success, Try}
 
 class CommonController(
-                        mcc: MessagesControllerComponents
-                      ) extends BackendController(mcc) {
+  mcc: MessagesControllerComponents
+) extends BackendController(mcc) {
 
-  private val logger : Logger = LoggerFactory.getLogger(classOf[CommonController])
+  private val logger: Logger = LoggerFactory.getLogger(classOf[CommonController])
 
-  override protected def withJsonBody[T]
-  (f: T => Future[Result])(implicit request: Request[JsValue], m: Manifest[T], reads: Reads[T]): Future[Result] = {
+  override protected def withJsonBody[T](
+    f: T => Future[Result]
+  )(implicit request: Request[JsValue], m: Manifest[T], reads: Reads[T]): Future[Result] =
     Try(request.body.validate[T]) match {
       case Success(JsSuccess(payload, _)) => f(payload)
       case Success(JsError(errs)) => {
@@ -43,7 +44,6 @@ class CommonController(
       }
       case Failure(e) => successful(BadRequest(JsErrorResponse(UNKNOWN_ERROR, e.getMessage)))
     }
-  }
 
   private[controllers] def recovery: PartialFunction[Throwable, Result] = {
     case e: Throwable => handleException(e)

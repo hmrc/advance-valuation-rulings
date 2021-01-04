@@ -18,6 +18,6 @@ package uk.gov.hmrc.bindingtariffclassification.model.reporting
 
 object CaseReportField extends Enumeration {
   type CaseReportField = Value
-  val ACTIVE_DAYS_ELAPSED = Value("active-days-elapsed")
+  val ACTIVE_DAYS_ELAPSED   = Value("active-days-elapsed")
   val REFERRED_DAYS_ELAPSED = Value("referred-days-elapsed")
 }

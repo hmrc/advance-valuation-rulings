@@ -30,14 +30,15 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future.successful
 
 @Singleton
-class CaseController @Inject()(appConfig: AppConfig,
-                               caseService: CaseService,
-                               parser: BodyParsers.Default,
-                               mcc: MessagesControllerComponents
-                              ) extends CommonController(mcc) {
+class CaseController @Inject() (
+  appConfig: AppConfig,
+  caseService: CaseService,
+  parser: BodyParsers.Default,
+  mcc: MessagesControllerComponents
+) extends CommonController(mcc) {
 
   lazy private val testModeFilter = TestMode.actionFilter(appConfig, parser)
-  private val logger: Logger = LoggerFactory.getLogger(classOf[CaseController])
+  private val logger: Logger      = LoggerFactory.getLogger(classOf[CaseController])
 
   def deleteAll(): Action[AnyContent] = testModeFilter.async {
     caseService.deleteAll() map (_ => NoContent) recover recovery
@@ -47,19 +48,17 @@ class CaseController @Inject()(appConfig: AppConfig,
     caseService.delete(reference) map (_ => NoContent) recover recovery
   }
 
-  def create: Action[JsValue] = Action.async(parse.json) { implicit request => {
+  def create: Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[NewCaseRequest] { caseRequest: NewCaseRequest =>
       for {
         r <- caseService.nextCaseReference(caseRequest.application.`type`)
         c <- caseService.insert(caseRequest.toCase(r))
         _ <- caseService.addInitialSampleStatusIfExists(c)
       } yield Created(Json.toJson(c)(RESTFormatters.formatCase))
-    } recover recovery map { result => {
-      logger.debug(s"Case creation Result : ${result}");
+    } recover recovery map { result =>
+      logger.debug(s"Case creation Result : $result");
       result
     }
-    }
-  }
   }
 
   def update(reference: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
@@ -67,7 +66,7 @@ class CaseController @Inject()(appConfig: AppConfig,
       if (caseRequest.reference == reference) {
         val upsert = request.headers.get(USER_AGENT) match {
           case Some(agent) => appConfig.upsertAgents.contains(agent)
-          case _ => false
+          case _           => false
         }
         caseService.update(caseRequest, upsert) map handleNotFound recover recovery
       } else successful(BadRequest(JsErrorResponse(ErrorCode.INVALID_REQUEST_PAYLOAD, "Invalid case reference")))
@@ -76,11 +75,13 @@ class CaseController @Inject()(appConfig: AppConfig,
 
   private[controllers] def handleNotFound: PartialFunction[Option[Case], Result] = {
     case Some(c: Case) => Ok(Json.toJson(c))
-    case _ => NotFound(JsErrorResponse(NOTFOUND, "Case not found"))
+    case _             => NotFound(JsErrorResponse(NOTFOUND, "Case not found"))
   }
 
   def get(search: CaseSearch, pagination: Pagination): Action[AnyContent] = Action.async {
-    caseService.get(search, pagination) map { cases => Ok(Json.toJson(cases)) } recover recovery
+    caseService.get(search, pagination) map { cases =>
+      Ok(Json.toJson(cases))
+    } recover recovery
   }
 
   def getByReference(reference: String): Action[AnyContent] = Action.async {

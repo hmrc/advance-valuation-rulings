@@ -42,7 +42,8 @@ class SchedulerControllerSpec extends BaseSpec {
       val result = await(controller.incrementActiveDaysElapsed()(fakeRequest))
 
       status(result) shouldEqual FORBIDDEN
-      jsonBodyOf(result).toString() shouldEqual s"""{"code":"FORBIDDEN","message":"You are not allowed to call ${fakeRequest.method} ${fakeRequest.path}"}"""
+      jsonBodyOf(result)
+        .toString() shouldEqual s"""{"code":"FORBIDDEN","message":"You are not allowed to call ${fakeRequest.method} ${fakeRequest.path}"}"""
     }
 
     "return 204 if the test mode is enabled and the scheduler executed successfully" in {
@@ -72,7 +73,8 @@ class SchedulerControllerSpec extends BaseSpec {
       val result = await(controller.incrementReferredDaysElapsed()(fakeRequest))
 
       status(result) shouldEqual FORBIDDEN
-      jsonBodyOf(result).toString() shouldEqual s"""{"code":"FORBIDDEN","message":"You are not allowed to call ${fakeRequest.method} ${fakeRequest.path}"}"""
+      jsonBodyOf(result)
+        .toString() shouldEqual s"""{"code":"FORBIDDEN","message":"You are not allowed to call ${fakeRequest.method} ${fakeRequest.path}"}"""
     }
 
     "return 204 if the test mode is enabled and the scheduler executed successfully" in {

@@ -26,21 +26,18 @@ import scala.collection.immutable.SortedMap
 class StatusTimeline(statusChanges: Seq[(Instant, CaseStatus)]) {
   lazy val timeline: SortedMap[Instant, CaseStatus] = SortedMap[Instant, CaseStatus](statusChanges: _*)
 
-  def statusOn(date: Instant): Option[CaseStatus] = {
+  def statusOn(date: Instant): Option[CaseStatus] =
     if (timeline.contains(date)) {
       timeline.get(date)
     } else {
       timeline.until(date).lastOption.map(_._2)
     }
-  }
 }
 
 object StatusTimeline {
   def from(events: Seq[Event]): StatusTimeline = new StatusTimeline(
     events
       .filter(_.details.isInstanceOf[FieldChange[CaseStatus]])
-      .map { event =>
-        (event.timestamp, event.details.asInstanceOf[FieldChange[CaseStatus]].to)
-      }
+      .map(event => (event.timestamp, event.details.asInstanceOf[FieldChange[CaseStatus]].to))
   )
 }

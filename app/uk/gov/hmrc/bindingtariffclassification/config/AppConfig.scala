@@ -25,10 +25,10 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import scala.concurrent.duration.{Duration, FiniteDuration}
 
 @Singleton
-class AppConfig @Inject()(
-                           val configuration: Configuration,
-                           config: ServicesConfig
-                         ) {
+class AppConfig @Inject() (
+  val configuration: Configuration,
+  config: ServicesConfig
+) {
 
   private def configNotFoundError(key: String): Nothing =
     throw new RuntimeException(s"Could not find config key '$key'")
@@ -38,7 +38,7 @@ class AppConfig @Inject()(
 
   lazy val isTestMode: Boolean = getBooleanConfig("testMode")
 
-  lazy val atarCaseReferenceOffset: Long = configuration.get[Long]("atar-case-reference-offset")
+  lazy val atarCaseReferenceOffset: Long  = configuration.get[Long]("atar-case-reference-offset")
   lazy val otherCaseReferenceOffset: Long = configuration.get[Long]("other-case-reference-offset")
 
   lazy val clock: Clock = Clock.systemUTC()
@@ -55,13 +55,13 @@ class AppConfig @Inject()(
 
   lazy val authorization: String = configuration.get[String]("auth.api-token")
 
-  private def getBooleanConfig(key: String, default: Boolean = false): Boolean = {
+  private def getBooleanConfig(key: String, default: Boolean = false): Boolean =
     configuration.getOptional[Boolean](key).getOrElse(default)
-  }
 
   def bankHolidaysUrl: String = config.baseUrl("bank-holidays")
 
-  lazy val upsertAgents: Seq[String] = configuration.get[String]("upsert-permitted-agents").split(",").filter(_.nonEmpty)
+  lazy val upsertAgents: Seq[String] =
+    configuration.get[String]("upsert-permitted-agents").split(",").filter(_.nonEmpty)
 
   def getString(key: String): String =
     configuration.getOptional[String](key).getOrElse(configNotFoundError(key))

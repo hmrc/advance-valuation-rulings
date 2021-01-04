@@ -26,94 +26,90 @@ object CaseData {
 
   private val secondsInAYear = 3600 * 24 * 365
 
-  private def createContact: Contact = {
+  private def createContact: Contact =
     Contact("Maurizio", "maurizio@me.com", Some("0123456789"))
-  }
 
-  def createBasicBTIApplication: BTIApplication = {
+  def createBasicBTIApplication: BTIApplication =
     BTIApplication(
-      holder = createEORIDetails,
-      contact = createContact,
+      holder          = createEORIDetails,
+      contact         = createContact,
       goodDescription = "this is a BTI application for HTC Wildfire mobile phones",
-      goodName = "HTC Wildfire smartphone"
+      goodName        = "HTC Wildfire smartphone"
     )
-  }
 
-  def createBTIApplicationWithAllFields: BTIApplication = {
+  def createBTIApplicationWithAllFields: BTIApplication =
     BTIApplication(
-      holder = createEORIDetails,
-      agent = Some(createAgentDetails),
-      contact = createContact,
-      goodDescription = "this is a BTI application for HTC Wildfire mobile phones",
-      goodName = "HTC Wildfire smartphone",
+      holder                  = createEORIDetails,
+      agent                   = Some(createAgentDetails),
+      contact                 = createContact,
+      goodDescription         = "this is a BTI application for HTC Wildfire mobile phones",
+      goodName                = "HTC Wildfire smartphone",
       confidentialInformation = Some("This phone has a secret processor."),
-      otherInformation = Some("The phone comes in multiple colors"),
-      reissuedBTIReference = Some("BTI123"),
-      relatedBTIReference = Some("BTI987"),
-      knownLegalProceedings = Some("Someone is suing me!"),
-      envisagedCommodityCode = Some("12345"),
-      sampleToBeProvided = true,
-      sampleToBeReturned = true
+      otherInformation        = Some("The phone comes in multiple colors"),
+      reissuedBTIReference    = Some("BTI123"),
+      relatedBTIReference     = Some("BTI987"),
+      knownLegalProceedings   = Some("Someone is suing me!"),
+      envisagedCommodityCode  = Some("12345"),
+      sampleToBeProvided      = true,
+      sampleToBeReturned      = true
     )
-  }
 
-  def createDecision(bindingCommodityCode: String = "12345678",
-                     effectiveStartDate: Option[Instant] = Some(Instant.now()),
-                     effectiveEndDate: Option[Instant] = Some(Instant.now().plusSeconds(3 * secondsInAYear)),
-                     methodSearch: Option[String] = Some("bike spanner"),
-                     justification: String = "Found precedent case",
-                     goodsDescription: String = "Bike tool",
-                     methodCommercialDenomination: Option[String] = None): Decision = {
+  def createDecision(
+    bindingCommodityCode: String                 = "12345678",
+    effectiveStartDate: Option[Instant]          = Some(Instant.now()),
+    effectiveEndDate: Option[Instant]            = Some(Instant.now().plusSeconds(3 * secondsInAYear)),
+    methodSearch: Option[String]                 = Some("bike spanner"),
+    justification: String                        = "Found precedent case",
+    goodsDescription: String                     = "Bike tool",
+    methodCommercialDenomination: Option[String] = None
+  ): Decision =
     Decision(
-      bindingCommodityCode = bindingCommodityCode,
-      effectiveStartDate = effectiveStartDate,
-      effectiveEndDate = effectiveEndDate,
-      methodSearch = methodSearch,
-      justification = justification,
-      goodsDescription = goodsDescription,
+      bindingCommodityCode         = bindingCommodityCode,
+      effectiveStartDate           = effectiveStartDate,
+      effectiveEndDate             = effectiveEndDate,
+      methodSearch                 = methodSearch,
+      justification                = justification,
+      goodsDescription             = goodsDescription,
       methodCommercialDenomination = methodCommercialDenomination
     )
-  }
 
-  def createLiabilityOrder: LiabilityOrder = {
+  def createLiabilityOrder: LiabilityOrder =
     LiabilityOrder(
-      contact = createContact,
-      status = LiabilityStatus.LIVE,
-      traderName = "John Lewis",
-      goodName = Some("Hair dryer"),
-      entryNumber = Some("23-SGD"),
-      entryDate = Some(Instant.now()),
-      traderCommodityCode = Some("1234567890"),
+      contact              = createContact,
+      status               = LiabilityStatus.LIVE,
+      traderName           = "John Lewis",
+      goodName             = Some("Hair dryer"),
+      entryNumber          = Some("23-SGD"),
+      entryDate            = Some(Instant.now()),
+      traderCommodityCode  = Some("1234567890"),
       officerCommodityCode = Some("0987654321")
     )
-  }
 
-  def createLiabilityOrderWithExtraFields: LiabilityOrder = {
+  def createLiabilityOrderWithExtraFields: LiabilityOrder =
     LiabilityOrder(
-      contact = createContact,
-      status = LiabilityStatus.LIVE,
-      traderName = "Acme Corp.",
-      goodName = Some("Large Iron Anvil"),
-      entryNumber = Some("23-SGD"),
-      entryDate = Some(Instant.now()),
-      traderCommodityCode = Some("6666666666"),
+      contact              = createContact,
+      status               = LiabilityStatus.LIVE,
+      traderName           = "Acme Corp.",
+      goodName             = Some("Large Iron Anvil"),
+      entryNumber          = Some("23-SGD"),
+      entryDate            = Some(Instant.now()),
+      traderCommodityCode  = Some("6666666666"),
       officerCommodityCode = Some("0987654321"),
-      btiReference = Some("BTI-REFERENCE"),
-      repaymentClaim = Some(RepaymentClaim(
-        dvrNumber = Some("DVR-123456"),
-        dateForRepayment = Some(Instant.now()))),
-      dateOfReceipt = Some(Instant.now()),
-      traderContactDetails = Some(TraderContactDetails(
-        Some("email"),
-        Some("phone"),
-        Some(Address("Street Name", "Town", Some("County"), Some("P0ST C05E"))))
+      btiReference         = Some("BTI-REFERENCE"),
+      repaymentClaim       = Some(RepaymentClaim(dvrNumber = Some("DVR-123456"), dateForRepayment = Some(Instant.now()))),
+      dateOfReceipt        = Some(Instant.now()),
+      traderContactDetails = Some(
+        TraderContactDetails(
+          Some("email"),
+          Some("phone"),
+          Some(Address("Street Name", "Town", Some("County"), Some("P0ST C05E")))
+        )
       ),
       agentName = Some("agent"),
-      port = Some("port")
+      port      = Some("port")
     )
-  }
 
-  def createCorrespondenceApplication: CorrespondenceApplication = {
+  def createCorrespondenceApplication: CorrespondenceApplication =
     CorrespondenceApplication(
       None,
       Some("agent"),
@@ -125,9 +121,8 @@ object CaseData {
       sampleToBeProvided = false,
       sampleToBeReturned = false
     )
-  }
 
-  def createMiscApplication: MiscApplication = {
+  def createMiscApplication: MiscApplication =
     MiscApplication(
       createContact,
       "name",
@@ -135,101 +130,103 @@ object CaseData {
       MiscCaseType.HARMONISED,
       None,
       sampleToBeProvided = false,
-      sampleToBeReturned = false,
+      sampleToBeReturned = false
     )
-  }
 
-  def createAgentDetails: AgentDetails = {
+  def createAgentDetails: AgentDetails =
     AgentDetails(
-      eoriDetails = createEORIDetails.copy(businessName = "Frank Agent-Smith"),
+      eoriDetails           = createEORIDetails.copy(businessName = "Frank Agent-Smith"),
       letterOfAuthorisation = Some(createAttachment.copy(public = false))
     )
-  }
 
-  def createEORIDetails: EORIDetails = {
-    EORIDetails(RandomGenerator.randomUUID(),
+  def createEORIDetails: EORIDetails =
+    EORIDetails(
+      RandomGenerator.randomUUID(),
       "John Lewis",
-      "23, Leyton St", "Leeds", "West Yorkshire",
+      "23, Leyton St",
+      "Leeds",
+      "West Yorkshire",
       "LS4 99AA",
-      "GB")
-  }
+      "GB"
+    )
 
-  def createAddress: Address = {
+  def createAddress: Address =
     Address(
       "23, Leyton St",
       "Leeds",
       Some("West Yorkshire"),
       Some("LS4 99AA")
     )
-  }
 
-  def eORIDetailForNintedo: EORIDetails = {
-    EORIDetails(RandomGenerator.randomUUID(),
+  def eORIDetailForNintedo: EORIDetails =
+    EORIDetails(
+      RandomGenerator.randomUUID(),
       "Nintendo",
-      "111, Brodway St", "Leeds", "West Yorkshire",
+      "111, Brodway St",
+      "Leeds",
+      "West Yorkshire",
       "LS11 22BB",
-      "GB")
-  }
+      "GB"
+    )
 
-  def createNewCase(app: Application = createBasicBTIApplication,
-                    attachments: Seq[Attachment] = Seq.empty): NewCaseRequest = {
+  def createNewCase(
+    app: Application             = createBasicBTIApplication,
+    attachments: Seq[Attachment] = Seq.empty
+  ): NewCaseRequest =
     NewCaseRequest(
       application = app,
       attachments = attachments
     )
-  }
 
-  def createNewCaseWithExtraFields(): Case = {
+  def createNewCaseWithExtraFields(): Case =
     Case(
-      reference = "9999999999",
-      status = CaseStatus.OPEN,
+      reference   = "9999999999",
+      status      = CaseStatus.OPEN,
       createdDate = Instant.now.minusSeconds(1 * secondsInAYear),
-      queueId = Some("3"),
-      assignee = Some(Operator("0")),
+      queueId     = Some("3"),
+      assignee    = Some(Operator("0")),
       application = createBasicBTIApplication,
-      decision = Some(createDecision()),
+      decision    = Some(createDecision()),
       attachments = Seq.empty,
-      keywords = Set("bike", "tool")
+      keywords    = Set("bike", "tool")
     )
-  }
 
-  def createCase(app: Application = createBasicBTIApplication,
-                 r: String = RandomGenerator.randomUUID(),
-                 status: CaseStatus = CaseStatus.NEW,
-                 decision: Option[Decision] = None,
-                 queue: Option[String] = None,
-                 assignee: Option[Operator] = None,
-                 attachments: Seq[Attachment] = Seq.empty,
-                 keywords: Set[String] = Set.empty,
-                 dateOfExtract: Option[Instant] = None): Case = {
+  def createCase(
+    app: Application               = createBasicBTIApplication,
+    r: String                      = RandomGenerator.randomUUID(),
+    status: CaseStatus             = CaseStatus.NEW,
+    decision: Option[Decision]     = None,
+    queue: Option[String]          = None,
+    assignee: Option[Operator]     = None,
+    attachments: Seq[Attachment]   = Seq.empty,
+    keywords: Set[String]          = Set.empty,
+    dateOfExtract: Option[Instant] = None
+  ): Case =
     Case(
-      reference = r,
-      status = status,
-      queueId = queue,
-      assignee = assignee,
-      application = app,
-      decision = decision,
-      attachments = attachments,
-      keywords = keywords,
+      reference     = r,
+      status        = status,
+      queueId       = queue,
+      assignee      = assignee,
+      application   = app,
+      decision      = decision,
+      attachments   = attachments,
+      keywords      = keywords,
       dateOfExtract = dateOfExtract
     )
-  }
 
-  def createAttachment: Attachment = {
+  def createAttachment: Attachment =
     Attachment(
-      id = RandomGenerator.randomUUID(),
-      public = true,
+      id                     = RandomGenerator.randomUUID(),
+      public                 = true,
       shouldPublishToRulings = true
     )
-  }
 
-  def createAttachmentWithOperator: Attachment = {
+  def createAttachmentWithOperator: Attachment =
     Attachment(
-      id = RandomGenerator.randomUUID(),
-      public = true,
-      operator = Some(Operator(id = "0", Some("OperatorName"))),
+      id                     = RandomGenerator.randomUUID(),
+      public                 = true,
+      operator               = Some(Operator(id = "0", Some("OperatorName"))),
       shouldPublishToRulings = false
     )
-  }
 
 }

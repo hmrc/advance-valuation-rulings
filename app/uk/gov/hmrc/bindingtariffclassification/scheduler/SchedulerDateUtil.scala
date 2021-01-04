@@ -24,21 +24,21 @@ import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import scala.concurrent.duration.FiniteDuration
 
 @Singleton
-class SchedulerDateUtil @Inject()(appConfig: AppConfig) {
+class SchedulerDateUtil @Inject() (appConfig: AppConfig) {
 
   private lazy val clock = appConfig.clock
 
   def nextRun(offset: LocalTime, interval: FiniteDuration): Instant = {
     val time = LocalTime.now(clock).withNano(0)
 
-    val offsetSeconds: Int = offset.toSecondOfDay
+    val offsetSeconds: Int  = offset.toSecondOfDay
     val currentSeconds: Int = time.toSecondOfDay
 
-    val intervalSeconds: Long = interval.toSeconds
-    val deltaSeconds: Int = offsetSeconds - currentSeconds
+    val intervalSeconds: Long   = interval.toSeconds
+    val deltaSeconds: Int       = offsetSeconds - currentSeconds
     val intervalRemainder: Long = deltaSeconds % intervalSeconds
 
-    val intervalRemaining: Long = if(intervalRemainder < 0) intervalRemainder + intervalSeconds else intervalRemainder
+    val intervalRemaining: Long = if (intervalRemainder < 0) intervalRemainder + intervalSeconds else intervalRemainder
     LocalDate
       .now(clock)
       .atTime(time)
@@ -50,15 +50,15 @@ class SchedulerDateUtil @Inject()(appConfig: AppConfig) {
   def closestRun(offset: LocalTime, interval: FiniteDuration): Instant = {
     val time = LocalTime.now(clock).withNano(0)
 
-    val offsetSeconds: Int = offset.toSecondOfDay
+    val offsetSeconds: Int  = offset.toSecondOfDay
     val currentSeconds: Int = time.toSecondOfDay
 
-    val intervalSeconds: Long = interval.toSeconds
-    val deltaSeconds: Int = offsetSeconds - currentSeconds
+    val intervalSeconds: Long   = interval.toSeconds
+    val deltaSeconds: Int       = offsetSeconds - currentSeconds
     val intervalRemainder: Long = deltaSeconds % intervalSeconds
 
-    val intervalRemaining: Long = if(intervalRemainder < 0) intervalRemainder + intervalSeconds else intervalRemainder
-    val intervalElapsed: Long = intervalSeconds - intervalRemaining
+    val intervalRemaining: Long = if (intervalRemainder < 0) intervalRemainder + intervalSeconds else intervalRemainder
+    val intervalElapsed: Long   = intervalSeconds - intervalRemaining
     if (intervalRemaining == 0) {
       LocalDate.now(clock).atTime(time).atZone(clock.getZone).toInstant
     } else if (intervalRemaining < intervalElapsed) {

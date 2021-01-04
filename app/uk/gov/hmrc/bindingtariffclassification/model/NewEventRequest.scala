@@ -19,13 +19,11 @@ package uk.gov.hmrc.bindingtariffclassification.model
 import java.time.Instant
 import java.util.UUID
 
-case class NewEventRequest
-(
+case class NewEventRequest(
   details: Details,
   operator: Operator,
   timestamp: Instant = Instant.now()
 ) {
-  def toEvent(caseRef: String): Event = {
+  def toEvent(caseRef: String): Event =
     Event(UUID.randomUUID().toString, details, operator, caseRef, timestamp)
-  }
 }

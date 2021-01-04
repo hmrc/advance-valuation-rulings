@@ -25,12 +25,12 @@ import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 import uk.gov.hmrc.play.http.ws.{WSProxy, WSProxyConfiguration}
 
 @Singleton
-class ProxyHttpClient @Inject()(conf: Configuration, httpAuditing: HttpAuditing, wsClient: WSClient)
-                               (implicit actorSystem: ActorSystem)
-  extends DefaultHttpClient(conf, httpAuditing, wsClient, actorSystem) with WSProxy {
+class ProxyHttpClient @Inject() (conf: Configuration, httpAuditing: HttpAuditing, wsClient: WSClient)(
+  implicit actorSystem: ActorSystem
+) extends DefaultHttpClient(conf, httpAuditing, wsClient, actorSystem)
+    with WSProxy {
 
-  override def wsProxyServer: Option[WSProxyServer] = {
+  override def wsProxyServer: Option[WSProxyServer] =
     WSProxyConfiguration(configPrefix = "proxy", configuration = conf)
-  }
 
 }

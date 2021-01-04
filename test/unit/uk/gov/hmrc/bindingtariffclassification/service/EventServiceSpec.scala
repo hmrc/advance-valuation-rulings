@@ -30,7 +30,7 @@ class EventServiceSpec extends BaseSpec {
   final private val e2 = mock[Event]
 
   private val repository = mock[EventRepository]
-  private val service = new EventService(repository)
+  private val service    = new EventService(repository)
 
   final val emulatedFailure = new RuntimeException("Emulated failure.")
 

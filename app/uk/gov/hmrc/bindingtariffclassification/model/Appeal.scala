@@ -19,8 +19,7 @@ package uk.gov.hmrc.bindingtariffclassification.model
 import uk.gov.hmrc.bindingtariffclassification.model.AppealStatus.AppealStatus
 import uk.gov.hmrc.bindingtariffclassification.model.AppealType.AppealType
 
-case class Appeal
-(
+case class Appeal(
   id: String,
   status: AppealStatus,
   `type`: AppealType

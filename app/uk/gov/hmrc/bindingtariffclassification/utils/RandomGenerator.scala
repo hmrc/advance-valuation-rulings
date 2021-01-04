@@ -20,8 +20,7 @@ import java.util.UUID
 
 object RandomGenerator {
 
-  def randomUUID(): String = {
+  def randomUUID(): String =
     UUID.randomUUID().toString
-  }
 
 }

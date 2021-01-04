@@ -20,4 +20,4 @@ import java.time.LocalDate
 
 case class BankHoliday(date: LocalDate)
 case class BankHolidaySet(events: Seq[BankHoliday])
-case class BankHolidaysResponse(`england-and-wales`:BankHolidaySet)
+case class BankHolidaysResponse(`england-and-wales`: BankHolidaySet)

@@ -42,44 +42,43 @@ trait EventRepository {
 }
 
 @Singleton
-class EventMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
-  extends ReactiveRepository[Event, BSONObjectID](
-    collectionName = "events",
-    mongo = mongoDbProvider.mongo,
-    domainFormat = MongoFormatters.formatEvent) with EventRepository with MongoCrudHelper[Event] {
+class EventMongoRepository @Inject() (mongoDbProvider: MongoDbProvider)
+    extends ReactiveRepository[Event, BSONObjectID](
+      collectionName = "events",
+      mongo          = mongoDbProvider.mongo,
+      domainFormat   = MongoFormatters.formatEvent
+    )
+    with EventRepository
+    with MongoCrudHelper[Event] {
 
   override val mongoCollection: JSONCollection = collection
 
   override def indexes = Seq(
     // TODO: We need to create an index (composed by a single or multiple fields) considering all possible searches needed by the UI.
-    createSingleFieldAscendingIndex(indexFieldKey = "id", isUnique = true),
+    createSingleFieldAscendingIndex(indexFieldKey = "id", isUnique            = true),
     createSingleFieldAscendingIndex(indexFieldKey = "caseReference", isUnique = false),
-    createSingleFieldAscendingIndex(indexFieldKey = "type", isUnique = false)
+    createSingleFieldAscendingIndex(indexFieldKey = "type", isUnique          = false)
   )
 
-  override def insert(e: Event): Future[Event] = {
+  override def insert(e: Event): Future[Event] =
     createOne(e)
-  }
 
   private val defaultSortBy = Json.obj("timestamp" -> -1)
 
-  private def in[T](set: Set[T])(implicit fmt: Format[T]): JsValue = {
+  private def in[T](set: Set[T])(implicit fmt: Format[T]): JsValue =
     Json.obj("$in" -> JsArray(set.map(elm => Json.toJson(elm)).toSeq))
-  }
 
-  override def search(search: EventSearch, pagination: Pagination): Future[Paged[Event]] = {
+  override def search(search: EventSearch, pagination: Pagination): Future[Paged[Event]] =
     getMany(selector(search), defaultSortBy, pagination)
-  }
 
-  override def deleteAll(): Future[Unit] = {
+  override def deleteAll(): Future[Unit] =
     removeAll().map(_ => ())
-  }
 
   override def delete(search: EventSearch): Future[Unit] = {
     val delete = collection.delete()
     for {
       elems <- delete.element(q = selector(search), limit = None)
-      _ <- delete.many(Seq(elems))
+      _     <- delete.many(Seq(elems))
     } yield ()
   }
 
@@ -91,9 +90,9 @@ class EventMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
       .++(search.timestampMax.map(t => Json.obj("timestamp" -> Json.obj("$lte" -> t))))
 
     queries match {
-      case Nil => Json.obj()
+      case Nil           => Json.obj()
       case single :: Nil => single
-      case many => JsObject(Seq("$and" -> JsArray(many)))
+      case many          => JsObject(Seq("$and" -> JsArray(many)))
     }
   }
 

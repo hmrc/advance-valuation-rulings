@@ -22,7 +22,8 @@ import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 
 object DateUtil {
 
-  def toInstant(localDate: LocalDate)(implicit appConfig: AppConfig): Instant = localDate.atStartOfDay(appConfig.clock.getZone).toInstant
+  def toInstant(localDate: LocalDate)(implicit appConfig: AppConfig): Instant =
+    localDate.atStartOfDay(appConfig.clock.getZone).toInstant
 
   def bankHoliday(date: LocalDate)(implicit bankHolidays: Set[LocalDate]): Boolean = bankHolidays.contains(date)
 

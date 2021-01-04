@@ -23,22 +23,18 @@ import uk.gov.hmrc.bindingtariffclassification.repository.EventRepository
 import scala.concurrent.Future
 
 @Singleton
-class EventService @Inject()(repository: EventRepository) {
+class EventService @Inject() (repository: EventRepository) {
 
-  def insert(e: Event): Future[Event] = {
+  def insert(e: Event): Future[Event] =
     repository.insert(e)
-  }
 
-  def search(search: EventSearch, pagination: Pagination): Future[Paged[Event]] = {
+  def search(search: EventSearch, pagination: Pagination): Future[Paged[Event]] =
     repository.search(search, pagination)
-  }
 
-  def deleteAll(): Future[Unit] = {
+  def deleteAll(): Future[Unit] =
     repository.deleteAll()
-  }
 
-  def deleteCaseEvents(caseReference: String): Future[Unit] = {
+  def deleteCaseEvents(caseReference: String): Future[Unit] =
     repository.delete(EventSearch(caseReference = Some(Set(caseReference))))
-  }
 
 }

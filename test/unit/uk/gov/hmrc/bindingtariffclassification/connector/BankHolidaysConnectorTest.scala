@@ -36,11 +36,11 @@ class BankHolidaysConnectorTest extends BaseSpec with WiremockTestServer with Be
 
   private val config = mock[AppConfig]
 
-  private implicit val headers: HeaderCarrier = HeaderCarrier()
+  private implicit val headers: HeaderCarrier   = HeaderCarrier()
   private implicit val actorSystem: ActorSystem = ActorSystem("test")
 
-  private val wsClient: WSClient = fakeApplication.injector.instanceOf[WSClient]
-  private val httpAuditEvent = fakeApplication.injector.instanceOf[HttpAuditing]
+  private val wsClient: WSClient  = fakeApplication.injector.instanceOf[WSClient]
+  private val httpAuditEvent      = fakeApplication.injector.instanceOf[HttpAuditing]
   private val hmrcProxyHttpClient = new ProxyHttpClient(fakeApplication.configuration, httpAuditEvent, wsClient)
 
   private val connector = new BankHolidaysConnector(config, hmrcProxyHttpClient)
@@ -61,8 +61,8 @@ class BankHolidaysConnectorTest extends BaseSpec with WiremockTestServer with Be
       )
 
       await(connector.get()) shouldBe Set(
-        LocalDate.of(2012,1,2),
-        LocalDate.of(2012,4,6)
+        LocalDate.of(2012, 1, 2),
+        LocalDate.of(2012, 4, 6)
       )
     }
 

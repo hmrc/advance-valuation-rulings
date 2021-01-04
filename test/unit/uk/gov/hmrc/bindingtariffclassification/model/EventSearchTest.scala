@@ -25,16 +25,16 @@ class EventSearchTest extends UnitSpec {
 
   private val search = EventSearch(
     caseReference = Some(Set("ref1", "ref2")),
-    `type` = Some(Set(EventType.NOTE, EventType.CASE_STATUS_CHANGE)),
-    timestampMin = Some(Instant.EPOCH),
-    timestampMax = Some(Instant.EPOCH.plusSeconds(1))
+    `type`        = Some(Set(EventType.NOTE, EventType.CASE_STATUS_CHANGE)),
+    timestampMin  = Some(Instant.EPOCH),
+    timestampMax  = Some(Instant.EPOCH.plusSeconds(1))
   )
 
   private val params: Map[String, Seq[String]] = Map(
     "case_reference" -> Seq("ref1", "ref2"),
-    "type" -> Seq("NOTE", "CASE_STATUS_CHANGE"),
-    "min_timestamp" -> Seq("1970-01-01T00:00:00Z"),
-    "max_timestamp" -> Seq("1970-01-01T00:00:01Z")
+    "type"           -> Seq("NOTE", "CASE_STATUS_CHANGE"),
+    "min_timestamp"  -> Seq("1970-01-01T00:00:00Z"),
+    "max_timestamp"  -> Seq("1970-01-01T00:00:01Z")
   )
 
   private val emptyParams: Map[String, Seq[String]] = params.mapValues(_.map(_ => ""))

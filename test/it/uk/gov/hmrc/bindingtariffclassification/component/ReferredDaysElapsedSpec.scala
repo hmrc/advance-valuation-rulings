@@ -33,7 +33,7 @@ import scala.concurrent.Await.result
 
 class ReferredDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
 
-  override lazy val port = 14683
+  override lazy val port   = 14683
   protected val serviceUrl = s"http://localhost:$port"
 
   private val injector = new GuiceApplicationBuilder()
@@ -67,7 +67,6 @@ class ReferredDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
       givenThereIs(aCaseWith(reference = "completed", status = COMPLETED, createdDate = "2019-02-01"))
       givenThereIs(aStatusChangeWith("completed", CaseStatus.REFERRED, "2019-02-01"))
 
-
       When("The job runs")
       result(job.execute(), timeout)
 
@@ -77,7 +76,7 @@ class ReferredDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
       referredDaysElapsedForCase("ref-20190110") shouldBe 17
       referredDaysElapsedForCase("ref-20190203") shouldBe 0
       referredDaysElapsedForCase("ref-20190201") shouldBe 1
-      referredDaysElapsedForCase("completed") shouldBe -1 // Unchanged
+      referredDaysElapsedForCase("completed")    shouldBe -1 // Unchanged
     }
 
     scenario("Calculates elapsed days for SUSPENDED cases") {
@@ -101,7 +100,6 @@ class ReferredDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
       givenThereIs(aCaseWith(reference = "s-completed", status = COMPLETED, createdDate = "2019-02-01"))
       givenThereIs(aStatusChangeWith("s-completed", CaseStatus.SUSPENDED, "2019-02-01"))
 
-
       When("The job runs")
       result(job.execute(), timeout)
 
@@ -111,32 +109,31 @@ class ReferredDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
       referredDaysElapsedForCase("s-ref-20190110") shouldBe 17
       referredDaysElapsedForCase("s-ref-20190203") shouldBe 0
       referredDaysElapsedForCase("s-ref-20190201") shouldBe 1
-      referredDaysElapsedForCase("s-completed") shouldBe -1 // Unchanged
+      referredDaysElapsedForCase("s-completed")    shouldBe -1 // Unchanged
     }
   }
 
-
-  private def toInstant (date : String) = {
+  private def toInstant(date: String) =
     LocalDate.parse(date).atStartOfDay().toInstant(ZoneOffset.UTC)
-  }
 
-  private def aCaseWith(reference: String, createdDate: String, status: CaseStatus): Case = {
+  private def aCaseWith(reference: String, createdDate: String, status: CaseStatus): Case =
     createCase(app = createBasicBTIApplication).copy(
-      reference = reference,
-      createdDate = LocalDate.parse(createdDate).atStartOfDay().toInstant(ZoneOffset.UTC),
-      status = status,
+      reference           = reference,
+      createdDate         = LocalDate.parse(createdDate).atStartOfDay().toInstant(ZoneOffset.UTC),
+      status              = status,
       referredDaysElapsed = -1
     )
-  }
 
-  private def aStatusChangeWith(caseReference: String, status: CaseStatus, date: String): Event = {
-    EventData.createCaseStatusChangeEvent(caseReference, from = OPEN, to = status)
+  private def aStatusChangeWith(caseReference: String, status: CaseStatus, date: String): Event =
+    EventData
+      .createCaseStatusChangeEvent(caseReference, from = OPEN, to = status)
       .copy(timestamp = toInstant(date))
-  }
 
-  private def givenThereIs(c: Case): Unit = storeCases(c)
+  private def givenThereIs(c: Case): Unit  = storeCases(c)
   private def givenThereIs(c: Event): Unit = storeEvents(c)
 
-  private def referredDaysElapsedForCase : String => Long = { reference => getCase(reference).map(_.referredDaysElapsed).getOrElse(0)}
+  private def referredDaysElapsedForCase: String => Long = { reference =>
+    getCase(reference).map(_.referredDaysElapsed).getOrElse(0)
+  }
 
 }
