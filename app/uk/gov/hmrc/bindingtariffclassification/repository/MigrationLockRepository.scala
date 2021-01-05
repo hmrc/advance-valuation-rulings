@@ -50,8 +50,7 @@ class MigrationLockMongoRepository @Inject() (mongoDbProvider: MongoDbProvider)
   override val mongoCollection: JSONCollection = collection
 
   override def indexes = Seq(
-    createSingleFieldAscendingIndex("name", isUnique     = true),
-    createCompoundIndex(Seq("name", "runDate"), isUnique = true)
+    createSingleFieldAscendingIndex("name", isUnique = true)
   )
 
   override def lock(e: JobRunEvent): Future[Boolean] =
