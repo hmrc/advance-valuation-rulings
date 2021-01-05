@@ -18,11 +18,11 @@ package uk.gov.hmrc.bindingtariffclassification.service
 
 import java.time.Instant
 import java.util.UUID
-
 import javax.inject._
+
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.bindingtariffclassification.repository.{CaseRepository, SequenceRepository}
+import uk.gov.hmrc.bindingtariffclassification.repository.{CaseRepository, MigrationLockRepository, SequenceRepository}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -32,6 +32,7 @@ class CaseService @Inject() (
   appConfig: AppConfig,
   caseRepository: CaseRepository,
   sequenceRepository: SequenceRepository,
+  migrationRepository: MigrationLockRepository,
   eventService: EventService
 ) {
 
@@ -83,6 +84,7 @@ class CaseService @Inject() (
     caseRepository.deleteAll()
     sequenceRepository.deleteSequenceByName("ATaR Case Reference")
     sequenceRepository.deleteSequenceByName("Other Case Reference")
+    migrationRepository.deleteAll()
   }
 
   def delete(reference: String): Future[Unit] =

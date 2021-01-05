@@ -100,6 +100,18 @@ class MigrationLockRepositorySpec
     }
   }
 
+  "deleteAll" should {
+    "remove all documents from the collection" in {
+      val event2 = JobRunEvent("name2", date("2018-12-26"))
+      await(repository.lock(event))  shouldBe true
+      await(repository.lock(event2)) shouldBe true
+      collectionSize                 shouldBe 2
+
+      await(repository.deleteAll())
+      collectionSize shouldBe 0
+    }
+  }
+
   "The 'scheduler' collection" should {
 
     "have all expected indexes" in {

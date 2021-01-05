@@ -22,7 +22,7 @@ import org.scalatest.BeforeAndAfterEach
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.bindingtariffclassification.repository.{CaseRepository, SequenceRepository}
+import uk.gov.hmrc.bindingtariffclassification.repository.{CaseRepository, MigrationLockRepository, SequenceRepository}
 
 import scala.concurrent.Future.successful
 
@@ -31,17 +31,19 @@ class CaseServiceSpec extends BaseSpec with BeforeAndAfterEach {
   private val c1      = mock[Case]
   private val c1Saved = mock[Case]
 
-  private val caseRepository     = mock[CaseRepository]
-  private val sequenceRepository = mock[SequenceRepository]
-  private val eventService       = mock[EventService]
-  private val appConfig          = mock[AppConfig]
-  private val service            = new CaseService(appConfig, caseRepository, sequenceRepository, eventService)
+  private val caseRepository      = mock[CaseRepository]
+  private val sequenceRepository  = mock[SequenceRepository]
+  private val migrationRepository = mock[MigrationLockRepository]
+  private val eventService        = mock[EventService]
+  private val appConfig           = mock[AppConfig]
+  private val service =
+    new CaseService(appConfig, caseRepository, sequenceRepository, migrationRepository, eventService)
 
   private final val emulatedFailure = new RuntimeException("Emulated failure.")
 
   override protected def afterEach(): Unit = {
     super.afterEach()
-    reset(caseRepository, sequenceRepository, appConfig)
+    reset(caseRepository, sequenceRepository, migrationRepository, appConfig)
   }
 
   override protected def beforeEach(): Unit =
@@ -74,10 +76,12 @@ class CaseServiceSpec extends BaseSpec with BeforeAndAfterEach {
       when(caseRepository.deleteAll()).thenReturn(successful(()))
       when(sequenceRepository.deleteSequenceByName("ATaR Case Reference")).thenReturn(successful(()))
       when(sequenceRepository.deleteSequenceByName("Other Case Reference")).thenReturn(successful(()))
+      when(migrationRepository.deleteAll()).thenReturn(successful(()))
       await(service.deleteAll()) shouldBe ((): Unit)
       verify(caseRepository, times(1)).deleteAll()
       verify(sequenceRepository, times(1)).deleteSequenceByName("ATaR Case Reference")
       verify(sequenceRepository, times(1)).deleteSequenceByName("Other Case Reference")
+      verify(migrationRepository, times(1)).deleteAll()
     }
 
     "propagate any error" in {
