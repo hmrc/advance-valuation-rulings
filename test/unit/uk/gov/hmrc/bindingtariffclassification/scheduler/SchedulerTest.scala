@@ -29,7 +29,7 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.Eventually
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
-import uk.gov.hmrc.bindingtariffclassification.model.SchedulerRunEvent
+import uk.gov.hmrc.bindingtariffclassification.model.JobRunEvent
 import uk.gov.hmrc.bindingtariffclassification.repository.SchedulerLockRepository
 
 import scala.concurrent.ExecutionContext
@@ -58,13 +58,13 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
   private implicit def instant2Time: Instant => LocalTime = _.atZone(zone).toLocalTime
 
   private def givenTheLockSucceeds(): Unit =
-    given(schedulerRepository.lock(any[SchedulerRunEvent])).willReturn(successful(true))
+    given(schedulerRepository.lock(any[JobRunEvent])).willReturn(successful(true))
 
   private def givenTheLockFails(): Unit =
-    given(schedulerRepository.lock(any[SchedulerRunEvent])).willReturn(successful(false))
+    given(schedulerRepository.lock(any[JobRunEvent])).willReturn(successful(false))
 
-  private def theLockEvent: SchedulerRunEvent = {
-    val captor: ArgumentCaptor[SchedulerRunEvent] = ArgumentCaptor.forClass(classOf[SchedulerRunEvent])
+  private def theLockEvent: JobRunEvent = {
+    val captor: ArgumentCaptor[JobRunEvent] = ArgumentCaptor.forClass(classOf[JobRunEvent])
     verify(schedulerRepository).lock(captor.capture())
     captor.getValue
   }

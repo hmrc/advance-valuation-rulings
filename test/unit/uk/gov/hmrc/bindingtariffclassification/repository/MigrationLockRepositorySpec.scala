@@ -31,7 +31,7 @@ import uk.gov.hmrc.mongo.MongoSpecSupport
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class SchedulerLockRepositorySpec
+class MigrationLockRepositorySpec
     extends BaseMongoIndexSpec
     with BeforeAndAfterAll
     with BeforeAndAfterEach
@@ -44,8 +44,8 @@ class SchedulerLockRepositorySpec
 
   private val repository = newMongoRepo
 
-  private def newMongoRepo: SchedulerLockMongoRepository =
-    new SchedulerLockMongoRepository(mongoDbProvider)
+  private def newMongoRepo: MigrationLockMongoRepository =
+    new MigrationLockMongoRepository(mongoDbProvider)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -71,9 +71,9 @@ class SchedulerLockRepositorySpec
   private def date(date: String): Instant =
     LocalDate.parse(date).atStartOfDay(ZoneId.of("UTC")).toInstant
 
-  "lock" should {
-    val event = JobRunEvent("name", date("2018-12-25"))
+  private val event = JobRunEvent("name", date("2018-12-25"))
 
+  "lock" should {
     "insert a new document in the collection" in {
       await(repository.lock(event)) shouldBe true
       collectionSize                shouldBe 1
@@ -81,19 +81,22 @@ class SchedulerLockRepositorySpec
       await(repository.collection.find(selectorByName("name")).one[JobRunEvent]) shouldBe Some(event)
     }
 
-    "insert a multiple documents in the collection with different runDates" in {
+    "fail to insert a duplicate event name" in {
       await(repository.lock(event)) shouldBe true
-      val event2 = JobRunEvent("name", date("2018-12-26"))
-      await(repository.lock(event2)) shouldBe true
-      collectionSize                 shouldBe 2
+      collectionSize                shouldBe 1
+
+      await(repository.lock(event.copy(runDate = date("2018-12-26")))) shouldBe false
+      collectionSize shouldBe 1
     }
+  }
 
-    "fail to insert a duplicate event name & runDate" in {
+  "rollback" should {
+    "remove the document from the collection" in {
       await(repository.lock(event)) shouldBe true
       collectionSize                shouldBe 1
 
-      await(repository.lock(event)) shouldBe false
-      collectionSize                shouldBe 1
+      await(repository.rollback(event))
+      collectionSize shouldBe 0
     }
   }
 
@@ -102,7 +105,7 @@ class SchedulerLockRepositorySpec
     "have all expected indexes" in {
 
       val expectedIndexes = List(
-        Index(key = Seq("name" -> Ascending, "runDate" -> Ascending), name = Some("name_runDate_Index"), unique = true),
+        Index(key = Seq("name" -> Ascending), name = Some("name_Index"), unique = true),
         Index(key = Seq("_id"  -> Ascending), name = Some("_id_"))
       )
 

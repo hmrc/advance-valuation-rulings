@@ -24,7 +24,7 @@ import akka.actor.ActorSystem
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
-import uk.gov.hmrc.bindingtariffclassification.model.SchedulerRunEvent
+import uk.gov.hmrc.bindingtariffclassification.model.JobRunEvent
 import uk.gov.hmrc.bindingtariffclassification.repository.SchedulerLockRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -50,7 +50,7 @@ class Scheduler @Inject() (
       job.interval,
       new Runnable() {
         override def run(): Unit = {
-          val event = SchedulerRunEvent(job.name, closestRunDateFor(job))
+          val event = JobRunEvent(job.name, closestRunDateFor(job))
           Logger.info(s"Scheduled Job [${job.name}]: Acquiring Lock")
           schedulerLockRepository.lock(event).flatMap {
             case true =>
