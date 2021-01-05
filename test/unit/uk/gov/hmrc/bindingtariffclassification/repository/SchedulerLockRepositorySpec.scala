@@ -25,7 +25,7 @@ import reactivemongo.api.indexes.IndexType.Ascending
 import reactivemongo.api.{DB, ReadConcern}
 import reactivemongo.bson._
 import reactivemongo.play.json.ImplicitBSONHandlers._
-import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatSchedulerRunEvent
+import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatJobRunEvent
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.mongo.MongoSpecSupport
 
@@ -72,18 +72,18 @@ class SchedulerLockRepositorySpec
     LocalDate.parse(date).atStartOfDay(ZoneId.of("UTC")).toInstant
 
   "lock" should {
-    val event = SchedulerRunEvent("name", date("2018-12-25"))
+    val event = JobRunEvent("name", date("2018-12-25"))
 
     "insert a new document in the collection" in {
       await(repository.lock(event)) shouldBe true
       collectionSize                shouldBe 1
 
-      await(repository.collection.find(selectorByName("name")).one[SchedulerRunEvent]) shouldBe Some(event)
+      await(repository.collection.find(selectorByName("name")).one[JobRunEvent]) shouldBe Some(event)
     }
 
     "insert a multiple documents in the collection with different runDates" in {
       await(repository.lock(event)) shouldBe true
-      val event2 = SchedulerRunEvent("name", date("2018-12-26"))
+      val event2 = JobRunEvent("name", date("2018-12-26"))
       await(repository.lock(event2)) shouldBe true
       collectionSize                 shouldBe 2
     }

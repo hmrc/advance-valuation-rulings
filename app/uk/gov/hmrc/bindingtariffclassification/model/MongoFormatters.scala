@@ -120,8 +120,8 @@ object MongoFormatters {
     .and[ExpertAdviceReceived](EventType.EXPERT_ADVICE_RECEIVED.toString)
     .format
 
-  implicit val formatEventType: Format[EventType.Value]            = EnumJson.format(EventType)
-  implicit val formatEvent: OFormat[Event]                         = Json.format[Event]
-  implicit val formatSchedulerRunEvent: OFormat[SchedulerRunEvent] = Json.format[SchedulerRunEvent]
+  implicit val formatEventType: Format[EventType.Value] = EnumJson.format(EventType)
+  implicit val formatEvent: OFormat[Event]              = Json.format[Event]
+  implicit val formatJobRunEvent: OFormat[JobRunEvent]  = Json.format[JobRunEvent]
 
 }

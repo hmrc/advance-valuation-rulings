@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.model
+package uk.gov.hmrc.bindingtariffclassification.migrations
 
-import java.time.Instant
-
-case class SchedulerRunEvent(name: String, runDate: Instant)
+case class MigrationJobs(jobs: Iterable[MigrationJob])

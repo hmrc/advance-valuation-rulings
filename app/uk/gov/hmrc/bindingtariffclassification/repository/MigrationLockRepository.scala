@@ -28,37 +28,45 @@ import uk.gov.hmrc.mongo.ReactiveRepository
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-@ImplementedBy(classOf[SchedulerLockMongoRepository])
-trait SchedulerLockRepository {
+@ImplementedBy(classOf[MigrationLockMongoRepository])
+trait MigrationLockRepository {
 
   def lock(e: JobRunEvent): Future[Boolean]
+
+  def rollback(e: JobRunEvent): Future[Unit]
 
 }
 
 @Singleton
-class SchedulerLockMongoRepository @Inject() (mongoDbProvider: MongoDbProvider)
+class MigrationLockMongoRepository @Inject() (mongoDbProvider: MongoDbProvider)
     extends ReactiveRepository[JobRunEvent, BSONObjectID](
-      collectionName = "scheduler",
+      collectionName = "migrations",
       mongo          = mongoDbProvider.mongo,
       domainFormat   = MongoFormatters.formatJobRunEvent
     )
-    with SchedulerLockRepository
+    with MigrationLockRepository
     with MongoCrudHelper[JobRunEvent] {
 
   override val mongoCollection: JSONCollection = collection
 
   override def indexes = Seq(
+    createSingleFieldAscendingIndex("name", isUnique     = true),
     createCompoundIndex(Seq("name", "runDate"), isUnique = true)
   )
 
   override def lock(e: JobRunEvent): Future[Boolean] =
     createOne(e) map { _ =>
-      logger.debug(s"Took Lock for [${e.name}] at [${e.runDate}]")
+      logger.debug(s"Took Lock for [${e.name}]")
       true
     } recover {
       case t: Throwable =>
-        logger.debug(s"Unable to take Lock for [${e.name}] at [${e.runDate}]", t)
+        logger.debug(s"Unable to take Lock for [${e.name}]", t)
         false
     }
 
+  override def rollback(e: JobRunEvent): Future[Unit] =
+    remove("name" -> e.name).map { _ =>
+      logger.debug(s"Removed Lock for [${e.name}]")
+      ()
+    }
 }
