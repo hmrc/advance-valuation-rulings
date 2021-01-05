@@ -35,6 +35,8 @@ trait MigrationLockRepository {
 
   def rollback(e: JobRunEvent): Future[Unit]
 
+  def deleteAll(): Future[Unit]
+
 }
 
 @Singleton
@@ -68,4 +70,7 @@ class MigrationLockMongoRepository @Inject() (mongoDbProvider: MongoDbProvider)
       logger.debug(s"Removed Lock for [${e.name}]")
       ()
     }
+
+  override def deleteAll(): Future[Unit] =
+    removeAll().map(_ => ())
 }
