@@ -20,6 +20,7 @@ import javax.inject.{Inject, Singleton}
 
 import com.google.inject.ImplementedBy
 import reactivemongo.bson.BSONObjectID
+import reactivemongo.core.errors.DatabaseException
 import reactivemongo.play.json.collection.JSONCollection
 import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatJobRunEvent
 import uk.gov.hmrc.bindingtariffclassification.model.{JobRunEvent, MongoFormatters}
@@ -27,6 +28,7 @@ import uk.gov.hmrc.mongo.ReactiveRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.control.NonFatal
 
 @ImplementedBy(classOf[MigrationLockMongoRepository])
 trait MigrationLockRepository {
@@ -51,6 +53,8 @@ class MigrationLockMongoRepository @Inject() (mongoDbProvider: MongoDbProvider)
 
   override val mongoCollection: JSONCollection = collection
 
+  val mongoDuplicateKeyErrorCode: Int = 11000
+
   override def indexes = Seq(
     createSingleFieldAscendingIndex("name", isUnique = true)
   )
@@ -60,8 +64,16 @@ class MigrationLockMongoRepository @Inject() (mongoDbProvider: MongoDbProvider)
       logger.debug(s"Took Lock for [${e.name}]")
       true
     } recover {
-      case t: Throwable =>
-        logger.debug(s"Unable to take Lock for [${e.name}]", t)
+      case error: DatabaseException if error.isNotAPrimaryError =>
+        // Do not allow the migration job to proceed due to errors on secondary nodes, and attempt to rollback the changes
+        logger.error(s"Lock failed on secondary node", error)
+        rollback(e)
+        false
+      case error: DatabaseException if error.code.contains(mongoDuplicateKeyErrorCode) =>
+        logger.debug(s"Lock already exists for [${e.name}]", error)
+        false
+      case NonFatal(error) =>
+        logger.error(s"Unable to take Lock for [${e.name}]", error)
         false
     }
 

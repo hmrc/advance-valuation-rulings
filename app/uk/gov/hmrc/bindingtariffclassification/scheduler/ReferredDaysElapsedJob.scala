@@ -45,6 +45,7 @@ class ReferredDaysElapsedJob @Inject() (
 
   private implicit val config: AppConfig      = appConfig
   private implicit val carrier: HeaderCarrier = HeaderCarrier()
+  private lazy val logger: Logger             = Logger(this.getClass)
   private lazy val jobConfig                  = appConfig.referredDaysElapsed
   private lazy val criteria = CaseSearch(
     filter = CaseFilter(statuses = Some(Set(PseudoCaseStatus.REFERRED, PseudoCaseStatus.SUSPENDED))),
@@ -112,7 +113,7 @@ class ReferredDaysElapsedJob @Inject() (
       referredDaysElapsed = referralStartDate
         .map(getReferredDaysElapsed)
         .getOrElse {
-          Logger.warn(s"$name: Unable to find referral event for [${c.reference}]")
+          logger.warn(s"$name: Unable to find referral event for [${c.reference}]")
           0L
         }
 
@@ -124,11 +125,11 @@ class ReferredDaysElapsedJob @Inject() (
   private def logResult(original: Case, updated: Option[Case]): Unit =
     updated match {
       case Some(c) if original.referredDaysElapsed != c.referredDaysElapsed =>
-        Logger.info(
+        logger.info(
           s"$name: Updated Referred Days Elapsed of Case [${original.reference}] from [${original.referredDaysElapsed}] to [${c.referredDaysElapsed}]"
         )
       case None =>
-        Logger.warn(s"$name: Failed to update Referred Days Elapsed of Case [${original.reference}]")
+        logger.warn(s"$name: Failed to update Referred Days Elapsed of Case [${original.reference}]")
       case _ =>
         ()
     }

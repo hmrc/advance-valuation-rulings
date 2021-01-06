@@ -44,6 +44,7 @@ class ActiveDaysElapsedJob @Inject() (
 
   private implicit val config: AppConfig      = appConfig
   private implicit val carrier: HeaderCarrier = HeaderCarrier()
+  private lazy val logger: Logger             = Logger(this.getClass)
   private lazy val jobConfig                  = appConfig.activeDaysElapsed
   private lazy val criteria = CaseSearch(
     filter = CaseFilter(statuses = Some(Set(PseudoCaseStatus.OPEN, PseudoCaseStatus.NEW))),
@@ -131,11 +132,11 @@ class ActiveDaysElapsedJob @Inject() (
   private def logResult(original: Case, updated: Option[Case]): Unit =
     updated match {
       case Some(c) if original.daysElapsed != c.daysElapsed =>
-        Logger.info(
+        logger.info(
           s"$name: Updated Days Elapsed of Case [${original.reference}] from [${original.daysElapsed}] to [${c.daysElapsed}]"
         )
       case None =>
-        Logger.warn(s"$name: Failed to update Days Elapsed of Case [${original.reference}]")
+        logger.warn(s"$name: Failed to update Days Elapsed of Case [${original.reference}]")
       case _ =>
         ()
     }

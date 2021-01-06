@@ -40,9 +40,10 @@ class Scheduler @Inject() (
   schedulerDateUtil: SchedulerDateUtil,
   scheduledJobs: ScheduledJobs
 ) {
+  private lazy val logger: Logger = Logger(this.getClass)
 
   scheduledJobs.jobs.foreach { job =>
-    Logger.info(
+    logger.info(
       s"Scheduling job [${job.name}] to run periodically at [${job.firstRunTime}] with interval [${job.interval.length} ${job.interval.unit}]"
     )
     actorSystem.scheduler.schedule(
@@ -51,18 +52,18 @@ class Scheduler @Inject() (
       new Runnable() {
         override def run(): Unit = {
           val event = JobRunEvent(job.name, closestRunDateFor(job))
-          Logger.info(s"Scheduled Job [${job.name}]: Acquiring Lock")
+          logger.info(s"Scheduled Job [${job.name}]: Acquiring Lock")
           schedulerLockRepository.lock(event).flatMap {
             case true =>
-              Logger.info(s"Scheduled Job [${job.name}]: Successfully acquired lock. Starting Job.")
+              logger.info(s"Scheduled Job [${job.name}]: Successfully acquired lock. Starting Job.")
               job.execute().map { _ =>
-                Logger.info(s"Scheduled Job [${job.name}]: Completed Successfully")
+                logger.info(s"Scheduled Job [${job.name}]: Completed Successfully")
               } recover {
                 case t: Throwable =>
-                  Logger.error(s"Scheduled Job [${job.name}]: Failed", t)
+                  logger.error(s"Scheduled Job [${job.name}]: Failed", t)
               }
             case false =>
-              Logger.info(s"Scheduled Job [${job.name}]: Failed to acquire Lock. It may have been running already.")
+              logger.info(s"Scheduled Job [${job.name}]: Failed to acquire Lock. It may have been running already.")
               successful(())
           }
         }
