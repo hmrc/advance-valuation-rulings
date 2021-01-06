@@ -34,6 +34,7 @@ import scala.io.Source
 class BankHolidaysConnector @Inject() (appConfig: AppConfig, http: ProxyHttpClient)(
   implicit executionContext: ExecutionContext
 ) {
+  private lazy val logger: Logger = Logger(this.getClass)
 
   def get()(implicit headerCarrier: HeaderCarrier): Future[Set[LocalDate]] =
     http
@@ -43,7 +44,7 @@ class BankHolidaysConnector @Inject() (appConfig: AppConfig, http: ProxyHttpClie
 
   private def withResourcesFile: PartialFunction[Throwable, BankHolidaysResponse] = {
     case t =>
-      Logger.error("Bank Holidays Request Failed", t)
+      logger.error("Bank Holidays Request Failed", t)
       val url     = getClass.getClassLoader.getResource("bank-holidays-fallback.json")
       val content = Source.fromURL(url, "UTF-8").getLines().mkString
       Json.fromJson(Json.parse(content)).get
