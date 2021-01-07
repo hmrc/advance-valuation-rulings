@@ -19,7 +19,7 @@ package uk.gov.hmrc.bindingtariffclassification.migrations
 import java.time.{Instant, LocalDate, ZoneOffset}
 import javax.inject.{Inject, Singleton}
 
-import play.api.Logger
+import uk.gov.hmrc.bindingtariffclassification.common.Logging
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.service.CaseService
 import uk.gov.hmrc.bindingtariffclassification.sort.CaseSortField
@@ -31,8 +31,8 @@ import scala.concurrent.Future.{sequence, successful}
 @Singleton
 class AmendDateOfExtractMigrationJob @Inject() (
   caseService: CaseService
-) extends MigrationJob {
-  private lazy val logger: Logger = Logger(this.getClass)
+) extends MigrationJob
+    with Logging {
   private lazy val criteria = CaseSearch(
     filter = CaseFilter(migrated = Some(true)),
     sort   = Some(CaseSort(Set(CaseSortField.REFERENCE)))

@@ -19,10 +19,10 @@ package uk.gov.hmrc.bindingtariffclassification.scheduler
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
+import javax.inject.{Inject, Singleton}
 
 import akka.actor.ActorSystem
-import javax.inject.{Inject, Singleton}
-import play.api.Logger
+import uk.gov.hmrc.bindingtariffclassification.common.Logging
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.JobRunEvent
 import uk.gov.hmrc.bindingtariffclassification.repository.SchedulerLockRepository
@@ -39,8 +39,7 @@ class Scheduler @Inject() (
   schedulerLockRepository: SchedulerLockRepository,
   schedulerDateUtil: SchedulerDateUtil,
   scheduledJobs: ScheduledJobs
-) {
-  private lazy val logger: Logger = Logger(this.getClass)
+) extends Logging {
 
   scheduledJobs.jobs.foreach { job =>
     logger.info(
