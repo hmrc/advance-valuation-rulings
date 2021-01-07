@@ -19,7 +19,7 @@ package uk.gov.hmrc.bindingtariffclassification.migrations
 import java.time.Instant
 import javax.inject.{Inject, Singleton}
 
-import play.api.Logger
+import uk.gov.hmrc.bindingtariffclassification.common.Logging
 import uk.gov.hmrc.bindingtariffclassification.model.JobRunEvent
 import uk.gov.hmrc.bindingtariffclassification.repository.MigrationLockRepository
 
@@ -31,9 +31,7 @@ import scala.concurrent.Future.successful
 class MigrationRunner @Inject() (
   migrationLockRepository: MigrationLockRepository,
   migrationJobs: MigrationJobs
-) {
-  private lazy val logger: Logger = Logger(this.getClass)
-
+) extends Logging {
   def trigger[T](clazz: Class[T]): Future[Unit] =
     Future.sequence(migrationJobs.jobs.filter(clazz.isInstance(_)).map(run)).map(_ => ())
 

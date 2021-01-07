@@ -17,7 +17,7 @@
 package uk.gov.hmrc.bindingtariffclassification.controllers
 
 import javax.inject.{Inject, Singleton}
-import org.slf4j.{Logger, LoggerFactory}
+
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
@@ -38,7 +38,6 @@ class CaseController @Inject() (
 ) extends CommonController(mcc) {
 
   lazy private val testModeFilter = TestMode.actionFilter(appConfig, parser)
-  private val logger: Logger      = LoggerFactory.getLogger(classOf[CaseController])
 
   def deleteAll(): Action[AnyContent] = testModeFilter.async {
     caseService.deleteAll() map (_ => NoContent) recover recovery

@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.bindingtariffclassification.controllers
 
-import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json._
 import play.api.mvc.{MessagesControllerComponents, Request, Result}
+import uk.gov.hmrc.bindingtariffclassification.common.Logging
 import uk.gov.hmrc.bindingtariffclassification.model.ErrorCode._
 import uk.gov.hmrc.bindingtariffclassification.model.JsErrorResponse
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
@@ -29,9 +29,8 @@ import scala.util.{Failure, Success, Try}
 
 class CommonController(
   mcc: MessagesControllerComponents
-) extends BackendController(mcc) {
-
-  private val logger: Logger = LoggerFactory.getLogger(classOf[CommonController])
+) extends BackendController(mcc)
+    with Logging {
 
   override protected def withJsonBody[T](
     f: T => Future[Result]
@@ -50,7 +49,7 @@ class CommonController(
   }
 
   private[controllers] def handleException(e: Throwable) = {
-    play.api.Logger.error(s"An unexpected error occurred: ${e.getMessage}", e)
+    logger.error(s"An unexpected error occurred: ${e.getMessage}", e)
     InternalServerError(JsErrorResponse(UNKNOWN_ERROR, "An unexpected error occurred"))
   }
 

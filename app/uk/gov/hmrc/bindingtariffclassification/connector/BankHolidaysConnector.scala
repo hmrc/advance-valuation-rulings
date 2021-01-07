@@ -17,10 +17,10 @@
 package uk.gov.hmrc.bindingtariffclassification.connector
 
 import java.time.LocalDate
-
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
+
 import play.api.libs.json.Json
+import uk.gov.hmrc.bindingtariffclassification.common.Logging
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.http.ProxyHttpClient
 import uk.gov.hmrc.bindingtariffclassification.model.BankHolidaysResponse
@@ -33,9 +33,7 @@ import scala.io.Source
 @Singleton
 class BankHolidaysConnector @Inject() (appConfig: AppConfig, http: ProxyHttpClient)(
   implicit executionContext: ExecutionContext
-) {
-  private lazy val logger: Logger = Logger(this.getClass)
-
+) extends Logging {
   def get()(implicit headerCarrier: HeaderCarrier): Future[Set[LocalDate]] =
     http
       .GET[BankHolidaysResponse](s"${appConfig.bankHolidaysUrl}/bank-holidays")

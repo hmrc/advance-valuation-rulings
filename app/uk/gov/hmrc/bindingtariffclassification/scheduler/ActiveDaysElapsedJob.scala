@@ -18,9 +18,9 @@ package uk.gov.hmrc.bindingtariffclassification.scheduler
 
 import java.time._
 import java.time.temporal.ChronoUnit
-
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
+
+import uk.gov.hmrc.bindingtariffclassification.common.Logging
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.connector.BankHolidaysConnector
 import uk.gov.hmrc.bindingtariffclassification.model._
@@ -40,11 +40,11 @@ class ActiveDaysElapsedJob @Inject() (
   caseService: CaseService,
   eventService: EventService,
   bankHolidaysConnector: BankHolidaysConnector
-) extends ScheduledJob {
+) extends ScheduledJob
+    with Logging {
 
   private implicit val config: AppConfig      = appConfig
   private implicit val carrier: HeaderCarrier = HeaderCarrier()
-  private lazy val logger: Logger             = Logger(this.getClass)
   private lazy val jobConfig                  = appConfig.activeDaysElapsed
   private lazy val criteria = CaseSearch(
     filter = CaseFilter(statuses = Some(Set(PseudoCaseStatus.OPEN, PseudoCaseStatus.NEW))),
