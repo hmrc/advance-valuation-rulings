@@ -14,22 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.utils
+package uk.gov.hmrc.bindingtariffclassification.model.filestore
 
-import play.api.libs.json.{Format, JsObject, JsResult, JsValue, OFormat, Reads, Writes}
+import play.api.libs.json.Format
+import uk.gov.hmrc.bindingtariffclassification.model.filestore
+import uk.gov.hmrc.bindingtariffclassification.utils.JsonUtil
 
-object JsonUtil {
+object ScanStatus extends Enumeration {
+  type ScanStatus = Value
+  val READY, FAILED = Value
 
-  def convertToOFormat[T](format: Format[T]): OFormat[T] = {
-    val oFormat: OFormat[T] = new OFormat[T]() {
-      override def writes(o: T): JsObject = format.writes(o).as[JsObject]
-
-      override def reads(json: JsValue): JsResult[T] = format.reads(json)
-    }
-    oFormat
-  }
-
-  def format[E <: Enumeration](enum: E): Format[E#Value] =
-    Format(Reads.enumNameReads(enum), Writes.enumNameWrites)
-
+  implicit val format: Format[filestore.ScanStatus.Value] = JsonUtil.format(ScanStatus)
 }

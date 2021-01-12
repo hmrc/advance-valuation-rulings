@@ -53,12 +53,18 @@ class AppConfig @Inject() (
     getDuration("scheduler.referred-days-elapsed.interval").asInstanceOf[FiniteDuration]
   )
 
+  lazy val fileStoreCleanup: JobConfig = JobConfig(
+    LocalTime.parse(configuration.get[String]("scheduler.filestore-cleanup.run-time")),
+    getDuration("scheduler.filestore-cleanup.interval").asInstanceOf[FiniteDuration]
+  )
+
   lazy val authorization: String = configuration.get[String]("auth.api-token")
 
   private def getBooleanConfig(key: String, default: Boolean = false): Boolean =
     configuration.getOptional[Boolean](key).getOrElse(default)
 
-  def bankHolidaysUrl: String = config.baseUrl("bank-holidays")
+  lazy val fileStoreUrl: String    = config.baseUrl("binding-tariff-filestore")
+  lazy val bankHolidaysUrl: String = config.baseUrl("bank-holidays")
 
   lazy val upsertAgents: Seq[String] =
     configuration.get[String]("upsert-permitted-agents").split(",").filter(_.nonEmpty)
@@ -78,6 +84,8 @@ class AppConfig @Inject() (
 
     MongoEncryption(encryptionEnabled, encryptionKey)
   }
+
+  lazy val maxUriLength: Long = configuration.underlying.getBytes("akka.http.parsing.max-uri-length")
 
 }
 

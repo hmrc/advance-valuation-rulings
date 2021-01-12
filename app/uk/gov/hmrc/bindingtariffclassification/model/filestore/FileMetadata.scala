@@ -14,22 +14,24 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.utils
+package uk.gov.hmrc.bindingtariffclassification.model.filestore
 
-import play.api.libs.json.{Format, JsObject, JsResult, JsValue, OFormat, Reads, Writes}
+import java.time.Instant
 
-object JsonUtil {
+import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.bindingtariffclassification.model.filestore.ScanStatus.ScanStatus
 
-  def convertToOFormat[T](format: Format[T]): OFormat[T] = {
-    val oFormat: OFormat[T] = new OFormat[T]() {
-      override def writes(o: T): JsObject = format.writes(o).as[JsObject]
+case class FileMetadata(
+  id: String,
+  fileName: String,
+  mimeType: String,
+  url: Option[String],
+  scanStatus: Option[ScanStatus],
+  publishable: Boolean,
+  published: Boolean,
+  lastUpdated: Instant
+)
 
-      override def reads(json: JsValue): JsResult[T] = format.reads(json)
-    }
-    oFormat
-  }
-
-  def format[E <: Enumeration](enum: E): Format[E#Value] =
-    Format(Reads.enumNameReads(enum), Writes.enumNameWrites)
-
+object FileMetadata {
+  implicit val format: OFormat[FileMetadata] = Json.format[FileMetadata]
 }

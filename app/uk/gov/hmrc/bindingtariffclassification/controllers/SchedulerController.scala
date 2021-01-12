@@ -17,9 +17,10 @@
 package uk.gov.hmrc.bindingtariffclassification.controllers
 
 import javax.inject.{Inject, Singleton}
+
 import play.api.mvc.{Action, AnyContent, BodyParsers, MessagesControllerComponents}
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
-import uk.gov.hmrc.bindingtariffclassification.scheduler.{ActiveDaysElapsedJob, ReferredDaysElapsedJob, Scheduler}
+import uk.gov.hmrc.bindingtariffclassification.scheduler.{ActiveDaysElapsedJob, FileStoreCleanupJob, ReferredDaysElapsedJob, Scheduler}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -39,6 +40,10 @@ class SchedulerController @Inject() (
 
   def incrementReferredDaysElapsed(): Action[AnyContent] = testModeFilter.async {
     scheduler.execute(classOf[ReferredDaysElapsedJob]) map (_ => NoContent) recover recovery
+  }
+
+  def fileStoreCleanup(): Action[AnyContent] = testModeFilter.async {
+    scheduler.execute(classOf[FileStoreCleanupJob]) map (_ => NoContent) recover recovery
   }
 
 }

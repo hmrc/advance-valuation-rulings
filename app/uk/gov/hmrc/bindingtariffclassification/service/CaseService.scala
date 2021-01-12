@@ -22,7 +22,7 @@ import javax.inject._
 
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.bindingtariffclassification.repository.{CaseRepository, MigrationLockRepository, SequenceRepository}
+import uk.gov.hmrc.bindingtariffclassification.repository.{CaseAttachmentView, CaseRepository, MigrationLockRepository, SequenceRepository}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -33,6 +33,7 @@ class CaseService @Inject() (
   caseRepository: CaseRepository,
   sequenceRepository: SequenceRepository,
   migrationRepository: MigrationLockRepository,
+  caseAttachmentView: CaseAttachmentView,
   eventService: EventService
 ) {
 
@@ -89,4 +90,7 @@ class CaseService @Inject() (
 
   def delete(reference: String): Future[Unit] =
     caseRepository.delete(reference)
+
+  def attachmentExists(attachmentId: String): Future[Boolean] =
+    caseAttachmentView.find(attachmentId).map(_.isDefined)
 }
