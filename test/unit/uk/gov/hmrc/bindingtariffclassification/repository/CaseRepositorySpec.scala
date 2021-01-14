@@ -607,10 +607,10 @@ class CaseRepositorySpec
     val holderEori = "01234"
     val agentEori  = "98765"
 
-    val agentDetails = createAgentDetails.copy(eoriDetails = createEORIDetails.copy(eori = agentEori))
+    val agentDetails = createAgentDetails().copy(eoriDetails = createEORIDetails.copy(eori = agentEori))
 
     val holderApp = createBasicBTIApplication.copy(holder = createEORIDetails.copy(eori = holderEori), agent = None)
-    val agentApp = createBTIApplicationWithAllFields
+    val agentApp = createBTIApplicationWithAllFields()
       .copy(holder = createEORIDetails.copy(eori = holderEori), agent = Some(agentDetails))
 
     val agentCase  = createCase(app = agentApp)

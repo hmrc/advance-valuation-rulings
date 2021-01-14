@@ -22,7 +22,7 @@ import org.scalatest.BeforeAndAfterEach
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.bindingtariffclassification.repository.{CaseRepository, MigrationLockRepository, SequenceRepository}
+import uk.gov.hmrc.bindingtariffclassification.repository.{CaseAttachmentView, CaseRepository, MigrationLockRepository, SequenceRepository}
 
 import scala.concurrent.Future.successful
 
@@ -34,16 +34,24 @@ class CaseServiceSpec extends BaseSpec with BeforeAndAfterEach {
   private val caseRepository      = mock[CaseRepository]
   private val sequenceRepository  = mock[SequenceRepository]
   private val migrationRepository = mock[MigrationLockRepository]
+  private val caseAttachmentView  = mock[CaseAttachmentView]
   private val eventService        = mock[EventService]
   private val appConfig           = mock[AppConfig]
   private val service =
-    new CaseService(appConfig, caseRepository, sequenceRepository, migrationRepository, eventService)
+    new CaseService(
+      appConfig,
+      caseRepository,
+      sequenceRepository,
+      migrationRepository,
+      caseAttachmentView,
+      eventService
+    )
 
   private final val emulatedFailure = new RuntimeException("Emulated failure.")
 
   override protected def afterEach(): Unit = {
     super.afterEach()
-    reset(caseRepository, sequenceRepository, migrationRepository, appConfig)
+    reset(caseRepository, sequenceRepository, migrationRepository, caseAttachmentView, appConfig)
   }
 
   override protected def beforeEach(): Unit =
@@ -228,6 +236,29 @@ class CaseServiceSpec extends BaseSpec with BeforeAndAfterEach {
       caught shouldBe emulatedFailure
     }
 
+  }
+
+  "attachmentExists()" should {
+    "return true if attachment was found" in {
+      when(caseAttachmentView.find("id")).thenReturn(successful(Some(mock[Attachment])))
+
+      await(service.attachmentExists("id")) shouldBe true
+    }
+
+    "return false if no attachment was found" in {
+      when(caseAttachmentView.find("id")).thenReturn(successful(None))
+
+      await(service.attachmentExists("id")) shouldBe false
+    }
+
+    "propagate any error" in {
+      when(caseAttachmentView.find("id")).thenThrow(emulatedFailure)
+
+      val caught = intercept[RuntimeException] {
+        await(service.attachmentExists("id"))
+      }
+      caught shouldBe emulatedFailure
+    }
   }
 
 }

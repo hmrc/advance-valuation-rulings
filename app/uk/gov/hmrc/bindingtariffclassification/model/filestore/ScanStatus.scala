@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.scheduler
+package uk.gov.hmrc.bindingtariffclassification.model.filestore
 
-import java.time.LocalTime
+import play.api.libs.json.Format
+import uk.gov.hmrc.bindingtariffclassification.model.EnumJson
 
-import scala.concurrent.Future
-import scala.concurrent.duration.FiniteDuration
+object ScanStatus extends Enumeration {
+  type ScanStatus = Value
+  val READY, FAILED = Value
 
-trait ScheduledJob {
-
-  def name: String
-  def enabled: Boolean
-  def execute(): Future[Unit]
-  def firstRunTime: LocalTime
-  def interval: FiniteDuration
-
+  implicit val format: Format[ScanStatus.Value] = EnumJson.format(ScanStatus)
 }

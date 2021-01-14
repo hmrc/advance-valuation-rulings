@@ -53,6 +53,8 @@ class ActiveDaysElapsedJob @Inject() (
 
   override val name: String = "ActiveDaysElapsed"
 
+  override def enabled: Boolean = jobConfig.enabled
+
   override def interval: FiniteDuration = jobConfig.interval
 
   override def firstRunTime: LocalTime = jobConfig.elapseTime

@@ -14,19 +14,24 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.scheduler
+package uk.gov.hmrc.bindingtariffclassification.model.filestore
 
-import java.time.LocalTime
+import java.time.Instant
 
-import scala.concurrent.Future
-import scala.concurrent.duration.FiniteDuration
+import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.bindingtariffclassification.model.filestore.ScanStatus.ScanStatus
 
-trait ScheduledJob {
+case class FileMetadata(
+  id: String,
+  fileName: String,
+  mimeType: String,
+  url: Option[String],
+  scanStatus: Option[ScanStatus],
+  publishable: Boolean,
+  published: Boolean,
+  lastUpdated: Instant
+)
 
-  def name: String
-  def enabled: Boolean
-  def execute(): Future[Unit]
-  def firstRunTime: LocalTime
-  def interval: FiniteDuration
-
+object FileMetadata {
+  implicit val format: OFormat[FileMetadata] = Json.format[FileMetadata]
 }

@@ -60,7 +60,7 @@ class CaseSpec extends BaseFeatureSpec {
     keywords    = Set("BIKE", "MTB", "HARDTAIL")
   )
   private val c3 = createNewCaseWithExtraFields()
-  private val c4 = createNewCase(app = createBTIApplicationWithAllFields)
+  private val c4 = createNewCase(app = createBTIApplicationWithAllFields())
   private val c5 = createCase(r = "case_ref_5", app = createBasicBTIApplication.copy(holder = eORIDetailForNintedo))
   private val c6_live = createCase(
     status   = CaseStatus.COMPLETED,
@@ -1016,10 +1016,10 @@ class CaseSpec extends BaseFeatureSpec {
     val holderEori = "eori_01234"
     val agentEori  = "eori_98765"
 
-    val agentDetails = createAgentDetails.copy(eoriDetails = createEORIDetails.copy(eori = agentEori))
+    val agentDetails = createAgentDetails().copy(eoriDetails = createEORIDetails.copy(eori = agentEori))
 
     val holderApp = createBasicBTIApplication.copy(holder = createEORIDetails.copy(eori = holderEori), agent = None)
-    val agentApp = createBTIApplicationWithAllFields
+    val agentApp = createBTIApplicationWithAllFields()
       .copy(holder = createEORIDetails.copy(eori = holderEori), agent = Some(agentDetails))
 
     val agentCase  = createCase(app = agentApp)

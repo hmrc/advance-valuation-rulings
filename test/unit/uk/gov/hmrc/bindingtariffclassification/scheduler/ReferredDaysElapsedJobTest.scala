@@ -57,19 +57,27 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
 
   "Scheduled Job" should {
 
+    val runTime   = LocalTime.of(14, 0)
+    val jobConfig = JobConfig(enabled = true, elapseTime = runTime, interval = 1.day)
+
     "Configure 'Name'" in {
       newJob.name shouldBe "ReferredDaysElapsed"
     }
 
+    "Configure 'enabled'" in {
+      given(appConfig.referredDaysElapsed).willReturn(jobConfig)
+
+      newJob.enabled shouldBe true
+    }
+
     "Configure 'firstRunTime'" in {
-      val runTime = LocalTime.of(14, 0)
-      given(appConfig.referredDaysElapsed).willReturn(JobConfig(runTime, 1.day))
+      given(appConfig.referredDaysElapsed).willReturn(jobConfig)
 
       newJob.firstRunTime shouldBe runTime
     }
 
     "Configure 'interval'" in {
-      given(appConfig.referredDaysElapsed).willReturn(JobConfig(LocalTime.MIDNIGHT, 1.day))
+      given(appConfig.referredDaysElapsed).willReturn(jobConfig)
 
       newJob.interval shouldBe 1.day
     }

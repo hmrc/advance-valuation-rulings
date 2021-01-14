@@ -41,7 +41,11 @@ class Scheduler @Inject() (
   scheduledJobs: ScheduledJobs
 ) extends Logging {
 
-  scheduledJobs.jobs.foreach { job =>
+  val (enabledJobs, disabledJobs) = scheduledJobs.jobs.partition(_.enabled)
+
+  disabledJobs.foreach(job => logger.warn(s"Scheduled job [${job.name}] is disabled"))
+
+  enabledJobs.foreach { job =>
     logger.info(
       s"Scheduling job [${job.name}] to run periodically at [${job.firstRunTime}] with interval [${job.interval.length} ${job.interval.unit}]"
     )
