@@ -23,7 +23,6 @@ import uk.gov.hmrc.bindingtariffclassification.utils.JsonUtil
 import uk.gov.hmrc.play.json.Union
 
 object MongoFormatters {
-
   implicit val formatInstant: OFormat[Instant] = new OFormat[Instant] {
     override def writes(datetime: Instant): JsObject =
       Json.obj("$date" -> datetime.toEpochMilli)
@@ -124,4 +123,31 @@ object MongoFormatters {
   implicit val formatEvent: OFormat[Event]              = Json.format[Event]
   implicit val formatJobRunEvent: OFormat[JobRunEvent]  = Json.format[JobRunEvent]
 
+  // `Update` formatters
+  implicit def formatSetValue[A: Format]: OFormat[SetValue[A]] = Json.format[SetValue[A]]
+  implicit val formatNoChange: OFormat[NoChange.type] = Json.format[NoChange.type]
+
+  implicit def formatUpdate[A: Format]: Format[Update[A]] = Union
+    .from[Update[A]]("type")
+    .and[SetValue[A]](UpdateType.SetValue.name)
+    .and[NoChange.type](UpdateType.NoChange.name)
+    .format
+
+  implicit def formatBtiUpdate: OFormat[BTIUpdate] = {
+    implicit def optReads[A: Format]: Format[Option[A]] = Format(
+      Reads.optionNoError[A],
+      Writes.optionWithNull[A]
+    )
+    Json.format[BTIUpdate]
+  }
+
+  implicit val formatLiabilityUpdate: OFormat[LiabilityUpdate] = Json.format[LiabilityUpdate]
+
+  implicit val formatApplicationUpdate: Format[ApplicationUpdate] = Union
+    .from[ApplicationUpdate]("type")
+    .and[BTIUpdate](ApplicationType.BTI.toString)
+    .and[LiabilityUpdate](ApplicationType.LIABILITY_ORDER.toString)
+    .format
+
+  implicit val caseUpdate: OFormat[CaseUpdate] = Json.format[CaseUpdate]
 }

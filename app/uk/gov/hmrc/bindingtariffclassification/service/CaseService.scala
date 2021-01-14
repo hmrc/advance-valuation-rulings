@@ -26,6 +26,7 @@ import uk.gov.hmrc.bindingtariffclassification.repository.{CaseRepository, Migra
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import play.api.libs.json.JsValue
 
 @Singleton
 class CaseService @Inject() (
@@ -73,6 +74,9 @@ class CaseService @Inject() (
 
   def update(c: Case, upsert: Boolean): Future[Option[Case]] =
     caseRepository.update(c, upsert)
+
+  def update(reference: String, caseUpdate: CaseUpdate): Future[Option[Case]] =
+    caseRepository.update(reference, caseUpdate)
 
   def getByReference(reference: String): Future[Option[Case]] =
     caseRepository.getByReference(reference)

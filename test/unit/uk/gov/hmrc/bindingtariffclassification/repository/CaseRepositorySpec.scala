@@ -58,7 +58,7 @@ class CaseRepositorySpec
   private val repository = newMongoRepository
 
   private def newMongoRepository: CaseMongoRepository =
-    new CaseMongoRepository(mongoDbProvider, new SearchMapper(config))
+    new CaseMongoRepository(mongoDbProvider, new SearchMapper(config), new UpdateMapper)
 
   private val case1: Case     = createCase()
   private val case2: Case     = createCase()
@@ -164,6 +164,45 @@ class CaseRepositorySpec
 
       await(repository.update(case1, upsert = true)) shouldBe Some(case1)
       collectionSize shouldBe size + 1
+    }
+  }
+
+  "update with CaseUpdate" should {
+    val now = LocalDateTime.of(2021, 1, 1, 0, 0).toInstant(ZoneOffset.UTC)
+
+    "modify an ATaR case in the collection" in {
+
+      await(repository.insert(case1)) shouldBe case1
+      val size = collectionSize
+
+      val applicationPdf = Some(Attachment("id", true, None, now, None, false))
+      val atarCaseUpdate = CaseUpdate(application = Some(BTIUpdate(applicationPdf = SetValue(applicationPdf))))
+      val updated: Case = case1.copy(application = case1.application.asInstanceOf[BTIApplication].copy(applicationPdf = applicationPdf))
+
+      await(repository.update(case1.reference, atarCaseUpdate)) shouldBe Some(updated)
+      collectionSize shouldBe size
+
+      await(repository.collection.find(selectorByReference(updated)).one[Case]) shouldBe Some(updated)
+    }
+
+    "modify a liability case in the collection" in {
+      await(repository.insert(liabCase1)) shouldBe liabCase1
+      val size = collectionSize
+
+      val liabCaseUpdate = CaseUpdate(application = Some(LiabilityUpdate(traderName = SetValue("foo"))))
+      val updated: Case = liabCase1.copy(application = liabCase1.application.asInstanceOf[LiabilityOrder].copy(traderName = "foo"))
+
+      await(repository.update(liabCase1.reference, liabCaseUpdate)) shouldBe Some(updated)
+      collectionSize shouldBe size
+
+      await(repository.collection.find(selectorByReference(updated)).one[Case]) shouldBe Some(updated)
+    }
+
+    "do nothing when trying to update an unknown document" in {
+      val size = collectionSize
+      val liabCaseUpdate = CaseUpdate(application = Some(LiabilityUpdate(traderName = SetValue("foo"))))
+      await(repository.update(liabCase1.reference, liabCaseUpdate)) shouldBe None
+      collectionSize shouldBe size
     }
   }
 
