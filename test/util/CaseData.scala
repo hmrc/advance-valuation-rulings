@@ -37,10 +37,13 @@ object CaseData {
       goodName        = "HTC Wildfire smartphone"
     )
 
-  def createBTIApplicationWithAllFields: BTIApplication =
+  def createBTIApplicationWithAllFields(
+    applicationPdf: Option[Attachment]        = Some(createAttachment),
+    letterOfAuthorization: Option[Attachment] = Some(createAttachment)
+  ): BTIApplication =
     BTIApplication(
       holder                  = createEORIDetails,
-      agent                   = Some(createAgentDetails),
+      agent                   = Some(createAgentDetails(letterOfAuthorization = letterOfAuthorization)),
       contact                 = createContact,
       goodDescription         = "this is a BTI application for HTC Wildfire mobile phones",
       goodName                = "HTC Wildfire smartphone",
@@ -51,7 +54,8 @@ object CaseData {
       knownLegalProceedings   = Some("Someone is suing me!"),
       envisagedCommodityCode  = Some("12345"),
       sampleToBeProvided      = true,
-      sampleToBeReturned      = true
+      sampleToBeReturned      = true,
+      applicationPdf          = applicationPdf
     )
 
   def createDecision(
@@ -61,7 +65,8 @@ object CaseData {
     methodSearch: Option[String]                 = Some("bike spanner"),
     justification: String                        = "Found precedent case",
     goodsDescription: String                     = "Bike tool",
-    methodCommercialDenomination: Option[String] = None
+    methodCommercialDenomination: Option[String] = None,
+    decisionPdf: Option[Attachment]              = Some(createAttachment)
   ): Decision =
     Decision(
       bindingCommodityCode         = bindingCommodityCode,
@@ -70,7 +75,8 @@ object CaseData {
       methodSearch                 = methodSearch,
       justification                = justification,
       goodsDescription             = goodsDescription,
-      methodCommercialDenomination = methodCommercialDenomination
+      methodCommercialDenomination = methodCommercialDenomination,
+      decisionPdf                  = decisionPdf
     )
 
   def createLiabilityOrder: LiabilityOrder =
@@ -133,10 +139,12 @@ object CaseData {
       sampleToBeReturned = false
     )
 
-  def createAgentDetails: AgentDetails =
+  def createAgentDetails(
+    letterOfAuthorization: Option[Attachment] = Some(createAttachment.copy(public = false))
+  ): AgentDetails =
     AgentDetails(
       eoriDetails           = createEORIDetails.copy(businessName = "Frank Agent-Smith"),
-      letterOfAuthorisation = Some(createAttachment.copy(public = false))
+      letterOfAuthorisation = letterOfAuthorization
     )
 
   def createEORIDetails: EORIDetails =

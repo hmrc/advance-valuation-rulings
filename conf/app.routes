@@ -21,4 +21,5 @@ DELETE        /case/:reference                  @uk.gov.hmrc.bindingtariffclassi
 DELETE        /events/:reference                @uk.gov.hmrc.bindingtariffclassification.controllers.EventController.deleteCaseEvents(reference: String)
 PUT           /scheduler/days-elapsed           @uk.gov.hmrc.bindingtariffclassification.controllers.SchedulerController.incrementActiveDaysElapsed()
 PUT           /scheduler/referred-days-elapsed  @uk.gov.hmrc.bindingtariffclassification.controllers.SchedulerController.incrementReferredDaysElapsed()
+PUT           /scheduler/filestore-cleanup      @uk.gov.hmrc.bindingtariffclassification.controllers.SchedulerController.fileStoreCleanup()
 PUT           /migrations/amend-date-of-extract @uk.gov.hmrc.bindingtariffclassification.controllers.MigrationController.amendDateOfExtract()

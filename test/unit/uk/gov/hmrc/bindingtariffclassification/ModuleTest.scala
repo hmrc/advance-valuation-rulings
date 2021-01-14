@@ -20,7 +20,9 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.PlayRunners
+import uk.gov.hmrc.bindingtariffclassification.migrations.{AmendDateOfExtractMigrationJob, MigrationJobs}
 import uk.gov.hmrc.bindingtariffclassification.repository.{CaseMongoRepository, CaseRepository, EncryptedCaseMongoRepository}
+import uk.gov.hmrc.bindingtariffclassification.scheduler.{ActiveDaysElapsedJob, FileStoreCleanupJob, ReferredDaysElapsedJob, ScheduledJobs}
 import uk.gov.hmrc.play.test.UnitSpec
 
 class ModuleTest extends UnitSpec with BeforeAndAfterEach with PlayRunners {
@@ -53,6 +55,26 @@ class ModuleTest extends UnitSpec with BeforeAndAfterEach with PlayRunners {
         application.injector
           .instanceOf[CaseRepository]
           .isInstanceOf[CaseMongoRepository] shouldBe true
+      }
+    }
+
+    "Bind all scheduled jobs" in {
+      val application: Application = app()
+      running(application) {
+        application.injector.instanceOf[ScheduledJobs].jobs shouldBe Set(
+          application.injector.instanceOf[ActiveDaysElapsedJob],
+          application.injector.instanceOf[ReferredDaysElapsedJob],
+          application.injector.instanceOf[FileStoreCleanupJob]
+        )
+      }
+    }
+
+    "Bind all migration jobs" in {
+      val application: Application = app()
+      running(application) {
+        application.injector.instanceOf[MigrationJobs].jobs shouldBe Set(
+          application.injector.instanceOf[AmendDateOfExtractMigrationJob]
+        )
       }
     }
 

@@ -35,7 +35,7 @@ class CryptoSpec extends BaseSpec {
   private def encContacts(k: String)  = Contact(k, k, Some(k))
   private def encAddress(k: String)   = Address(k, k, Some(k), Some(k))
 
-  private val bti    = createBTIApplicationWithAllFields
+  private val bti    = createBTIApplicationWithAllFields()
   private val lo     = createLiabilityOrder
   private val misc   = createMiscApplication
   private val corres = createCorrespondenceApplication

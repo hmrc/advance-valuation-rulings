@@ -44,13 +44,21 @@ class AppConfig @Inject() (
   lazy val clock: Clock = Clock.systemUTC()
 
   lazy val activeDaysElapsed: JobConfig = JobConfig(
+    getBooleanConfig("scheduler.active-days-elapsed.enabled"),
     LocalTime.parse(configuration.get[String]("scheduler.active-days-elapsed.run-time")),
     getDuration("scheduler.active-days-elapsed.interval").asInstanceOf[FiniteDuration]
   )
 
   lazy val referredDaysElapsed: JobConfig = JobConfig(
+    getBooleanConfig("scheduler.referred-days-elapsed.enabled"),
     LocalTime.parse(configuration.get[String]("scheduler.referred-days-elapsed.run-time")),
     getDuration("scheduler.referred-days-elapsed.interval").asInstanceOf[FiniteDuration]
+  )
+
+  lazy val fileStoreCleanup: JobConfig = JobConfig(
+    getBooleanConfig("scheduler.filestore-cleanup.enabled"),
+    LocalTime.parse(configuration.get[String]("scheduler.filestore-cleanup.run-time")),
+    getDuration("scheduler.filestore-cleanup.interval").asInstanceOf[FiniteDuration]
   )
 
   lazy val authorization: String = configuration.get[String]("auth.api-token")
@@ -58,7 +66,8 @@ class AppConfig @Inject() (
   private def getBooleanConfig(key: String, default: Boolean = false): Boolean =
     configuration.getOptional[Boolean](key).getOrElse(default)
 
-  def bankHolidaysUrl: String = config.baseUrl("bank-holidays")
+  lazy val fileStoreUrl: String    = config.baseUrl("binding-tariff-filestore")
+  lazy val bankHolidaysUrl: String = config.baseUrl("bank-holidays")
 
   lazy val upsertAgents: Seq[String] =
     configuration.get[String]("upsert-permitted-agents").split(",").filter(_.nonEmpty)
@@ -79,7 +88,9 @@ class AppConfig @Inject() (
     MongoEncryption(encryptionEnabled, encryptionKey)
   }
 
+  lazy val maxUriLength: Long = configuration.underlying.getBytes("akka.http.parsing.max-uri-length")
+
 }
 
 case class MongoEncryption(enabled: Boolean = false, key: Option[String] = None)
-case class JobConfig(elapseTime: LocalTime, interval: FiniteDuration)
+case class JobConfig(enabled: Boolean, elapseTime: LocalTime, interval: FiniteDuration)
