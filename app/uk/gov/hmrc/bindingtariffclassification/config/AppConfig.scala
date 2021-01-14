@@ -44,16 +44,19 @@ class AppConfig @Inject() (
   lazy val clock: Clock = Clock.systemUTC()
 
   lazy val activeDaysElapsed: JobConfig = JobConfig(
+    getBooleanConfig("scheduler.active-days-elapsed.enabled"),
     LocalTime.parse(configuration.get[String]("scheduler.active-days-elapsed.run-time")),
     getDuration("scheduler.active-days-elapsed.interval").asInstanceOf[FiniteDuration]
   )
 
   lazy val referredDaysElapsed: JobConfig = JobConfig(
+    getBooleanConfig("scheduler.referred-days-elapsed.enabled"),
     LocalTime.parse(configuration.get[String]("scheduler.referred-days-elapsed.run-time")),
     getDuration("scheduler.referred-days-elapsed.interval").asInstanceOf[FiniteDuration]
   )
 
   lazy val fileStoreCleanup: JobConfig = JobConfig(
+    getBooleanConfig("scheduler.filestore-cleanup.enabled"),
     LocalTime.parse(configuration.get[String]("scheduler.filestore-cleanup.run-time")),
     getDuration("scheduler.filestore-cleanup.interval").asInstanceOf[FiniteDuration]
   )
@@ -90,4 +93,4 @@ class AppConfig @Inject() (
 }
 
 case class MongoEncryption(enabled: Boolean = false, key: Option[String] = None)
-case class JobConfig(elapseTime: LocalTime, interval: FiniteDuration)
+case class JobConfig(enabled: Boolean, elapseTime: LocalTime, interval: FiniteDuration)

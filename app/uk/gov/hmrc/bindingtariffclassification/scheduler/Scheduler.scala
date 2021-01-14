@@ -41,7 +41,7 @@ class Scheduler @Inject() (
   scheduledJobs: ScheduledJobs
 ) extends Logging {
 
-  scheduledJobs.jobs.foreach { job =>
+  scheduledJobs.jobs.filter(_.enabled).foreach { job =>
     logger.info(
       s"Scheduling job [${job.name}] to run periodically at [${job.firstRunTime}] with interval [${job.interval.length} ${job.interval.unit}]"
     )

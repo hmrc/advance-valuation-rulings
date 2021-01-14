@@ -127,6 +127,7 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
     "Run job with valid schedule" in {
       // Given
       givenTheLockSucceeds()
+      given(job.enabled) willReturn true
       given(job.interval) willReturn 3.seconds
       given(job.firstRunTime) willReturn "12:00"
       given(job.name) willReturn "name"
@@ -149,6 +150,7 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
     "Run job with valid schedule and future run-date" in {
       // Given
       givenTheLockSucceeds()
+      given(job.enabled) willReturn true
       given(job.interval) willReturn 3.seconds
       given(job.firstRunTime) willReturn "12:00"
       given(job.name) willReturn "name"
@@ -171,6 +173,7 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
     "Fail to schedule job given an invalid run date" in {
       // Given
       givenTheLockSucceeds()
+      given(job.enabled) willReturn true
       given(job.interval) willReturn 3.seconds
       given(job.firstRunTime) willReturn "12:00"
       given(job.name) willReturn "name"
@@ -186,9 +189,26 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
     "Not execute the job if the lock fails" in {
       // Given
       givenTheLockFails()
+      given(job.enabled) willReturn true
       given(job.interval) willReturn 1.seconds
       given(job.firstRunTime) willReturn now
       given(util.nextRun(job.firstRunTime, job.interval)) willReturn "2018-12-25T12:00:00"
+
+      // When
+      whenTheSchedulerStarts()
+
+      verify(job, never()).execute()
+    }
+
+    "Not execute the job if disabled" in {
+      // Given
+      givenTheLockSucceeds()
+      given(job.enabled) willReturn false
+      given(job.interval) willReturn 3.seconds
+      given(job.firstRunTime) willReturn "12:00"
+      given(job.name) willReturn "name"
+      given(util.nextRun(job.firstRunTime, job.interval)) willReturn "2018-12-25T12:00:00"
+      given(util.closestRun(job.firstRunTime, job.interval)) willReturn "2018-12-25T12:00:00"
 
       // When
       whenTheSchedulerStarts()

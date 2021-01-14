@@ -52,6 +52,8 @@ class FileStoreCleanupJob @Inject() (
 
   override val name: String = "FileStoreCleanup"
 
+  override def enabled: Boolean = jobConfig.enabled
+
   override def interval: FiniteDuration = jobConfig.interval
 
   override def firstRunTime: LocalTime = jobConfig.elapseTime

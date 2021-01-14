@@ -24,6 +24,7 @@ import scala.concurrent.duration.FiniteDuration
 trait ScheduledJob {
 
   def name: String
+  def enabled: Boolean
   def execute(): Future[Unit]
   def firstRunTime: LocalTime
   def interval: FiniteDuration
