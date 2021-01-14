@@ -43,7 +43,7 @@ class CaseAttachmentViewSpec
   private val view       = newMongoView
 
   private def newMongoRepository: CaseMongoRepository =
-    new CaseMongoRepository(mongoDbProvider, new SearchMapper(config))
+    new CaseMongoRepository(mongoDbProvider, new SearchMapper(config), new UpdateMapper)
 
   private def newMongoView: CaseAttachmentMongoView =
     new CaseAttachmentMongoView(mongoDbProvider)
