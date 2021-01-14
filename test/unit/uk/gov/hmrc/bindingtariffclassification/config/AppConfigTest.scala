@@ -41,27 +41,33 @@ class AppConfigTest extends BaseSpec {
 
     "build 'ActiveDaysElapsedConfig'" in {
       val config = configWith(
+        "scheduler.active-days-elapsed.enabled"  -> "true",
         "scheduler.active-days-elapsed.run-time" -> "00:00",
         "scheduler.active-days-elapsed.interval" -> "1d"
       ).activeDaysElapsed
+      config.enabled    shouldBe true
       config.elapseTime shouldBe LocalTime.of(0, 0, 0)
       config.interval   shouldBe 1.days
     }
 
     "build 'ReferredDaysElapsedConfig'" in {
       val config = configWith(
+        "scheduler.referred-days-elapsed.enabled"  -> "true",
         "scheduler.referred-days-elapsed.run-time" -> "00:00",
         "scheduler.referred-days-elapsed.interval" -> "1d"
       ).referredDaysElapsed
+      config.enabled    shouldBe true
       config.elapseTime shouldBe LocalTime.of(0, 0, 0)
       config.interval   shouldBe 1.days
     }
 
     "build 'fileStoreCleanupConfig'" in {
       val config = configWith(
+        "scheduler.filestore-cleanup.enabled"  -> "true",
         "scheduler.filestore-cleanup.run-time" -> "03:00",
         "scheduler.filestore-cleanup.interval" -> "7d"
       ).fileStoreCleanup
+      config.enabled    shouldBe true
       config.elapseTime shouldBe LocalTime.of(3, 0, 0)
       config.interval   shouldBe 7.days
     }
