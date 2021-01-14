@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.bindingtariffclassification.utils
 
-import play.api.libs.json.{Format, JsObject, JsResult, JsValue, OFormat, Reads, Writes}
+import play.api.libs.json.{Format, JsObject, JsResult, JsValue, OFormat}
 
 object JsonUtil {
 
@@ -28,8 +28,5 @@ object JsonUtil {
     }
     oFormat
   }
-
-  def format[E <: Enumeration](enum: E): Format[E#Value] =
-    Format(Reads.enumNameReads(enum), Writes.enumNameWrites)
 
 }

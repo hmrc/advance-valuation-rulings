@@ -17,12 +17,11 @@
 package uk.gov.hmrc.bindingtariffclassification.model.filestore
 
 import play.api.libs.json.Format
-import uk.gov.hmrc.bindingtariffclassification.model.filestore
-import uk.gov.hmrc.bindingtariffclassification.utils.JsonUtil
+import uk.gov.hmrc.bindingtariffclassification.model.EnumJson
 
 object ScanStatus extends Enumeration {
   type ScanStatus = Value
   val READY, FAILED = Value
 
-  implicit val format: Format[filestore.ScanStatus.Value] = JsonUtil.format(ScanStatus)
+  implicit val format: Format[ScanStatus.Value] = EnumJson.format(ScanStatus)
 }
