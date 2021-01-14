@@ -21,7 +21,7 @@ import play.api.http.Status._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
-import uk.gov.hmrc.bindingtariffclassification.scheduler.{ActiveDaysElapsedJob, ReferredDaysElapsedJob, Scheduler}
+import uk.gov.hmrc.bindingtariffclassification.scheduler.{ActiveDaysElapsedJob, FileStoreCleanupJob, ReferredDaysElapsedJob, Scheduler}
 import uk.gov.hmrc.http.HttpVerbs
 
 import scala.concurrent.Future.{failed, successful}
@@ -95,6 +95,35 @@ class SchedulerControllerSpec extends BaseSpec {
       jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
     }
 
+  }
+
+  "fileStoreCleanup" should {
+    "return 403 if test mode is disabled" in {
+      when(appConfig.isTestMode).thenReturn(false)
+      val result = await(controller.fileStoreCleanup()(fakeRequest))
+
+      status(result) shouldEqual FORBIDDEN
+      jsonBodyOf(result)
+        .toString() shouldEqual s"""{"code":"FORBIDDEN","message":"You are not allowed to call ${fakeRequest.method} ${fakeRequest.path}"}"""
+    }
+
+    "return 204 if the test mode is enabled and the scheduler executed successfully" in {
+      when(appConfig.isTestMode).thenReturn(true)
+      when(scheduler.execute(classOf[FileStoreCleanupJob])).thenReturn(successful(()))
+
+      val result = await(controller.fileStoreCleanup()(fakeRequest))
+      status(result) shouldEqual NO_CONTENT
+    }
+
+    "return 500 when an error occurred" in {
+      when(appConfig.isTestMode).thenReturn(true)
+      when(scheduler.execute(classOf[FileStoreCleanupJob])).thenReturn(failed(new RuntimeException))
+
+      val result = await(controller.fileStoreCleanup()(fakeRequest))
+
+      status(result) shouldEqual INTERNAL_SERVER_ERROR
+      jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
+    }
   }
 
 }

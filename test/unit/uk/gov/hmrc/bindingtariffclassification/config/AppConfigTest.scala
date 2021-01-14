@@ -57,6 +57,20 @@ class AppConfigTest extends BaseSpec {
       config.interval   shouldBe 1.days
     }
 
+    "build 'fileStoreCleanupConfig'" in {
+      val config = configWith(
+        "scheduler.filestore-cleanup.run-time" -> "03:00",
+        "scheduler.filestore-cleanup.interval" -> "7d"
+      ).fileStoreCleanup
+      config.elapseTime shouldBe LocalTime.of(3, 0, 0)
+      config.interval   shouldBe 7.days
+    }
+
+    "build 'fileStoreUrl'" in {
+      //take expected from application.conf
+      configWith().fileStoreUrl shouldBe "http://localhost:9583"
+    }
+
     "build 'bankHolidaysUrl'" in {
       //take expected from application.conf
       configWith().bankHolidaysUrl shouldBe "http://localhost:9587"

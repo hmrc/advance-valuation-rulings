@@ -60,7 +60,7 @@ class CaseSpec extends BaseFeatureSpec {
     keywords    = Set("BIKE", "MTB", "HARDTAIL")
   )
   private val c3 = createNewCaseWithExtraFields()
-  private val c4 = createNewCase(app = createBTIApplicationWithAllFields)
+  private val c4 = createNewCase(app = createBTIApplicationWithAllFields())
   private val c5 = createCase(r = "case_ref_5", app = createBasicBTIApplication.copy(holder = eORIDetailForNintedo))
   private val c6_live = createCase(
     status   = CaseStatus.COMPLETED,
