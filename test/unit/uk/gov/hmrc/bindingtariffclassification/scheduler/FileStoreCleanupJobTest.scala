@@ -129,7 +129,7 @@ class FileStoreCleanupJobTest extends BaseSpec with BeforeAndAfterEach {
 
       await(newJob.execute())
 
-      theFilesDeleted shouldBe List("id6", "id7")
+      theFilesDeleted shouldBe List("id7", "id6")
     }
   }
 
