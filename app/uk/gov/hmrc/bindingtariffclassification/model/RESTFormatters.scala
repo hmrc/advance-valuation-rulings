@@ -128,7 +128,7 @@ object RESTFormatters {
     .format
 
   implicit def formatBtiUpdate: OFormat[BTIUpdate] = {
-    implicit def optReads[A: Format]: Format[Option[A]] = Format(
+    implicit def optFormat[A: Format]: Format[Option[A]] = Format(
       Reads.optionNoError[A],
       Writes.optionWithNull[A]
     )
