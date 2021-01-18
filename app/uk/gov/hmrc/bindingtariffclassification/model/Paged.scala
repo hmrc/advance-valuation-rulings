@@ -25,7 +25,8 @@ case class Paged[T](results: Seq[T], pageIndex: Int, pageSize: Int, resultCount:
   def size: Int                   = results.size
   def isEmpty: Boolean            = results.isEmpty
   def nonEmpty: Boolean           = results.nonEmpty
-  def hasNextPage: Boolean        = Math.ceil(resultCount.toDouble / pageSize).toInt > pageIndex
+  def pageCount: Int              = Math.ceil(resultCount.toDouble / pageSize).toInt
+  def hasNextPage: Boolean        = pageCount > pageIndex
 }
 
 object Paged {
