@@ -18,32 +18,28 @@ package uk.gov.hmrc.bindingtariffclassification.repository
 
 import javax.inject.{Inject, Singleton}
 
-import com.google.inject.ImplementedBy
+import akka.stream.Materializer
+import akka.stream.scaladsl.Sink
 import play.api.libs.json.{JsNull, JsObject, Json}
-import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.ImplicitBSONHandlers._
+import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json.commands.JSONAggregationFramework
-import reactivemongo.play.json.commands.JSONAggregationFramework.{Match, Project, ReplaceRoot, Unwind}
+import reactivemongo.play.json.commands.JSONAggregationFramework._
 import uk.gov.hmrc.bindingtariffclassification.model.Attachment
 import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatAttachment
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-
-@ImplementedBy(classOf[CaseAttachmentMongoView])
-trait CaseAttachmentView {
-  def find(attachmentId: String): Future[Option[Attachment]]
-}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CaseAttachmentMongoView @Inject() (
+class CaseAttachmentAggregation @Inject() (
   mongoDbProvider: MongoDbProvider
-) extends ReactiveView[Attachment, BSONObjectID](
-      viewName       = "caseAttachments",
+)(implicit mat: Materializer)
+    extends ReactiveAggregation[Attachment](
       collectionName = "cases",
       mongo          = mongoDbProvider.mongo
-    )
-    with CaseAttachmentView {
+    ) {
+
+  implicit val ec: ExecutionContext = mat.executionContext
 
   private val attachmentArrayFields: Set[String] = Set(
     "attachments"
@@ -57,8 +53,8 @@ class CaseAttachmentMongoView @Inject() (
 
   private val allAttachmentFields: Set[String] = attachmentArrayFields ++ attachmentFields
 
-  override protected val pipeline: Seq[JSONAggregationFramework.PipelineOperator] = {
-    val unwindNestedAttachmentArrays = attachmentArrayFields.toSeq.map(name => Unwind(name, None, Some(true)))
+  override protected val pipeline: List[JSONAggregationFramework.PipelineOperator] = {
+    val unwindNestedAttachmentArrays = attachmentArrayFields.toList.map(name => Unwind(name, None, Some(true)))
 
     val projectAttachments = Project(
       Json.obj(
@@ -68,17 +64,24 @@ class CaseAttachmentMongoView @Inject() (
     val unwindAttachments = Unwind("attachment", None, Some(false))
     val filterNotNull     = Match(Json.obj("attachment" -> Json.obj("$ne" -> JsNull)))
     val toRoot            = ReplaceRoot(Json.obj("$mergeObjects" -> List("$attachment")))
+    val out               = Out("attachments")
 
-    unwindNestedAttachmentArrays ++ Seq(
+    unwindNestedAttachmentArrays ++ List(
       projectAttachments,
       unwindAttachments,
       filterNotNull,
-      toRoot
+      toRoot,
+      out
     )
   }
 
-  override def find(attachmentId: String): Future[Option[Attachment]] =
-    view
+  def refresh(): Future[Unit] =
+    runAggregation.runWith(Sink.ignore).map(_ => ())
+
+  def find(attachmentId: String): Future[Option[Attachment]] =
+    mongoDbProvider
+      .mongo()
+      .collection[JSONCollection]("attachments")
       .find[JsObject, Attachment](selector = Json.obj("id" -> attachmentId), projection = None)
       .one[Attachment]
 }
