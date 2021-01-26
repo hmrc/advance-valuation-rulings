@@ -16,4 +16,27 @@
 
 package uk.gov.hmrc.bindingtariffclassification.model
 
-case class Operator(id: String, name: Option[String] = None)
+import uk.gov.hmrc.bindingtariffclassification.model.ApplicationType.ApplicationType
+import uk.gov.hmrc.bindingtariffclassification.model.Role.Role
+
+case class Operator(id: String,
+                    name: Option[String] = None,
+                    role: Role = Role.CLASSIFICATION_OFFICER,
+                    memberOfTeams: List[Team] = List.empty,
+                    managerOfTeams: List[Team] = List.empty) {
+
+  def manager: Boolean = role == Role.CLASSIFICATION_MANAGER
+
+}
+
+case class Team(id: String,
+                name: String,
+                caseTypes: List[ApplicationType],
+                managers: List[Operator])
+
+object Role extends Enumeration {
+  type Role = Value
+  val CLASSIFICATION_OFFICER = Value("Classification officer")
+  val CLASSIFICATION_MANAGER = Value("Classification manager")
+  val READ_ONLY = Value("Unknown")
+}
