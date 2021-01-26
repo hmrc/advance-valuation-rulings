@@ -22,28 +22,30 @@ import org.scalatest.BeforeAndAfterEach
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.bindingtariffclassification.repository.{CaseAttachmentView, CaseRepository, MigrationLockRepository, SequenceRepository}
+import uk.gov.hmrc.bindingtariffclassification.repository.{CaseAttachmentAggregation, CaseRepository, MigrationLockRepository, SequenceRepository}
 
 import scala.concurrent.Future.successful
+import uk.gov.hmrc.bindingtariffclassification.repository.CaseAttachmentAggregation
 
 class CaseServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
   private val c1      = mock[Case]
   private val c1Saved = mock[Case]
 
-  private val caseRepository      = mock[CaseRepository]
-  private val sequenceRepository  = mock[SequenceRepository]
-  private val migrationRepository = mock[MigrationLockRepository]
-  private val caseAttachmentView  = mock[CaseAttachmentView]
-  private val eventService        = mock[EventService]
-  private val appConfig           = mock[AppConfig]
+  private val caseRepository            = mock[CaseRepository]
+  private val sequenceRepository        = mock[SequenceRepository]
+  private val migrationRepository       = mock[MigrationLockRepository]
+  private val caseAttachmentAggregation = mock[CaseAttachmentAggregation]
+  private val eventService              = mock[EventService]
+  private val appConfig                 = mock[AppConfig]
+
   private val service =
     new CaseService(
       appConfig,
       caseRepository,
       sequenceRepository,
       migrationRepository,
-      caseAttachmentView,
+      caseAttachmentAggregation,
       eventService
     )
 
@@ -51,7 +53,7 @@ class CaseServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
   override protected def afterEach(): Unit = {
     super.afterEach()
-    reset(caseRepository, sequenceRepository, migrationRepository, caseAttachmentView, appConfig)
+    reset(caseRepository, sequenceRepository, migrationRepository, caseAttachmentAggregation, appConfig)
   }
 
   override protected def beforeEach(): Unit =
@@ -240,19 +242,19 @@ class CaseServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
   "attachmentExists()" should {
     "return true if attachment was found" in {
-      when(caseAttachmentView.find("id")).thenReturn(successful(Some(mock[Attachment])))
+      when(caseAttachmentAggregation.find("id")).thenReturn(successful(Some(mock[Attachment])))
 
       await(service.attachmentExists("id")) shouldBe true
     }
 
     "return false if no attachment was found" in {
-      when(caseAttachmentView.find("id")).thenReturn(successful(None))
+      when(caseAttachmentAggregation.find("id")).thenReturn(successful(None))
 
       await(service.attachmentExists("id")) shouldBe false
     }
 
     "propagate any error" in {
-      when(caseAttachmentView.find("id")).thenThrow(emulatedFailure)
+      when(caseAttachmentAggregation.find("id")).thenThrow(emulatedFailure)
 
       val caught = intercept[RuntimeException] {
         await(service.attachmentExists("id"))

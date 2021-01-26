@@ -51,7 +51,8 @@ class FileStoreCleanupJobTest extends BaseSpec with BeforeAndAfterEach {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    given(caseService.attachmentExists(any[String])).willReturn(false)
+    given(caseService.refreshAttachments()).willReturn(successful(()))
+    given(caseService.attachmentExists(any[String])).willReturn(successful(false))
   }
 
   "Scheduled Job" should {
@@ -129,7 +130,7 @@ class FileStoreCleanupJobTest extends BaseSpec with BeforeAndAfterEach {
 
       await(newJob.execute())
 
-      theFilesDeleted shouldBe List("id6", "id7")
+      theFilesDeleted shouldBe List("id7", "id6")
     }
   }
 

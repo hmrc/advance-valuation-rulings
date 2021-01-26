@@ -40,13 +40,13 @@ class CaseAttachmentViewSpec
 
   private val config     = mock[AppConfig]
   private val repository = newMongoRepository
-  private val view       = newMongoView
+  private val aggregation = newMongoAggregation
 
   private def newMongoRepository: CaseMongoRepository =
     new CaseMongoRepository(mongoDbProvider, new SearchMapper(config), new UpdateMapper)
 
-  private def newMongoView: CaseAttachmentMongoView =
-    new CaseAttachmentMongoView(mongoDbProvider)
+  private def newMongoAggregation: CaseAttachmentAggregation =
+    new CaseAttachmentAggregation(mongoDbProvider)
 
   private val attachment1           = createAttachment
   private val attachment2           = createAttachment
@@ -84,39 +84,44 @@ class CaseAttachmentViewSpec
   "find" should {
     "return None when there is no matching attachment" in {
       await(repository.insert(caseWithAttachments))
+      await(aggregation.refresh())
       collectionSize shouldBe 1
 
-      await(view.find("not-an-id")) shouldBe None
+      await(aggregation.find("not-an-id")) shouldBe None
     }
 
     "return attachments from the attachments field" in {
       await(repository.insert(caseWithAttachments))
+      await(aggregation.refresh())
       collectionSize shouldBe 1
 
-      await(view.find(attachment1.id)) shouldBe Some(attachment1)
-      await(view.find(attachment2.id)) shouldBe Some(attachment2)
-      await(view.find(attachment3.id)) shouldBe Some(attachment3)
+      await(aggregation.find(attachment1.id)) shouldBe Some(attachment1)
+      await(aggregation.find(attachment2.id)) shouldBe Some(attachment2)
+      await(aggregation.find(attachment3.id)) shouldBe Some(attachment3)
     }
 
     "return attachments from the application.agent.letterOfAuthorization field" in {
       await(repository.insert(caseWithAttachments))
+      await(aggregation.refresh())
       collectionSize shouldBe 1
 
-      await(view.find(letterOfAuthorization.id)) shouldBe Some(letterOfAuthorization)
+      await(aggregation.find(letterOfAuthorization.id)) shouldBe Some(letterOfAuthorization)
     }
 
     "return attachments from the application.applicationPdf field" in {
       await(repository.insert(caseWithAttachments))
+      await(aggregation.refresh())
       collectionSize shouldBe 1
 
-      await(view.find(applicationPdf.id)) shouldBe Some(applicationPdf)
+      await(aggregation.find(applicationPdf.id)) shouldBe Some(applicationPdf)
     }
 
     "return attachments from the decision.decisionPdf field" in {
       await(repository.insert(caseWithAttachments))
+      await(aggregation.refresh())
       collectionSize shouldBe 1
 
-      await(view.find(decisionPdf.id)) shouldBe Some(decisionPdf)
+      await(aggregation.find(decisionPdf.id)) shouldBe Some(decisionPdf)
     }
   }
 

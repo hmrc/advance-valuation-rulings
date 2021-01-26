@@ -16,34 +16,31 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
-import play.api.libs.json.Json
+import akka.NotUsed
+import akka.stream.Materializer
+import akka.stream.scaladsl.Source
+import play.api.libs.json.{Format, Json}
 import reactivemongo.api.DB
+import reactivemongo.akkastream.{AkkaStreamCursor, cursorProducer}
 import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json.commands.JSONAggregationFramework.{Match, PipelineOperator}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 
-abstract class ReactiveView[A, ID](
-  viewName: String,
+abstract class ReactiveAggregation[A: Format](
   collectionName: String,
   mongo: () => DB
-) {
+)(implicit mat: Materializer) {
 
-  private def initView: Future[JSONCollection] = {
-    def getView: JSONCollection       = mongo().collection[JSONCollection](viewName)
-    def getCollection: JSONCollection = mongo().collection[JSONCollection](collectionName)
+  protected def pipeline: List[PipelineOperator]
 
-    getView.drop(failIfNotFound = false).flatMap { _ =>
-      getCollection
-        .createView(viewName, pipeline.headOption.getOrElse(Match(Json.obj())), pipeline.tail, None)
-        .map(_ => getView)
-    }
-  }
-
-  lazy val view: JSONCollection = Await.result(awaitable = initView, atMost = 30.seconds)
-
-  protected def pipeline: Seq[PipelineOperator]
-
+  def runAggregation: Source[A, NotUsed] =
+    mongo()
+      .collection[JSONCollection](collectionName)
+      .aggregatorContext[A](pipeline.headOption.getOrElse(Match(Json.obj())), pipeline.tail)
+      .prepared[AkkaStreamCursor.WithOps]
+      .cursor
+      .documentSource()
+      .mapMaterializedValue(_ => NotUsed)
 }

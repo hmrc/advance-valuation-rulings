@@ -20,13 +20,13 @@ import java.time.Instant
 import java.util.UUID
 import javax.inject._
 
+import akka.stream.Materializer
+import akka.stream.scaladsl.Sink
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.bindingtariffclassification.repository.{CaseAttachmentView, CaseRepository, MigrationLockRepository, SequenceRepository}
+import uk.gov.hmrc.bindingtariffclassification.repository.{CaseAttachmentAggregation, CaseRepository, MigrationLockRepository, SequenceRepository}
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import play.api.libs.json.JsValue
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CaseService @Inject() (
@@ -34,9 +34,11 @@ class CaseService @Inject() (
   caseRepository: CaseRepository,
   sequenceRepository: SequenceRepository,
   migrationRepository: MigrationLockRepository,
-  caseAttachmentView: CaseAttachmentView,
+  caseAttachmentAggregation: CaseAttachmentAggregation,
   eventService: EventService
-) {
+)(implicit mat: Materializer) {
+
+  implicit val ec: ExecutionContext = mat.executionContext
 
   def insert(c: Case): Future[Case] =
     caseRepository.insert(c)
@@ -96,5 +98,8 @@ class CaseService @Inject() (
     caseRepository.delete(reference)
 
   def attachmentExists(attachmentId: String): Future[Boolean] =
-    caseAttachmentView.find(attachmentId).map(_.isDefined)
+    caseAttachmentAggregation.find(attachmentId).map(_.isDefined)
+
+  def refreshAttachments(): Future[Unit] =
+    caseAttachmentAggregation.refresh()
 }

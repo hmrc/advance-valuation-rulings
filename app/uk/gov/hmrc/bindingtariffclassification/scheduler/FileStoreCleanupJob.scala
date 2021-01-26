@@ -59,14 +59,18 @@ class FileStoreCleanupJob @Inject() (
   override def firstRunTime: LocalTime = jobConfig.elapseTime
 
   override def execute(): Future[Unit] =
-    processPage(1)
+    caseService.refreshAttachments().flatMap { _ =>
+      fileStoreConnector
+        .find(criteria, Pagination())
+        .flatMap(info => if (info.pageCount >= 1) processPage(info.pageCount) else successful(()))
+    }
 
   private def processPage(page: Int): Future[Unit] =
     fileStoreConnector.find(criteria, Pagination(page = page)) flatMap { pagedFiles =>
       processFiles(pagedFiles.results).map(_ => pagedFiles)
     } flatMap {
-      case pagedFiles if pagedFiles.hasNextPage => processPage(page + 1)
-      case _                                    => successful(())
+      case pagedFiles if pagedFiles.pageIndex > 1 => processPage(page - 1)
+      case _                                      => successful(())
     }
 
   private def processFiles(files: Seq[FileMetadata]): Future[Unit] =
