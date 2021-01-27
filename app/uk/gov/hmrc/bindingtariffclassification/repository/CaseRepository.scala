@@ -39,6 +39,8 @@ trait CaseRepository {
 
   def update(c: Case, upsert: Boolean): Future[Option[Case]]
 
+  def update(reference: String, caseUpdate: CaseUpdate): Future[Option[Case]]
+
   def getByReference(reference: String): Future[Option[Case]]
 
   def get(search: CaseSearch, pagination: Pagination): Future[Paged[Case]]
@@ -62,6 +64,9 @@ class EncryptedCaseMongoRepository @Inject() (repository: CaseMongoRepository, c
   override def update(c: Case, upsert: Boolean): Future[Option[Case]] =
     repository.update(encrypt(c), upsert).map(_.map(decrypt))
 
+  override def update(reference: String, caseUpdate: CaseUpdate): Future[Option[Case]] =
+    repository.update(reference, caseUpdate).map(_.map(decrypt))
+
   override def getByReference(reference: String): Future[Option[Case]] =
     repository.getByReference(reference).map(_.map(decrypt))
 
@@ -81,7 +86,7 @@ class EncryptedCaseMongoRepository @Inject() (repository: CaseMongoRepository, c
 }
 
 @Singleton
-class CaseMongoRepository @Inject() (mongoDbProvider: MongoDbProvider, mapper: SearchMapper)
+class CaseMongoRepository @Inject() (mongoDbProvider: MongoDbProvider, mapper: SearchMapper, updateMapper: UpdateMapper)
     extends ReactiveRepository[Case, BSONObjectID](
       collectionName = "cases",
       mongo          = mongoDbProvider.mongo,
@@ -120,6 +125,14 @@ class CaseMongoRepository @Inject() (mongoDbProvider: MongoDbProvider, mapper: S
       update   = c,
       upsert   = upsert
     )
+
+  override def update(reference: String, caseUpdate: CaseUpdate): Future[Option[Case]] = {
+    collection.findAndUpdate(
+      selector = mapper.reference(reference),
+      update = updateMapper.updateCase(caseUpdate),
+      fetchNewObject = true
+    ).map(_.value.map(_.as[Case]))
+  }
 
   override def getByReference(reference: String): Future[Option[Case]] =
     getOne(selector = mapper.reference(reference))

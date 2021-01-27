@@ -23,7 +23,6 @@ import uk.gov.hmrc.bindingtariffclassification.utils.JsonUtil
 import uk.gov.hmrc.play.json.Union
 
 object MongoFormatters {
-
   implicit val formatInstant: OFormat[Instant] = new OFormat[Instant] {
     override def writes(datetime: Instant): JsObject =
       Json.obj("$date" -> datetime.toEpochMilli)
@@ -123,5 +122,4 @@ object MongoFormatters {
   implicit val formatEventType: Format[EventType.Value] = EnumJson.format(EventType)
   implicit val formatEvent: OFormat[Event]              = Json.format[Event]
   implicit val formatJobRunEvent: OFormat[JobRunEvent]  = Json.format[JobRunEvent]
-
 }

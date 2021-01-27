@@ -29,13 +29,7 @@ import uk.gov.hmrc.bindingtariffclassification.model.{CaseFilter, CaseSort, Case
 import uk.gov.hmrc.bindingtariffclassification.sort.CaseSortField._
 
 @Singleton
-class SearchMapper @Inject() (appConfig: AppConfig) {
-
-  def reference(reference: String): JsObject =
-    Json.obj("reference" -> reference)
-
-  def updateField(fieldName: String, fieldValue: String): JsObject =
-    Json.obj("$set" -> Json.obj(fieldName -> fieldValue))
+class SearchMapper @Inject() (appConfig: AppConfig) extends Mapper {
 
   def sortBy(sort: CaseSort): JsObject =
     JsObject(
