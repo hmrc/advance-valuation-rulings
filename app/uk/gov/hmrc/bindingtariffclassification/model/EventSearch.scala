@@ -56,17 +56,12 @@ object EventSearch {
         )
       }
 
-      override def unbind(key: String, filter: EventSearch): String ={
-       val x: Seq[Option[String]] = Seq(
+      override def unbind(key: String, filter: EventSearch): String =
+        Seq(
           filter.caseReference.map(_.map(s => stringBinder.unbind(caseReferenceKey, s.toString)).mkString("&")),
-          filter.`type`.map(z => {
-            val c = z.map(s => stringBinder.unbind(typeKey, s.toString)).mkString("&")
-            c
-          }),
+          filter.`type`.map(_.map(s => stringBinder.unbind(typeKey, s.toString)).mkString("&")),
           filter.timestampMin.map(i => stringBinder.unbind(timestampMinKey, i.toString)),
           filter.timestampMax.map(i => stringBinder.unbind(timestampMaxKey, i.toString))
-        )
-         x.filter(_.isDefined).map(_.get).mkString("&")
-      }
+        ).filter(_.isDefined).map(_.get).mkString("&")
     }
 }
