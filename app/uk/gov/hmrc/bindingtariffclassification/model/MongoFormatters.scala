@@ -47,7 +47,6 @@ object MongoFormatters {
   implicit val formatAddress: OFormat[Address]                           = Json.format[Address]
   implicit val formatTraderContactDetails: OFormat[TraderContactDetails] = Json.format[TraderContactDetails]
 
-  implicit val formatOperator: OFormat[Operator]                      = Json.format[Operator]
   implicit val formatCaseStatus: Format[CaseStatus.Value]             = EnumJson.format(CaseStatus)
   implicit val formatPseudoCaseStatus: Format[PseudoCaseStatus.Value] = EnumJson.format(PseudoCaseStatus)
   implicit val formatAppealStatus: Format[AppealStatus.Value]         = EnumJson.format(AppealStatus)
@@ -60,16 +59,19 @@ object MongoFormatters {
   implicit val formatLiabilityStatus: Format[LiabilityStatus.Value]   = EnumJson.format(LiabilityStatus)
   implicit val miscCaseType: Format[MiscCaseType.Value]               = EnumJson.format(MiscCaseType)
   implicit val role: Format[Role.Value]                               = EnumJson.format(Role)
+  implicit val formatQueue: Format[Queue.Value]                       = EnumJson.format(Queue)
   implicit val formatAttachment: OFormat[Attachment]                  = Json.using[Json.WithDefaultValues].format[Attachment]
   implicit val formatEORIDetails: OFormat[EORIDetails]                = Json.format[EORIDetails]
   implicit val formatAgentDetails: OFormat[AgentDetails]              = Json.format[AgentDetails]
   implicit val formatContact: OFormat[Contact]                        = Json.format[Contact]
   implicit val messageLoggedFormat: OFormat[Message]                  = Json.format[Message]
+  implicit val formatTeam: OFormat[Team]                              = Json.format[Team]
 
   implicit val formatLiabilityOrder: OFormat[LiabilityOrder]            = Json.format[LiabilityOrder]
   implicit val formatBTIApplication: OFormat[BTIApplication]            = Json.using[Json.WithDefaultValues].format[BTIApplication]
   implicit val formatCorrespondence: OFormat[CorrespondenceApplication] = Json.format[CorrespondenceApplication]
   implicit val formatMisc: OFormat[MiscApplication]                     = Json.format[MiscApplication]
+  implicit val formatOperator: OFormat[Operator]                      = Json.format[Operator]
 
   implicit val formatApplication: Format[Application] = Union
     .from[Application]("type")

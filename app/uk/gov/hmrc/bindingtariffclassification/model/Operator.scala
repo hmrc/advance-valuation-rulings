@@ -17,6 +17,7 @@
 package uk.gov.hmrc.bindingtariffclassification.model
 
 import uk.gov.hmrc.bindingtariffclassification.model.ApplicationType.ApplicationType
+import uk.gov.hmrc.bindingtariffclassification.model.Queue.Queue
 import uk.gov.hmrc.bindingtariffclassification.model.Role.Role
 
 case class Operator(id: String,
@@ -39,4 +40,11 @@ object Role extends Enumeration {
   val CLASSIFICATION_OFFICER = Value("Classification officer")
   val CLASSIFICATION_MANAGER = Value("Classification manager")
   val READ_ONLY = Value("Unknown")
+}
+
+object Queue extends Enumeration {
+  type Queue = Value
+  val GATEWAY = Value("Gateway")
+  val ACT = Value("ACT")
+  val CAP = Value("CAP")
 }

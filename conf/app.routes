@@ -23,5 +23,3 @@ PUT           /scheduler/days-elapsed           @uk.gov.hmrc.bindingtariffclassi
 PUT           /scheduler/referred-days-elapsed  @uk.gov.hmrc.bindingtariffclassification.controllers.SchedulerController.incrementReferredDaysElapsed()
 PUT           /scheduler/filestore-cleanup      @uk.gov.hmrc.bindingtariffclassification.controllers.SchedulerController.fileStoreCleanup()
 PUT           /migrations/amend-date-of-extract @uk.gov.hmrc.bindingtariffclassification.controllers.MigrationController.amendDateOfExtract()
-
-GET           /fetch-user-details               @@uk.gov.hmrc.bindingtariffclassification.controllers.UsersController.fetchUserDetails(id: String)

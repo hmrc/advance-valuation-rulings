@@ -33,6 +33,7 @@ object RESTFormatters {
   implicit val formatRepaymentClaim: OFormat[RepaymentClaim]             = Json.format[RepaymentClaim]
   implicit val formatAddress: OFormat[Address]                           = Json.format[Address]
   implicit val formatTraderContactDetails: OFormat[TraderContactDetails] = Json.format[TraderContactDetails]
+  implicit val formatTeam: OFormat[Team]                                 = Json.format[Team]
 
   implicit val formatCaseStatus: Format[CaseStatus.Value]           = EnumJson.format(CaseStatus)
   implicit val formatApplicationType: Format[ApplicationType.Value] = EnumJson.format(ApplicationType)
@@ -45,6 +46,9 @@ object RESTFormatters {
   implicit val formatReferralReason: Format[ReferralReason.Value]   = EnumJson.format(ReferralReason)
   implicit val formatCaseReportGroup: Format[CaseReportGroup.Value] = EnumJson.format(CaseReportGroup)
   implicit val miscCaseType: Format[MiscCaseType.Value]             = EnumJson.format(MiscCaseType)
+  implicit val role: Format[Role.Value]                             = EnumJson.format(Role)
+  implicit val formatQueue: Format[Queue.Value]                     = EnumJson.format(Queue)
+
 
   implicit val formatReportResultMap: OFormat[Map[CaseReportGroup.Value, Option[String]]] = {
     implicit val optrds: Reads[Option[String]] = Reads.optionNoError[String]
@@ -120,6 +124,7 @@ object RESTFormatters {
 
   implicit val formatEvent: OFormat[Event]                     = Json.format[Event]
   implicit val formatNewEventRequest: OFormat[NewEventRequest] = Json.format[NewEventRequest]
+  implicit val formatNewUserRequest: OFormat[NewUserRequest]   = Json.format[NewUserRequest]
 
   implicit val formatBankHoliday: OFormat[BankHoliday]                   = Json.format[BankHoliday]
   implicit val formatBankHolidaysSet: OFormat[BankHolidaySet]            = Json.format[BankHolidaySet]
