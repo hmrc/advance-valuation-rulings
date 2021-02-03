@@ -71,7 +71,7 @@ object MongoFormatters {
   implicit val formatBTIApplication: OFormat[BTIApplication]            = Json.using[Json.WithDefaultValues].format[BTIApplication]
   implicit val formatCorrespondence: OFormat[CorrespondenceApplication] = Json.format[CorrespondenceApplication]
   implicit val formatMisc: OFormat[MiscApplication]                     = Json.format[MiscApplication]
-  implicit val formatOperator: OFormat[Operator]                      = Json.format[Operator]
+  implicit val formatOperator: OFormat[Operator]                      = Json.using[Json.WithDefaultValues].format[Operator]
 
   implicit val formatApplication: Format[Application] = Union
     .from[Application]("type")
