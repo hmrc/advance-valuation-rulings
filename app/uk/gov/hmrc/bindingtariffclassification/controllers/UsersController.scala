@@ -51,9 +51,9 @@ class UsersController @Inject()(appConfig: AppConfig,
 
   def createUser: Action[JsValue] = Action.async(parse.json) {
     implicit request =>
-      withJsonBody[NewUserRequest] { caseRequest: NewUserRequest =>
+      withJsonBody[NewUserRequest] { userRequest: NewUserRequest =>
         for {
-          c <- usersService.insert(caseRequest.operator)
+          c <- usersService.insert(userRequest.operator)
         } yield Created(Json.toJson(c)(RESTFormatters.formatOperator))
       } recover recovery map { result =>
         logger.debug(s"User creation Result : $result");
@@ -61,11 +61,62 @@ class UsersController @Inject()(appConfig: AppConfig,
       }
   }
 
-  def updateUser(reference: String): Action[JsValue] =
+  def updateUser(id: String): Action[JsValue] =
     Action.async(parse.json) { implicit request =>
-      withJsonBody[Operator] { userRequest: Operator =>
-        if (userRequest.id == reference) {
-          usersService.update(userRequest, true) map handleNotFound recover recovery
+      withJsonBody[Operator] { user: Operator =>
+        if (user.id == id) {
+          usersService.update(user, true) map handleNotFound recover recovery
+        } else
+          successful(
+            BadRequest(
+              JsErrorResponse(
+                ErrorCode.INVALID_REQUEST_PAYLOAD,
+                "Invalid user id"
+              )
+            )
+          )
+      } recover recovery
+    }
+
+  def markInactive(id: String): Action[JsValue] =
+    Action.async(parse.json) { implicit request =>
+      withJsonBody[Operator] { user: Operator =>
+        if (user.id == id) {
+          usersService.update(user.copy(active = false), true) map handleNotFound recover recovery
+        } else
+          successful(
+            BadRequest(
+              JsErrorResponse(
+                ErrorCode.INVALID_REQUEST_PAYLOAD,
+                "Invalid user id"
+              )
+            )
+          )
+      } recover recovery
+    }
+
+  def markActive(id: String): Action[JsValue] =
+    Action.async(parse.json) { implicit request =>
+      withJsonBody[Operator] { user: Operator =>
+        if (user.id == id) {
+          usersService.update(user.copy(active = true), true) map handleNotFound recover recovery
+        } else
+          successful(
+            BadRequest(
+              JsErrorResponse(
+                ErrorCode.INVALID_REQUEST_PAYLOAD,
+                "Invalid user id"
+              )
+            )
+          )
+      } recover recovery
+    }
+
+  def markDeleted(id: String): Action[JsValue] =
+    Action.async(parse.json) { implicit request =>
+      withJsonBody[Operator] { user: Operator =>
+        if (user.id == id) {
+          usersService.update(user.copy(deleted = true), true) map handleNotFound recover recovery
         } else
           successful(
             BadRequest(
@@ -83,5 +134,4 @@ class UsersController @Inject()(appConfig: AppConfig,
     case Some(user: Operator) => Ok(Json.toJson(user))
     case _                    => NotFound(JsErrorResponse(NOTFOUND, "User not found"))
   }
-
 }

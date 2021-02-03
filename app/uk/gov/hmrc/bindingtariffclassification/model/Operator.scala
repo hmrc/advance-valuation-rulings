@@ -20,20 +20,23 @@ import uk.gov.hmrc.bindingtariffclassification.model.ApplicationType.Application
 import uk.gov.hmrc.bindingtariffclassification.model.Queue.Queue
 import uk.gov.hmrc.bindingtariffclassification.model.Role.Role
 
-case class Operator(id: String,
+case class Operator(
+                    id: String,
                     name: Option[String] = None,
                     role: Role = Role.CLASSIFICATION_OFFICER,
-                    memberOfTeams: List[Team] = List.empty,
-                    managerOfTeams: List[Team] = List.empty) {
+                    memberOfTeams: List[String] = List.empty,
+                    managerOfTeams: List[String] = List.empty,
+                    active: Boolean = true,
+                    deleted: Boolean = false
+                   ) {
 
   def manager: Boolean = role == Role.CLASSIFICATION_MANAGER
-
 }
 
 case class Team(id: String,
                 name: String,
                 caseTypes: List[ApplicationType],
-                managers: List[Operator])
+                managers: List[String])
 
 object Role extends Enumeration {
   type Role = Value
