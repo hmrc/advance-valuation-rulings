@@ -29,14 +29,17 @@ object RESTFormatters {
   Json.toJson(Something(""))
   Json.toJson(Map[String, Option[String]]("" -> Some("")))
 
+  // User formatters
+  implicit val formatApplicationType: Format[ApplicationType.Value] = EnumJson.format(ApplicationType)
+  implicit val role: Format[Role.Value]                             = EnumJson.format(Role)
+  implicit val formatOperator: OFormat[Operator]                    = Json.using[Json.WithDefaultValues].format[Operator]
+
   // `Case` formatters
   implicit val formatRepaymentClaim: OFormat[RepaymentClaim]             = Json.format[RepaymentClaim]
   implicit val formatAddress: OFormat[Address]                           = Json.format[Address]
   implicit val formatTraderContactDetails: OFormat[TraderContactDetails] = Json.format[TraderContactDetails]
-  implicit val formatTeam: OFormat[Team]                                 = Json.format[Team]
 
   implicit val formatCaseStatus: Format[CaseStatus.Value]           = EnumJson.format(CaseStatus)
-  implicit val formatApplicationType: Format[ApplicationType.Value] = EnumJson.format(ApplicationType)
   implicit val formatLiabilityStatus: Format[LiabilityStatus.Value] = EnumJson.format(LiabilityStatus)
   implicit val formatAppealStatus: Format[AppealStatus.Value]       = EnumJson.format(AppealStatus)
   implicit val formatAppealType: Format[AppealType.Value]           = EnumJson.format(AppealType)
@@ -46,8 +49,6 @@ object RESTFormatters {
   implicit val formatReferralReason: Format[ReferralReason.Value]   = EnumJson.format(ReferralReason)
   implicit val formatCaseReportGroup: Format[CaseReportGroup.Value] = EnumJson.format(CaseReportGroup)
   implicit val miscCaseType: Format[MiscCaseType.Value]             = EnumJson.format(MiscCaseType)
-  implicit val role: Format[Role.Value]                             = EnumJson.format(Role)
-  implicit val formatQueue: Format[Queue.Value]                     = EnumJson.format(Queue)
 
 
   implicit val formatReportResultMap: OFormat[Map[CaseReportGroup.Value, Option[String]]] = {
@@ -57,7 +58,6 @@ object RESTFormatters {
 
   implicit val formatReportResult: OFormat[ReportResult] = Json.format[ReportResult]
 
-  implicit val formatOperator: OFormat[Operator]         = Json.format[Operator]
   implicit val formatEORIDetails: OFormat[EORIDetails]   = Json.format[EORIDetails]
   implicit val formatAttachment: OFormat[Attachment]     = Json.using[Json.WithDefaultValues].format[Attachment]
   implicit val formatAgentDetails: OFormat[AgentDetails] = Json.format[AgentDetails]
