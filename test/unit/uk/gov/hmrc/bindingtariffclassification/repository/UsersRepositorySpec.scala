@@ -16,21 +16,15 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
-import java.time.{Instant, LocalDate, ZoneOffset}
-
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-import reactivemongo.api.indexes.Index
-import reactivemongo.api.indexes.IndexType.Ascending
 import reactivemongo.api.{DB, ReadConcern}
 import reactivemongo.bson._
 import reactivemongo.core.errors.DatabaseException
 import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters._
 import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.bindingtariffclassification.utils.RandomGenerator
 import uk.gov.hmrc.mongo.MongoSpecSupport
-import util.EventData._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -119,8 +113,7 @@ class UsersRepositorySpec
     }
 
     //TODO: Fix below test, look into UserSearch for logic to retrieve users by Team
-
-/*
+    /*
     "retrieve all expected users from the collection by team" in {
 
       val user1 = Operator(
@@ -145,10 +138,73 @@ class UsersRepositorySpec
         Paged(Seq(user1, user2), Pagination(), 2)
 
     }
-*/
+   */
   }
 
-  private def selectorById(e: Event) =
-    BSONDocument("id" -> e.id)
+  "insert" should {
+    val user = Operator("user-id", Some("user"), Role.CLASSIFICATION_OFFICER)
+
+    "insert a new document in the collection" in {
+      val size = collectionSize
+
+      await(repository.insert(user)) shouldBe user
+      collectionSize shouldBe 1 + size
+      await(repository.collection.find(selectorById(user.id)).one[Operator]) shouldBe Some(
+        user
+      )
+    }
+
+    "fail to insert an existing document in the collection" in {
+      await(repository.insert(user)) shouldBe user
+      val size = collectionSize
+
+      val caught = intercept[DatabaseException] {
+        await(repository.insert(user))
+      }
+
+      caught.code shouldBe Some(mongoErrorCode)
+      collectionSize shouldBe size
+    }
+  }
+
+  "update" should {
+    val user = Operator("user-id", Some("user"), Role.CLASSIFICATION_OFFICER)
+
+    "modify an existing document in the collection" in {
+      await(repository.insert(user)) shouldBe user
+
+      val size = collectionSize
+
+      val updatedUser = user.copy(
+        name = Some("updated-name"),
+        memberOfTeams = List("ACT", "ELM")
+      )
+      await(repository.update(updatedUser, upsert = false)) shouldBe Some(
+        updatedUser
+      )
+      collectionSize shouldBe size
+
+      await(
+        repository.collection.find(selectorById(updatedUser.id)).one[Operator]
+      ) shouldBe Some(updatedUser)
+    }
+
+    "do nothing when trying to update an unknown document" in {
+      val size = collectionSize
+
+      await(repository.update(user, upsert = false)) shouldBe None
+      collectionSize shouldBe size
+    }
+
+    "upsert a new existing document in the collection" in {
+      val size = collectionSize
+
+      await(repository.update(user, upsert = true)) shouldBe Some(user)
+      collectionSize shouldBe size + 1
+    }
+  }
+
+  private def selectorById(id: String) =
+    BSONDocument("id" -> id)
 
 }

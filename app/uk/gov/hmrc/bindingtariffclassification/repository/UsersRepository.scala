@@ -18,16 +18,13 @@ package uk.gov.hmrc.bindingtariffclassification.repository
 
 import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
-import play.api.libs.json.Json.toJson
 import play.api.libs.json._
-import reactivemongo.api.indexes.Index
 import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.collection.JSONCollection
 import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters._
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.mongo.ReactiveRepository
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 @ImplementedBy(classOf[UsersMongoRepository])
@@ -61,7 +58,7 @@ class UsersMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
     createSingleFieldAscendingIndex(
       indexFieldKey = "memberOfTeams",
       isUnique = false
-    ),
+    )
   )
 
   private val defaultSortBy = Json.obj("timestamp" -> -1)
@@ -77,7 +74,8 @@ class UsersMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
 
   override def insert(user: Operator): Future[Operator] = createOne(user)
 
-  override def update(user: Operator, upsert: Boolean): Future[Option[Operator]] = {
+  override def update(user: Operator,
+                      upsert: Boolean): Future[Option[Operator]] = {
     updateDocument(selector = byId(user.id), update = user, upsert = upsert)
   }
 

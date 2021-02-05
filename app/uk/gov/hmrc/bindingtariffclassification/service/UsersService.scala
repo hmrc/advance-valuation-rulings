@@ -26,7 +26,7 @@ import scala.concurrent.Future
 
 @Singleton
 class UsersService @Inject()(appConfig: AppConfig,
-                             usersRepository: UsersRepository,
+                             usersRepository: UsersRepository
 )(implicit mat: Materializer) {
 
   def getById(id: String): Future[Option[Operator]] =
