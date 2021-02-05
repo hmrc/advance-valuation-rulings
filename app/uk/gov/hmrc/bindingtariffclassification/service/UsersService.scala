@@ -29,13 +29,13 @@ class UsersService @Inject()(appConfig: AppConfig,
                              usersRepository: UsersRepository
 )(implicit mat: Materializer) {
 
-  def getById(id: String): Future[Option[Operator]] =
+  def getUserById(id: String): Future[Option[Operator]] =
     usersRepository.getById(id)
 
-  def insert(user: Operator): Future[Operator] =
+  def insertUser(user: Operator): Future[Operator] =
     usersRepository.insert(user)
 
-  def update(user: Operator, upsert: Boolean): Future[Option[Operator]] =
+  def updateUser(user: Operator, upsert: Boolean): Future[Option[Operator]] =
     usersRepository.update(user, upsert)
 
   def search(search: UserSearch,

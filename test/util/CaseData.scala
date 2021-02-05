@@ -19,6 +19,7 @@ package util
 import java.time.Instant
 
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
+import uk.gov.hmrc.bindingtariffclassification.model.Role.Role
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.utils.RandomGenerator
 
@@ -186,6 +187,9 @@ object CaseData {
       attachments = attachments
     )
 
+  def createNewUser(user: Operator = createUser()): NewUserRequest =
+    NewUserRequest(operator = user)
+
   def createNewCaseWithExtraFields(): Case =
     Case(
       reference   = "9999999999",
@@ -236,5 +240,14 @@ object CaseData {
       operator               = Some(Operator(id = "0", Some("OperatorName"))),
       shouldPublishToRulings = false
     )
+
+  def createUser(id: String = "user-id",
+                 name: Option[String] = None,
+                 role: Role = Role.CLASSIFICATION_OFFICER,
+                 memberOfTeams: List[String] = List.empty,
+                 managerOfTeams: List[String] = List.empty,
+                 active: Boolean = true,
+                 deleted: Boolean = false): Operator =
+    Operator(id, name, role, memberOfTeams, managerOfTeams, active, deleted)
 
 }

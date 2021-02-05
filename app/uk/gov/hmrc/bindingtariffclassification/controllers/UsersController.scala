@@ -34,13 +34,9 @@ class UsersController @Inject()(appConfig: AppConfig,
                                 mcc: MessagesControllerComponents)
     extends CommonController(mcc) {
 
-  def fetchUserDetails(id: String): Action[AnyContent] =
-    Action.async {
-
-      usersService.getById(id) map { user =>
-        Ok(Json.toJson(user))
-      } recover recovery
-    }
+  def fetchUserDetails(id: String): Action[AnyContent] = Action.async {
+    usersService.getUserById(id) map handleNotFound recover recovery
+  }
 
   def allUsers(search: UserSearch, pagination: Pagination): Action[AnyContent] =
     Action.async {
@@ -53,7 +49,7 @@ class UsersController @Inject()(appConfig: AppConfig,
     implicit request =>
       withJsonBody[NewUserRequest] { userRequest: NewUserRequest =>
         for {
-          c <- usersService.insert(userRequest.operator)
+          c <- usersService.insertUser(userRequest.operator)
         } yield Created(Json.toJson(c)(RESTFormatters.formatOperator))
       } recover recovery map { result =>
         logger.debug(s"User creation Result : $result");
@@ -65,7 +61,11 @@ class UsersController @Inject()(appConfig: AppConfig,
     Action.async(parse.json) { implicit request =>
       withJsonBody[Operator] { user: Operator =>
         if (user.id == id) {
-          usersService.update(user, true) map handleNotFound recover recovery
+          val upsert = request.headers.get(USER_AGENT) match {
+            case Some(agent) => appConfig.upsertAgents.contains(agent)
+            case _           => false
+          }
+          usersService.updateUser(user, upsert) map handleNotFound recover recovery
         } else
           successful(
             BadRequest(
@@ -82,7 +82,7 @@ class UsersController @Inject()(appConfig: AppConfig,
     Action.async(parse.json) { implicit request =>
       withJsonBody[Operator] { user: Operator =>
         if (user.id == id) {
-          usersService.update(user.copy(active = false), true) map handleNotFound recover recovery
+          usersService.updateUser(user.copy(active = false), true) map handleNotFound recover recovery
         } else
           successful(
             BadRequest(
@@ -99,7 +99,7 @@ class UsersController @Inject()(appConfig: AppConfig,
     Action.async(parse.json) { implicit request =>
       withJsonBody[Operator] { user: Operator =>
         if (user.id == id) {
-          usersService.update(user.copy(active = true), true) map handleNotFound recover recovery
+          usersService.updateUser(user.copy(active = true), true) map handleNotFound recover recovery
         } else
           successful(
             BadRequest(
@@ -116,7 +116,7 @@ class UsersController @Inject()(appConfig: AppConfig,
     Action.async(parse.json) { implicit request =>
       withJsonBody[Operator] { user: Operator =>
         if (user.id == id) {
-          usersService.update(user.copy(deleted = true), true) map handleNotFound recover recovery
+          usersService.updateUser(user.copy(deleted = true), true) map handleNotFound recover recovery
         } else
           successful(
             BadRequest(
