@@ -78,46 +78,16 @@ class UsersController @Inject()(appConfig: AppConfig,
       } recover recovery
     }
 
-  def markInactive(id: String): Action[JsValue] =
-    Action.async(parse.json) { implicit request =>
-      withJsonBody[Operator] { user: Operator =>
-        if (user.id == id) {
-          usersService.updateUser(user.copy(active = false), true) map handleNotFound recover recovery
-        } else
-          successful(
-            BadRequest(
-              JsErrorResponse(
-                ErrorCode.INVALID_REQUEST_PAYLOAD,
-                "Invalid user id"
-              )
-            )
-          )
-      } recover recovery
-    }
-
-  def markActive(id: String): Action[JsValue] =
-    Action.async(parse.json) { implicit request =>
-      withJsonBody[Operator] { user: Operator =>
-        if (user.id == id) {
-          usersService.updateUser(user.copy(active = true), true) map handleNotFound recover recovery
-        } else
-          successful(
-            BadRequest(
-              JsErrorResponse(
-                ErrorCode.INVALID_REQUEST_PAYLOAD,
-                "Invalid user id"
-              )
-            )
-          )
-      } recover recovery
-    }
-
   def markDeleted(id: String): Action[JsValue] =
     Action.async(parse.json) { implicit request =>
       withJsonBody[Operator] { user: Operator =>
         if (user.id == id) {
-          usersService.updateUser(user.copy(deleted = true), true) map handleNotFound recover recovery
-        } else
+          val upsert = request.headers.get(USER_AGENT) match {
+            case Some(agent) => appConfig.upsertAgents.contains(agent)
+            case _           => false
+          }
+          usersService.updateUser(user.copy(deleted = true), upsert) map handleNotFound recover recovery
+        } else {
           successful(
             BadRequest(
               JsErrorResponse(
@@ -126,6 +96,7 @@ class UsersController @Inject()(appConfig: AppConfig,
               )
             )
           )
+        }
       } recover recovery
     }
 

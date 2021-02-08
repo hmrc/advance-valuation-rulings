@@ -243,11 +243,11 @@ object CaseData {
 
   def createUser(id: String = "user-id",
                  name: Option[String] = None,
+                 email: Option[String] = None,
                  role: Role = Role.CLASSIFICATION_OFFICER,
                  memberOfTeams: List[String] = List.empty,
                  managerOfTeams: List[String] = List.empty,
-                 active: Boolean = true,
                  deleted: Boolean = false): Operator =
-    Operator(id, name, role, memberOfTeams, managerOfTeams, active, deleted)
+    Operator(id, name, email, role, memberOfTeams, managerOfTeams, deleted)
 
 }

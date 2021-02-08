@@ -202,6 +202,89 @@ class UsersControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
   }
 
+  "markDeleted" should {
+    val userDeleted = user1.copy(deleted = true)
+
+    "return 200 when the user has been marked deleted successfully" in {
+
+      when(usersService.updateUser(userDeleted, false))
+        .thenReturn(successful(Some(userDeleted)))
+
+      val result = await(
+        controller.markDeleted(user1.id)(fakeRequest.withBody(toJson(user1)))
+      )
+
+      status(result) shouldEqual OK
+      jsonBodyOf(result) shouldEqual toJson(userDeleted)
+    }
+
+    "return 200 when the user has been marked deleted successfully - with upsert allowed" in {
+
+      when(appConfig.upsertAgents).thenReturn(Seq("agent"))
+      when(usersService.updateUser(userDeleted, upsert = true))
+        .thenReturn(successful(Some(userDeleted)))
+
+      val result =
+        await(
+          controller.markDeleted(user1.id)(
+            fakeRequest
+              .withBody(toJson(user1))
+              .withHeaders("User-Agent" -> "agent")
+          )
+        )
+
+      status(result) shouldEqual OK
+      jsonBodyOf(result) shouldEqual toJson(userDeleted)
+    }
+
+    "return 400 when the JSON request payload is not a user" in {
+      val body = """{"a":"b"}"""
+      val result =
+        await(controller.markDeleted("")(fakeRequest.withBody(toJson(body))))
+
+      status(result) shouldEqual BAD_REQUEST
+    }
+
+    "return 400 when the user id path parameter does not match the JSON request payload" in {
+      val result =
+        await(
+          controller.markDeleted("ABC")(fakeRequest.withBody(toJson(user1)))
+        )
+
+      status(result) shouldEqual BAD_REQUEST
+      jsonBodyOf(result)
+        .toString() shouldEqual """{"code":"INVALID_REQUEST_PAYLOAD","message":"Invalid user id"}"""
+    }
+
+    "return 404 when there are no users with the provided reference" in {
+      when(usersService.updateUser(userDeleted, upsert = false))
+        .thenReturn(successful(None))
+
+      val result = await(
+        controller.markDeleted(user1.id)(fakeRequest.withBody(toJson(user1)))
+      )
+
+      status(result) shouldEqual NOT_FOUND
+      jsonBodyOf(result)
+        .toString() shouldEqual """{"code":"NOT_FOUND","message":"User not found"}"""
+    }
+
+    "return 500 when an error occurred" in {
+      val error = new RuntimeException
+
+      when(usersService.updateUser(userDeleted, upsert = false))
+        .thenReturn(failed(error))
+
+      val result = await(
+        controller.markDeleted(user1.id)(fakeRequest.withBody(toJson(user1)))
+      )
+
+      status(result) shouldEqual INTERNAL_SERVER_ERROR
+      jsonBodyOf(result)
+        .toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
+    }
+  }
+
   "allUsers" should {
 
     val role = Some(Role.CLASSIFICATION_OFFICER)

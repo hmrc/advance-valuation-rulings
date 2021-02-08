@@ -73,7 +73,12 @@ class UsersRepositorySpec
   "get by id" should {
 
     "return existing user" in {
-      val user = Operator("user-id", Some("user"), Role.CLASSIFICATION_OFFICER)
+      val user = Operator(
+        "user-id",
+        Some("user"),
+        Some("email"),
+        Role.CLASSIFICATION_OFFICER
+      )
       await(repository.insert(user))
       await(repository.getById("user-id")) shouldBe Some(user)
     }
@@ -86,9 +91,24 @@ class UsersRepositorySpec
   "search" should {
 
     "retrieve all expected users from the collection by role" in {
-      val user1 = Operator("id1", Some("user"), Role.CLASSIFICATION_OFFICER)
-      val user2 = Operator("id2", Some("user"), Role.CLASSIFICATION_OFFICER)
-      val user3 = Operator("id3", Some("user"), Role.CLASSIFICATION_MANAGER)
+      val user1 = Operator(
+        "id1",
+        Some("user"),
+        Some("email"),
+        Role.CLASSIFICATION_OFFICER
+      )
+      val user2 = Operator(
+        "id2",
+        Some("user"),
+        Some("email"),
+        Role.CLASSIFICATION_OFFICER
+      )
+      val user3 = Operator(
+        "id3",
+        Some("user"),
+        Some("email"),
+        Role.CLASSIFICATION_MANAGER
+      )
 
       await(repository.insert(user1))
       await(repository.insert(user2))
@@ -142,7 +162,12 @@ class UsersRepositorySpec
   }
 
   "insert" should {
-    val user = Operator("user-id", Some("user"), Role.CLASSIFICATION_OFFICER)
+    val user = Operator(
+      "user-id",
+      Some("user"),
+      Some("email"),
+      Role.CLASSIFICATION_OFFICER
+    )
 
     "insert a new document in the collection" in {
       val size = collectionSize
@@ -168,7 +193,12 @@ class UsersRepositorySpec
   }
 
   "update" should {
-    val user = Operator("user-id", Some("user"), Role.CLASSIFICATION_OFFICER)
+    val user = Operator(
+      "user-id",
+      Some("user"),
+      Some("email"),
+      Role.CLASSIFICATION_OFFICER
+    )
 
     "modify an existing document in the collection" in {
       await(repository.insert(user)) shouldBe user
