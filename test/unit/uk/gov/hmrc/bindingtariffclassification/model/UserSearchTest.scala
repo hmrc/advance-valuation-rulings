@@ -23,12 +23,10 @@ import uk.gov.hmrc.play.test.UnitSpec
 class UserSearchTest extends UnitSpec {
 
   private val search =
-    UserSearch(role = Some(Role.CLASSIFICATION_MANAGER), team = Some("ACT"))
+    UserSearch(role = Some(Role.CLASSIFICATION_MANAGER), team = Some("1"))
 
-  private val params: Map[String, Seq[String]] = Map(
-    "role" -> Seq("Classification manager"),
-    "member_of_teams" -> Seq("ACT", "GATEWAY")
-  )
+  private val params: Map[String, Seq[String]] =
+    Map("role" -> Seq("CLASSIFICATION_MANAGER"), "member_of_teams" -> Seq("1"))
 
   private val emptyParams: Map[String, Seq[String]] =
     params.mapValues(_.map(_ => ""))
@@ -39,15 +37,12 @@ class UserSearchTest extends UnitSpec {
       UserSearch.bindable.unbind("", UserSearch()) shouldBe ""
     }
 
-    //TODO: Fix below test, look into UserSearch for logic to retrieve users by Team
-
-    /*    "Unbind Populated Search to Query String" in {
-          val populatedQueryParam: String =
-            "role=Classification manager" +
-              "&member_of_teams=ACT" +
-              "&member_of_teams=GATEWAY"
-          URLDecoder.decode(UserSearch.bindable.unbind("", search), "UTF-8") shouldBe populatedQueryParam
-        }*/
+    "Unbind Populated Search to Query String" in {
+      val populatedQueryParam: String =
+        "role=CLASSIFICATION_MANAGER" +
+          "&member_of_teams=1"
+      URLDecoder.decode(UserSearch.bindable.unbind("", search), "UTF-8") shouldBe populatedQueryParam
+    }
 
     "Bind empty query string" in {
       UserSearch.bindable.bind("", Map()) shouldBe Some(Right(UserSearch()))

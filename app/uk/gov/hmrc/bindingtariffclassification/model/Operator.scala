@@ -31,7 +31,5 @@ case class Operator(id: String,
 
 object Role extends Enumeration {
   type Role = Value
-  val CLASSIFICATION_OFFICER = Value("Classification officer")
-  val CLASSIFICATION_MANAGER = Value("Classification manager")
-  val READ_ONLY = Value("Unknown")
+  val CLASSIFICATION_OFFICER, CLASSIFICATION_MANAGER, READ_ONLY = Value
 }

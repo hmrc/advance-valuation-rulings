@@ -133,32 +133,40 @@ class UsersRepositorySpec
     }
 
     //TODO: Fix below test, look into UserSearch for logic to retrieve users by Team
-    /*
     "retrieve all expected users from the collection by team" in {
 
       val user1 = Operator(
         "id1",
         Some("user"),
+        Some("email"),
         Role.CLASSIFICATION_OFFICER,
-        List(Team("1", "act", List(ApplicationType.LIABILITY_ORDER), List()))
+        List("1")
       )
 
       val user2 = Operator(
         "id2",
         Some("user"),
+        Some("email"),
         Role.CLASSIFICATION_OFFICER,
-        List(Team("2", "act", List(ApplicationType.LIABILITY_ORDER), List()))
+        List("2")
+      )
+
+      val user3 = Operator(
+        "id3",
+        Some("user"),
+        Some("email"),
+        Role.CLASSIFICATION_OFFICER,
+        List("1")
       )
 
       await(repository.insert(user1))
       await(repository.insert(user2))
-      collectionSize shouldBe 2
+      await(repository.insert(user3))
+      collectionSize shouldBe 3
 
-      await(repository.search(UserSearch(None, Some("act")), Pagination())) shouldBe
-        Paged(Seq(user1, user2), Pagination(), 2)
-
+      await(repository.search(UserSearch(None, Some("1")), Pagination())) shouldBe
+        Paged(Seq(user1, user3), Pagination(), 2)
     }
-   */
   }
 
   "insert" should {

@@ -45,8 +45,6 @@ object UserSearch {
         import uk.gov.hmrc.bindingtariffclassification.model.utils.BinderUtil._
         implicit val rp: Map[String, Seq[String]] = requestParams
 
-        //val roles: Option[model.Role.Value] = param(roleKey).map(Role.withName)
-
         Some(
           Right(
             UserSearch(
@@ -59,7 +57,7 @@ object UserSearch {
 
       override def unbind(key: String, filter: UserSearch): String = {
         Seq(
-          filter.role.map(r => stringBinder.unbind(roleKey, r.toString).mkString("&")),
+          filter.role.map(r => stringBinder.unbind(roleKey, r.toString)),
           filter.team.map(r => stringBinder.unbind(teamKey, r))
         ).filter(_.isDefined).map(_.get).mkString("&")
       }
