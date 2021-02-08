@@ -166,6 +166,57 @@ class UsersRepositorySpec
       await(repository.search(UserSearch(None, Some("1")), Pagination())) shouldBe
         Paged(Seq(user1, user3), Pagination(), 2)
     }
+
+    "return an empty sequence when there are no users matching" in {
+      val user1 = Operator(
+        "id1",
+        Some("user"),
+        Some("email"),
+        Role.CLASSIFICATION_OFFICER,
+        List("1")
+      )
+
+      val user2 = Operator(
+        "id2",
+        Some("user"),
+        Some("email"),
+        Role.CLASSIFICATION_OFFICER,
+        List("3")
+      )
+
+      val user3 = Operator(
+        "id3",
+        Some("user"),
+        Some("email"),
+        Role.CLASSIFICATION_MANAGER,
+        List("2")
+      )
+
+      await(repository.insert(user1))
+      await(repository.insert(user2))
+      await(repository.insert(user3))
+      collectionSize shouldBe 3
+
+      await(repository.search(UserSearch(Some(Role.CLASSIFICATION_MANAGER), Some("2")), Pagination())) shouldBe
+        Paged(Seq(user3), Pagination(), 1)
+    }
+
+    "return all users that matches the query" in {
+      val user1 = Operator(
+        "id1",
+        Some("user"),
+        Some("email"),
+        Role.CLASSIFICATION_OFFICER,
+        List("1")
+      )
+
+      await(repository.insert(user1))
+      collectionSize shouldBe 1
+
+      await(
+        repository.search(UserSearch(Some(Role.READ_ONLY), None), Pagination())
+      ) shouldBe Paged.empty
+    }
   }
 
   "insert" should {
