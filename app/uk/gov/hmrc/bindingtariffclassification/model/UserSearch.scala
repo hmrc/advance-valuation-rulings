@@ -16,11 +16,8 @@
 
 package uk.gov.hmrc.bindingtariffclassification.model
 
-import uk.gov.hmrc.bindingtariffclassification.model.Role.Role
 import play.api.mvc.QueryStringBindable
-import uk.gov.hmrc.bindingtariffclassification.model
-
-import scala.util.Try
+import uk.gov.hmrc.bindingtariffclassification.model.Role.Role
 
 case class UserSearch(role: Option[Role] = None, team: Option[String] = None)
 
@@ -36,7 +33,6 @@ object UserSearch {
 
       private def bindRole(key: String): Option[Role] =
         Role.values.find(_.toString.equalsIgnoreCase(key))
-
 
       override def bind(
         key: String,

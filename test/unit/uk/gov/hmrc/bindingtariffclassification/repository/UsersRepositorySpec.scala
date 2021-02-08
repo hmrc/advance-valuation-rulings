@@ -132,7 +132,6 @@ class UsersRepositorySpec
         Paged(Seq(user3), Pagination(), 1)
     }
 
-    //TODO: Fix below test, look into UserSearch for logic to retrieve users by Team
     "retrieve all expected users from the collection by team" in {
 
       val user1 = Operator(
