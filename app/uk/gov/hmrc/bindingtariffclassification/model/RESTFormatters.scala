@@ -129,4 +129,32 @@ object RESTFormatters {
   implicit val formatBankHoliday: OFormat[BankHoliday]                   = Json.format[BankHoliday]
   implicit val formatBankHolidaysSet: OFormat[BankHolidaySet]            = Json.format[BankHolidaySet]
   implicit val formatBankHolidaysResponse: OFormat[BankHolidaysResponse] = Json.format[BankHolidaysResponse]
+
+  // `Update` formatters
+  implicit def formatSetValue[A: Format]: OFormat[SetValue[A]] = Json.format[SetValue[A]]
+  implicit val formatNoChange: OFormat[NoChange.type] = Json.format[NoChange.type]
+
+  implicit def formatUpdate[A: Format]: Format[Update[A]] = Union
+    .from[Update[A]]("type")
+    .and[SetValue[A]](UpdateType.SetValue.name)
+    .and[NoChange.type](UpdateType.NoChange.name)
+    .format
+
+  implicit def formatBtiUpdate: OFormat[BTIUpdate] = {
+    implicit def optFormat[A: Format]: Format[Option[A]] = Format(
+      Reads.optionNoError[A],
+      Writes.optionWithNull[A]
+    )
+    Json.format[BTIUpdate]
+  }
+
+  implicit val formatLiabilityUpdate: OFormat[LiabilityUpdate] = Json.format[LiabilityUpdate]
+
+  implicit val formatApplicationUpdate: Format[ApplicationUpdate] = Union
+    .from[ApplicationUpdate]("type")
+    .and[BTIUpdate](ApplicationType.BTI.toString)
+    .and[LiabilityUpdate](ApplicationType.LIABILITY_ORDER.toString)
+    .format
+
+  implicit val formatCaseUpdate: OFormat[CaseUpdate] = Json.format[CaseUpdate]
 }

@@ -168,6 +168,30 @@ class CaseServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
   }
 
+  "update() with CaseUpdate" should {
+    val caseUpdate = CaseUpdate()
+
+    "return the case after it is updated in the database collection" in {
+      when(caseRepository.update(c1.reference, caseUpdate)).thenReturn(successful(Some(c1Saved)))
+      await(service.update(c1.reference, caseUpdate)) shouldBe Some(c1Saved)
+    }
+
+    "return None if the case does not exist in the database collection" in {
+      when(caseRepository.update(c1.reference, caseUpdate)).thenReturn(successful(None))
+      val result = await(service.update(c1.reference, caseUpdate))
+      result shouldBe None
+    }
+
+    "propagate any error" in {
+      when(caseRepository.update(c1.reference, caseUpdate)).thenThrow(emulatedFailure)
+      val caught = intercept[RuntimeException] {
+        await(service.update(c1.reference, caseUpdate))
+      }
+      caught shouldBe emulatedFailure
+    }
+
+  }
+
   "getByReference()" should {
 
     "return the expected case" in {

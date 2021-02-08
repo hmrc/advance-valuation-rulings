@@ -10,6 +10,7 @@ object AppDependencies {
     "uk.gov.hmrc"       %% "play-json-union-formatter" % "1.11.0",
     "uk.gov.hmrc"       %% "simple-reactivemongo"      % "7.30.0-play-26",
     "org.reactivemongo" %% "reactivemongo-akkastream"  % "0.18.8",
+    "com.typesafe.play" %% "play-json"                 % "2.9.2",
     ws
   )
 

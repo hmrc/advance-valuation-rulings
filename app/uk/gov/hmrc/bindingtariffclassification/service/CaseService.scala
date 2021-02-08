@@ -78,6 +78,9 @@ class CaseService @Inject() (
   def update(c: Case, upsert: Boolean): Future[Option[Case]] =
     caseRepository.update(c, upsert)
 
+  def update(reference: String, caseUpdate: CaseUpdate): Future[Option[Case]] =
+    caseRepository.update(reference, caseUpdate)
+
   def getByReference(reference: String): Future[Option[Case]] =
     caseRepository.getByReference(reference)
 
