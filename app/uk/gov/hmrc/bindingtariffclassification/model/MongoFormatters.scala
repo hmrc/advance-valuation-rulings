@@ -38,6 +38,11 @@ object MongoFormatters {
       }
   }
 
+  // User formatters
+  implicit val role: Format[Role.Value]                               = EnumJson.format(Role)
+  implicit val formatApplicationType: Format[ApplicationType.Value]   = EnumJson.format(ApplicationType)
+  implicit val formatOperator: OFormat[Operator]                      = Json.using[Json.WithDefaultValues].format[Operator]
+
   // `Sequence` formatters
   implicit val formatSequence: OFormat[Sequence] = Json.format[Sequence]
 
@@ -46,7 +51,6 @@ object MongoFormatters {
   implicit val formatAddress: OFormat[Address]                           = Json.format[Address]
   implicit val formatTraderContactDetails: OFormat[TraderContactDetails] = Json.format[TraderContactDetails]
 
-  implicit val formatOperator: OFormat[Operator]                      = Json.format[Operator]
   implicit val formatCaseStatus: Format[CaseStatus.Value]             = EnumJson.format(CaseStatus)
   implicit val formatPseudoCaseStatus: Format[PseudoCaseStatus.Value] = EnumJson.format(PseudoCaseStatus)
   implicit val formatAppealStatus: Format[AppealStatus.Value]         = EnumJson.format(AppealStatus)
@@ -55,7 +59,6 @@ object MongoFormatters {
   implicit val formatSampleReturn: Format[SampleReturn.Value]         = EnumJson.format(SampleReturn)
   implicit val formatCancelReason: Format[CancelReason.Value]         = EnumJson.format(CancelReason)
   implicit val formatReferralReason: Format[ReferralReason.Value]     = EnumJson.format(ReferralReason)
-  implicit val formatApplicationType: Format[ApplicationType.Value]   = EnumJson.format(ApplicationType)
   implicit val formatLiabilityStatus: Format[LiabilityStatus.Value]   = EnumJson.format(LiabilityStatus)
   implicit val miscCaseType: Format[MiscCaseType.Value]               = EnumJson.format(MiscCaseType)
   implicit val formatAttachment: OFormat[Attachment]                  = Json.using[Json.WithDefaultValues].format[Attachment]

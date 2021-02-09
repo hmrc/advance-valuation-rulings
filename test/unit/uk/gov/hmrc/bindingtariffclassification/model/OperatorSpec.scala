@@ -16,20 +16,25 @@
 
 package uk.gov.hmrc.bindingtariffclassification.model
 
-import uk.gov.hmrc.bindingtariffclassification.model.Role.Role
+import org.scalatestplus.mockito.MockitoSugar
+import uk.gov.hmrc.play.test.UnitSpec
+import util.CaseData
 
-case class Operator(id: String,
-                    name: Option[String] = None,
-                    email: Option[String] = None,
-                    role: Role = Role.CLASSIFICATION_OFFICER,
-                    memberOfTeams: List[String] = List.empty,
-                    managerOfTeams: List[String] = List.empty,
-                    deleted: Boolean = false) {
+class OperatorSpec extends UnitSpec with MockitoSugar {
 
-  def manager: Boolean = role == Role.CLASSIFICATION_MANAGER
-}
+  "manager" should {
 
-object Role extends Enumeration {
-  type Role = Value
-  val CLASSIFICATION_OFFICER, CLASSIFICATION_MANAGER, READ_ONLY = Value
+    "return true if role is CLASSIFICATION_MANAGER" in {
+      val user = CaseData.createUser().copy(role = Role.CLASSIFICATION_MANAGER)
+
+      user.manager shouldBe true
+
+    }
+
+    "return false if role is not CLASSIFICATION_MANAGER" in {
+      val user = CaseData.createUser()
+
+      user.manager shouldBe false
+    }
+  }
 }

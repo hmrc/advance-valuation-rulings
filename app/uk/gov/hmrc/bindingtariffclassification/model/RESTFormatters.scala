@@ -21,13 +21,25 @@ import uk.gov.hmrc.bindingtariffclassification.model.reporting.{CaseReportGroup,
 import uk.gov.hmrc.play.json.Union
 
 object RESTFormatters {
+
+  case class Something(value: String)
+
+  implicit val formatSomething: OFormat[Something] = Json.format[Something]
+
+  Json.toJson(Something(""))
+  Json.toJson(Map[String, Option[String]]("" -> Some("")))
+
+  // User formatters
+  implicit val formatApplicationType: Format[ApplicationType.Value] = EnumJson.format(ApplicationType)
+  implicit val role: Format[Role.Value]                             = EnumJson.format(Role)
+  implicit val formatOperator: OFormat[Operator]                    = Json.using[Json.WithDefaultValues].format[Operator]
+
   // `Case` formatters
   implicit val formatRepaymentClaim: OFormat[RepaymentClaim]             = Json.format[RepaymentClaim]
   implicit val formatAddress: OFormat[Address]                           = Json.format[Address]
   implicit val formatTraderContactDetails: OFormat[TraderContactDetails] = Json.format[TraderContactDetails]
 
   implicit val formatCaseStatus: Format[CaseStatus.Value]           = EnumJson.format(CaseStatus)
-  implicit val formatApplicationType: Format[ApplicationType.Value] = EnumJson.format(ApplicationType)
   implicit val formatLiabilityStatus: Format[LiabilityStatus.Value] = EnumJson.format(LiabilityStatus)
   implicit val formatAppealStatus: Format[AppealStatus.Value]       = EnumJson.format(AppealStatus)
   implicit val formatAppealType: Format[AppealType.Value]           = EnumJson.format(AppealType)
@@ -38,6 +50,7 @@ object RESTFormatters {
   implicit val formatCaseReportGroup: Format[CaseReportGroup.Value] = EnumJson.format(CaseReportGroup)
   implicit val miscCaseType: Format[MiscCaseType.Value]             = EnumJson.format(MiscCaseType)
 
+
   implicit val formatReportResultMap: OFormat[Map[CaseReportGroup.Value, Option[String]]] = {
     implicit val optrds: Reads[Option[String]] = Reads.optionNoError[String]
     EnumJson.formatMap[CaseReportGroup.Value, Option[String]]
@@ -45,7 +58,6 @@ object RESTFormatters {
 
   implicit val formatReportResult: OFormat[ReportResult] = Json.format[ReportResult]
 
-  implicit val formatOperator: OFormat[Operator]         = Json.format[Operator]
   implicit val formatEORIDetails: OFormat[EORIDetails]   = Json.format[EORIDetails]
   implicit val formatAttachment: OFormat[Attachment]     = Json.using[Json.WithDefaultValues].format[Attachment]
   implicit val formatAgentDetails: OFormat[AgentDetails] = Json.format[AgentDetails]
@@ -112,6 +124,7 @@ object RESTFormatters {
 
   implicit val formatEvent: OFormat[Event]                     = Json.format[Event]
   implicit val formatNewEventRequest: OFormat[NewEventRequest] = Json.format[NewEventRequest]
+  implicit val formatNewUserRequest: OFormat[NewUserRequest]   = Json.format[NewUserRequest]
 
   implicit val formatBankHoliday: OFormat[BankHoliday]                   = Json.format[BankHoliday]
   implicit val formatBankHolidaysSet: OFormat[BankHolidaySet]            = Json.format[BankHolidaySet]
