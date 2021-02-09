@@ -16,15 +16,11 @@
 
 package uk.gov.hmrc.bindingtariffclassification.scheduler
 
-import java.time.{Instant, LocalDate, LocalTime}
-
-import javax.inject.{Inject, Singleton}
-import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
-
-import scala.concurrent.duration.FiniteDuration
-import java.time.ZonedDateTime
-import java.time.temporal.TemporalUnit
+import java.time.{Instant, LocalDate, LocalTime, ZonedDateTime}
 import java.time.temporal.ChronoUnit
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.duration.FiniteDuration
+import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 
 @Singleton
 class SchedulerDateUtil @Inject() (appConfig: AppConfig) {

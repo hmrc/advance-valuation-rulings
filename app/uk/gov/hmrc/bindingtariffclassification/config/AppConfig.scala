@@ -22,6 +22,7 @@ import javax.inject._
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
+import scala.concurrent.duration._
 import scala.concurrent.duration.{Duration, FiniteDuration}
 
 @Singleton
@@ -93,4 +94,7 @@ class AppConfig @Inject() (
 }
 
 case class MongoEncryption(enabled: Boolean = false, key: Option[String] = None)
-case class JobConfig(enabled: Boolean, elapseTime: LocalTime, interval: FiniteDuration)
+
+case class JobConfig(enabled: Boolean, elapseTime: LocalTime, interval: FiniteDuration) {
+  require(interval >= 1.days, "Scheduled job interval must be greater than or equal to 1 day")
+}
