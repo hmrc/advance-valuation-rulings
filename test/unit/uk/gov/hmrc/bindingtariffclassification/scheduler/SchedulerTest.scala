@@ -104,14 +104,14 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
       givenTheLockFails() // Ensures the job isn't run by the scheduler
 
       val job1 = mock[ActiveDaysElapsedJob]
-      given(job1.interval) willReturn 3.minutes
+      given(job1.interval) willReturn 1.day
       given(job1.firstRunTime) willReturn "00:00"
       given(job1.name) willReturn "name1"
       given(util.nextRun(job1.firstRunTime, job1.interval)) willReturn "2019-01-01T00:00:00"
 
       val job2 = mock[ReferredDaysElapsedJob]
 
-      given(job2.interval) willReturn 3.minutes
+      given(job2.interval) willReturn 1.day
       given(job2.firstRunTime) willReturn "00:00"
       given(job2.name) willReturn "name2"
       given(util.nextRun(job2.firstRunTime, job2.interval)) willReturn "2019-01-01T00:00:00"
@@ -128,7 +128,7 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
       // Given
       givenTheLockSucceeds()
       given(job.enabled) willReturn true
-      given(job.interval) willReturn 3.seconds
+      given(job.interval) willReturn 1.day
       given(job.firstRunTime) willReturn "12:00"
       given(job.name) willReturn "name"
       given(util.nextRun(job.firstRunTime, job.interval)) willReturn "2018-12-25T12:00:00"
@@ -139,7 +139,7 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
 
       // Then
       val schedule = theSchedule
-      schedule.interval     shouldBe 3.seconds
+      schedule.interval     shouldBe 1.day
       schedule.initialDelay shouldBe 0.seconds
 
       val lockEvent = theLockEvent
@@ -151,7 +151,7 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
       // Given
       givenTheLockSucceeds()
       given(job.enabled) willReturn true
-      given(job.interval) willReturn 3.seconds
+      given(job.interval) willReturn 1.day
       given(job.firstRunTime) willReturn "12:00"
       given(job.name) willReturn "name"
       given(util.nextRun(job.firstRunTime, job.interval)).willReturn("2018-12-25T12:00:20")
@@ -162,7 +162,7 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
 
       // Then
       val schedule = theSchedule
-      schedule.interval     shouldBe 3.seconds
+      schedule.interval     shouldBe 1.day
       schedule.initialDelay shouldBe 20.seconds
 
       val lockEvent = theLockEvent
@@ -170,7 +170,7 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
       lockEvent.runDate shouldBe instant("2018-12-25T12:00:10")
     }
 
-    "Fail to schedule job given an invalid run date" in {
+    "Schedule job immediately given a run date in the past" in {
       // Given
       givenTheLockSucceeds()
       given(job.enabled) willReturn true
@@ -178,12 +178,19 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
       given(job.firstRunTime) willReturn "12:00"
       given(job.name) willReturn "name"
       given(util.nextRun(job.firstRunTime, job.interval)).willReturn("2018-12-25T11:59:59")
+      given(util.closestRun(job.firstRunTime, job.interval)) willReturn "2018-12-25T11:59:59"
 
       // When
-      intercept[IllegalArgumentException] {
-        whenTheSchedulerStarts()
-      }
-      verifyNoMoreInteractions(internalScheduler)
+      whenTheSchedulerStarts()
+
+      // Then
+      val schedule = theSchedule
+      schedule.interval     shouldBe 3.seconds
+      schedule.initialDelay shouldBe 0.seconds
+
+      val lockEvent = theLockEvent
+      lockEvent.name    shouldBe "name"
+      lockEvent.runDate shouldBe instant("2018-12-25T11:59:59")
     }
 
     "Not execute the job if the lock fails" in {
