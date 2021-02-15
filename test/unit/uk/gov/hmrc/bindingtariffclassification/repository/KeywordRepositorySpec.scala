@@ -37,6 +37,16 @@ class KeywordRepositorySpec extends BaseMongoIndexSpec
   self =>
   private val mongoErrorCode = 11000
 
+  private def selectorByName(name: String) =
+    BSONDocument("name" -> name)
+
+  private def store(keywords: Keyword*): Unit =
+    keywords.foreach { keyword: Keyword => await(repository.insert(keyword)) }
+
+  private val keyword = Keyword(
+    "keyword name", approved = true
+  )
+
   private val mongoDbProvider: MongoDbProvider = new MongoDbProvider {
     override val mongo: () => DB = self.mongo
   }
@@ -72,10 +82,6 @@ class KeywordRepositorySpec extends BaseMongoIndexSpec
 
 
   "insert" should {
-    val keyword = Keyword(
-      "keyword name", approved = true
-    )
-
     "insert a new document in the collection" in {
       val size = collectionSize
 
@@ -99,9 +105,26 @@ class KeywordRepositorySpec extends BaseMongoIndexSpec
     }
   }
 
+  "delete" should {
+    "remove the entry from the Collection" in {
 
+      val keyword = Keyword(
+        "potatoes", approved = true
+      )
+      val keyword2 = Keyword(
+        "rice", approved = true
+      )
 
-  private def selectorByName(name: String) =
-    BSONDocument("name" -> name)
+      val size = collectionSize
+
+      store(keyword, keyword2)
+      collectionSize shouldBe 2 + size
+
+      await(repository.delete("potatoes")) shouldBe ((): Unit)
+
+      await(repository.collection.find(selectorByName(keyword.name)).one[Keyword]) shouldBe None
+      await(repository.collection.find(selectorByName(keyword2.name)).one[Keyword]) shouldBe Some(keyword2)
+    }
+  }
 
 }
