@@ -34,6 +34,7 @@ object RESTFormatters {
   implicit val role: Format[Role.Value]                             = EnumJson.format(Role)
   implicit val formatOperator: OFormat[Operator]                    = Json.using[Json.WithDefaultValues].format[Operator]
 
+  implicit val formatKeyword: OFormat[Keyword]                      = Json.format[Keyword]
   // `Case` formatters
   implicit val formatRepaymentClaim: OFormat[RepaymentClaim]             = Json.format[RepaymentClaim]
   implicit val formatAddress: OFormat[Address]                           = Json.format[Address]
