@@ -20,6 +20,8 @@ import java.time._
 import java.time.temporal.ChronoUnit
 import javax.inject.{Inject, Singleton}
 
+import cron4s._
+import cron4s.lib.javatime._
 import uk.gov.hmrc.bindingtariffclassification.common.Logging
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.connector.BankHolidaysConnector
@@ -29,10 +31,8 @@ import uk.gov.hmrc.bindingtariffclassification.sort.CaseSortField
 import uk.gov.hmrc.bindingtariffclassification.utils.DateUtil._
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.Future._
-import scala.concurrent.duration._
 
 @Singleton
 class ActiveDaysElapsedJob @Inject() (
@@ -40,7 +40,8 @@ class ActiveDaysElapsedJob @Inject() (
   caseService: CaseService,
   eventService: EventService,
   bankHolidaysConnector: BankHolidaysConnector
-) extends ScheduledJob
+)(implicit ec: ExecutionContext)
+    extends ScheduledJob
     with Logging {
 
   private implicit val config: AppConfig      = appConfig
@@ -55,9 +56,13 @@ class ActiveDaysElapsedJob @Inject() (
 
   override def enabled: Boolean = jobConfig.enabled
 
-  override def interval: FiniteDuration = jobConfig.interval
+  override def schedule: CronExpr = jobConfig.schedule
 
-  override def firstRunTime: LocalTime = jobConfig.elapseTime
+  override def nextRunTime: Option[ZonedDateTime] =
+    jobConfig.schedule.next(
+      appConfig.clock.instant()
+        .atZone(appConfig.clock.getZone())
+    )
 
   override def execute(): Future[Unit] =
     for {

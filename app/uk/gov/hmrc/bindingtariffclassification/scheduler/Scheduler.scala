@@ -16,21 +16,22 @@
 
 package uk.gov.hmrc.bindingtariffclassification.scheduler
 
-import java.time.Instant
+import java.time.{Duration, ZonedDateTime}
 import java.time.temporal.ChronoUnit
-import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 
 import akka.actor.ActorSystem
+import com.kenshoo.play.metrics.Metrics
 import uk.gov.hmrc.bindingtariffclassification.common.Logging
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
+import uk.gov.hmrc.bindingtariffclassification.metrics.HasMetrics
 import uk.gov.hmrc.bindingtariffclassification.model.JobRunEvent
 import uk.gov.hmrc.bindingtariffclassification.repository.SchedulerLockRepository
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.Future.successful
-import scala.concurrent.duration.FiniteDuration
+import scala.util.control.NonFatal
+import java.time.temporal.Temporal
 
 @Singleton
 class Scheduler @Inject() (
@@ -38,54 +39,58 @@ class Scheduler @Inject() (
   appConfig: AppConfig,
   schedulerLockRepository: SchedulerLockRepository,
   schedulerDateUtil: SchedulerDateUtil,
-  scheduledJobs: ScheduledJobs
-) extends Logging {
+  scheduledJobs: ScheduledJobs,
+  val metrics: Metrics
+)(implicit ec: ExecutionContext) extends Logging
+    with HasMetrics {
 
   val (enabledJobs, disabledJobs) = scheduledJobs.jobs.partition(_.enabled)
 
   disabledJobs.foreach(job => logger.warn(s"Scheduled job [${job.name}] is disabled"))
 
   enabledJobs.foreach { job =>
-    logger.info(
-      s"Scheduling job [${job.name}] to run periodically at [${job.firstRunTime}] with interval [${job.interval.length} ${job.interval.unit}]"
-    )
-    actorSystem.scheduler.schedule(
-      durationUntil(nextRunDateFor(job)),
-      job.interval,
-      new Runnable() {
-        override def run(): Unit = {
-          val event = JobRunEvent(job.name, closestRunDateFor(job))
-          logger.info(s"Scheduled Job [${job.name}]: Acquiring Lock")
-          schedulerLockRepository.lock(event).flatMap {
-            case true =>
-              logger.info(s"Scheduled Job [${job.name}]: Successfully acquired lock. Starting Job.")
-              job.execute().map { _ =>
-                logger.info(s"Scheduled Job [${job.name}]: Completed Successfully")
-              } recover {
-                case t: Throwable =>
-                  logger.error(s"Scheduled Job [${job.name}]: Failed", t)
-              }
-            case false =>
-              logger.info(s"Scheduled Job [${job.name}]: Failed to acquire Lock. It may have been running already.")
-              successful(())
+    logger.info(s"Scheduling job [${job.name}] with schedule [${job.schedule.toString}]")
+    scheduleJob(job)
+  }
+
+  def scheduleJob(job: ScheduledJob): Unit =
+    job.nextRunTime.map { nextRun =>
+      actorSystem.scheduler.scheduleOnce(
+        durationUntil(nextRun),
+        runScheduledJob(nextRun, job)
+      )
+    }
+
+  def runScheduledJob(runTime: ZonedDateTime, job: ScheduledJob): Runnable = { () =>
+    logger.info(s"Scheduled Job [${job.name}]: Acquiring lock")
+
+    val runJob = withMetricsTimerAsync(s"scheduled-job-${job.name}") { timer =>
+      schedulerLockRepository.lock(JobRunEvent(job.name, runTime)).flatMap { acquiredLock =>
+        if (acquiredLock) {
+          logger.info(s"Scheduled Job [${job.name}]: Acquired lock")
+
+          job.execute().map(_ => logger.info(s"Scheduled Job [${job.name}]: Completed successfully")).recover {
+            case NonFatal(t) =>
+              logger.error(s"Scheduled Job [${job.name}]: Failed", t)
+              timer.completeWithFailure()
           }
+        } else {
+          logger.info(s"Scheduled Job [${job.name}]: Failed to acquire Lock")
+          timer.completeWithFailure()
+          successful(())
         }
       }
-    )
+    }
+
+    runJob.onComplete(_ => scheduleJob(job))
   }
 
   def execute[T](clazz: Class[T]): Future[Unit] =
     Future.sequence(scheduledJobs.jobs.filter(clazz.isInstance(_)).map(_.execute())).map(_ => ())
 
-  private def nextRunDateFor(job: ScheduledJob): Instant =
-    schedulerDateUtil.nextRun(job.firstRunTime, job.interval)
-
-  private def closestRunDateFor(job: ScheduledJob): Instant =
-    schedulerDateUtil.closestRun(job.firstRunTime, job.interval)
-
-  private def durationUntil(datetime: Instant): FiniteDuration = {
-    val now = Instant.now(appConfig.clock)
-    val seconds = Math.max(0L, now.until(datetime, ChronoUnit.SECONDS))
-    FiniteDuration(seconds, TimeUnit.SECONDS)
+  private def durationUntil[A <: Temporal](nextRun: A): Duration = {
+    val now      = appConfig.clock.instant()
+    val duration = Math.max(0L, now.until(nextRun, ChronoUnit.MILLIS))
+    Duration.ofMillis(duration)
   }
 }

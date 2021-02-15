@@ -32,6 +32,7 @@ import uk.gov.hmrc.bindingtariffclassification.model.filestore.{FileMetadata, Fi
 import uk.gov.hmrc.bindingtariffclassification.model.{Paged, Pagination}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.HttpAuditing
+import util.TestMetrics
 
 class FileStoreConnectorTest extends BaseSpec with WiremockTestServer with BeforeAndAfterAll {
 
@@ -52,7 +53,7 @@ class FileStoreConnectorTest extends BaseSpec with WiremockTestServer with Befor
     actorSystem
   )
 
-  private val connector = new FileStoreConnector(config, hmrcAuthenticatedHttpClient)
+  private val connector = new FileStoreConnector(config, hmrcAuthenticatedHttpClient, new TestMetrics)
 
   override protected def beforeAll(): Unit = {
     super.beforeAll()

@@ -16,6 +16,6 @@
 
 package uk.gov.hmrc.bindingtariffclassification.model
 
-import java.time.Instant
+import java.time.ZonedDateTime
 
-case class JobRunEvent(name: String, runDate: Instant)
+case class JobRunEvent(name: String, runDate: ZonedDateTime)

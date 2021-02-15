@@ -24,6 +24,7 @@ import org.scalatest.concurrent.Eventually
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.model.JobRunEvent
 import uk.gov.hmrc.bindingtariffclassification.repository.MigrationLockRepository
+import util.TestMetrics
 
 import scala.concurrent.Future.{failed, successful}
 
@@ -95,7 +96,7 @@ class MigrationRunnerTest extends BaseSpec with BeforeAndAfterEach with Eventual
   }
 
   private def withRunner(test: MigrationRunner => Unit): Unit = {
-    val runner = new MigrationRunner(migrationRepository, MigrationJobs(Set(amendDateOfExtractJob)))
+    val runner = new MigrationRunner(migrationRepository, MigrationJobs(Set(amendDateOfExtractJob)), new TestMetrics)
     test(runner)
   }
 

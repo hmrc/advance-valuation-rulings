@@ -17,12 +17,14 @@
 package uk.gov.hmrc.bindingtariffclassification.scheduler
 
 import java.time._
+import java.time.temporal.ChronoUnit
 
 import akka.actor.{ActorSystem, Cancellable}
+import cron4s.Cron
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.mockito.BDDMockito.given
-import org.mockito.Mockito.{never, reset, verify, verifyNoMoreInteractions}
+import org.mockito.Mockito.{atLeastOnce, never, reset, verify}
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
 import org.scalatest.BeforeAndAfterEach
@@ -31,10 +33,11 @@ import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.JobRunEvent
 import uk.gov.hmrc.bindingtariffclassification.repository.SchedulerLockRepository
+import util.TestMetrics
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future.successful
-import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
 
@@ -44,18 +47,12 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
   private val actorSystem         = mock[ActorSystem]
   private val internalScheduler   = mock[akka.actor.Scheduler]
   private val config              = mock[AppConfig]
-  private val now: Instant        = "2018-12-25T12:00:00"
-  private val clock               = Clock.fixed(now, zone)
+  private val now                 = date("2018-12-25T12:00:00")
+  private val clock               = Clock.fixed(now.toInstant, zone)
   private val util                = mock[SchedulerDateUtil]
 
-  private def instant(datetime: String) =
-    LocalDateTime.parse(datetime).atZone(zone).toInstant
-
-  private implicit def string2Instant: String => Instant = { datetime => instant(datetime) }
-
-  private implicit def string2Time: String => LocalTime = { time => LocalTime.parse(time) }
-
-  private implicit def instant2Time: Instant => LocalTime = _.atZone(zone).toLocalTime
+  private def date(datetime: String) =
+    LocalDateTime.parse(datetime).atZone(zone)
 
   private def givenTheLockSucceeds(): Unit =
     given(schedulerRepository.lock(any[JobRunEvent])).willReturn(successful(true))
@@ -70,7 +67,7 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
   }
 
   private def runTheJobImmediately: Answer[Cancellable] = (invocation: InvocationOnMock) => {
-    val arg: Runnable = invocation.getArgument(2)
+    val arg: Runnable = invocation.getArgument(1)
     if (arg != null) {
       arg.run()
     }
@@ -81,40 +78,33 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
     super.beforeEach()
     given(config.clock) willReturn clock
     given(actorSystem.scheduler) willReturn internalScheduler
-    given(internalScheduler.schedule(any[FiniteDuration], any[FiniteDuration], any[Runnable])(any[ExecutionContext])) will runTheJobImmediately
+    given(internalScheduler.scheduleOnce(any[Duration], any[Runnable])(any[ExecutionContext])) will runTheJobImmediately
   }
 
   override protected def afterEach(): Unit = {
     super.afterEach()
-    reset(schedulerRepository, job, internalScheduler)
+    reset(schedulerRepository, job, internalScheduler, actorSystem, config)
   }
 
-  private def theSchedule: Schedule = {
-    val intervalCaptor: ArgumentCaptor[FiniteDuration]     = ArgumentCaptor.forClass(classOf[FiniteDuration])
-    val initialDelayCaptor: ArgumentCaptor[FiniteDuration] = ArgumentCaptor.forClass(classOf[FiniteDuration])
-    verify(internalScheduler).schedule(initialDelayCaptor.capture(), intervalCaptor.capture(), any[Runnable])(
-      any[ExecutionContext]
-    )
-    Schedule(initialDelayCaptor.getValue, intervalCaptor.getValue)
+  private def theDelay: Duration = {
+    val initialDelayCaptor: ArgumentCaptor[Duration] = ArgumentCaptor.forClass(classOf[Duration])
+    verify(internalScheduler, atLeastOnce()).scheduleOnce(initialDelayCaptor.capture(), any[Runnable])(any[ExecutionContext])
+    initialDelayCaptor.getValue()
   }
 
   "Scheduler" should {
 
     "Execute by class" in {
       givenTheLockFails() // Ensures the job isn't run by the scheduler
+      given(config.clock).willReturn(Clock.fixed(now.toInstant, zone))
 
       val job1 = mock[ActiveDaysElapsedJob]
-      given(job1.interval) willReturn 1.day
-      given(job1.firstRunTime) willReturn "00:00"
       given(job1.name) willReturn "name1"
-      given(util.nextRun(job1.firstRunTime, job1.interval)) willReturn "2019-01-01T00:00:00"
+      given(job1.nextRunTime).willReturn(Some(now)).willReturn(None)
 
       val job2 = mock[ReferredDaysElapsedJob]
-
-      given(job2.interval) willReturn 1.day
-      given(job2.firstRunTime) willReturn "00:00"
       given(job2.name) willReturn "name2"
-      given(util.nextRun(job2.firstRunTime, job2.interval)) willReturn "2019-01-01T00:00:00"
+      given(job2.nextRunTime).willReturn(Some(now)).willReturn(None)
 
       // When
       whenTheSchedulerStarts(withJobs = Set(job1, job2)).execute(job1.getClass)
@@ -128,78 +118,65 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
       // Given
       givenTheLockSucceeds()
       given(job.enabled) willReturn true
-      given(job.interval) willReturn 1.day
-      given(job.firstRunTime) willReturn "12:00"
       given(job.name) willReturn "name"
-      given(util.nextRun(job.firstRunTime, job.interval)) willReturn "2018-12-25T12:00:00"
-      given(util.closestRun(job.firstRunTime, job.interval)) willReturn "2018-12-25T12:00:00"
+      given(job.schedule) willReturn Cron.unsafeParse("0 0 12 * * ?")
+      given(job.nextRunTime).willReturn(Some(now)).willReturn(None)
 
       // When
       whenTheSchedulerStarts()
 
       // Then
-      val schedule = theSchedule
-      schedule.interval     shouldBe 1.day
-      schedule.initialDelay shouldBe 0.seconds
+      theDelay shouldBe Duration.ZERO
 
       val lockEvent = theLockEvent
       lockEvent.name    shouldBe "name"
-      lockEvent.runDate shouldBe instant("2018-12-25T12:00:00")
+      lockEvent.runDate shouldBe date("2018-12-25T12:00:00")
     }
 
     "Run job with valid schedule and future run-date" in {
       // Given
       givenTheLockSucceeds()
-      given(job.enabled) willReturn true
-      given(job.interval) willReturn 1.day
-      given(job.firstRunTime) willReturn "12:00"
       given(job.name) willReturn "name"
-      given(util.nextRun(job.firstRunTime, job.interval)).willReturn("2018-12-25T12:00:20")
-      given(util.closestRun(job.firstRunTime, job.interval)) willReturn "2018-12-25T12:00:10"
+      given(job.enabled) willReturn true
+      given(job.schedule) willReturn Cron.unsafeParse("0 20 12 * * ?")
+      given(job.nextRunTime).willReturn(Some(now.plus(20, ChronoUnit.MINUTES))).willReturn(None)
 
       // When
       whenTheSchedulerStarts()
 
       // Then
-      val schedule = theSchedule
-      schedule.interval     shouldBe 1.day
-      schedule.initialDelay shouldBe 20.seconds
+      theDelay shouldBe Duration.ofMinutes(20)
 
       val lockEvent = theLockEvent
       lockEvent.name    shouldBe "name"
-      lockEvent.runDate shouldBe instant("2018-12-25T12:00:10")
+      lockEvent.runDate shouldBe date("2018-12-25T12:20:00")
     }
 
     "Schedule job immediately given a run date in the past" in {
       // Given
       givenTheLockSucceeds()
-      given(job.enabled) willReturn true
-      given(job.interval) willReturn 1.day
-      given(job.firstRunTime) willReturn "12:00"
       given(job.name) willReturn "name"
-      given(util.nextRun(job.firstRunTime, job.interval)).willReturn("2018-12-25T11:59:59")
-      given(util.closestRun(job.firstRunTime, job.interval)) willReturn "2018-12-25T11:59:59"
+      given(job.enabled) willReturn true
+      given(job.schedule) willReturn Cron.unsafeParse("0 40 11 * * ?")
+      given(job.nextRunTime).willReturn(Some(now.minus(20, ChronoUnit.MINUTES))).willReturn(None)
 
       // When
       whenTheSchedulerStarts()
 
       // Then
-      val schedule = theSchedule
-      schedule.interval     shouldBe 1.day
-      schedule.initialDelay shouldBe 0.seconds
+      theDelay shouldBe Duration.ZERO
 
       val lockEvent = theLockEvent
       lockEvent.name    shouldBe "name"
-      lockEvent.runDate shouldBe instant("2018-12-25T11:59:59")
+      lockEvent.runDate shouldBe date("2018-12-25T11:40:00")
     }
 
     "Not execute the job if the lock fails" in {
       // Given
       givenTheLockFails()
       given(job.enabled) willReturn true
-      given(job.interval) willReturn 1.day
-      given(job.firstRunTime) willReturn now
-      given(util.nextRun(job.firstRunTime, job.interval)) willReturn "2018-12-25T12:00:00"
+      given(job.schedule) willReturn Cron.unsafeParse("0 0 12 * * ?")
+      given(job.nextRunTime) willReturn Some(now)
 
       // When
       whenTheSchedulerStarts()
@@ -211,11 +188,9 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
       // Given
       givenTheLockSucceeds()
       given(job.enabled) willReturn false
-      given(job.interval) willReturn 1.day
-      given(job.firstRunTime) willReturn "12:00"
       given(job.name) willReturn "name"
-      given(util.nextRun(job.firstRunTime, job.interval)) willReturn "2018-12-25T12:00:00"
-      given(util.closestRun(job.firstRunTime, job.interval)) willReturn "2018-12-25T12:00:00"
+      given(job.schedule) willReturn Cron.unsafeParse("0 0 12 * * ?")
+      given(job.nextRunTime) willReturn Some(now)
 
       // When
       whenTheSchedulerStarts()
@@ -226,8 +201,5 @@ class SchedulerTest extends BaseSpec with BeforeAndAfterEach with Eventually {
   }
 
   private def whenTheSchedulerStarts(withJobs: Set[ScheduledJob] = Set(job)): Scheduler =
-    new Scheduler(actorSystem, config, schedulerRepository, util, ScheduledJobs(withJobs))
-
-  private case class Schedule(initialDelay: FiniteDuration, interval: FiniteDuration)
-
+    new Scheduler(actorSystem, config, schedulerRepository, util, ScheduledJobs(withJobs), new TestMetrics)
 }

@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.scheduler
+package util
 
-import cron4s.expr.CronExpr
-import java.time.ZonedDateTime
-import scala.concurrent.Future
+import com.kenshoo.play.metrics.Metrics
+import com.codahale.metrics.MetricRegistry
 
-trait ScheduledJob {
-  def name: String
-  def enabled: Boolean
-  def execute(): Future[Unit]
-  def schedule: CronExpr
-  def nextRunTime: Option[ZonedDateTime]
+class TestMetrics extends Metrics {
+  override def defaultRegistry: MetricRegistry = new MetricRegistry
+  override def toJson: String                  = ""
 }
