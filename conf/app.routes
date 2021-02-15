@@ -15,6 +15,13 @@ POST          /cases/:reference/events          @uk.gov.hmrc.bindingtariffclassi
 # reporting endpoints
 GET           /report                           @uk.gov.hmrc.bindingtariffclassification.controllers.ReportingController.report(report: uk.gov.hmrc.bindingtariffclassification.model.reporting.CaseReport)
 
+# users endpoints
+POST          /users                            @uk.gov.hmrc.bindingtariffclassification.controllers.UsersController.createUser
+GET           /users                            @uk.gov.hmrc.bindingtariffclassification.controllers.UsersController.allUsers(query: uk.gov.hmrc.bindingtariffclassification.model.UserSearch, pagination: uk.gov.hmrc.bindingtariffclassification.model.Pagination ?= uk.gov.hmrc.bindingtariffclassification.model.Pagination())
+PUT           /users/:id                        @uk.gov.hmrc.bindingtariffclassification.controllers.UsersController.updateUser(id: String)
+GET           /users/:id                        @uk.gov.hmrc.bindingtariffclassification.controllers.UsersController.fetchUserDetails(id: String)
+PUT           /mark-deleted/users/:id           @uk.gov.hmrc.bindingtariffclassification.controllers.UsersController.markDeleted(id: String)
+
 # admin/test endpoints
 DELETE        /cases                            @uk.gov.hmrc.bindingtariffclassification.controllers.CaseController.deleteAll()
 DELETE        /events                           @uk.gov.hmrc.bindingtariffclassification.controllers.EventController.deleteAll()
