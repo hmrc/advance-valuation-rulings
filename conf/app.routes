@@ -22,6 +22,10 @@ PUT           /users/:id                        @uk.gov.hmrc.bindingtariffclassi
 GET           /users/:id                        @uk.gov.hmrc.bindingtariffclassification.controllers.UsersController.fetchUserDetails(id: String)
 PUT           /mark-deleted/users/:id           @uk.gov.hmrc.bindingtariffclassification.controllers.UsersController.markDeleted(id: String)
 
+POST          /keyword                          @uk.gov.hmrc.bindingtariffclassification.controllers.KeywordController.addKeyword
+PUT           /keyword/:name                    @uk.gov.hmrc.bindingtariffclassification.controllers.KeywordController.updateKeyword(name: String)
+DELETE        /keyword/:name                    @uk.gov.hmrc.bindingtariffclassification.controllers.KeywordController.deleteKeyword(name: String)
+
 # admin/test endpoints
 DELETE        /cases                            @uk.gov.hmrc.bindingtariffclassification.controllers.CaseController.deleteAll()
 DELETE        /events                           @uk.gov.hmrc.bindingtariffclassification.controllers.EventController.deleteAll()

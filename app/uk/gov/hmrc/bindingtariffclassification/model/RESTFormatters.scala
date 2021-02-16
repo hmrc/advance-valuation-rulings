@@ -123,9 +123,10 @@ object RESTFormatters {
     .and[ExpertAdviceReceived](EventType.EXPERT_ADVICE_RECEIVED.toString)
     .format
 
-  implicit val formatEvent: OFormat[Event]                     = Json.format[Event]
-  implicit val formatNewEventRequest: OFormat[NewEventRequest] = Json.format[NewEventRequest]
-  implicit val formatNewUserRequest: OFormat[NewUserRequest]   = Json.format[NewUserRequest]
+  implicit val formatEvent: OFormat[Event]                         = Json.format[Event]
+  implicit val formatNewEventRequest: OFormat[NewEventRequest]     = Json.format[NewEventRequest]
+  implicit val formatNewUserRequest: OFormat[NewUserRequest]       = Json.format[NewUserRequest]
+  implicit val formatNewKeywordRequest: OFormat[NewKeywordRequest] = Json.format[NewKeywordRequest]
 
   implicit val formatBankHoliday: OFormat[BankHoliday]                   = Json.format[BankHoliday]
   implicit val formatBankHolidaysSet: OFormat[BankHolidaySet]            = Json.format[BankHolidaySet]

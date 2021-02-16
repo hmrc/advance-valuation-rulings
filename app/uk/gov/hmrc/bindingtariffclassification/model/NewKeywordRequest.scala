@@ -16,7 +16,4 @@
 
 package uk.gov.hmrc.bindingtariffclassification.model
 
-case class Keyword(
-                    name: String = "",
-                    approved: Boolean = false
-                  )
+case class NewKeywordRequest(keyword: Keyword)
