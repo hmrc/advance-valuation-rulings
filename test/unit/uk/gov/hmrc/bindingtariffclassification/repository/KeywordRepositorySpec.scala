@@ -115,15 +115,52 @@ class KeywordRepositorySpec extends BaseMongoIndexSpec
         "rice", approved = true
       )
 
+      await(repository.insert(keyword))
+      await(repository.insert(keyword2))
+
+      collectionSize shouldBe 2
+
+      await(repository.delete("potatoes"))
+      collectionSize                                                 shouldBe 1
+      await(repository.collection.find(selectorByName(keyword2.name)).one[Keyword]) shouldBe Some(keyword2)
+
+    }
+  }
+
+  "update" should {
+    val keyword = Keyword(
+      name = "word",
+      approved = true
+    )
+    "modify an existing keyword" in {
+      await(repository.insert(keyword)) shouldBe keyword
+
       val size = collectionSize
 
-      store(keyword, keyword2)
-      collectionSize shouldBe 2 + size
+      val updatedKeyword = keyword.copy(
+        name = "updated-keyword",
+        true
+      )
+      await(repository.update(updatedKeyword, upsert = false)) shouldBe Some(updatedKeyword)
+      collectionSize shouldBe size
 
-      await(repository.delete("potatoes")) shouldBe ((): Unit)
+      await(
+        repository.collection.find(selectorByName(updatedKeyword.name)).one[Keyword]
+      ) shouldBe Some(updatedKeyword)
+    }
 
-      await(repository.collection.find(selectorByName(keyword.name)).one[Keyword]) shouldBe None
-      await(repository.collection.find(selectorByName(keyword2.name)).one[Keyword]) shouldBe Some(keyword2)
+    "do nothing when trying to update an unknown document" in {
+      val size = collectionSize
+
+      await(repository.update(keyword, upsert = false)) shouldBe None
+      collectionSize shouldBe size
+    }
+
+    "upsert a new existing document in the collection" in {
+      val size = collectionSize
+
+      await(repository.update(keyword, upsert = true)) shouldBe Some(keyword)
+      collectionSize shouldBe size + 1
     }
   }
 

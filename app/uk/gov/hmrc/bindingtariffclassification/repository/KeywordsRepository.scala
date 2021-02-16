@@ -36,7 +36,7 @@ trait KeywordsRepository {
 
   def update(keyword: Keyword, upsert: Boolean): Future[Option[Keyword]]
 
-  def delete(reference: String): Future[Unit]
+  def delete(name: String): Future[Unit]
 
 }
 
@@ -60,13 +60,13 @@ class KeywordsMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
 
   override def update(keyword: Keyword,
                       upsert: Boolean): Future[Option[Keyword]] = {
-    updateDocument(selector = byId(keyword.name), update = keyword, upsert = upsert)
+    updateDocument(selector = byName(keyword.name), update = keyword, upsert = upsert)
   }
 
-  private def byId(id: String): JsObject =
-    Json.obj("id" -> id)
+  private def byName(name: String): JsObject =
+    Json.obj("name" -> name)
 
-  override def delete(reference: String): Future[Unit] =
-    remove("reference" -> reference).map(_ => ())
+  override def delete(name: String): Future[Unit] =
+    remove("name" -> name).map(_ => ())
 
 }
