@@ -27,7 +27,8 @@ import scala.concurrent.Future
 
 @Singleton
 class KeywordService @Inject()(appConfig: AppConfig,
-                               keywordRepository: KeywordsRepository
+                               keywordRepository: KeywordsRepository,
+                               caseKeywordAggregation: CaseKeywordAggregation
                               )(
                                 implicit mat: Materializer
                               ) {
@@ -40,4 +41,7 @@ class KeywordService @Inject()(appConfig: AppConfig,
 
   def deleteKeyword(name: String): Future[Unit] =
     keywordRepository.delete(name)
+
+  def fetchCaseKeywords : Future[List[CaseKeyword]] =
+    caseKeywordAggregation.find()
 }

@@ -44,6 +44,7 @@ object MongoFormatters {
   implicit val formatOperator: OFormat[Operator]                      = Json.using[Json.WithDefaultValues].format[Operator]
   implicit val formatKeywords: OFormat[Keyword]                       = Json.format[Keyword]
 
+
   // `Sequence` formatters
   implicit val formatSequence: OFormat[Sequence] = Json.format[Sequence]
 
@@ -67,6 +68,7 @@ object MongoFormatters {
   implicit val formatAgentDetails: OFormat[AgentDetails]              = Json.format[AgentDetails]
   implicit val formatContact: OFormat[Contact]                        = Json.format[Contact]
   implicit val messageLoggedFormat: OFormat[Message]                  = Json.format[Message]
+  implicit val formatCaseKeyword: OFormat[CaseKeyword]                = Json.using[Json.WithDefaultValues].format[CaseKeyword]
 
   implicit val formatLiabilityOrder: OFormat[LiabilityOrder]            = Json.format[LiabilityOrder]
   implicit val formatBTIApplication: OFormat[BTIApplication]            = Json.using[Json.WithDefaultValues].format[BTIApplication]
