@@ -35,10 +35,9 @@ class KeywordService @Inject()(appConfig: AppConfig,
   def addKeyword(keyword: Keyword): Future[Keyword] =
     keywordRepository.insert(keyword)
 
-  def updateKeyword(keyword: Keyword, upsert: Boolean): Future[Option[Keyword]] =
+  def approveKeyword(keyword: Keyword, upsert: Boolean): Future[Option[Keyword]] =
     keywordRepository.update(keyword, upsert)
 
   def deleteKeyword(name: String): Future[Unit] =
     keywordRepository.delete(name)
 }
-

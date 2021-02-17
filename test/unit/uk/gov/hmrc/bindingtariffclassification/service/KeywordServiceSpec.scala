@@ -66,20 +66,20 @@ class KeywordServiceSpec extends BaseSpec with BeforeAndAfterEach {
     }
   }
 
-  "updateKeyword" should {
+  "approveKeyword" should {
 
-    "return the keyword after it is updated in the database collection" in {
+    "return the keyword after it has been updated in the database collection" in {
       when(keywordRepository.update(keyword, upsert = false))
         .thenReturn(successful(Some(addedKeyword)))
 
-      await(service.updateKeyword(keyword, upsert = false)) shouldBe Some(addedKeyword)
+      await(service.approveKeyword(keyword, upsert = false)) shouldBe Some(addedKeyword)
     }
 
     "return None if the user does not exist in the database collection" in {
       when(keywordRepository.update(keyword, upsert = false))
         .thenReturn(successful(None))
 
-      val result = await(service.updateKeyword(keyword, upsert = false))
+      val result = await(service.approveKeyword(keyword, upsert = false))
       result shouldBe None
     }
 
@@ -88,25 +88,24 @@ class KeywordServiceSpec extends BaseSpec with BeforeAndAfterEach {
         .thenThrow(emulatedFailure)
 
       val caught = intercept[RuntimeException] {
-        await(service.updateKeyword(keyword, upsert = false))
+        await(service.approveKeyword(keyword, upsert = false))
       }
       caught shouldBe emulatedFailure
     }
   }
 
   "delete" should {
-    "delete" in {
-      when(keywordRepository.delete(refEq("name"))).thenReturn(successful(()))
-      await(service.deleteKeyword(keyword.name) shouldBe ((): Unit))
-      verify(keywordRepository, times(1)).delete(refEq("name"))
-      verify()
+    "return () and delegate to the repository" in {
+      when(keywordRepository.delete(refEq("keyword name"))).thenReturn(successful(()))
+      await(service.deleteKeyword("keyword name")) shouldBe ((): Unit)
+      verify(keywordRepository, times(1)).delete(refEq("keyword name"))
     }
 
     "propagate any error" in {
-      when(keywordRepository.delete(refEq("name"))).thenThrow(emulatedFailure)
+      when(keywordRepository.delete(refEq("keyword name"))).thenThrow(emulatedFailure)
 
       val caught = intercept[RuntimeException] {
-        await(service.deleteKeyword(keyword.name))
+        await(service.deleteKeyword("keyword name"))
       }
       caught shouldBe emulatedFailure
     }

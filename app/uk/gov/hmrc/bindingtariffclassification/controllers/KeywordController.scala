@@ -45,7 +45,11 @@ class KeywordController @Inject()(appConfig: AppConfig,
       }
   }
 
-  def updateKeyword(name: String): Action[JsValue] =
+  def deleteKeyword(name: String): Action[AnyContent] = Action.async {
+    keywordService.deleteKeyword(name) map (_ => NoContent) recover recovery
+  }
+
+  def approveKeyword(name: String): Action[JsValue] =
     Action.async(parse.json) { implicit request =>
       withJsonBody[Keyword] { keyword: Keyword =>
         if (keyword.name == name) {
@@ -53,7 +57,7 @@ class KeywordController @Inject()(appConfig: AppConfig,
             case Some(agent) => appConfig.upsertAgents.contains(agent)
             case _ => false
           }
-          keywordService.updateKeyword(keyword, upsert) map handleNotFound recover recovery
+          keywordService.approveKeyword(keyword, upsert) map handleNotFound recover recovery
         } else {
           successful(
             BadRequest(
@@ -67,9 +71,8 @@ class KeywordController @Inject()(appConfig: AppConfig,
       } recover recovery
     }
 
-  def deleteKeyword(name: String): Action[AnyContent] = Action.async {
-    keywordService.deleteKeyword(name) map (_ => NoContent) recover recovery
-  }
+
+  //def fetchCaseKeywords: List[CaseKeyword] = ???
 
   private[controllers] def handleNotFound
   : PartialFunction[Option[Keyword], Result] = {

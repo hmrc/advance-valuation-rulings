@@ -132,14 +132,14 @@ class KeywordRepositorySpec extends BaseMongoIndexSpec
       name = "word",
       approved = true
     )
-    "modify an existing keyword" in {
+    "modify an existing keyword (approved field)" in {
       await(repository.insert(keyword)) shouldBe keyword
 
       val size = collectionSize
 
       val updatedKeyword = keyword.copy(
-        name = "updated-keyword",
-        true
+        name = "word",
+        false
       )
       await(repository.update(updatedKeyword, upsert = false)) shouldBe Some(updatedKeyword)
       collectionSize shouldBe size
