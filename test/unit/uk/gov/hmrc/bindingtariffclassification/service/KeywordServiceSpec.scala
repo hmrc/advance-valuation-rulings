@@ -34,9 +34,10 @@ class KeywordServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
   private val appConfig = mock[AppConfig]
   private val keywordRepository = mock[KeywordsRepository]
+  private val caseKeywordAggregation = mock[CaseKeywordAggregation]
 
   private val service =
-    new KeywordService(appConfig, keywordRepository)
+    new KeywordService(appConfig, keywordRepository, caseKeywordAggregation)
 
   private final val emulatedFailure = new RuntimeException("Emulated failure.")
 

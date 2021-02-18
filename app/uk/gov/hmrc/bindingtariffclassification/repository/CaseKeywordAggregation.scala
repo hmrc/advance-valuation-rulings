@@ -18,20 +18,24 @@ package uk.gov.hmrc.bindingtariffclassification.repository
 
 import javax.inject.{Inject, Singleton}
 import com.google.inject.ImplementedBy
-import play.api.libs.json.{JsNull, JsObject, Json}
-import reactivemongo.bson.BSONObjectID
+import play.api.libs.json.Json.toJson
+import play.api.libs.json.{JsArray, JsNull, JsObject, JsString, Json}
+import reactivemongo.bson.{BSONDocument, BSONObjectID}
+import reactivemongo.core.commands.{Group, SumField}
 import reactivemongo.play.json.ImplicitBSONHandlers._
+import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json.commands.JSONAggregationFramework
 import reactivemongo.play.json.commands.JSONAggregationFramework.{Match, Project, ReplaceRoot, Unwind}
-import uk.gov.hmrc.bindingtariffclassification.model.{Attachment, CaseKeyword, Keyword}
+import uk.gov.hmrc.bindingtariffclassification.model.{Attachment, Case, CaseKeyword, Keyword}
 import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatCaseKeyword
+import reactivemongo.play.json.commands.JSONAggregationFramework._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 @ImplementedBy(classOf[CaseKeywordAggregation])
 trait CaseKeywordView {
-  def find: Future[List[CaseKeyword]]
+  def fetchKeywordsFromCases: Future[List[CaseKeyword]]
 }
 
 @Singleton
@@ -56,8 +60,8 @@ class CaseKeywordAggregation @Inject() (
       )
     )
     val unwindKeywords = Unwind("keyword", None, Some(false))
-    val filterNotNull     = Match(Json.obj("keyword" -> Json.obj("$ne" -> JsNull)))
-    val toRoot            = ReplaceRoot(Json.obj("$mergeObjects" -> List("$keyword")))
+    val filterNotNull = Match(Json.obj("keyword" -> Json.obj("$ne" -> JsNull)))
+    val toRoot = ReplaceRoot(Json.obj("$mergeObjects" -> List("$keyword")))
 
     unwindNestedKeywordsArrays ++ Seq(
       projectKeywords,
@@ -67,6 +71,10 @@ class CaseKeywordAggregation @Inject() (
     )
   }
 
-  override def find: Future[List[CaseKeyword]] =
-    ???
+  override def fetchKeywordsFromCases: Future[List[CaseKeyword]] =
+    mongoDbProvider
+      .mongo()
+      .collection[JSONCollection]("cases")
+      .aggregateWith[JsObject]()(_ => _)
+      .collect[List](Int.MaxValue, reactivemongo.api.Cursor.FailOnError())
 }

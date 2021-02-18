@@ -135,9 +135,9 @@ class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
     "return 404 when there are no keywords with the provided name" in {
       val keyword3 = Keyword("not in the list")
-      when(keywordService.approveKeyword(keyword1, false)).thenReturn(successful(None))
+      when(keywordService.approveKeyword(keyword3, false)).thenReturn(successful(None))
 
-      val result = await(controller.approveKeyword(keyword1.name)(fakeRequest.withBody(toJson(keyword3))))
+      val result = await(controller.approveKeyword(keyword3.name)(fakeRequest.withBody(toJson(keyword3))))
 
       status(result) shouldEqual NOT_FOUND
       jsonBodyOf(result).toString() shouldEqual """{"code":"NOT_FOUND","message":"Keyword not found"}"""
@@ -147,9 +147,9 @@ class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
       val error = new RuntimeException
       val keyword3 = Keyword("not in the list")
 
-      when(keywordService.approveKeyword(keyword1, false)).thenReturn(failed(error))
+      when(keywordService.approveKeyword(keyword3, false)).thenReturn(failed(error))
 
-      val result = await(controller.approveKeyword(keyword1.name)(fakeRequest.withBody(toJson(keyword3))))
+      val result = await(controller.approveKeyword(keyword3.name)(fakeRequest.withBody(toJson(keyword3))))
 
       status(result) shouldEqual INTERNAL_SERVER_ERROR
       jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""

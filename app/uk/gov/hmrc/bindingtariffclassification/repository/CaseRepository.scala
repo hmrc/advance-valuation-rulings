@@ -167,7 +167,7 @@ class CaseMongoRepository @Inject() (mongoDbProvider: MongoDbProvider, mapper: S
     val groupFields: Seq[(String, String)] = report.group.map(groupField).toSeq
     val group: PipelineOperator            = GroupMulti(groupFields: _*)("field" -> PushField(reportField))
 
-    val filters = Seq[JsObject]()
+    val filters: Seq[JsObject] = Seq[JsObject]()
       .++(report.filter.decisionStartDate.map { range =>
         Json.obj(
           "decision.effectiveStartDate" -> Json.obj(

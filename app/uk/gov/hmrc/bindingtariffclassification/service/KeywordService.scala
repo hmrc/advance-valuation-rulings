@@ -42,6 +42,6 @@ class KeywordService @Inject()(appConfig: AppConfig,
   def deleteKeyword(name: String): Future[Unit] =
     keywordRepository.delete(name)
 
-  def fetchCaseKeywords : Future[List[CaseKeyword]] =
-    caseKeywordAggregation.find()
+  def fetchCaseKeywords : Future[List[CaseKeyword]] = ???
+    //caseKeywordAggregation.find()
 }
