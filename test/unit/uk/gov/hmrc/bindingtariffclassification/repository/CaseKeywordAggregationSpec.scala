@@ -45,8 +45,8 @@ class CaseKeywordAggregationSpec
   private def newMongoRepository: CaseMongoRepository =
     new CaseMongoRepository(mongoDbProvider, new SearchMapper(config), new UpdateMapper)
 
-  private def newMongoAggregation: CaseKeywordAggregation =
-    new CaseKeywordAggregation(mongoDbProvider)
+  private def newMongoAggregation: CaseKeywordMongoView =
+    new CaseKeywordMongoView(mongoDbProvider)
 
   private val keyword1           = createKeyword()
   private val keyword2           = createKeyword()
