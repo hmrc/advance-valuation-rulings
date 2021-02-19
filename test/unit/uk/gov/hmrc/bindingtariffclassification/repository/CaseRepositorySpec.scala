@@ -58,7 +58,7 @@ class CaseRepositorySpec
   private val repository = newMongoRepository
 
   private def newMongoRepository: CaseMongoRepository =
-    new CaseMongoRepository(mongoDbProvider, new SearchMapper(config), new UpdateMapper)
+    new CaseMongoRepository(config, mongoDbProvider, new SearchMapper(config), new UpdateMapper)
 
   private val case1: Case     = createCase()
   private val case2: Case     = createCase()
