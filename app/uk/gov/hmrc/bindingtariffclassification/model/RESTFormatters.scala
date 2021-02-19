@@ -17,7 +17,6 @@
 package uk.gov.hmrc.bindingtariffclassification.model
 
 import play.api.libs.json._
-import play.api.libs.functional.syntax._
 import uk.gov.hmrc.bindingtariffclassification.model.reporting.v2._
 import uk.gov.hmrc.bindingtariffclassification.model.reporting.{CaseReportGroup, ReportResult}
 import uk.gov.hmrc.play.json.Union
@@ -43,7 +42,6 @@ object RESTFormatters {
   implicit val formatReferralReason: Format[ReferralReason.Value]   = EnumJson.format(ReferralReason)
   implicit val formatCaseReportGroup: Format[CaseReportGroup.Value] = EnumJson.format(CaseReportGroup)
   implicit val miscCaseType: Format[MiscCaseType.Value]             = EnumJson.format(MiscCaseType)
-
 
   implicit val formatReportResultMap: OFormat[Map[CaseReportGroup.Value, Option[String]]] = {
     implicit val optrds: Reads[Option[String]] = Reads.optionNoError[String]
@@ -126,13 +124,14 @@ object RESTFormatters {
 
   // `Update` formatters
   implicit def formatSetValue[A: Format]: OFormat[SetValue[A]] = Json.format[SetValue[A]]
-  implicit val formatNoChange: OFormat[NoChange.type] = Json.format[NoChange.type]
+  implicit val formatNoChange: OFormat[NoChange.type]          = Json.format[NoChange.type]
 
-  implicit def formatUpdate[A: Format]: Format[Update[A]] = Union
-    .from[Update[A]]("type")
-    .and[SetValue[A]](UpdateType.SetValue.name)
-    .and[NoChange.type](UpdateType.NoChange.name)
-    .format
+  implicit def formatUpdate[A: Format]: Format[Update[A]] =
+    Union
+      .from[Update[A]]("type")
+      .and[SetValue[A]](UpdateType.SetValue.name)
+      .and[NoChange.type](UpdateType.NoChange.name)
+      .format
 
   implicit def formatBtiUpdate: OFormat[BTIUpdate] = {
     implicit def optFormat[A: Format]: Format[Option[A]] = Format(
@@ -152,13 +151,13 @@ object RESTFormatters {
 
   implicit val formatCaseUpdate: OFormat[CaseUpdate] = Json.format[CaseUpdate]
 
-  implicit val formatNumberField: OFormat[NumberField] = Json.format[NumberField]
-  implicit val formatStatusField: OFormat[StatusField] = Json.format[StatusField]
-  implicit val formatCaseTypeField: OFormat[CaseTypeField] = Json.format[CaseTypeField]
-  implicit val formatChapterField: OFormat[ChapterField] = Json.format[ChapterField]
-  implicit val formatDateField: OFormat[DateField] = Json.format[DateField]
-  implicit val formatUserField: OFormat[UserField] = Json.format[UserField]
-  implicit val formatStringField: OFormat[StringField] = Json.format[StringField]
+  implicit val formatNumberField: OFormat[NumberField]       = Json.format[NumberField]
+  implicit val formatStatusField: OFormat[StatusField]       = Json.format[StatusField]
+  implicit val formatCaseTypeField: OFormat[CaseTypeField]   = Json.format[CaseTypeField]
+  implicit val formatChapterField: OFormat[ChapterField]     = Json.format[ChapterField]
+  implicit val formatDateField: OFormat[DateField]           = Json.format[DateField]
+  implicit val formatUserField: OFormat[UserField]           = Json.format[UserField]
+  implicit val formatStringField: OFormat[StringField]       = Json.format[StringField]
   implicit val formatDaysSinceField: OFormat[DaysSinceField] = Json.format[DaysSinceField]
 
   implicit val formatReportField: Format[ReportField[_]] = Union
@@ -173,13 +172,13 @@ object RESTFormatters {
     .and[DaysSinceField]("daysSince")
     .format
 
-  implicit val formatNumberResultField: OFormat[NumberResultField] = Json.format[NumberResultField]
-  implicit val formatStatusResultField: OFormat[StatusResultField] = Json.format[StatusResultField]
+  implicit val formatNumberResultField: OFormat[NumberResultField]     = Json.format[NumberResultField]
+  implicit val formatStatusResultField: OFormat[StatusResultField]     = Json.format[StatusResultField]
   implicit val formatCaseTypeResultField: OFormat[CaseTypeResultField] = Json.format[CaseTypeResultField]
-  implicit val formatChapterResultField: OFormat[ChapterResultField] = Json.format[ChapterResultField]
-  implicit val formatDateResultField: OFormat[DateResultField] = Json.format[DateResultField]
-  implicit val formatUserResultField: OFormat[UserResultField] = Json.format[UserResultField]
-  implicit val formatStringResultField: OFormat[StringResultField] = Json.format[StringResultField]
+  implicit val formatChapterResultField: OFormat[ChapterResultField]   = Json.format[ChapterResultField]
+  implicit val formatDateResultField: OFormat[DateResultField]         = Json.format[DateResultField]
+  implicit val formatUserResultField: OFormat[UserResultField]         = Json.format[UserResultField]
+  implicit val formatStringResultField: OFormat[StringResultField]     = Json.format[StringResultField]
 
   implicit val formatReportResultField: Format[ReportResultField[_]] = Union
     .from[ReportResultField[_]]("type")
@@ -192,49 +191,18 @@ object RESTFormatters {
     .and[StringResultField]("string")
     .format
 
-  implicit val readSimpleResultGroup: Reads[SimpleResultGroup] = (
-    (__ \ "count").read[Long] and
-      (__ \ "groupKey").read[ReportResultField[_]] and
-      __.read[Map[String, JsValue]].map { fields =>
-        fields.filterKeys(_.startsWith("sum"))
-          .map { case (field, value) => NumberResultField(field, value.as[Long]) }
-          .toList
-      } and
-      __.read[Map[String, JsValue]].map { fields =>
-        fields.filterKeys(_.startsWith("max"))
-          .map { case (field, value) => NumberResultField(field, value.as[Long]) }
-          .toList
-      }
-  )(SimpleResultGroup.apply _)
-
-  implicit val readCaseResultGroup: Reads[CaseResultGroup] = (
-    (__ \ "count").read[Long] and
-      (__ \ "groupKey").read[ReportResultField[_]] and
-      __.read[Map[String, JsValue]].map { fields =>
-        fields.filterKeys(_.startsWith("sum"))
-          .map { case (field, value) => NumberResultField(field, value.as[Long]) }
-          .toList
-      } and
-      __.read[Map[String, JsValue]].map { fields =>
-        fields.filterKeys(_.startsWith("max"))
-          .map { case (field, value) => NumberResultField(field, value.as[Long]) }
-          .toList
-      } and
-      (__ \ "cases").read[List[Case]]
-  )(CaseResultGroup.apply _)
+  implicit val formatSimpleResultGroup: OFormat[SimpleResultGroup] = Json.format[SimpleResultGroup]
+  implicit val formatCaseResultGroup: OFormat[CaseResultGroup]     = Json.format[CaseResultGroup]
 
   implicit val readResultGroup: Reads[ResultGroup] =
     (__ \ "cases").readNullable[List[Case]].flatMap {
-      case Some(_) => readCaseResultGroup.widen[ResultGroup]
-      case None    => readSimpleResultGroup.widen[ResultGroup]
+      case Some(_) => formatCaseResultGroup.widen[ResultGroup]
+      case None    => formatSimpleResultGroup.widen[ResultGroup]
     }
 
-  implicit val writeSimpleResultGroup: OWrites[SimpleResultGroup] = Json.writes[SimpleResultGroup]
-  implicit val writeCaseResultGroup: OWrites[CaseResultGroup] = Json.writes[CaseResultGroup]
-
   implicit val writeResultGroup: OWrites[ResultGroup] = OWrites[ResultGroup] {
-    case caseResult: CaseResultGroup => writeCaseResultGroup.writes(caseResult)
-    case simpleResult: SimpleResultGroup => writeSimpleResultGroup.writes(simpleResult)
+    case caseResult: CaseResultGroup     => formatCaseResultGroup.writes(caseResult)
+    case simpleResult: SimpleResultGroup => formatSimpleResultGroup.writes(simpleResult)
   }
 
   implicit val formatResultGroup: OFormat[ResultGroup] = OFormat(readResultGroup, writeResultGroup)

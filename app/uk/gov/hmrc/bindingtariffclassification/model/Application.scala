@@ -22,7 +22,6 @@ import uk.gov.hmrc.bindingtariffclassification.model
 import uk.gov.hmrc.bindingtariffclassification.model.ApplicationType.ApplicationType
 import uk.gov.hmrc.bindingtariffclassification.model.LiabilityStatus.LiabilityStatus
 import uk.gov.hmrc.bindingtariffclassification.model.MiscCaseType.MiscCaseType
-import play.api.mvc.QueryStringBindable
 
 sealed trait Application {
   val `type`: ApplicationType
@@ -141,17 +140,4 @@ object LiabilityStatus extends Enumeration {
 object ApplicationType extends Enumeration {
   type ApplicationType = Value
   val BTI, LIABILITY_ORDER, CORRESPONDENCE, MISCELLANEOUS = Value
-
-  implicit val applicationTypeQueryStringBindable: QueryStringBindable[ApplicationType.Value] = new QueryStringBindable[ApplicationType.Value] {
-    override def bind(key: String, params: Map[String,Seq[String]]): Option[Either[String,Value]] =
-      QueryStringBindable.bindableString.bind(key, params).map {
-        case Right(str) if ApplicationType.values.map(_.toString).contains(str) =>
-          Right(ApplicationType.withName(str))
-        case other =>
-          Left(s"Invalid application type $other")
-      }
-
-    override def unbind(key: String, value: Value): String =
-      QueryStringBindable.bindableString.unbind(key, value.toString)
-  }
 }

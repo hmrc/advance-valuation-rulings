@@ -19,8 +19,6 @@ package uk.gov.hmrc.bindingtariffclassification.model
 import java.time.Instant
 
 import play.api.libs.json._
-import play.api.libs.functional.syntax._
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.v2._
 import uk.gov.hmrc.bindingtariffclassification.utils.JsonUtil
 import uk.gov.hmrc.play.json.Union
 
@@ -127,81 +125,4 @@ object MongoFormatters {
   implicit val formatEventType: Format[EventType.Value] = EnumJson.format(EventType)
   implicit val formatEvent: OFormat[Event]              = Json.format[Event]
   implicit val formatJobRunEvent: OFormat[JobRunEvent]  = Json.format[JobRunEvent]
-
-  implicit val formatNumberField: OFormat[NumberField] = Json.format[NumberField]
-  implicit val formatStatusField: OFormat[StatusField] = Json.format[StatusField]
-  implicit val formatCaseTypeField: OFormat[CaseTypeField] = Json.format[CaseTypeField]
-  implicit val formatChapterField: OFormat[ChapterField] = Json.format[ChapterField]
-  implicit val formatDateField: OFormat[DateField] = Json.format[DateField]
-  implicit val formatUserField: OFormat[UserField] = Json.format[UserField]
-  implicit val formatStringField: OFormat[StringField] = Json.format[StringField]
-  implicit val formatDaysSinceField: OFormat[DaysSinceField] = Json.format[DaysSinceField]
-
-  implicit val formatReportField: Format[ReportField[_]] = Union
-    .from[ReportField[_]]("type")
-    .and[NumberField]("number")
-    .and[StatusField]("status")
-    .and[CaseTypeField]("caseType")
-    .and[ChapterField]("chapter")
-    .and[DateField]("date")
-    .and[UserField]("user")
-    .and[StringField]("string")
-    .and[DaysSinceField]("daysSince")
-    .format
-
-  implicit val formatNumberResultField: OFormat[NumberResultField] = Json.format[NumberResultField]
-  implicit val formatStatusResultField: OFormat[StatusResultField] = Json.format[StatusResultField]
-  implicit val formatCaseTypeResultField: OFormat[CaseTypeResultField] = Json.format[CaseTypeResultField]
-  implicit val formatChapterResultField: OFormat[ChapterResultField] = Json.format[ChapterResultField]
-  implicit val formatDateResultField: OFormat[DateResultField] = Json.format[DateResultField]
-  implicit val formatUserResultField: OFormat[UserResultField] = Json.format[UserResultField]
-  implicit val formatStringResultField: OFormat[StringResultField] = Json.format[StringResultField]
-
-  implicit val formatReportResultField: Format[ReportResultField[_]] = Union
-    .from[ReportResultField[_]]("type")
-    .and[NumberResultField]("number")
-    .and[StatusResultField]("status")
-    .and[CaseTypeResultField]("caseType")
-    .and[ChapterResultField]("chapter")
-    .and[DateResultField]("date")
-    .and[UserResultField]("user")
-    .and[StringResultField]("string")
-    .format
-
-  implicit val simpleResultGroupReads: Reads[SimpleResultGroup] = (
-    (__ \ "count").read[Long] and
-      (__ \ "groupKey").read[ReportResultField[_]] and
-      __.read[Map[String, JsValue]].map { fields =>
-        fields.filterKeys(_.startsWith("sum"))
-          .map { case (field, value) => NumberResultField(field, value.as[Long]) }
-          .toList
-      } and
-      __.read[Map[String, JsValue]].map { fields =>
-        fields.filterKeys(_.startsWith("max"))
-          .map { case (field, value) => NumberResultField(field, value.as[Long]) }
-          .toList
-      }
-  )(SimpleResultGroup.apply _)
-
-  implicit val caseResultGroupReads: Reads[CaseResultGroup] = (
-    (__ \ "count").read[Long] and
-      (__ \ "groupKey").read[ReportResultField[_]] and
-      __.read[Map[String, JsValue]].map { fields =>
-        fields.filterKeys(_.startsWith("sum"))
-          .map { case (field, value) => NumberResultField(field, value.as[Long]) }
-          .toList
-      } and
-      __.read[Map[String, JsValue]].map { fields =>
-        fields.filterKeys(_.startsWith("max"))
-          .map { case (field, value) => NumberResultField(field, value.as[Long]) }
-          .toList
-      } and
-      (__ \ "cases").read[List[Case]]
-  )(CaseResultGroup.apply _)
-
-  implicit val resultGroupReads: Reads[ResultGroup] =
-    (__ \ "cases").readNullable[List[Case]].flatMap {
-      case Some(_) => caseResultGroupReads.widen[ResultGroup]
-      case None    => simpleResultGroupReads.widen[ResultGroup]
-    }
 }
