@@ -82,6 +82,7 @@ class KeywordRepositorySpec extends BaseMongoIndexSpec
 
 
   "insert" should {
+
     "insert a new document in the collection" in {
       val size = collectionSize
 
@@ -106,6 +107,7 @@ class KeywordRepositorySpec extends BaseMongoIndexSpec
   }
 
   "delete" should {
+
     "remove the entry from the Collection" in {
 
       val keyword = Keyword(
@@ -132,6 +134,7 @@ class KeywordRepositorySpec extends BaseMongoIndexSpec
       name = "word",
       approved = true
     )
+
     "modify an existing keyword (approved field)" in {
       await(repository.insert(keyword)) shouldBe keyword
 

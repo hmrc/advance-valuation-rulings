@@ -20,9 +20,10 @@ import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import reactivemongo.api.{DB, ReadConcern}
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
+import uk.gov.hmrc.bindingtariffclassification.model.Role.CLASSIFICATION_OFFICER
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.mongo.MongoSpecSupport
-import util.CaseData.{createCase, createKeyword}
+import util.CaseData.createNewCaseWithExtraFields
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -48,17 +49,15 @@ class CaseKeywordMongoViewSpec
   private def newMongoAggregation: CaseKeywordMongoView =
     new CaseKeywordMongoView(mongoDbProvider)
 
-  private val keyword1 = createKeyword()
-  private val keyword2 = createKeyword()
-  private val keyword3 = createKeyword()
+  private val caseWithKeywords: Case = createNewCaseWithExtraFields()
 
+  private val caseHeader = CaseHeader(
+    reference = "9999999999", Some(Operator("0", None, None, CLASSIFICATION_OFFICER, List(), List(), false)), Some("3"),
+    Some("HTC Wildfire smartphone"),
+    ApplicationType.BTI, CaseStatus.OPEN)
 
-  private val caseWithKeywords: Case = createCase(
-    keywords = Set(keyword1, keyword2, keyword3)
-  )
-
-  private val caseHeader = CaseHeader(reference = "ref", None, None, None,
-    ApplicationType.BTI, CaseStatus.REJECTED)
+  private val caseKeyword = CaseKeyword(Keyword("bike"), List(caseHeader))
+  private val caseKeyword2 = CaseKeyword(Keyword("tool"), List(caseHeader))
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -77,24 +76,15 @@ class CaseKeywordMongoViewSpec
         .count(selector = None, limit = Some(0), skip = 0, hint = None, readConcern = ReadConcern.Local)
     ).toInt
 
-  private val pagination = Pagination(
-    page = 2,
-    pageSize = 11
-  )
+  private val pagination = Pagination()
 
   "fetchKeywordsFromCases" should {
-    "return None when there is no matching attachment" in {
-      await(repository.insert(caseWithKeywords))
-      collectionSize shouldBe 1
-
-      await(view.fetchKeywordsFromCases(pagination)) shouldBe None
-    }
 
     "return keywords from the Cases" in {
       await(repository.insert(caseWithKeywords))
       collectionSize shouldBe 1
 
-      await(view.fetchKeywordsFromCases(pagination)) shouldBe Some(Paged(CaseKeyword(keyword1, List(caseHeader))))
+      await(view.fetchKeywordsFromCases(pagination)) shouldBe Paged(Seq(caseKeyword2, caseKeyword))
     }
   }
 }

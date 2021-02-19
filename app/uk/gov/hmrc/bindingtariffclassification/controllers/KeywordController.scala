@@ -75,7 +75,7 @@ class KeywordController @Inject()(appConfig: AppConfig,
     Action.async { implicit request =>
       keywordService.fetchCaseKeywords(pagination).map { keywords =>
         Ok(Json.toJson(keywords))
-      }
+      } recover recovery
     }
 
   }
