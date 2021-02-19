@@ -32,18 +32,17 @@ class KeywordServiceSpec extends BaseSpec with BeforeAndAfterEach {
   private val keyword = mock[Keyword]
   private val addedKeyword = mock[Keyword]
 
-  private val appConfig = mock[AppConfig]
   private val keywordRepository = mock[KeywordsRepository]
   private val caseKeywordAggregation = mock[CaseKeywordMongoView]
 
   private val service =
-    new KeywordService(appConfig, keywordRepository, caseKeywordAggregation)
+    new KeywordService(keywordRepository, caseKeywordAggregation)
 
   private final val emulatedFailure = new RuntimeException("Emulated failure.")
 
   override protected def afterEach(): Unit = {
     super.afterEach()
-    reset(keywordRepository, appConfig)
+    reset(keywordRepository)
   }
 
   override protected def beforeEach(): Unit =

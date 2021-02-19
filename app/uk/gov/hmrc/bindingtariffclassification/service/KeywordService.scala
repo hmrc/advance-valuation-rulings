@@ -26,7 +26,7 @@ import uk.gov.hmrc.bindingtariffclassification.repository._
 import scala.concurrent.Future
 
 @Singleton
-class KeywordService @Inject()(appConfig: AppConfig,
+class KeywordService @Inject()(
                                keywordRepository: KeywordsRepository,
                                caseKeywordAggregation: CaseKeywordMongoView
                               )(

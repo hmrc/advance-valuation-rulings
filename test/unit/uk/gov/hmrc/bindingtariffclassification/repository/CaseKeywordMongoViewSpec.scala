@@ -56,8 +56,8 @@ class CaseKeywordMongoViewSpec
     Some("HTC Wildfire smartphone"),
     ApplicationType.BTI, CaseStatus.OPEN)
 
-  private val caseKeyword = CaseKeyword(Keyword("bike"), List(caseHeader))
-  private val caseKeyword2 = CaseKeyword(Keyword("tool"), List(caseHeader))
+  private val caseKeyword = CaseKeyword(Keyword("tool"), List(caseHeader))
+  private val caseKeyword2 = CaseKeyword(Keyword("bike"), List(caseHeader))
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -84,7 +84,7 @@ class CaseKeywordMongoViewSpec
       await(repository.insert(caseWithKeywords))
       collectionSize shouldBe 1
 
-      await(view.fetchKeywordsFromCases(pagination)) shouldBe Paged(Seq(caseKeyword2, caseKeyword))
+      await(view.fetchKeywordsFromCases(pagination)) shouldBe Paged(List(caseKeyword, caseKeyword2))
     }
   }
 }

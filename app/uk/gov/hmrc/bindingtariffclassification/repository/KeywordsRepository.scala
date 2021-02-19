@@ -38,6 +38,8 @@ trait KeywordsRepository {
 
   def delete(name: String): Future[Unit]
 
+  def findAll: Future[List[Keyword]]
+
 }
 
 @Singleton
@@ -62,6 +64,8 @@ class KeywordsMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
                       upsert: Boolean): Future[Option[Keyword]] = {
     updateDocument(selector = byName(keyword.name), update = keyword, upsert = upsert)
   }
+
+  override def findAll: Future[List[Keyword]] = ???
 
   private def byName(name: String): JsObject =
     Json.obj("name" -> name)

@@ -25,9 +25,6 @@ import reactivemongo.akkastream.{AkkaStreamCursor, cursorProducer}
 import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json.commands.JSONAggregationFramework.{Match, PipelineOperator}
 
-import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, Future}
-
 abstract class ReactiveAggregation[A: Format](
   collectionName: String,
   mongo: () => DB
