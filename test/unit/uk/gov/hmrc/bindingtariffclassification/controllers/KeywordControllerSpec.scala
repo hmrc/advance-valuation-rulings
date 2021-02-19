@@ -29,6 +29,7 @@ import reactivemongo.core.errors.DatabaseException
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.RESTFormatters._
+import uk.gov.hmrc.bindingtariffclassification.model.Role.CLASSIFICATION_OFFICER
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.service.KeywordService
 import uk.gov.hmrc.http.HttpVerbs
@@ -44,6 +45,15 @@ class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
   private val newKeywordRequest: NewKeywordRequest = CaseData.createNewKeyword()
   private val keyword1: Keyword = CaseData.createKeyword()
   private val keyword2: Keyword = CaseData.createKeyword()
+  private val pagination = Pagination()
+
+  private val caseHeader = CaseHeader(
+    reference = "9999999999", Some(Operator("0", None, None, CLASSIFICATION_OFFICER, List(), List(), false)), Some("3"),
+    Some("Smartphone"),
+    ApplicationType.BTI, CaseStatus.OPEN)
+
+  private val caseKeyword = CaseKeyword(Keyword("tool"), List(caseHeader))
+  private val caseKeyword2 = CaseKeyword(Keyword("bike"), List(caseHeader))
 
   private val keywordService = mock[KeywordService]
   private val appConfig = mock[AppConfig]
@@ -154,6 +164,75 @@ class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
       status(result) shouldEqual INTERNAL_SERVER_ERROR
       jsonBodyOf(result).toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
     }
+  }
 
+  "getAllKeywords" should {
+    "return 200 with the all keywords from the collection" in {
+      when(keywordService.findAll(refEq(pagination)))
+        .thenReturn(successful(Paged(Seq(keyword1, keyword2))))
+
+      val result = await(controller.getAllKeywords(pagination)(fakeRequest))
+
+      status(result) shouldEqual OK
+      jsonBodyOf(result) shouldEqual toJson(Paged(Seq(keyword1, keyword2)))
+    }
+
+    "return 200 with an empty sequence if there are no keywords" in {
+      when(keywordService.findAll(refEq(pagination)))
+        .thenReturn(successful(Paged.empty[Keyword]))
+
+      val result = await(controller.getAllKeywords(pagination)(fakeRequest))
+
+      status(result) shouldEqual OK
+      jsonBodyOf(result) shouldEqual toJson(Paged.empty[Keyword])
+    }
+
+    "return 500 when an error occurred" in {
+      val error = new RuntimeException
+
+      when(keywordService.findAll(refEq(pagination)))
+        .thenReturn(failed(error))
+
+      val result = await(controller.getAllKeywords(pagination)(fakeRequest))
+
+      status(result) shouldEqual INTERNAL_SERVER_ERROR
+      jsonBodyOf(result)
+        .toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
+    }
+  }
+
+  "fetchCaseKeywords" should {
+    "return 200 with the all cases that contain keywords from the collection" in {
+      when(keywordService.fetchCaseKeywords(refEq(pagination)))
+        .thenReturn(successful(Paged(Seq(caseKeyword, caseKeyword2))))
+
+      val result = await(controller.fetchCaseKeywords(pagination)(fakeRequest))
+
+      status(result) shouldEqual OK
+      jsonBodyOf(result) shouldEqual toJson(Paged(Seq(caseKeyword, caseKeyword2)))
+    }
+
+    "return 200 with an empty sequence if there are no cases containing keywords" in {
+      when(keywordService.fetchCaseKeywords(refEq(pagination)))
+        .thenReturn(successful(Paged.empty[CaseKeyword]))
+
+      val result = await(controller.fetchCaseKeywords(pagination)(fakeRequest))
+
+      status(result) shouldEqual OK
+      jsonBodyOf(result) shouldEqual toJson(Paged.empty[CaseKeyword])
+    }
+
+    "return 500 when an error occurred" in {
+      val error = new RuntimeException
+
+      when(keywordService.fetchCaseKeywords(refEq(pagination)))
+        .thenReturn(failed(error))
+
+      val result = await(controller.fetchCaseKeywords(pagination)(fakeRequest))
+
+      status(result) shouldEqual INTERNAL_SERVER_ERROR
+      jsonBodyOf(result)
+        .toString() shouldEqual """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
+    }
   }
 }

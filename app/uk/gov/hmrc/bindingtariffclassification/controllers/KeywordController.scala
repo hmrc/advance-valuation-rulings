@@ -23,8 +23,8 @@ import uk.gov.hmrc.bindingtariffclassification.model.ErrorCode.NOTFOUND
 import uk.gov.hmrc.bindingtariffclassification.model.RESTFormatters._
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.service.KeywordService
-
 import javax.inject.Inject
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future.successful
 
@@ -70,6 +70,13 @@ class KeywordController @Inject()(appConfig: AppConfig,
         }
       } recover recovery
     }
+
+  def getAllKeywords(pagination: Pagination): Action[AnyContent]  =
+      Action.async { implicit request =>
+        keywordService.findAll(pagination).map { allKeywords =>
+          Ok(Json.toJson(allKeywords))
+        } recover recovery
+  }
 
   def fetchCaseKeywords(pagination: Pagination) = {
     Action.async { implicit request =>

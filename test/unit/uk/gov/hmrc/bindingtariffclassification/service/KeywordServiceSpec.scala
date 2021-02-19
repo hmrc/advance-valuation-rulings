@@ -21,7 +21,7 @@ import org.mockito.ArgumentMatchers.refEq
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
-import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
+import uk.gov.hmrc.bindingtariffclassification.model.Role.CLASSIFICATION_OFFICER
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.repository._
 
@@ -34,6 +34,16 @@ class KeywordServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
   private val keywordRepository = mock[KeywordsRepository]
   private val caseKeywordAggregation = mock[CaseKeywordMongoView]
+
+  private val pagination = mock[Pagination]
+
+  private val caseHeader = CaseHeader(
+    reference = "9999999999", Some(Operator("0", None, None, CLASSIFICATION_OFFICER, List(), List(), false)), Some("3"),
+    Some("Smartphone"),
+    ApplicationType.BTI, CaseStatus.OPEN)
+
+  private val caseKeyword = CaseKeyword(Keyword("tool"), List(caseHeader))
+  private val caseKeyword2 = CaseKeyword(Keyword("bike"), List(caseHeader))
 
   private val service =
     new KeywordService(keywordRepository, caseKeywordAggregation)
@@ -110,4 +120,42 @@ class KeywordServiceSpec extends BaseSpec with BeforeAndAfterEach {
       caught shouldBe emulatedFailure
     }
   }
+
+  "findAll" should {
+    "return the expected users" in {
+      when(keywordRepository.findAll(pagination)).thenReturn(successful(Paged(Seq(keyword))))
+
+      await(service.findAll(pagination)) shouldBe Paged(Seq(keyword))
+    }
+
+    "propagate any error" in {
+      when(keywordRepository.findAll(pagination))
+        .thenThrow(emulatedFailure)
+
+      val caught = intercept[RuntimeException] {
+        await(service.findAll(pagination))
+      }
+      caught shouldBe emulatedFailure
+    }
+  }
+
+  "fetchCaseKeywords" should{
+    "run the aggregation and return the results" in {
+      when(caseKeywordAggregation.fetchKeywordsFromCases(pagination))
+        .thenReturn(successful(Paged(Seq(caseKeyword, caseKeyword2))))
+
+      await(service.fetchCaseKeywords(pagination)) shouldBe Paged(Seq(caseKeyword, caseKeyword2))
+    }
+
+    "propagate any error" in {
+      when(caseKeywordAggregation.fetchKeywordsFromCases(pagination))
+        .thenThrow(emulatedFailure)
+
+      val caught = intercept[RuntimeException] {
+        await(service.fetchCaseKeywords(pagination))
+      }
+      caught shouldBe emulatedFailure
+    }
+  }
+
 }

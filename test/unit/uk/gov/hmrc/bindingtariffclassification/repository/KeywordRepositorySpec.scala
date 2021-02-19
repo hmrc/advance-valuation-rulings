@@ -28,12 +28,12 @@ import uk.gov.hmrc.mongo.MongoSpecSupport
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-
-class KeywordRepositorySpec extends BaseMongoIndexSpec
-  with BeforeAndAfterAll
-  with BeforeAndAfterEach
-  with MongoSpecSupport
-  with Eventually {
+class KeywordRepositorySpec
+    extends BaseMongoIndexSpec
+    with BeforeAndAfterAll
+    with BeforeAndAfterEach
+    with MongoSpecSupport
+    with Eventually {
   self =>
   private val mongoErrorCode = 11000
 
@@ -41,11 +41,12 @@ class KeywordRepositorySpec extends BaseMongoIndexSpec
     BSONDocument("name" -> name)
 
   private def store(keywords: Keyword*): Unit =
-    keywords.foreach { keyword: Keyword => await(repository.insert(keyword)) }
+    keywords.foreach { keyword: Keyword =>
+      await(repository.insert(keyword))
+    }
 
-  private val keyword = Keyword(
-    "keyword name", approved = true
-  )
+  private val keyword = Keyword("keyword name", approved = true)
+  private val keyword2 = Keyword(name = "lentil", approved = true)
 
   private val mongoDbProvider: MongoDbProvider = new MongoDbProvider {
     override val mongo: () => DB = self.mongo
@@ -80,7 +81,6 @@ class KeywordRepositorySpec extends BaseMongoIndexSpec
         )
     ).toInt
 
-
   "insert" should {
 
     "insert a new document in the collection" in {
@@ -88,9 +88,9 @@ class KeywordRepositorySpec extends BaseMongoIndexSpec
 
       await(repository.insert(keyword)) shouldBe keyword
       collectionSize shouldBe 1 + size
-      await(repository.collection.find(selectorByName(keyword.name)).one[Keyword]) shouldBe Some(
-        keyword
-      )
+      await(
+        repository.collection.find(selectorByName(keyword.name)).one[Keyword]
+      ) shouldBe Some(keyword)
     }
 
     "fail to insert an existing document in the collection" in {
@@ -110,12 +110,8 @@ class KeywordRepositorySpec extends BaseMongoIndexSpec
 
     "remove the entry from the Collection" in {
 
-      val keyword = Keyword(
-        "potatoes", approved = true
-      )
-      val keyword2 = Keyword(
-        "rice", approved = true
-      )
+      val keyword = Keyword("potatoes", approved = true)
+      val keyword2 = Keyword("rice", approved = true)
 
       await(repository.insert(keyword))
       await(repository.insert(keyword2))
@@ -123,32 +119,32 @@ class KeywordRepositorySpec extends BaseMongoIndexSpec
       collectionSize shouldBe 2
 
       await(repository.delete("potatoes"))
-      collectionSize                                                 shouldBe 1
-      await(repository.collection.find(selectorByName(keyword2.name)).one[Keyword]) shouldBe Some(keyword2)
+      collectionSize shouldBe 1
+      await(
+        repository.collection.find(selectorByName(keyword2.name)).one[Keyword]
+      ) shouldBe Some(keyword2)
 
     }
   }
 
   "update" should {
-    val keyword = Keyword(
-      name = "word",
-      approved = true
-    )
+    val keyword = Keyword(name = "word", approved = true)
 
     "modify an existing keyword (approved field)" in {
       await(repository.insert(keyword)) shouldBe keyword
 
       val size = collectionSize
 
-      val updatedKeyword = keyword.copy(
-        name = "word",
-        false
+      val updatedKeyword = keyword.copy(name = "word", false)
+      await(repository.update(updatedKeyword, upsert = false)) shouldBe Some(
+        updatedKeyword
       )
-      await(repository.update(updatedKeyword, upsert = false)) shouldBe Some(updatedKeyword)
       collectionSize shouldBe size
 
       await(
-        repository.collection.find(selectorByName(updatedKeyword.name)).one[Keyword]
+        repository.collection
+          .find(selectorByName(updatedKeyword.name))
+          .one[Keyword]
       ) shouldBe Some(updatedKeyword)
     }
 
@@ -164,6 +160,31 @@ class KeywordRepositorySpec extends BaseMongoIndexSpec
 
       await(repository.update(keyword, upsert = true)) shouldBe Some(keyword)
       collectionSize shouldBe size + 1
+    }
+  }
+
+  "findAll" should {
+    "get all keywords" in {
+      await(repository.insert(keyword))
+      await(repository.insert(keyword2))
+      collectionSize shouldBe 2
+
+      await(repository.findAll(Pagination())) shouldBe Paged(
+        Seq(keyword, keyword2),
+        Pagination(),
+        2
+      )
+    }
+
+    "return an empty sequence when there are no keywords in the collection" in {
+      await(repository.insert(keyword))
+      collectionSize shouldBe 1
+
+      await(repository.delete(keyword.name))
+      collectionSize shouldBe 0
+
+      await(repository.findAll(Pagination())) shouldBe
+        Paged(Seq.empty, Pagination(), 0)
     }
   }
 

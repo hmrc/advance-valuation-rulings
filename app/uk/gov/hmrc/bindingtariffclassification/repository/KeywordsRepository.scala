@@ -21,10 +21,10 @@ import play.api.libs.json._
 import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.collection.JSONCollection
 import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters._
-import uk.gov.hmrc.bindingtariffclassification.model.{Keyword, MongoFormatters}
+import uk.gov.hmrc.bindingtariffclassification.model.{Keyword, MongoFormatters, Paged, Pagination}
 import uk.gov.hmrc.mongo.ReactiveRepository
-
 import javax.inject.{Inject, Singleton}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -38,7 +38,7 @@ trait KeywordsRepository {
 
   def delete(name: String): Future[Unit]
 
-  def findAll: Future[List[Keyword]]
+  def findAll(pagination: Pagination): Future[Paged[Keyword]]
 
 }
 
@@ -51,6 +51,8 @@ class KeywordsMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
   )
     with KeywordsRepository
     with MongoCrudHelper[Keyword] {
+
+  private val defaultSortBy = Json.obj("timestamp" -> -1)
 
   override protected val mongoCollection: JSONCollection = collection
 
@@ -65,7 +67,9 @@ class KeywordsMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
     updateDocument(selector = byName(keyword.name), update = keyword, upsert = upsert)
   }
 
-  override def findAll: Future[List[Keyword]] = ???
+  override def findAll(pagination: Pagination): Future[Paged[Keyword]] = {
+    getMany(Json.obj(), defaultSortBy, pagination)
+  }
 
   private def byName(name: String): JsObject =
     Json.obj("name" -> name)
