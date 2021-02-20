@@ -26,22 +26,22 @@ class ReportFieldSpec extends BaseSpec {
     "produce ReportResultField using withValue" in {
       for (field <- ReportField.fields.values) field match {
         case field @ CaseTypeField(fieldName, underlyingField) =>
-          field.withValue(ApplicationType.BTI) shouldBe CaseTypeResultField(fieldName, ApplicationType.BTI)
+          field.withValue(Some(ApplicationType.BTI)) shouldBe CaseTypeResultField(fieldName, Some(ApplicationType.BTI))
         case field @ ChapterField(fieldName, underlyingField) =>
-          field.withValue("87") shouldBe ChapterResultField(fieldName, "87")
+          field.withValue(Some("87")) shouldBe StringResultField(fieldName, Some("87"))
         case field @ DateField(fieldName, underlyingField) =>
-          val dateTime = LocalDateTime.of(2021, 2, 19, 18, 20, 0).toInstant(ZoneOffset.UTC)
+          val dateTime = Some(LocalDateTime.of(2021, 2, 19, 18, 20, 0).toInstant(ZoneOffset.UTC))
           field.withValue(dateTime) shouldBe DateResultField(fieldName, dateTime)
         case field @ DaysSinceField(fieldName, underlyingField) =>
-          field.withValue(5L) shouldBe NumberResultField(fieldName, 5L)
+          field.withValue(Some(5L)) shouldBe NumberResultField(fieldName, Some(5L))
         case field @ NumberField(fieldName, underlyingField) =>
-          field.withValue(3L) shouldBe NumberResultField(fieldName, 3L)
+          field.withValue(Some(3L)) shouldBe NumberResultField(fieldName, Some(3L))
         case field @ StatusField(fieldName, underlyingField) =>
-          field.withValue(CaseStatus.OPEN) shouldBe StatusResultField(fieldName, CaseStatus.OPEN)
+          field.withValue(Some(CaseStatus.OPEN)) shouldBe StatusResultField(fieldName, Some(CaseStatus.OPEN))
         case field @ StringField(fieldName, underlyingField) =>
-          field.withValue("Chipotle Paste") shouldBe StringResultField(fieldName, "Chipotle Paste")
+          field.withValue(Some("Chipotle Paste")) shouldBe StringResultField(fieldName, Some("Chipotle Paste"))
         case field @ UserField(fieldName, underlyingField) =>
-          field.withValue(Operator("666333", None)) shouldBe UserResultField(fieldName, Operator("666333", None))
+          field.withValue(Some(Operator("666333", None))) shouldBe UserResultField(fieldName, Some(Operator("666333", None)))
       }
     }
   }

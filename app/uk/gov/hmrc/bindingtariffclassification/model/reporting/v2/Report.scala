@@ -37,8 +37,8 @@ case class SummaryReport(
   caseTypes: Set[ApplicationType.Value] = Set.empty,
   teams: Set[String]                    = Set.empty,
   dateRange: InstantRange               = InstantRange.allTime,
-  maxFields: Set[NumberField]           = Set.empty,
-  sumFields: Set[NumberField]           = Set.empty,
+  maxFields: Set[ReportField[Long]]     = Set.empty,
+  sumFields: Set[ReportField[Long]]     = Set.empty,
   includeCases: Boolean                 = false
 ) extends Report
 
@@ -72,12 +72,14 @@ object SummaryReport {
         .map(_.map(bindApplicationType).collect { case Some(value) => value })
         .getOrElse(Set.empty)
       val sumFields = params(sumFieldsKey)(requestParams)
-        .map(_.flatMap(ReportField.fields.get(_).collect {
+        .map(_.flatMap(ReportField.fields.get(_).collect[ReportField[Long]] {
+          case days @ DaysSinceField(_, _) => days
           case num @ NumberField(_, _) => num
         }))
         .getOrElse(Set.empty)
       val maxFields = params(maxFieldsKey)(requestParams)
-        .map(_.flatMap(ReportField.fields.get(_).collect {
+        .map(_.flatMap(ReportField.fields.get(_).collect[ReportField[Long]] {
+          case days @ DaysSinceField(_, _) => days
           case num @ NumberField(_, _) => num
         }))
         .getOrElse(Set.empty)
@@ -149,19 +151,19 @@ object CaseReport {
         .getOrElse(Set.empty)
       val fields = params(fieldsKey)(requestParams)
         .map(_.flatMap(ReportField.fields.get(_)))
-        .getOrElse(Set.empty)
 
-      sortBy.map { sortBy =>
-        for {
-          range <- dateRange
-        } yield CaseReport(
-          sortBy    = sortBy,
-          sortOrder = sortOrder,
-          caseTypes = caseTypes,
-          teams     = teams,
-          dateRange = range,
-          fields    = fields
-        )
+      (fields, sortBy).mapN {
+        case (fields, sortBy) =>
+          for {
+            range <- dateRange
+          } yield CaseReport(
+            sortBy    = sortBy,
+            sortOrder = sortOrder,
+            caseTypes = caseTypes,
+            teams     = teams,
+            dateRange = range,
+            fields    = fields
+          )
       }
     }
 

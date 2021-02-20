@@ -16,14 +16,13 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
-import java.time.{Duration, Instant}
+import java.time.Instant
 import javax.inject.{Inject, Singleton}
 
 import cats.syntax.all._
 import play.api.libs.json.Json.toJson
 import play.api.libs.json._
 import play.api.libs.json.Json.JsValueWrapper
-import reactivemongo.api.Cursor
 import reactivemongo.api.indexes.Index
 import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.ImplicitBSONHandlers._
@@ -40,7 +39,6 @@ import uk.gov.hmrc.mongo.ReactiveRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import java.time.temporal.ChronoUnit
 
 trait CaseRepository {
 
@@ -256,6 +254,26 @@ class CaseMongoRepository @Inject() (
       }
   }
 
+  private def trunc(json: JsValueWrapper): JsValue =
+    Json.obj("$trunc" -> json)
+
+  private def divide(dividend: JsValueWrapper, divisor: JsValueWrapper): JsValue =
+    Json.obj("$divide" -> Json.arr(dividend, divisor))
+
+  private def subtract(minuend: JsValueWrapper, subtrahend: JsValueWrapper): JsValue =
+    Json.obj("$subtract" -> Json.arr(minuend, subtrahend))
+
+  private def substrBytes(operand: JsValueWrapper, offset: JsValueWrapper, length: JsValueWrapper): JsValue =
+    Json.obj("$substrBytes" -> Json.arr(operand, offset, length))
+
+  private def daysSince(operand: JsValueWrapper): JsValue =
+    trunc(
+      divide(
+        subtract(Json.toJson(appConfig.clock.instant()), operand),
+        86400000
+      )
+    )
+
   private def matchStage(framework: collection.AggregationFramework, report: Report) = {
     import framework._
 
@@ -302,26 +320,42 @@ class CaseMongoRepository @Inject() (
     val casesField = if (report.includeCases) Seq("cases" -> PushField("$ROOT")) else Seq.empty
 
     val sumFields =
-      report.sumFields.toList.map(field => s"sum_${field.fieldName}" -> SumField(field.underlyingField))
+      report.sumFields.toList.map {
+        case DaysSinceField(fieldName, underlyingField) =>
+          s"sum_${fieldName}" -> Sum(daysSince(s"$$$underlyingField"))
+        case field =>
+          s"sum_${field.fieldName}" -> SumField(field.underlyingField)
+      }
 
     val maxFields =
-      report.maxFields.toList.map(field => s"max_${field.fieldName}" -> MaxField(field.underlyingField))
+      report.maxFields.toList.map {
+        case DaysSinceField(fieldName, underlyingField) =>
+          s"max_${fieldName}" -> Max(daysSince(s"$$$underlyingField"))
+        case field =>
+          s"max_${field.fieldName}" -> MaxField(field.underlyingField)
+      }
 
     val groupFields = countField ++ sumFields ++ maxFields ++ casesField
 
-    Group(JsString(s"$$${report.groupBy.underlyingField}"))(groupFields: _*)
+    report.groupBy match {
+      case ChapterField(_, underlyingField) =>
+        Group(substrBytes(s"$$${report.groupBy.underlyingField}", 0, 2))(groupFields: _*)
+      case DaysSinceField(_, underlyingField) =>
+        Group(daysSince(s"$$$underlyingField"))(groupFields: _*)
+      case _ =>
+        Group(JsString(s"$$${report.groupBy.underlyingField}"))(groupFields: _*)
+    }
   }
 
-  private def getFieldValue(field: ReportField[_], json: JsValue): ReportResultField[_] = field match {
-    case field @ CaseTypeField(fieldName, _) => field.withValue(json.as[ApplicationType.Value])
-    case field @ ChapterField(fieldName, _)  => field.withValue(json.as[String].take(2))
-    case field @ DateField(fieldName, _)     => field.withValue(json.as[Instant])
-    case field @ NumberField(fieldName, _)   => field.withValue(json.as[Long])
-    case field @ StatusField(fieldName, _)   => field.withValue(json.as[CaseStatus.Value])
-    case field @ StringField(fieldName, _)   => field.withValue(json.as[String])
-    case field @ UserField(fieldName, _)     => field.withValue(json.as[Operator])
-    case field @ DaysSinceField(fieldName, _) =>
-      field.withValue(json.as[Instant].until(appConfig.clock.instant(), ChronoUnit.DAYS))
+  private def getFieldValue(field: ReportField[_], json: Option[JsValue]): ReportResultField[_] = field match {
+    case field @ CaseTypeField(fieldName, _)  => field.withValue(json.flatMap(_.asOpt[ApplicationType.Value]))
+    case field @ ChapterField(fieldName, _)   => field.withValue(json.flatMap(_.asOpt[String].filterNot(_.isEmpty)))
+    case field @ DateField(fieldName, _)      => field.withValue(json.flatMap(_.asOpt[Instant]))
+    case field @ DaysSinceField(fieldName, _) => field.withValue(json.flatMap(_.asOpt[Long]))
+    case field @ NumberField(fieldName, _)    => field.withValue(json.flatMap(_.asOpt[Long]))
+    case field @ StatusField(fieldName, _)    => field.withValue(json.flatMap(_.asOpt[CaseStatus.Value]))
+    case field @ StringField(fieldName, _)    => field.withValue(json.flatMap(_.asOpt[String]))
+    case field @ UserField(fieldName, _)      => field.withValue(json.flatMap(_.asOpt[Operator]))
   }
 
   override def summaryReport(report: SummaryReport, pagination: Pagination): Future[Paged[ResultGroup]] = {
@@ -387,21 +421,37 @@ class CaseMongoRepository @Inject() (
             if (report.includeCases)
               CaseResultGroup(
                 count    = json("count").as[Long],
-                groupKey = getFieldValue(report.groupBy, json("groupKey")),
-                sumFields =
-                  report.sumFields.map(field => field.withValue(json("sum_" + field.fieldName).as[Long])).toList,
-                maxFields =
-                  report.maxFields.map(field => field.withValue(json("max_" + field.fieldName).as[Long])).toList,
+                groupKey = getFieldValue(report.groupBy, json.value.get("groupKey")),
+                sumFields = report.sumFields.map {
+                  case field @ DaysSinceField(_, _) =>
+                    field.withValue(json.value.get("sum_" + field.fieldName).flatMap(_.asOpt[Long]))
+                  case field @ NumberField(_, _) =>
+                    field.withValue(json.value.get("sum_" + field.fieldName).flatMap(_.asOpt[Long]))
+                }.toList,
+                maxFields = report.maxFields.map {
+                  case field @ DaysSinceField(_, _) =>
+                    field.withValue(json.value.get("max_" + field.fieldName).flatMap(_.asOpt[Long]))
+                  case field @ NumberField(_, _) =>
+                    field.withValue(json.value.get("max_" + field.fieldName).flatMap(_.asOpt[Long]))
+                }.toList,
                 cases = json("cases").as[List[Case]]
               )
             else
               SimpleResultGroup(
                 count    = json("count").as[Long],
-                groupKey = getFieldValue(report.groupBy, json("groupKey")),
-                sumFields =
-                  report.sumFields.map(field => field.withValue(json("sum_" + field.fieldName).as[Long])).toList,
-                maxFields =
-                  report.maxFields.map(field => field.withValue(json("max_" + field.fieldName).as[Long])).toList
+                groupKey = getFieldValue(report.groupBy, json.value.get("groupKey")),
+                sumFields = report.sumFields.map {
+                  case field @ DaysSinceField(_, _) =>
+                    field.withValue(json.value.get("sum_" + field.fieldName).flatMap(_.asOpt[Long]))
+                  case field @ NumberField(_, _) =>
+                    field.withValue(json.value.get("sum_" + field.fieldName).flatMap(_.asOpt[Long]))
+                }.toList,
+                maxFields = report.maxFields.map {
+                  case field @ DaysSinceField(_, _) =>
+                    field.withValue(json.value.get("max_" + field.fieldName).flatMap(_.asOpt[Long]))
+                  case field @ NumberField(_, _) =>
+                    field.withValue(json.value.get("max_" + field.fieldName).flatMap(_.asOpt[Long]))
+                }.toList
               )
           )
       }
@@ -438,7 +488,14 @@ class CaseMongoRepository @Inject() (
         import framework._
 
         val fields = Json.obj(
-          report.fields.toList.map(field => field.fieldName -> (s"$$${field.underlyingField}": JsValueWrapper)): _*
+          report.fields.toList.map {
+            case ChapterField(fieldName, underlyingField) =>
+              fieldName -> (substrBytes(s"$$$underlyingField", 0, 2): JsValueWrapper)
+            case DaysSinceField(fieldName, underlyingField) =>
+              fieldName -> (daysSince(s"$$$underlyingField"): JsValueWrapper)
+            case field =>
+              field.fieldName -> (s"$$${field.underlyingField}": JsValueWrapper)
+          }: _*
         )
 
         val first = matchStage(framework, report)
@@ -458,7 +515,7 @@ class CaseMongoRepository @Inject() (
         case (rows, json) =>
           rows ++ Seq(
             report.fields
-              .map(field => field.fieldName -> getFieldValue(field, json(field.fieldName)))
+              .map(field => field.fieldName -> getFieldValue(field, json.value.get(field.fieldName)))
               .toMap[String, ReportResultField[_]]
           )
       }

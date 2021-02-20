@@ -175,7 +175,6 @@ object RESTFormatters {
   implicit val formatNumberResultField: OFormat[NumberResultField]     = Json.format[NumberResultField]
   implicit val formatStatusResultField: OFormat[StatusResultField]     = Json.format[StatusResultField]
   implicit val formatCaseTypeResultField: OFormat[CaseTypeResultField] = Json.format[CaseTypeResultField]
-  implicit val formatChapterResultField: OFormat[ChapterResultField]   = Json.format[ChapterResultField]
   implicit val formatDateResultField: OFormat[DateResultField]         = Json.format[DateResultField]
   implicit val formatUserResultField: OFormat[UserResultField]         = Json.format[UserResultField]
   implicit val formatStringResultField: OFormat[StringResultField]     = Json.format[StringResultField]
@@ -185,7 +184,6 @@ object RESTFormatters {
     .and[NumberResultField]("number")
     .and[StatusResultField]("status")
     .and[CaseTypeResultField]("caseType")
-    .and[ChapterResultField]("chapter")
     .and[DateResultField]("date")
     .and[UserResultField]("user")
     .and[StringResultField]("string")

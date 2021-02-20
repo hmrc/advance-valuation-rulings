@@ -22,40 +22,40 @@ import uk.gov.hmrc.bindingtariffclassification.model._
 sealed abstract class ReportField[A](val fieldName: String, val underlyingField: String)
     extends Product
     with Serializable {
-  def withValue(value: A): ReportResultField[A]
+  def withValue(value: Option[A]): ReportResultField[A]
 }
 
 case class NumberField(override val fieldName: String, override val underlyingField: String)
     extends ReportField[Long](fieldName, underlyingField) {
-  def withValue(value: Long): NumberResultField = NumberResultField(fieldName, value)
+  def withValue(value: Option[Long]): NumberResultField = NumberResultField(fieldName, value)
 }
 case class StatusField(override val fieldName: String, override val underlyingField: String)
     extends ReportField[CaseStatus.Value](fieldName, underlyingField) {
-  def withValue(value: CaseStatus.Value): StatusResultField = StatusResultField(fieldName, value)
+  def withValue(value: Option[CaseStatus.Value]): StatusResultField = StatusResultField(fieldName, value)
 }
 case class CaseTypeField(override val fieldName: String, override val underlyingField: String)
     extends ReportField[ApplicationType.Value](fieldName, underlyingField) {
-  def withValue(value: ApplicationType.Value): CaseTypeResultField = CaseTypeResultField(fieldName, value)
+  def withValue(value: Option[ApplicationType.Value]): CaseTypeResultField = CaseTypeResultField(fieldName, value)
 }
 case class ChapterField(override val fieldName: String, override val underlyingField: String)
     extends ReportField[String](fieldName, underlyingField) {
-  def withValue(value: String): ChapterResultField = ChapterResultField(fieldName, value)
+  def withValue(value: Option[String]): StringResultField = StringResultField(fieldName, value)
 }
 case class DateField(override val fieldName: String, override val underlyingField: String)
     extends ReportField[Instant](fieldName, underlyingField) {
-  def withValue(value: Instant): DateResultField = DateResultField(fieldName, value)
+  def withValue(value: Option[Instant]): DateResultField = DateResultField(fieldName, value)
 }
 case class UserField(override val fieldName: String, override val underlyingField: String)
     extends ReportField[Operator](fieldName, underlyingField) {
-  def withValue(value: Operator): UserResultField = UserResultField(fieldName, value)
+  def withValue(value: Option[Operator]): UserResultField = UserResultField(fieldName, value)
 }
 case class StringField(override val fieldName: String, override val underlyingField: String)
     extends ReportField[String](fieldName, underlyingField) {
-  def withValue(value: String): StringResultField = StringResultField(fieldName, value)
+  def withValue(value: Option[String]): StringResultField = StringResultField(fieldName, value)
 }
 case class DaysSinceField(override val fieldName: String, override val underlyingField: String)
     extends ReportField[Long](fieldName, underlyingField) {
-  def withValue(value: Long): NumberResultField = NumberResultField(fieldName, value)
+  def withValue(value: Option[Long]): NumberResultField = NumberResultField(fieldName, value)
 }
 
 object ReportField {

@@ -19,25 +19,22 @@ package uk.gov.hmrc.bindingtariffclassification.model.reporting.v2
 import java.time.Instant
 import uk.gov.hmrc.bindingtariffclassification.model._
 
-sealed abstract class ReportResultField[A](val fieldName: String, val data: A) extends Product with Serializable
+sealed abstract class ReportResultField[A](val fieldName: String, val data: Option[A]) extends Product with Serializable
 
-case class NumberResultField(override val fieldName: String, override val data: Long)
+case class NumberResultField(override val fieldName: String, override val data: Option[Long])
     extends ReportResultField[Long](fieldName, data)
 
-case class StatusResultField(override val fieldName: String, override val data: CaseStatus.Value)
+case class StatusResultField(override val fieldName: String, override val data: Option[CaseStatus.Value])
     extends ReportResultField[CaseStatus.Value](fieldName, data)
 
-case class CaseTypeResultField(override val fieldName: String, override val data: ApplicationType.Value)
+case class CaseTypeResultField(override val fieldName: String, override val data: Option[ApplicationType.Value])
     extends ReportResultField[ApplicationType.Value](fieldName, data)
 
-case class ChapterResultField(override val fieldName: String, override val data: String)
-    extends ReportResultField[String](fieldName, data)
-
-case class DateResultField(override val fieldName: String, override val data: Instant)
+case class DateResultField(override val fieldName: String, override val data: Option[Instant])
     extends ReportResultField[Instant](fieldName, data)
 
-case class UserResultField(override val fieldName: String, override val data: Operator)
+case class UserResultField(override val fieldName: String, override val data: Option[Operator])
     extends ReportResultField[Operator](fieldName, data)
 
-case class StringResultField(override val fieldName: String, override val data: String)
+case class StringResultField(override val fieldName: String, override val data: Option[String])
     extends ReportResultField[String](fieldName, data)
