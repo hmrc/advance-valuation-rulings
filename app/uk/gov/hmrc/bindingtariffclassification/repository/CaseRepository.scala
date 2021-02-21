@@ -376,6 +376,11 @@ class CaseMongoRepository @Inject() (
     case field @ UserField(fieldName, _)      => field.withValue(json.flatMap(_.asOpt[Operator]))
   }
 
+  private def getNumberFieldValue(field: ReportField[Long], json: Option[JsValue]): NumberResultField = field match {
+    case field @ DaysSinceField(fieldName, _) => field.withValue(json.flatMap(_.asOpt[Long]))
+    case field @ NumberField(fieldName, _)    => field.withValue(json.flatMap(_.asOpt[Long]))
+  }
+
   override def summaryReport(report: SummaryReport, pagination: Pagination): Future[Paged[ResultGroup]] = {
     logger.info(s"Running report: $report with pagination $pagination")
 
@@ -423,24 +428,16 @@ class CaseMongoRepository @Inject() (
               CaseResultGroup(
                 count    = json("count").as[Long],
                 groupKey = getFieldValue(report.groupBy, json.value.get("groupKey")),
-                maxFields = report.maxFields.map {
-                  case field @ DaysSinceField(_, _) =>
-                    field.withValue(json.value.get(field.fieldName).flatMap(_.asOpt[Long]))
-                  case field @ NumberField(_, _) =>
-                    field.withValue(json.value.get(field.fieldName).flatMap(_.asOpt[Long]))
-                }.toList,
+                maxFields =
+                  report.maxFields.map(field => getNumberFieldValue(field, json.value.get(field.fieldName))).toList,
                 cases = json("cases").as[List[Case]]
               )
             else
               SimpleResultGroup(
                 count    = json("count").as[Long],
                 groupKey = getFieldValue(report.groupBy, json.value.get("groupKey")),
-                maxFields = report.maxFields.map {
-                  case field @ DaysSinceField(_, _) =>
-                    field.withValue(json.value.get(field.fieldName).flatMap(_.asOpt[Long]))
-                  case field @ NumberField(_, _) =>
-                    field.withValue(json.value.get(field.fieldName).flatMap(_.asOpt[Long]))
-                }.toList
+                maxFields =
+                  report.maxFields.map(field => getNumberFieldValue(field, json.value.get(field.fieldName))).toList
               )
           )
       }
