@@ -38,7 +38,6 @@ case class SummaryReport(
   teams: Set[String]                    = Set.empty,
   dateRange: InstantRange               = InstantRange.allTime,
   maxFields: Set[ReportField[Long]]     = Set.empty,
-  sumFields: Set[ReportField[Long]]     = Set.empty,
   includeCases: Boolean                 = false
 ) extends Report
 
@@ -49,7 +48,6 @@ object SummaryReport {
   private val sortOrderKey    = "sort_order"
   private val caseTypesKey    = "case_type"
   private val teamsKey        = "team"
-  private val sumFieldsKey    = "sum_fields"
   private val maxFieldsKey    = "max_fields"
   private val includeCasesKey = "include_cases"
 
@@ -71,12 +69,6 @@ object SummaryReport {
       val caseTypes = params(caseTypesKey)(requestParams)
         .map(_.map(bindApplicationType).collect { case Some(value) => value })
         .getOrElse(Set.empty)
-      val sumFields = params(sumFieldsKey)(requestParams)
-        .map(_.flatMap(ReportField.fields.get(_).collect[ReportField[Long]] {
-          case days @ DaysSinceField(_, _) => days
-          case num @ NumberField(_, _) => num
-        }))
-        .getOrElse(Set.empty)
       val maxFields = params(maxFieldsKey)(requestParams)
         .map(_.flatMap(ReportField.fields.get(_).collect[ReportField[Long]] {
           case days @ DaysSinceField(_, _) => days
@@ -95,7 +87,6 @@ object SummaryReport {
             sortOrder    = sortOrder,
             caseTypes    = caseTypes,
             teams        = teams,
-            sumFields    = sumFields,
             maxFields    = maxFields,
             includeCases = include
           )
@@ -111,7 +102,6 @@ object SummaryReport {
         stringBindable.unbind(teamsKey, value.teams.mkString(",")),
         rangeBindable.unbind(dateRangeKey, value.dateRange),
         stringBindable.unbind(maxFieldsKey, value.maxFields.map(_.fieldName).mkString(",")),
-        stringBindable.unbind(sumFieldsKey, value.sumFields.map(_.fieldName).mkString(",")),
         boolBindable.unbind(includeCasesKey, value.includeCases)
       ).mkString("&")
   }

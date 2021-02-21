@@ -72,6 +72,7 @@ object ReportField {
   val DateCompleted = DateField("date_completed", "decision.effectiveStartDate")
   val ElapsedDays   = NumberField("elapsed_days", "daysElapsed")
   val TotalDays     = DaysSinceField("total_days", "createdDate")
+  val ReferredDays  = NumberField("referred_days", "referredDaysElapsed")
 
   val fields: Map[String, ReportField[_]] = List(
     Count,
@@ -86,6 +87,7 @@ object ReportField {
     DateCreated,
     DateCompleted,
     ElapsedDays,
-    TotalDays
+    TotalDays,
+    ReferredDays
   ).map(field => field.fieldName -> field).toMap
 }

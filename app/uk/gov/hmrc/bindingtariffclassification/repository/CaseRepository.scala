@@ -289,27 +289,53 @@ class CaseMongoRepository @Inject() (
       else
         Json.obj("queueId" -> Json.obj("$in" -> report.teams))
 
+    val minDateFilter =
+      if (report.dateRange.min == Instant.MIN)
+        Json.obj()
+      else
+        Json.obj("$gte" -> Json.toJson(report.dateRange.min))
+
+    val maxDateFilter =
+      if (report.dateRange.max == Instant.MAX)
+        Json.obj()
+      else
+        Json.obj("$lte" -> Json.toJson(report.dateRange.max))
+
     val dateFilter =
       if (report.dateRange == InstantRange.allTime)
         Json.obj()
       else
-        Json.obj(
-          "createdDate" -> Json.obj(
-            "$gte" -> Json.toJson(report.dateRange.min),
-            "$lte" -> Json.toJson(report.dateRange.max)
-          )
-        )
+        Json.obj("createdDate" -> (minDateFilter ++ maxDateFilter))
 
     Match(caseTypeFilter ++ teamFilter ++ dateFilter)
   }
 
-  private def sortStage(framework: collection.AggregationFramework, report: Report) = {
+  private def sortStage(
+    framework: collection.AggregationFramework,
+    report: Report,
+    sortBy: ReportField[_],
+    sortOrder: SortDirection.Value
+  ) = {
     import framework._
 
-    if (report.sortOrder == SortDirection.ASCENDING)
-      Sort(Ascending(report.sortBy.underlyingField))
-    else
-      Sort(Descending(report.sortBy.underlyingField))
+    val sortField = report match {
+      case summary: SummaryReport if summary.groupBy == sortBy =>
+        "groupKey"
+      case _ =>
+        sortBy.underlyingField
+    }
+
+    // If not sorting by reference, add it as a secondary sort field to ensure stable sorting
+    (sortOrder, report.sortBy) match {
+      case (SortDirection.ASCENDING, ReportField.Reference) =>
+        Sort(Ascending(sortField))
+      case (SortDirection.DESCENDING, ReportField.Reference) =>
+        Sort(Descending(sortField))
+      case (SortDirection.ASCENDING, _) =>
+        Sort(Ascending(sortField), Ascending(ReportField.Reference.underlyingField))
+      case (SortDirection.DESCENDING, _) =>
+        Sort(Descending(sortField), Descending(ReportField.Reference.underlyingField))
+    }
   }
 
   private def groupStage(framework: collection.AggregationFramework, report: SummaryReport) = {
@@ -319,23 +345,15 @@ class CaseMongoRepository @Inject() (
 
     val casesField = if (report.includeCases) Seq("cases" -> PushField("$ROOT")) else Seq.empty
 
-    val sumFields =
-      report.sumFields.toList.map {
-        case DaysSinceField(fieldName, underlyingField) =>
-          s"sum_${fieldName}" -> Sum(daysSince(s"$$$underlyingField"))
-        case field =>
-          s"sum_${field.fieldName}" -> SumField(field.underlyingField)
-      }
-
     val maxFields =
       report.maxFields.toList.map {
         case DaysSinceField(fieldName, underlyingField) =>
-          s"max_${fieldName}" -> Max(daysSince(s"$$$underlyingField"))
+          fieldName -> Max(daysSince(s"$$$underlyingField"))
         case field =>
-          s"max_${field.fieldName}" -> MaxField(field.underlyingField)
+          field.fieldName -> MaxField(field.underlyingField)
       }
 
-    val groupFields = countField ++ sumFields ++ maxFields ++ casesField
+    val groupFields = countField ++ maxFields ++ casesField
 
     report.groupBy match {
       case ChapterField(_, underlyingField) =>
@@ -364,7 +382,7 @@ class CaseMongoRepository @Inject() (
     val countField = "resultCount"
 
     val runCount = collection
-      .aggregateWith[JsObject]() { framework =>
+      .aggregateWith[JsObject](allowDiskUse = true) { framework =>
         import framework._
 
         val first = matchStage(framework, report)
@@ -380,37 +398,20 @@ class CaseMongoRepository @Inject() (
       .head
 
     val runAggregation = collection
-      .aggregateWith[JsObject]() { framework =>
+      .aggregateWith[JsObject](allowDiskUse = true) { framework =>
         import framework._
 
         val first = matchStage(framework, report)
 
-        val sortFieldIsGroupField =
-          report.sumFields.map(f => s"sum_${f.fieldName}").contains(report.sortBy.fieldName) ||
-            report.maxFields.map(f => s"max_${f.fieldName}").contains(report.sortBy.fieldName) ||
-            Seq("count", "cases", "groupKey").contains(report.sortBy.fieldName)
-
-        val rest =
-          // If the sort field is one of the columns added by the grouping stage, sort after grouping
-          if (sortFieldIsGroupField)
-            List(
-              groupStage(framework, report),
-              AddFields(Json.obj("groupKey" -> "$_id")),
-              Project(Json.obj("_id"        -> 0)),
-              sortStage(framework, report),
-              Skip((pagination.page - 1) * pagination.pageSize),
-              Limit(pagination.pageSize)
-            )
-          else
-            // Otherwise sort first
-            List(
-              sortStage(framework, report),
-              groupStage(framework, report),
-              AddFields(Json.obj("groupKey" -> "$_id")),
-              Project(Json.obj("_id"        -> 0)),
-              Skip((pagination.page - 1) * pagination.pageSize),
-              Limit(pagination.pageSize)
-            )
+        val rest = List(
+          sortStage(framework, report, ReportField.Reference, SortDirection.ASCENDING),
+          groupStage(framework, report),
+          AddFields(Json.obj("groupKey" -> "$_id")),
+          Project(Json.obj("_id"        -> 0)),
+          sortStage(framework, report, report.sortBy, report.sortOrder),
+          Skip((pagination.page - 1) * pagination.pageSize),
+          Limit(pagination.pageSize)
+        )
 
         (first, rest)
 
@@ -422,17 +423,11 @@ class CaseMongoRepository @Inject() (
               CaseResultGroup(
                 count    = json("count").as[Long],
                 groupKey = getFieldValue(report.groupBy, json.value.get("groupKey")),
-                sumFields = report.sumFields.map {
-                  case field @ DaysSinceField(_, _) =>
-                    field.withValue(json.value.get("sum_" + field.fieldName).flatMap(_.asOpt[Long]))
-                  case field @ NumberField(_, _) =>
-                    field.withValue(json.value.get("sum_" + field.fieldName).flatMap(_.asOpt[Long]))
-                }.toList,
                 maxFields = report.maxFields.map {
                   case field @ DaysSinceField(_, _) =>
-                    field.withValue(json.value.get("max_" + field.fieldName).flatMap(_.asOpt[Long]))
+                    field.withValue(json.value.get(field.fieldName).flatMap(_.asOpt[Long]))
                   case field @ NumberField(_, _) =>
-                    field.withValue(json.value.get("max_" + field.fieldName).flatMap(_.asOpt[Long]))
+                    field.withValue(json.value.get(field.fieldName).flatMap(_.asOpt[Long]))
                 }.toList,
                 cases = json("cases").as[List[Case]]
               )
@@ -440,17 +435,11 @@ class CaseMongoRepository @Inject() (
               SimpleResultGroup(
                 count    = json("count").as[Long],
                 groupKey = getFieldValue(report.groupBy, json.value.get("groupKey")),
-                sumFields = report.sumFields.map {
-                  case field @ DaysSinceField(_, _) =>
-                    field.withValue(json.value.get("sum_" + field.fieldName).flatMap(_.asOpt[Long]))
-                  case field @ NumberField(_, _) =>
-                    field.withValue(json.value.get("sum_" + field.fieldName).flatMap(_.asOpt[Long]))
-                }.toList,
                 maxFields = report.maxFields.map {
                   case field @ DaysSinceField(_, _) =>
-                    field.withValue(json.value.get("max_" + field.fieldName).flatMap(_.asOpt[Long]))
+                    field.withValue(json.value.get(field.fieldName).flatMap(_.asOpt[Long]))
                   case field @ NumberField(_, _) =>
-                    field.withValue(json.value.get("max_" + field.fieldName).flatMap(_.asOpt[Long]))
+                    field.withValue(json.value.get(field.fieldName).flatMap(_.asOpt[Long]))
                 }.toList
               )
           )
@@ -471,7 +460,7 @@ class CaseMongoRepository @Inject() (
     val countField = "resultCount"
 
     val runCount = collection
-      .aggregateWith[JsObject]() { framework =>
+      .aggregateWith[JsObject](allowDiskUse = true) { framework =>
         import framework._
 
         val first = matchStage(framework, report)
@@ -484,7 +473,7 @@ class CaseMongoRepository @Inject() (
       .head
 
     val runAggregation = collection
-      .aggregateWith[JsObject]() { framework =>
+      .aggregateWith[JsObject](allowDiskUse = true) { framework =>
         import framework._
 
         val fields = Json.obj(
@@ -501,7 +490,7 @@ class CaseMongoRepository @Inject() (
         val first = matchStage(framework, report)
 
         val rest = List(
-          sortStage(framework, report),
+          sortStage(framework, report, report.sortBy, report.sortOrder),
           AddFields(fields),
           Project(Json.obj("_id" -> JsNumber(0))),
           Skip((pagination.page - 1) * pagination.pageSize),

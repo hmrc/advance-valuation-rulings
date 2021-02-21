@@ -32,7 +32,8 @@ class ReportSpec extends BaseSpec {
         "case_type"  -> Seq("BTI", "CORRESPONDENCE"),
         "team"       -> Seq("1", "3"),
         "min_date"   -> Seq("2020-03-21T12:03:15.000Z"),
-        "max_date"   -> Seq("2021-03-21T12:03:15.000Z")
+        "max_date"   -> Seq("2021-03-21T12:03:15.000Z"),
+        "fields"     -> Seq("reference", "status", "assigned_user")
       )
 
       CaseReport.caseReportQueryStringBindable.bind("", params1) shouldBe Some(
@@ -45,7 +46,8 @@ class ReportSpec extends BaseSpec {
             dateRange = InstantRange(
               Instant.parse("2020-03-21T12:03:15.000Z"),
               Instant.parse("2021-03-21T12:03:15.000Z")
-            )
+            ),
+            fields = Set(ReportField.Reference, ReportField.Status, ReportField.User)
           )
         )
       )
@@ -66,6 +68,20 @@ class ReportSpec extends BaseSpec {
             caseTypes = Set(ApplicationType.MISCELLANEOUS, ApplicationType.CORRESPONDENCE),
             teams     = Set("4", "5"),
             fields    = Set(ReportField.Reference, ReportField.Status, ReportField.ElapsedDays, ReportField.TotalDays)
+          )
+        )
+      )
+
+      val minParams = Map[String, Seq[String]](
+        "sort_by" -> Seq("date_created"),
+        "fields"  -> Seq("reference", "status", "elapsed_days", "total_days")
+      )
+
+      CaseReport.caseReportQueryStringBindable.bind("", minParams) shouldBe Some(
+        Right(
+          CaseReport(
+            sortBy = ReportField.DateCreated,
+            fields = Set(ReportField.Reference, ReportField.Status, ReportField.ElapsedDays, ReportField.TotalDays)
           )
         )
       )
@@ -131,7 +147,7 @@ class ReportSpec extends BaseSpec {
         "team"       -> Seq("1", "3"),
         "min_date"   -> Seq("2020-03-21T12:03:15.000Z"),
         "max_date"   -> Seq("2021-03-21T12:03:15.000Z"),
-        "sum_fields" -> Seq("elapsed_days")
+        "max_fields" -> Seq("total_days")
       )
 
       SummaryReport.summaryReportQueryStringBindable.bind("", params1) shouldBe Some(
@@ -142,7 +158,7 @@ class ReportSpec extends BaseSpec {
             sortOrder = SortDirection.DESCENDING,
             caseTypes = Set(ApplicationType.BTI, ApplicationType.CORRESPONDENCE),
             teams     = Set("1", "3"),
-            sumFields = Set(ReportField.ElapsedDays),
+            maxFields = Set(ReportField.TotalDays),
             dateRange = InstantRange(
               Instant.parse("2020-03-21T12:03:15.000Z"),
               Instant.parse("2021-03-21T12:03:15.000Z")
@@ -172,6 +188,20 @@ class ReportSpec extends BaseSpec {
           )
         )
       )
+
+      val minParams = Map[String, Seq[String]](
+        "group_by" -> Seq("assigned_user"),
+        "sort_by"  -> Seq("date_created")
+      )
+
+      SummaryReport.summaryReportQueryStringBindable.bind("", minParams) shouldBe Some(
+        Right(
+          SummaryReport(
+            groupBy = ReportField.User,
+            sortBy  = ReportField.DateCreated
+          )
+        )
+      )
     }
 
     "unbind to query string" in {
@@ -184,7 +214,7 @@ class ReportSpec extends BaseSpec {
             sortOrder = SortDirection.DESCENDING,
             caseTypes = Set(ApplicationType.BTI, ApplicationType.CORRESPONDENCE),
             teams     = Set("1", "3"),
-            sumFields = Set(ReportField.ElapsedDays),
+            maxFields = Set(ReportField.ElapsedDays),
             dateRange = InstantRange(
               Instant.parse("2020-03-21T12:03:15.000Z"),
               Instant.parse("2021-03-21T12:03:15.000Z")
@@ -200,8 +230,7 @@ class ReportSpec extends BaseSpec {
           "&team=1,3" +
           "&min_date=2020-03-21T12:03:15Z" +
           "&max_date=2021-03-21T12:03:15Z" +
-          "&max_fields=" +
-          "&sum_fields=elapsed_days" +
+          "&max_fields=elapsed_days" +
           "&include_cases=false"
       )
 
@@ -214,7 +243,7 @@ class ReportSpec extends BaseSpec {
             sortOrder = SortDirection.ASCENDING,
             caseTypes = Set(ApplicationType.MISCELLANEOUS, ApplicationType.CORRESPONDENCE),
             teams     = Set("4", "5"),
-            maxFields = Set(ReportField.ElapsedDays)
+            maxFields = Set(ReportField.TotalDays)
           )
         ),
         "UTF-8"
@@ -226,8 +255,7 @@ class ReportSpec extends BaseSpec {
           "&team=4,5" +
           "&min_date=-1000000000-01-01T00:00:00Z" +
           "&max_date=+1000000000-12-31T23:59:59.999999999Z" +
-          "&max_fields=elapsed_days" +
-          "&sum_fields=" +
+          "&max_fields=total_days" +
           "&include_cases=false"
       )
     }
