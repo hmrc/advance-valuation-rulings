@@ -326,7 +326,7 @@ class CaseMongoRepository @Inject() (
     }
 
     // If not sorting by reference, add it as a secondary sort field to ensure stable sorting
-    (sortOrder, report.sortBy) match {
+    (sortOrder, sortBy) match {
       case (SortDirection.ASCENDING, ReportField.Reference) =>
         Sort(Ascending(sortField))
       case (SortDirection.DESCENDING, ReportField.Reference) =>
