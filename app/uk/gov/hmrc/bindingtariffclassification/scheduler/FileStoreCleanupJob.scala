@@ -21,6 +21,8 @@ import javax.inject.{Inject, Singleton}
 
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
+import cron4s._
+import cron4s.lib.javatime._
 import uk.gov.hmrc.bindingtariffclassification.common.Logging
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.connector.FileStoreConnector
@@ -29,10 +31,8 @@ import uk.gov.hmrc.bindingtariffclassification.model.filestore.{FileMetadata, Fi
 import uk.gov.hmrc.bindingtariffclassification.service.CaseService
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.Future._
-import scala.concurrent.duration._
 import scala.util.control.NonFatal
 
 @Singleton
@@ -44,6 +44,7 @@ class FileStoreCleanupJob @Inject() (
     extends ScheduledJob
     with Logging {
 
+  private implicit val ec: ExecutionContext = mat.executionContext
   private implicit val carrier: HeaderCarrier = HeaderCarrier()
   private lazy val jobConfig                  = appConfig.fileStoreCleanup
   private lazy val criteria = FileSearch(
@@ -54,9 +55,13 @@ class FileStoreCleanupJob @Inject() (
 
   override def enabled: Boolean = jobConfig.enabled
 
-  override def interval: FiniteDuration = jobConfig.interval
+  override def schedule: CronExpr = jobConfig.schedule
 
-  override def firstRunTime: LocalTime = jobConfig.elapseTime
+  override def nextRunTime: Option[ZonedDateTime] =
+    jobConfig.schedule.next(
+      appConfig.clock.instant()
+        .atZone(appConfig.clock.getZone())
+    )
 
   override def execute(): Future[Unit] =
     caseService.refreshAttachments().flatMap { _ =>
