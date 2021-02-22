@@ -84,7 +84,7 @@ class UsersMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
 
   private def selector(search: UserSearch): JsObject = {
     val queries = Seq[JsObject]()
-      .++(search.role.map(r => Json.obj("role" -> in(Set(r)))))
+      .++(search.role.map(r => Json.obj("role" -> in(r))))
       .++(
         search.team.map(t => Json.obj("memberOfTeams" -> mappingNoneOrSome(t)))
       )
@@ -104,5 +104,4 @@ class UsersMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
     case "some" => Json.obj("$gt" -> JsArray.empty)
     case v      => in(Set(v))
   }
-
 }

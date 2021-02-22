@@ -18,6 +18,7 @@ package uk.gov.hmrc.bindingtariffclassification.scheduler
 
 import java.time._
 
+import cron4s.Cron
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers._
 import org.mockito.BDDMockito.given
@@ -38,12 +39,15 @@ import util.EventData.createCaseStatusChangeEventDetails
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
 
   private val caseService           = mock[CaseService]
   private val eventService          = mock[EventService]
   private val bankHolidaysConnector = mock[BankHolidaysConnector]
+  private val fixedDate             = ZonedDateTime.of(2021, 2, 15, 12, 0, 0, 0, ZoneOffset.UTC)
+  private val clock                 = Clock.fixed(fixedDate.toInstant, ZoneOffset.UTC)
   private val appConfig             = mock[AppConfig]
   private val caseSearch = CaseSearch(
     filter = CaseFilter(statuses = Some(Set(PseudoCaseStatus.REFERRED, PseudoCaseStatus.SUSPENDED))),
@@ -55,10 +59,14 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
     reset(appConfig, caseService, eventService)
   }
 
+  override protected def beforeEach(): Unit = {
+    given(appConfig.clock).willReturn(clock)
+  }
+
   "Scheduled Job" should {
 
     val runTime   = LocalTime.of(14, 0)
-    val jobConfig = JobConfig(enabled = true, elapseTime = runTime, interval = 1.day)
+    val jobConfig = JobConfig(enabled = true, schedule = Cron.unsafeParse("0 0 14 * * ?"))
 
     "Configure 'Name'" in {
       newJob.name shouldBe "ReferredDaysElapsed"
@@ -70,18 +78,11 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
       newJob.enabled shouldBe true
     }
 
-    "Configure 'firstRunTime'" in {
+    "Configure 'nextRunTime'" in {
       given(appConfig.referredDaysElapsed).willReturn(jobConfig)
 
-      newJob.firstRunTime shouldBe runTime
+      newJob.nextRunTime.get shouldBe fixedDate.`with`(runTime)
     }
-
-    "Configure 'interval'" in {
-      given(appConfig.referredDaysElapsed).willReturn(jobConfig)
-
-      newJob.interval shouldBe 1.day
-    }
-
   }
 
   "Scheduled Job 'Execute'" should {

@@ -19,10 +19,12 @@ package uk.gov.hmrc.bindingtariffclassification.connector
 import java.time.LocalDate
 import javax.inject.{Inject, Singleton}
 
+import com.kenshoo.play.metrics.Metrics
 import play.api.libs.json.Json
 import uk.gov.hmrc.bindingtariffclassification.common.Logging
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.http.ProxyHttpClient
+import uk.gov.hmrc.bindingtariffclassification.metrics.HasMetrics
 import uk.gov.hmrc.bindingtariffclassification.model.BankHolidaysResponse
 import uk.gov.hmrc.bindingtariffclassification.model.RESTFormatters.formatBankHolidaysResponse
 import uk.gov.hmrc.http.HeaderCarrier
@@ -31,14 +33,17 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
 
 @Singleton
-class BankHolidaysConnector @Inject() (appConfig: AppConfig, http: ProxyHttpClient)(
+class BankHolidaysConnector @Inject() (appConfig: AppConfig, http: ProxyHttpClient, val metrics: Metrics)(
   implicit executionContext: ExecutionContext
-) extends Logging {
+) extends Logging
+    with HasMetrics {
   def get()(implicit headerCarrier: HeaderCarrier): Future[Set[LocalDate]] =
-    http
-      .GET[BankHolidaysResponse](s"${appConfig.bankHolidaysUrl}/bank-holidays")
-      .recover(withResourcesFile)
-      .map(_.`england-and-wales`.events.map(_.date).toSet)
+    withMetricsTimerAsync("get-bank-holidays") { _ =>
+      http
+        .GET[BankHolidaysResponse](s"${appConfig.bankHolidaysUrl}/bank-holidays")
+        .recover(withResourcesFile)
+        .map(_.`england-and-wales`.events.map(_.date).toSet)
+    }
 
   private def withResourcesFile: PartialFunction[Throwable, BankHolidaysResponse] = {
     case t =>

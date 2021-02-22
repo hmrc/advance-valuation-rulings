@@ -16,56 +16,43 @@
 
 package uk.gov.hmrc.bindingtariffclassification.scheduler
 
-import java.time.{Instant, LocalDate, LocalTime}
-
+import java.time.{Instant, LocalDate, LocalTime, ZonedDateTime}
+import java.time.temporal.ChronoUnit
 import javax.inject.{Inject, Singleton}
-import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
-
 import scala.concurrent.duration.FiniteDuration
+import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 
 @Singleton
 class SchedulerDateUtil @Inject() (appConfig: AppConfig) {
 
-  private lazy val clock = appConfig.clock
-
   def nextRun(offset: LocalTime, interval: FiniteDuration): Instant = {
-    val time = LocalTime.now(clock).withNano(0)
+    val now = ZonedDateTime.now(appConfig.clock).withNano(0)
 
-    val offsetSeconds: Int  = offset.toSecondOfDay
-    val currentSeconds: Int = time.toSecondOfDay
+    val offsetToday = now.`with`(offset)
 
-    val intervalSeconds: Long   = interval.toSeconds
-    val deltaSeconds: Int       = offsetSeconds - currentSeconds
-    val intervalRemainder: Long = deltaSeconds % intervalSeconds
-
-    val intervalRemaining: Long = if (intervalRemainder < 0) intervalRemainder + intervalSeconds else intervalRemainder
-    LocalDate
-      .now(clock)
-      .atTime(time)
-      .plusSeconds(intervalRemaining)
-      .atZone(clock.getZone)
-      .toInstant
+    if (offsetToday.isBefore(now))
+      offsetToday.plus(interval.toMillis, ChronoUnit.MILLIS).toInstant
+    else
+      offsetToday.toInstant
   }
 
   def closestRun(offset: LocalTime, interval: FiniteDuration): Instant = {
-    val time = LocalTime.now(clock).withNano(0)
+    val now = ZonedDateTime.now(appConfig.clock).withNano(0)
 
-    val offsetSeconds: Int  = offset.toSecondOfDay
-    val currentSeconds: Int = time.toSecondOfDay
+    val offsetToday = now.`with`(offset)
 
-    val intervalSeconds: Long   = interval.toSeconds
-    val deltaSeconds: Int       = offsetSeconds - currentSeconds
-    val intervalRemainder: Long = deltaSeconds % intervalSeconds
+    val prevRun =
+      if (offsetToday.isBefore(now)) offsetToday else offsetToday.minus(interval.toMillis, ChronoUnit.MILLIS)
+    val nextRun =
+      if (!offsetToday.isBefore(now)) offsetToday else offsetToday.plus(interval.toMillis, ChronoUnit.MILLIS)
 
-    val intervalRemaining: Long = if (intervalRemainder < 0) intervalRemainder + intervalSeconds else intervalRemainder
-    val intervalElapsed: Long   = intervalSeconds - intervalRemaining
-    if (intervalRemaining == 0) {
-      LocalDate.now(clock).atTime(time).atZone(clock.getZone).toInstant
-    } else if (intervalRemaining < intervalElapsed) {
-      LocalDate.now(clock).atTime(time).plusSeconds(intervalRemaining).atZone(clock.getZone).toInstant
-    } else {
-      LocalDate.now(clock).atTime(time).minusSeconds(intervalElapsed).atZone(clock.getZone).toInstant
-    }
+    val timeUntilNext = ChronoUnit.MILLIS.between(now, nextRun)
+    val timeSinceLast = ChronoUnit.MILLIS.between(prevRun, now)
+
+    if (timeUntilNext <= timeSinceLast)
+      nextRun.toInstant
+    else
+      prevRun.toInstant
   }
 
 }

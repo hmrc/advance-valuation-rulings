@@ -5,13 +5,14 @@ import play.core.PlayVersion.current
 object AppDependencies {
 
   lazy val compile = Seq(
-    "uk.gov.hmrc"       %% "bootstrap-play-26"         % "1.7.0",
-    "uk.gov.hmrc"       %% "crypto"                    % "5.6.0",
-    "uk.gov.hmrc"       %% "play-json-union-formatter" % "1.11.0",
-    "uk.gov.hmrc"       %% "simple-reactivemongo"      % "7.30.0-play-26",
-    "org.reactivemongo" %% "reactivemongo-akkastream"  % "0.18.8",
-    "com.typesafe.play" %% "play-json"                 % "2.9.2",
-    "org.typelevel"     %% "cats-core"                 % "2.4.1",
+    "uk.gov.hmrc"                   %% "bootstrap-play-26"         % "1.7.0",
+    "uk.gov.hmrc"                   %% "crypto"                    % "5.6.0",
+    "uk.gov.hmrc"                   %% "play-json-union-formatter" % "1.11.0",
+    "uk.gov.hmrc"                   %% "simple-reactivemongo"      % "7.30.0-play-26",
+    "org.reactivemongo"             %% "reactivemongo-akkastream"  % "0.18.8",
+    "com.typesafe.play"             %% "play-json"                 % "2.9.2",
+    "org.typelevel"                 %% "cats-core"                 % "2.4.1",
+    "com.github.alonsodomin.cron4s" %% "cron4s-core"               % "0.6.1",
     ws
   )
 

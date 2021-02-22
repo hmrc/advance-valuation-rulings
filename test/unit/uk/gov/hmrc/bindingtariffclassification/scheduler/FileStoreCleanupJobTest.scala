@@ -17,7 +17,9 @@
 package uk.gov.hmrc.bindingtariffclassification.scheduler
 
 import java.time._
+import java.time.temporal.TemporalAdjusters
 
+import cron4s.Cron
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, refEq}
 import org.mockito.BDDMockito.given
@@ -36,6 +38,8 @@ import scala.concurrent.duration._
 
 class FileStoreCleanupJobTest extends BaseSpec with BeforeAndAfterEach {
 
+  private val fixedDate          = ZonedDateTime.of(2021, 2, 15, 12, 0, 0, 0, ZoneOffset.UTC)
+  private val clock              = Clock.fixed(fixedDate.toInstant, ZoneOffset.UTC)
   private val appConfig          = mock[AppConfig]
   private val caseService        = mock[CaseService]
   private val fileStoreConnector = mock[FileStoreConnector]
@@ -51,6 +55,7 @@ class FileStoreCleanupJobTest extends BaseSpec with BeforeAndAfterEach {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
+    given(appConfig.clock).willReturn(clock)
     given(caseService.refreshAttachments()).willReturn(successful(()))
     given(caseService.attachmentExists(any[String])).willReturn(successful(false))
   }
@@ -58,7 +63,7 @@ class FileStoreCleanupJobTest extends BaseSpec with BeforeAndAfterEach {
   "Scheduled Job" should {
 
     val runTime   = LocalTime.of(14, 0)
-    val jobConfig = JobConfig(enabled = true, elapseTime = runTime, interval = 1.day)
+    val jobConfig = JobConfig(enabled = true, schedule = Cron.unsafeParse("0 0 14 ? * 6"))
 
     "Configure 'Name'" in {
       newJob.name shouldBe "FileStoreCleanup"
@@ -70,18 +75,11 @@ class FileStoreCleanupJobTest extends BaseSpec with BeforeAndAfterEach {
       newJob.enabled shouldBe true
     }
 
-    "Configure 'firstRunTime'" in {
+    "Configure 'nextRunTime'" in {
       given(appConfig.fileStoreCleanup).willReturn(jobConfig)
 
-      newJob.firstRunTime shouldBe runTime
+      newJob.nextRunTime.get shouldBe fixedDate.`with`(runTime).`with`(TemporalAdjusters.next(DayOfWeek.SUNDAY))
     }
-
-    "Configure 'interval'" in {
-      given(appConfig.fileStoreCleanup).willReturn(jobConfig)
-
-      newJob.interval shouldBe 1.day
-    }
-
   }
 
   "Scheduled Job 'Execute'" should {

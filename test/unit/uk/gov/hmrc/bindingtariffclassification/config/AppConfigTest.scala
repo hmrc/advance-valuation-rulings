@@ -16,12 +16,11 @@
 
 package uk.gov.hmrc.bindingtariffclassification.config
 
-import java.time.{LocalTime, ZoneOffset}
+import java.time.ZoneOffset
 
+import cron4s.Cron
 import play.api.Configuration
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
-
-import scala.concurrent.duration._
 
 class AppConfigTest extends BaseSpec {
 
@@ -42,34 +41,28 @@ class AppConfigTest extends BaseSpec {
     "build 'ActiveDaysElapsedConfig'" in {
       val config = configWith(
         "scheduler.active-days-elapsed.enabled"  -> "true",
-        "scheduler.active-days-elapsed.run-time" -> "00:00",
-        "scheduler.active-days-elapsed.interval" -> "1d"
+        "scheduler.active-days-elapsed.schedule" -> "0 0 3 * * ?"
       ).activeDaysElapsed
       config.enabled    shouldBe true
-      config.elapseTime shouldBe LocalTime.of(0, 0, 0)
-      config.interval   shouldBe 1.days
+      config.schedule   shouldBe Cron.unsafeParse("0 0 3 * * ?")
     }
 
     "build 'ReferredDaysElapsedConfig'" in {
       val config = configWith(
         "scheduler.referred-days-elapsed.enabled"  -> "true",
-        "scheduler.referred-days-elapsed.run-time" -> "00:00",
-        "scheduler.referred-days-elapsed.interval" -> "1d"
+        "scheduler.referred-days-elapsed.schedule" -> "0 0 2 * * ?"
       ).referredDaysElapsed
       config.enabled    shouldBe true
-      config.elapseTime shouldBe LocalTime.of(0, 0, 0)
-      config.interval   shouldBe 1.days
+      config.schedule   shouldBe Cron.unsafeParse("0 0 2 * * ?")
     }
 
     "build 'fileStoreCleanupConfig'" in {
       val config = configWith(
         "scheduler.filestore-cleanup.enabled"  -> "true",
-        "scheduler.filestore-cleanup.run-time" -> "03:00",
-        "scheduler.filestore-cleanup.interval" -> "7d"
+        "scheduler.filestore-cleanup.schedule" -> "0 0 1 ? * 0"
       ).fileStoreCleanup
       config.enabled    shouldBe true
-      config.elapseTime shouldBe LocalTime.of(3, 0, 0)
-      config.interval   shouldBe 7.days
+      config.schedule   shouldBe Cron.unsafeParse("0 0 1 ? * 0")
     }
 
     "build 'fileStoreUrl'" in {

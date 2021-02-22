@@ -117,7 +117,7 @@ class UsersRepositorySpec
 
       await(
         repository.search(
-          UserSearch(Some(Role.CLASSIFICATION_OFFICER), None),
+          UserSearch(Some(Set(Role.CLASSIFICATION_OFFICER)), None),
           Pagination()
         )
       ) shouldBe
@@ -125,7 +125,7 @@ class UsersRepositorySpec
 
       await(
         repository.search(
-          UserSearch(Some(Role.CLASSIFICATION_MANAGER), None),
+          UserSearch(Some(Set(Role.CLASSIFICATION_MANAGER)), None),
           Pagination()
         )
       ) shouldBe
@@ -197,7 +197,7 @@ class UsersRepositorySpec
       await(repository.insert(user3))
       collectionSize shouldBe 3
 
-      await(repository.search(UserSearch(Some(Role.CLASSIFICATION_MANAGER), Some("2")), Pagination())) shouldBe
+      await(repository.search(UserSearch(Some(Set(Role.CLASSIFICATION_MANAGER)), Some("2")), Pagination())) shouldBe
         Paged(Seq(user3), Pagination(), 1)
     }
 
@@ -214,7 +214,7 @@ class UsersRepositorySpec
       collectionSize shouldBe 1
 
       await(
-        repository.search(UserSearch(Some(Role.READ_ONLY), None), Pagination())
+        repository.search(UserSearch(Some(Set(Role.READ_ONLY)), None), Pagination())
       ) shouldBe Paged.empty
     }
   }

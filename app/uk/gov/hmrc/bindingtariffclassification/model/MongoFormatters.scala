@@ -21,6 +21,8 @@ import java.time.Instant
 import play.api.libs.json._
 import uk.gov.hmrc.bindingtariffclassification.utils.JsonUtil
 import uk.gov.hmrc.play.json.Union
+import java.time.ZonedDateTime
+import java.time.ZoneOffset
 
 object MongoFormatters {
   implicit val formatInstant: OFormat[Instant] = new OFormat[Instant] {
@@ -37,6 +39,12 @@ object MongoFormatters {
         case _ => JsError("Unexpected Instant Format")
       }
   }
+
+  implicit val formatZonedDateTime: OFormat[ZonedDateTime] =
+    formatInstant.bimap(
+      instant => ZonedDateTime.ofInstant(instant, ZoneOffset.UTC),
+      datetime => datetime.toInstant
+    )
 
   // User formatters
   implicit val role: Format[Role.Value]                             = EnumJson.format(Role)

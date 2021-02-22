@@ -19,6 +19,7 @@ package uk.gov.hmrc.bindingtariffclassification.scheduler
 import java.time._
 
 import org.mockito.BDDMockito.given
+import org.mockito.Mockito
 import org.scalatest.BeforeAndAfterEach
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
@@ -28,126 +29,87 @@ import scala.concurrent.duration._
 class SchedulerDateUtilTest extends BaseSpec with BeforeAndAfterEach {
 
   private val zone              = ZoneOffset.UTC
-  private val clock: Clock      = Clock.fixed(instant("2019-01-01T12:00:00").plusNanos((Math.random() * 1000).toInt), zone)
   private val config: AppConfig = mock[AppConfig]
   private val util              = new SchedulerDateUtil(config)
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-    given(config.clock) willReturn clock
+    Mockito.reset(config)
   }
 
   "Next Run" should {
-    "Calculate the next run date given a run time of now" in {
+    "Calculate the next run date-time given the run time is now" in {
+      given(config.clock).willReturn(Clock.fixed(instant("2019-01-01T12:00:00"), zone))
+
       util.nextRun(
         time("12:00"),
-        3.seconds
+        1.day
       ) shouldBe instant("2019-01-01T12:00:00")
     }
 
-    "Calculate the next run date given a run time in the future" in {
+    "Calculate the next run date-time given the run time today has not yet passed" in {
+      given(config.clock).willReturn(Clock.fixed(instant("2019-01-01T14:00:00"), zone))
+
       util.nextRun(
-        time("12:00:09"),
-        3.seconds
-      ) shouldBe instant("2019-01-01T12:00:00")
+        time("16:00"),
+        1.day
+      ) shouldBe instant("2019-01-01T16:00:00")
     }
 
-    "Calculate the next run date given a run time in the future with Offset" in {
-      util.nextRun(
-        time("12:00:01"),
-        3.seconds
-      ) shouldBe instant("2019-01-01T12:00:01")
+    "Calculate the next run date-time given the run time today has passed" in {
+      given(config.clock).willReturn(Clock.fixed(instant("2019-01-01T14:00:00"), zone))
 
       util.nextRun(
-        time("12:00:10"),
-        3.seconds
-      ) shouldBe instant("2019-01-01T12:00:01")
-    }
-
-    "Calculate the next run date given a run time in the past" in {
-      util.nextRun(
-        time("11:59:51"),
-        3.seconds
-      ) shouldBe instant("2019-01-01T12:00:00")
-    }
-
-    "Calculate the next run date given a run time in the past with Offset" in {
-      util.nextRun(
-        time("11:59:58"),
-        3.seconds
-      ) shouldBe instant("2019-01-01T12:00:01")
-
-      util.nextRun(
-        time("11:59:52"),
-        3.seconds
-      ) shouldBe instant("2019-01-01T12:00:01")
+        time("12:00"),
+        1.day
+      ) shouldBe instant("2019-01-02T12:00:00")
     }
   }
 
   "Closest Run" should {
-    "Calculate the closest run date given a run time of now" in {
+    "Calculate the closest run date given the run time is now" in {
+      given(config.clock).willReturn(Clock.fixed(instant("2019-01-01T12:00:00"), zone))
+
       util.closestRun(
         time("12:00"),
-        3.seconds
+        1.day
       ) shouldBe instant("2019-01-01T12:00:00")
     }
 
-    "Calculate the closest run date given a run time in the future" in {
+    "Calculate the closest run date given the run time today has passed and the previous run time is closer" in {
+      given(config.clock).willReturn(Clock.fixed(instant("2019-01-01T08:00:00"), zone))
+
       util.closestRun(
-        time("12:00:09"),
-        3.seconds
-      ) shouldBe instant("2019-01-01T12:00:00")
+        time("01:00"),
+        1.day
+      ) shouldBe instant("2019-01-01T01:00:00")
     }
 
-    "Calculate the closest run date given a run time in the future with Offset" in {
-      util.closestRun(
-        time("12:00:01"),
-        3.seconds
-      ) shouldBe instant("2019-01-01T12:00:01")
+    "Calculate the closest run date given the run time today has passed and the next run time is closer" in {
+      given(config.clock).willReturn(Clock.fixed(instant("2019-01-01T21:00:00"), zone))
 
       util.closestRun(
-        time("12:00:10"),
-        3.seconds
-      ) shouldBe instant("2019-01-01T12:00:01")
-
-      util.closestRun(
-        time("12:00:02"),
-        3.seconds
-      ) shouldBe instant("2019-01-01T11:59:59")
-
-      util.closestRun(
-        time("12:00:02"),
-        4.seconds
-      ) shouldBe instant("2019-01-01T11:59:58")
+        time("01:00"),
+        1.day
+      ) shouldBe instant("2019-01-02T01:00:00")
     }
 
-    "Calculate the closest run date given a run time in the past" in {
+    "Calculate the closest run date given the run time today has not yet passed and the next run time is closer" in {
+      given(config.clock).willReturn(Clock.fixed(instant("2019-01-01T21:00:00"), zone))
+
       util.closestRun(
-        time("11:59:51"),
-        3.seconds
-      ) shouldBe instant("2019-01-01T12:00:00")
+        time("22:00"),
+        1.day
+      ) shouldBe instant("2019-01-01T22:00:00")
     }
 
-    "Calculate the closest run date given a run time in the past with Offset" in {
-      util.closestRun(
-        time("11:59:58"),
-        3.seconds
-      ) shouldBe instant("2019-01-01T12:00:01")
+    "Calculate the closest run date given the run time today has not yet passed and the previous run time is closer" in {
+      given(config.clock).willReturn(Clock.fixed(instant("2019-01-01T01:00:00"), zone))
 
       util.closestRun(
-        time("11:59:52"),
-        3.seconds
-      ) shouldBe instant("2019-01-01T12:00:01")
-
-      util.closestRun(
-        time("11:59:56"),
-        3.seconds
-      ) shouldBe instant("2019-01-01T11:59:59")
-
-      util.closestRun(
-        time("11:59:58"),
-        4.seconds
-      ) shouldBe instant("2019-01-01T11:59:58")
+        time("21:00"),
+        1.day
+      ) shouldBe instant("2018-12-31T21:00:00")
     }
   }
 
