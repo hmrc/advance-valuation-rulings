@@ -23,7 +23,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 class UserSearchTest extends UnitSpec {
 
   private val search =
-    UserSearch(role = Some(Role.CLASSIFICATION_MANAGER), team = Some("1"))
+    UserSearch(role = Some(Set(Role.CLASSIFICATION_MANAGER)), team = Some("1"))
 
   private val params: Map[String, Seq[String]] =
     Map("role" -> Seq("CLASSIFICATION_MANAGER"), "member_of_teams" -> Seq("1"))

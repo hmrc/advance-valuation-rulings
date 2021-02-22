@@ -287,7 +287,7 @@ class UsersControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
   "allUsers" should {
 
-    val role = Some(Role.CLASSIFICATION_OFFICER)
+    val role = Some(Set(Role.CLASSIFICATION_OFFICER))
     val team = Some("ACT")
 
     val search = UserSearch(role = role, team = team)
