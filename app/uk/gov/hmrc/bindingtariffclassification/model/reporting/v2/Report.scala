@@ -63,7 +63,7 @@ object SummaryReport {
       val includeCases = boolBindable.bind(includeCasesKey, requestParams).getOrElse(Right(false))
       val dateRange    = rangeBindable.bind(dateRangeKey, requestParams).getOrElse(Right(InstantRange.allTime))
       val groupBy      = param(groupByKey)(requestParams).flatMap(ReportField.fields.get(_))
-      val sortBy       = param(sortByKey)(requestParams).flatMap(ReportField.fields.get(_))
+      val sortBy       = param(sortByKey)(requestParams).flatMap(ReportField.fields.get(_)).orElse(groupBy)
       val sortOrder    = param(sortOrderKey)(requestParams).flatMap(bindSortDirection).getOrElse(SortDirection.ASCENDING)
       val teams        = params(teamsKey)(requestParams).getOrElse(Set.empty)
       val caseTypes = params(caseTypesKey)(requestParams)
@@ -132,7 +132,7 @@ object CaseReport {
     import uk.gov.hmrc.bindingtariffclassification.model.utils.BinderUtil._
 
     override def bind(key: String, requestParams: Map[String, Seq[String]]): Option[Either[String, CaseReport]] = {
-      val sortBy    = param(sortByKey)(requestParams).flatMap(ReportField.fields.get(_))
+      val sortBy    = param(sortByKey)(requestParams).flatMap(ReportField.fields.get(_)).getOrElse(ReportField.Reference)
       val sortOrder = param(sortOrderKey)(requestParams).flatMap(bindSortDirection).getOrElse(SortDirection.ASCENDING)
       val dateRange = rangeBindable.bind(dateRangeKey, requestParams).getOrElse(Right(InstantRange.allTime))
       val teams     = params(teamsKey)(requestParams).getOrElse(Set.empty)
@@ -142,18 +142,17 @@ object CaseReport {
       val fields = params(fieldsKey)(requestParams)
         .map(_.flatMap(ReportField.fields.get(_)))
 
-      (fields, sortBy).mapN {
-        case (fields, sortBy) =>
-          for {
-            range <- dateRange
-          } yield CaseReport(
-            sortBy    = sortBy,
-            sortOrder = sortOrder,
-            caseTypes = caseTypes,
-            teams     = teams,
-            dateRange = range,
-            fields    = fields
-          )
+      fields.map { fields =>
+        for {
+          range <- dateRange
+        } yield CaseReport(
+          sortBy    = sortBy,
+          sortOrder = sortOrder,
+          caseTypes = caseTypes,
+          teams     = teams,
+          dateRange = range,
+          fields    = fields
+        )
       }
     }
 

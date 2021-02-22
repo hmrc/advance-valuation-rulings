@@ -73,14 +73,13 @@ class ReportSpec extends BaseSpec {
       )
 
       val minParams = Map[String, Seq[String]](
-        "sort_by" -> Seq("date_created"),
-        "fields"  -> Seq("reference", "status", "elapsed_days", "total_days")
+        "fields" -> Seq("reference", "status", "elapsed_days", "total_days")
       )
 
       CaseReport.caseReportQueryStringBindable.bind("", minParams) shouldBe Some(
         Right(
           CaseReport(
-            sortBy = ReportField.DateCreated,
+            sortBy = ReportField.Reference,
             fields = Set(ReportField.Reference, ReportField.Status, ReportField.ElapsedDays, ReportField.TotalDays)
           )
         )
@@ -190,15 +189,14 @@ class ReportSpec extends BaseSpec {
       )
 
       val minParams = Map[String, Seq[String]](
-        "group_by" -> Seq("assigned_user"),
-        "sort_by"  -> Seq("date_created")
+        "group_by" -> Seq("assigned_user")
       )
 
       SummaryReport.summaryReportQueryStringBindable.bind("", minParams) shouldBe Some(
         Right(
           SummaryReport(
             groupBy = ReportField.User,
-            sortBy  = ReportField.DateCreated
+            sortBy  = ReportField.User
           )
         )
       )
