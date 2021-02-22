@@ -29,8 +29,7 @@ import scala.concurrent.Promise
 
 class MongockRunner @Inject()(appConfig: AppConfig) extends Logging {
 
-  val migrationCompleted = Promise[StandaloneMigrationSuccessEvent]
-  mongockRunner.execute()
+  lazy val migrationCompleted = Promise[StandaloneMigrationSuccessEvent]
 
   private lazy val mongockRunner = {
 
@@ -51,4 +50,5 @@ class MongockRunner @Inject()(appConfig: AppConfig) extends Logging {
       .buildRunner()
   }
 
+  mongockRunner.execute()
 }

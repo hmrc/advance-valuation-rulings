@@ -19,6 +19,7 @@ package uk.gov.hmrc.bindingtariffclassification.migrations
 import org.mockito.BDDMockito.`given`
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import reactivemongo.api.DB
+import reactivemongo.play.json.collection.JSONCollection
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.{Keyword, Pagination}
@@ -43,27 +44,15 @@ class MongockSpec extends BaseSpec with MongoSpecSupport with BeforeAndAfterEach
   private def newMongoRepository: KeywordsMongoRepository =
     new KeywordsMongoRepository(mongoDbProvider)
 
-
-  //  override lazy val app =
-  //    GuiceApplicationBuilder()
-  //      .configure(
-  //        "metrics.jvm"     -> false,
-  //        "metrics.enabled" -> false
-  //      )
-  //      .overrides(bind[AppConfig].to(config), bind[MongoDbProvider].to(mongoDbProvider))
-  //      .disable[Scheduler]
-  //      .disable[ScheduledJobs]
-  //      .disable[MigrationJobs]
-  //      .build()
-
   private val caseKeywordAggregation = mock[CaseKeywordMongoView]
   private val keywordService = new KeywordService(repository, caseKeywordAggregation)
-  private val mongockRunner = mock[MongockRunner]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     given(config.appName).willReturn(databaseName)
     given(config.mongodbUri).willReturn(mongoUri)
+    await(mongoDbProvider.mongo().collection[JSONCollection]("mongockChangeLog").drop(false))
+    await(mongoDbProvider.mongo().collection[JSONCollection]("mongockLock").drop(false))
     await(repository.drop)
     await(repository.ensureIndexes)
   }
@@ -74,12 +63,19 @@ class MongockSpec extends BaseSpec with MongoSpecSupport with BeforeAndAfterEach
   }
 
   "MongockRunner" should {
+    given(config.mongodbUri).willReturn(mongoUri)
+    given(config.appName).willReturn(databaseName)
     val url = getClass.getClassLoader.getResource("keywords.txt")
-    val keywords = (for (line <- Source.fromURL(url, "UTF-8").getLines()) yield line).toSeq
+    val keywords = Source.fromURL(url, "UTF-8").getLines().toSeq
 
     "ensure that keywords have been added to the collection" in {
+      val mongockRunner = new MongockRunner(config)
+
       await(mongockRunner.migrationCompleted.future)
-      await(keywordService.findAll(Pagination())).results should contain theSameElementsAs keywords.map(Keyword(_))
+      val actualKeywords = await(keywordService.findAll(Pagination(pageSize = Int.MaxValue))).results
+      val expectedKeywords = keywords.map(Keyword(_))
+
+      actualKeywords should contain theSameElementsAs expectedKeywords
 
     }
   }
