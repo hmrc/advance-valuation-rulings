@@ -41,12 +41,10 @@ class KeywordRepositorySpec
     BSONDocument("name" -> name)
 
   private def store(keywords: Keyword*): Unit =
-    keywords.foreach { keyword: Keyword =>
-      await(repository.insert(keyword))
-    }
+    keywords.foreach { keyword: Keyword => await(repository.insert(keyword)) }
 
-  private val keyword = Keyword("keyword name", approved = true)
-  private val keyword2 = Keyword(name = "lentil", approved = true)
+  private val keyword  = Keyword("keyword name", approved = true)
+  private val keyword2 = Keyword(name                     = "lentil", approved = true)
 
   private val mongoDbProvider: MongoDbProvider = new MongoDbProvider {
     override val mongo: () => DB = self.mongo
@@ -73,21 +71,20 @@ class KeywordRepositorySpec
     await(
       repository.collection
         .count(
-          selector = None,
-          limit = Some(0),
-          skip = 0,
-          hint = None,
+          selector    = None,
+          limit       = Some(0),
+          skip        = 0,
+          hint        = None,
           readConcern = ReadConcern.Local
         )
     ).toInt
 
   "insert" should {
-
     "insert a new document in the collection" in {
       val size = collectionSize
 
       await(repository.insert(keyword)) shouldBe keyword
-      collectionSize shouldBe 1 + size
+      collectionSize                    shouldBe 1 + size
       await(
         repository.collection.find(selectorByName(keyword.name)).one[Keyword]
       ) shouldBe Some(keyword)
@@ -101,17 +98,16 @@ class KeywordRepositorySpec
         await(repository.insert(keyword))
       }
 
-      caught.code shouldBe Some(mongoErrorCode)
+      caught.code    shouldBe Some(mongoErrorCode)
       collectionSize shouldBe size
     }
   }
 
   "delete" should {
-
     "remove the entry from the Collection" in {
 
-      val keyword = Keyword("potatoes", approved = true)
-      val keyword2 = Keyword("rice", approved = true)
+      val keyword  = Keyword("potatoes", approved = true)
+      val keyword2 = Keyword("rice", approved     = true)
 
       await(repository.insert(keyword))
       await(repository.insert(keyword2))
@@ -164,6 +160,7 @@ class KeywordRepositorySpec
   }
 
   "findAll" should {
+
     "get all keywords" in {
       await(repository.insert(keyword))
       await(repository.insert(keyword2))
