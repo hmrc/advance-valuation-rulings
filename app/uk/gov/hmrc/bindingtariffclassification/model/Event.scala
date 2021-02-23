@@ -18,13 +18,13 @@ package uk.gov.hmrc.bindingtariffclassification.model
 
 import java.time.Instant
 import java.util.UUID
-
 import uk.gov.hmrc.bindingtariffclassification.model.AppealStatus.AppealStatus
 import uk.gov.hmrc.bindingtariffclassification.model.AppealType.AppealType
 import uk.gov.hmrc.bindingtariffclassification.model.CancelReason.CancelReason
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model.EventType.EventType
 import uk.gov.hmrc.bindingtariffclassification.model.ReferralReason.ReferralReason
+import uk.gov.hmrc.bindingtariffclassification.model.RejectReason.RejectReason
 import uk.gov.hmrc.bindingtariffclassification.model.SampleReturn.SampleReturn
 import uk.gov.hmrc.bindingtariffclassification.model.SampleStatus.SampleStatus
 
@@ -62,6 +62,17 @@ case class CaseStatusChange(
 ) extends FieldChange[CaseStatus]
     with OptionalAttachment {
   override val `type`: EventType.Value = EventType.CASE_STATUS_CHANGE
+}
+
+case class RejectCaseStatusChange(
+  override val from: CaseStatus,
+  override val to: CaseStatus,
+  override val comment: Option[String]      = None,
+  override val attachmentId: Option[String] = None,
+  reason: RejectReason
+) extends FieldChange[CaseStatus]
+    with OptionalAttachment {
+  override val `type`: EventType.Value = EventType.CASE_REJECTED
 }
 
 case class CancellationCaseStatusChange(
@@ -176,6 +187,7 @@ object EventType extends Enumeration {
   type EventType = Value
   val CASE_STATUS_CHANGE         = Value
   val CASE_REFERRAL              = Value
+  val CASE_REJECTED              = Value
   val CASE_COMPLETED             = Value
   val CASE_CANCELLATION          = Value
   val APPEAL_STATUS_CHANGE       = Value

@@ -85,6 +85,7 @@ class ReportServiceTest extends BaseSpec with BeforeAndAfterEach {
           Set(
             EventType.CASE_STATUS_CHANGE,
             EventType.CASE_REFERRAL,
+            EventType.CASE_REJECTED,
             EventType.CASE_COMPLETED,
             EventType.CASE_CANCELLATION
           )
@@ -126,6 +127,7 @@ class ReportServiceTest extends BaseSpec with BeforeAndAfterEach {
           Set(
             EventType.CASE_STATUS_CHANGE,
             EventType.CASE_REFERRAL,
+            EventType.CASE_REJECTED,
             EventType.CASE_COMPLETED,
             EventType.CASE_CANCELLATION
           )
@@ -167,6 +169,7 @@ class ReportServiceTest extends BaseSpec with BeforeAndAfterEach {
           Set(
             EventType.CASE_STATUS_CHANGE,
             EventType.CASE_REFERRAL,
+            EventType.CASE_REJECTED,
             EventType.CASE_COMPLETED,
             EventType.CASE_CANCELLATION
           )

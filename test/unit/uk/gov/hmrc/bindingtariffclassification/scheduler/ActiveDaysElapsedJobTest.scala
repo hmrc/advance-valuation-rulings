@@ -444,7 +444,7 @@ class ActiveDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
   }
 
   private val caseStatusChangeEventTypes =
-    Set(EventType.CASE_STATUS_CHANGE, EventType.CASE_REFERRAL, EventType.CASE_COMPLETED, EventType.CASE_CANCELLATION)
+    Set(EventType.CASE_STATUS_CHANGE, EventType.CASE_REFERRAL, EventType.CASE_COMPLETED, EventType.CASE_REJECTED, EventType.CASE_CANCELLATION)
 
   private def givenAPageOfEventsFor(reference: String, page: Int, totalEvents: Int, events: Event*): Unit = {
     val pagination = Pagination(page = page, pageSize = Integer.MAX_VALUE)

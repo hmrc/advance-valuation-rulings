@@ -39,7 +39,7 @@ class ReportService @Inject() (caseRepository: CaseRepository, eventRepository: 
 
   private def appendReferredCaseReferencesTo(report: CaseReport, range: InstantRange): Future[CaseReport] = {
     val caseStatusChangeEventTypes =
-      Set(EventType.CASE_STATUS_CHANGE, EventType.CASE_REFERRAL, EventType.CASE_COMPLETED, EventType.CASE_CANCELLATION)
+      Set(EventType.CASE_STATUS_CHANGE, EventType.CASE_REFERRAL, EventType.CASE_REJECTED, EventType.CASE_COMPLETED, EventType.CASE_CANCELLATION)
     val filter = report.filter
     val search = EventSearch(
       timestampMin = Some(range.min),
