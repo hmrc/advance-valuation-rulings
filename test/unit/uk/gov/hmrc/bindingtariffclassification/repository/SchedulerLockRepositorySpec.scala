@@ -30,6 +30,8 @@ import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.mongo.MongoSpecSupport
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import java.time.ZonedDateTime
+import java.time.ZoneOffset
 
 class SchedulerLockRepositorySpec
     extends BaseMongoIndexSpec
@@ -68,8 +70,8 @@ class SchedulerLockRepositorySpec
   private def selectorByName(name: String): BSONDocument =
     BSONDocument("name" -> name)
 
-  private def date(date: String): Instant =
-    LocalDate.parse(date).atStartOfDay(ZoneId.of("UTC")).toInstant
+  private def date(date: String): ZonedDateTime =
+    LocalDate.parse(date).atStartOfDay(ZoneOffset.UTC)
 
   "lock" should {
     val event = JobRunEvent("name", date("2018-12-25"))

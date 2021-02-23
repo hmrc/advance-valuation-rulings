@@ -30,7 +30,6 @@ import uk.gov.hmrc.mongo.MongoSpecSupport
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.io.Source
 
-
 class MongockSpec extends BaseSpec with MongoSpecSupport with BeforeAndAfterEach with BeforeAndAfterAll {
   self =>
 
@@ -38,14 +37,14 @@ class MongockSpec extends BaseSpec with MongoSpecSupport with BeforeAndAfterEach
     override val mongo: () => DB = self.mongo
   }
 
-  private val config = mock[AppConfig]
+  private val config     = mock[AppConfig]
   private val repository = newMongoRepository
 
   private def newMongoRepository: KeywordsMongoRepository =
     new KeywordsMongoRepository(mongoDbProvider)
 
   private val caseKeywordAggregation = mock[CaseKeywordMongoView]
-  private val keywordService = new KeywordService(repository, caseKeywordAggregation)
+  private val keywordService         = new KeywordService(repository, caseKeywordAggregation)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -65,14 +64,14 @@ class MongockSpec extends BaseSpec with MongoSpecSupport with BeforeAndAfterEach
   "MongockRunner" should {
     given(config.mongodbUri).willReturn(mongoUri)
     given(config.appName).willReturn(databaseName)
-    val url = getClass.getClassLoader.getResource("keywords.txt")
+    val url      = getClass.getClassLoader.getResource("keywords.txt")
     val keywords = Source.fromURL(url, "UTF-8").getLines().toSeq
 
     "ensure that keywords have been added to the collection" in {
       val mongockRunner = new MongockRunner(config)
 
       await(mongockRunner.migrationCompleted.future)
-      val actualKeywords = await(keywordService.findAll(Pagination(pageSize = Int.MaxValue))).results
+      val actualKeywords   = await(keywordService.findAll(Pagination(pageSize = Int.MaxValue))).results
       val expectedKeywords = keywords.map(keyword => Keyword(keyword, approved = true))
 
       actualKeywords should contain theSameElementsAs expectedKeywords

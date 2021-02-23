@@ -17,24 +17,31 @@
 package uk.gov.hmrc.bindingtariffclassification.base
 
 import akka.stream.Materializer
+import com.kenshoo.play.metrics.Metrics
 import org.scalatest.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
+import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.{BodyParsers, MessagesControllerComponents}
 import uk.gov.hmrc.bindingtariffclassification.connector.ResourceFiles
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.test.UnitSpec
+import util.TestMetrics
 
 abstract class BaseSpec extends UnitSpec with GuiceOneAppPerSuite with MockitoSugar with ResourceFiles with Matchers {
 
   override lazy val fakeApplication: Application = GuiceApplicationBuilder()
     .configure(
       "metrics.jvm"     -> false,
-      "metrics.enabled" -> false
+      "metrics.enabled" -> false,
+      "scheduler.active-days-elapsed.enabled" -> false,
+      "scheduler.referred-days-elapsed.enabled" -> false,
+      "scheduler.filestore-cleanup.enabled" -> false
     )
+    .overrides(bind[Metrics].toInstance(new TestMetrics))
     .build()
 
   implicit val mat: Materializer = fakeApplication.materializer

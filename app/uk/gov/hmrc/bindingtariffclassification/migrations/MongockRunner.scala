@@ -17,17 +17,16 @@
 package uk.gov.hmrc.bindingtariffclassification.migrations
 
 import com.github.cloudyrock.mongock.driver.mongodb.sync.v4.driver.MongoSync4Driver
-import com.github.cloudyrock.mongock.runner.core.event.MongockEvent
 import com.github.cloudyrock.standalone.MongockStandalone
 import com.github.cloudyrock.standalone.event.StandaloneMigrationSuccessEvent
 import com.mongodb.client.{MongoClient, MongoClients}
+import javax.inject.Inject
 import uk.gov.hmrc.bindingtariffclassification.common.Logging
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 
-import javax.inject.Inject
 import scala.concurrent.Promise
 
-class MongockRunner @Inject()(appConfig: AppConfig) extends Logging {
+class MongockRunner @Inject() (appConfig: AppConfig) extends Logging {
 
   lazy val migrationCompleted = Promise[StandaloneMigrationSuccessEvent]
 
@@ -35,18 +34,19 @@ class MongockRunner @Inject()(appConfig: AppConfig) extends Logging {
 
     val mongoClient: MongoClient = MongoClients.create(appConfig.mongodbUri)
 
-    MongockStandalone.builder()
+    MongockStandalone
+      .builder()
       .setDriver(MongoSync4Driver.withDefaultLock(mongoClient, appConfig.appName))
       .addChangeLogsScanPackage("uk.gov.hmrc.bindingtariffclassification.migrations.changelogs")
-      .setMigrationStartedListener(() => {
-        logger.info("Started mongock migrations")
-      }).setMigrationSuccessListener(successEvent => {
-      logger.info("Finished mongock migrations successfully")
-      migrationCompleted.success(successEvent)
-    }).setMigrationFailureListener(failureEvent => {
-      logger.error("Mongock migrations failed", failureEvent.getException)
-      migrationCompleted.failure(failureEvent.getException)
-    })
+      .setMigrationStartedListener(() => logger.info("Started mongock migrations"))
+      .setMigrationSuccessListener { successEvent =>
+        logger.info("Finished mongock migrations successfully")
+        migrationCompleted.success(successEvent)
+      }
+      .setMigrationFailureListener { failureEvent =>
+        logger.error("Mongock migrations failed", failureEvent.getException)
+        migrationCompleted.failure(failureEvent.getException)
+      }
       .buildRunner()
   }
 

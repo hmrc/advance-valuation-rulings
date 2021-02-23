@@ -16,12 +16,15 @@
 
 package uk.gov.hmrc.bindingtariffclassification.component
 
+import com.kenshoo.play.metrics.Metrics
 import org.scalatest._
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.{Case, Event, Sequence}
 import uk.gov.hmrc.bindingtariffclassification.repository.{CaseMongoRepository, EventMongoRepository, SchedulerLockMongoRepository, SequenceMongoRepository}
+import util.TestMetrics
 
 import scala.concurrent.Await.result
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -37,6 +40,7 @@ abstract class BaseFeatureSpec
 
   override lazy val app = GuiceApplicationBuilder()
     .configure("mongodb.uri" -> "mongodb://localhost:27017/test-ClassificationMongoRepositoryTest")
+    .overrides(bind[Metrics].toInstance(new TestMetrics))
     .build()
 
   protected val timeout: FiniteDuration = 5.seconds

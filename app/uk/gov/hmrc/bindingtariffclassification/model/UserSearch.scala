@@ -19,7 +19,7 @@ package uk.gov.hmrc.bindingtariffclassification.model
 import play.api.mvc.QueryStringBindable
 import uk.gov.hmrc.bindingtariffclassification.model.Role.Role
 
-case class UserSearch(role: Option[Role] = None, team: Option[String] = None)
+case class UserSearch(role: Option[Set[Role]] = None, team: Option[String] = None)
 
 object UserSearch {
 
@@ -44,7 +44,7 @@ object UserSearch {
         Some(
           Right(
             UserSearch(
-              role = param(roleKey).flatMap(bindRole),
+              role = params(roleKey).map(_.map(bindRole).filter(_.isDefined).map(_.get)),
               team = param(teamKey)
             )
           )
@@ -53,7 +53,7 @@ object UserSearch {
 
       override def unbind(key: String, filter: UserSearch): String = {
         Seq(
-          filter.role.map(r => stringBinder.unbind(roleKey, r.toString)),
+          filter.role.map(_.map(r =>stringBinder.unbind(roleKey, r.toString)).mkString("&")),
           filter.team.map(r => stringBinder.unbind(teamKey, r))
         ).filter(_.isDefined).map(_.get).mkString("&")
       }

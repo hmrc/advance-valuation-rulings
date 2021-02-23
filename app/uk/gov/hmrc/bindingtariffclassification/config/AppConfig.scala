@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.bindingtariffclassification.config
 
-import java.time.{Clock, LocalTime}
-
+import java.time.Clock
 import javax.inject._
-import play.api.{Configuration, Logger}
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-import scala.concurrent.duration.{Duration, FiniteDuration}
+import cron4s.Cron
+import cron4s.expr.CronExpr
+import play.api.{Configuration, Logger}
+import scala.concurrent.duration._
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
 class AppConfig @Inject() (
@@ -45,20 +46,17 @@ class AppConfig @Inject() (
 
   lazy val activeDaysElapsed: JobConfig = JobConfig(
     getBooleanConfig("scheduler.active-days-elapsed.enabled"),
-    LocalTime.parse(configuration.get[String]("scheduler.active-days-elapsed.run-time")),
-    getDuration("scheduler.active-days-elapsed.interval").asInstanceOf[FiniteDuration]
+    Cron.unsafeParse(configuration.get[String]("scheduler.active-days-elapsed.schedule"))
   )
 
   lazy val referredDaysElapsed: JobConfig = JobConfig(
     getBooleanConfig("scheduler.referred-days-elapsed.enabled"),
-    LocalTime.parse(configuration.get[String]("scheduler.referred-days-elapsed.run-time")),
-    getDuration("scheduler.referred-days-elapsed.interval").asInstanceOf[FiniteDuration]
+    Cron.unsafeParse(configuration.get[String]("scheduler.referred-days-elapsed.schedule"))
   )
 
   lazy val fileStoreCleanup: JobConfig = JobConfig(
     getBooleanConfig("scheduler.filestore-cleanup.enabled"),
-    LocalTime.parse(configuration.get[String]("scheduler.filestore-cleanup.run-time")),
-    getDuration("scheduler.filestore-cleanup.interval").asInstanceOf[FiniteDuration]
+    Cron.unsafeParse(configuration.get[String]("scheduler.filestore-cleanup.schedule"))
   )
 
   lazy val authorization: String = configuration.get[String]("auth.api-token")
@@ -96,4 +94,5 @@ class AppConfig @Inject() (
 }
 
 case class MongoEncryption(enabled: Boolean = false, key: Option[String] = None)
-case class JobConfig(enabled: Boolean, elapseTime: LocalTime, interval: FiniteDuration)
+
+case class JobConfig(enabled: Boolean, schedule: CronExpr)

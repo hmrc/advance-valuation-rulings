@@ -17,18 +17,16 @@
 package uk.gov.hmrc.bindingtariffclassification.repository
 
 import com.google.inject.ImplementedBy
+import javax.inject.{Inject, Singleton}
 import play.api.libs.json._
 import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.collection.JSONCollection
 import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters._
 import uk.gov.hmrc.bindingtariffclassification.model.{Keyword, MongoFormatters, Paged, Pagination}
 import uk.gov.hmrc.mongo.ReactiveRepository
-import javax.inject.{Inject, Singleton}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-
-
 @ImplementedBy(classOf[KeywordsMongoRepository])
 trait KeywordsRepository {
 
@@ -43,12 +41,12 @@ trait KeywordsRepository {
 }
 
 @Singleton
-class KeywordsMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
-  extends ReactiveRepository[Keyword, BSONObjectID](
-    collectionName = "keywords",
-    mongo = mongoDbProvider.mongo,
-    domainFormat = MongoFormatters.formatKeywords
-  )
+class KeywordsMongoRepository @Inject() (mongoDbProvider: MongoDbProvider)
+    extends ReactiveRepository[Keyword, BSONObjectID](
+      collectionName = "keywords",
+      mongo          = mongoDbProvider.mongo,
+      domainFormat   = MongoFormatters.formatKeywords
+    )
     with KeywordsRepository
     with MongoCrudHelper[Keyword] {
 
@@ -62,14 +60,11 @@ class KeywordsMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
 
   override def insert(keyword: Keyword): Future[Keyword] = createOne(keyword)
 
-  override def update(keyword: Keyword,
-                      upsert: Boolean): Future[Option[Keyword]] = {
+  override def update(keyword: Keyword, upsert: Boolean): Future[Option[Keyword]] =
     updateDocument(selector = byName(keyword.name), update = keyword, upsert = upsert)
-  }
 
-  override def findAll(pagination: Pagination): Future[Paged[Keyword]] = {
+  override def findAll(pagination: Pagination): Future[Paged[Keyword]] =
     getMany(Json.obj(), defaultSortBy, pagination)
-  }
 
   private def byName(name: String): JsObject =
     Json.obj("name" -> name)

@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.bindingtariffclassification.controllers
 
+import javax.inject.Inject
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
@@ -23,26 +24,25 @@ import uk.gov.hmrc.bindingtariffclassification.model.ErrorCode.NOTFOUND
 import uk.gov.hmrc.bindingtariffclassification.model.RESTFormatters._
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.service.KeywordService
-import javax.inject.Inject
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future.successful
 
-class KeywordController @Inject()(appConfig: AppConfig,
-                                  keywordService: KeywordService,
-                                  mcc: MessagesControllerComponents)
-  extends CommonController(mcc) {
+class KeywordController @Inject() (
+  appConfig: AppConfig,
+  keywordService: KeywordService,
+  mcc: MessagesControllerComponents
+) extends CommonController(mcc) {
 
-  def addKeyword: Action[JsValue] = Action.async(parse.json) {
-    implicit request =>
-      withJsonBody[NewKeywordRequest] { keywordRequest: NewKeywordRequest =>
-        for {
-          k <- keywordService.addKeyword(keywordRequest.keyword)
-        } yield Created(Json.toJson(k)(RESTFormatters.formatKeyword))
-      } recover recovery map { result =>
-        logger.debug(s"Keyword added with result : $result");
-        result
-      }
+  def addKeyword: Action[JsValue] = Action.async(parse.json) { implicit request =>
+    withJsonBody[NewKeywordRequest] { keywordRequest: NewKeywordRequest =>
+      for {
+        k <- keywordService.addKeyword(keywordRequest.keyword)
+      } yield Created(Json.toJson(k)(RESTFormatters.formatKeyword))
+    } recover recovery map { result =>
+      logger.debug(s"Keyword added with result : $result");
+      result
+    }
   }
 
   def deleteKeyword(name: String): Action[AnyContent] = Action.async {
@@ -55,7 +55,7 @@ class KeywordController @Inject()(appConfig: AppConfig,
         if (keyword.name == name) {
           val upsert = request.headers.get(USER_AGENT) match {
             case Some(agent) => appConfig.upsertAgents.contains(agent)
-            case _ => false
+            case _           => false
           }
           keywordService.approveKeyword(keyword, upsert) map handleNotFound recover recovery
         } else {
@@ -71,25 +71,22 @@ class KeywordController @Inject()(appConfig: AppConfig,
       } recover recovery
     }
 
-  def getAllKeywords(pagination: Pagination): Action[AnyContent]  =
-      Action.async { implicit request =>
-        keywordService.findAll(pagination).map { allKeywords =>
-          Ok(Json.toJson(allKeywords))
-        } recover recovery
-  }
+  def getAllKeywords(pagination: Pagination): Action[AnyContent] =
+    Action.async { implicit request =>
+      keywordService.findAll(pagination).map { allKeywords =>
+        Ok(Json.toJson(allKeywords))
+      } recover recovery
+    }
 
-  def fetchCaseKeywords(pagination: Pagination) = {
+  def fetchCaseKeywords(pagination: Pagination) =
     Action.async { implicit request =>
       keywordService.fetchCaseKeywords(pagination).map { keywords =>
         Ok(Json.toJson(keywords))
       } recover recovery
     }
 
-  }
-
-  private[controllers] def handleNotFound
-  : PartialFunction[Option[Keyword], Result] = {
+  private[controllers] def handleNotFound: PartialFunction[Option[Keyword], Result] = {
     case Some(keyword: Keyword) => Ok(Json.toJson(keyword))
-    case _ => NotFound(JsErrorResponse(NOTFOUND, "Keyword not found"))
+    case _                      => NotFound(JsErrorResponse(NOTFOUND, "Keyword not found"))
   }
 }

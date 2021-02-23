@@ -29,6 +29,7 @@ import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.http.ProxyHttpClient
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.HttpAuditing
+import util.TestMetrics
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -43,7 +44,7 @@ class BankHolidaysConnectorTest extends BaseSpec with WiremockTestServer with Be
   private val httpAuditEvent      = fakeApplication.injector.instanceOf[HttpAuditing]
   private val hmrcProxyHttpClient = new ProxyHttpClient(fakeApplication.configuration, httpAuditEvent, wsClient)
 
-  private val connector = new BankHolidaysConnector(config, hmrcProxyHttpClient)
+  private val connector = new BankHolidaysConnector(config, hmrcProxyHttpClient, new TestMetrics)
 
   override protected def beforeAll(): Unit = {
     super.beforeAll()
