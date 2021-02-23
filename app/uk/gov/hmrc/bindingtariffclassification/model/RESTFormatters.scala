@@ -162,14 +162,14 @@ object RESTFormatters {
 
   implicit val formatReportField: Format[ReportField[_]] = Union
     .from[ReportField[_]]("type")
-    .and[NumberField]("number")
-    .and[StatusField]("status")
-    .and[CaseTypeField]("caseType")
-    .and[ChapterField]("chapter")
-    .and[DateField]("date")
-    .and[UserField]("user")
-    .and[StringField]("string")
-    .and[DaysSinceField]("daysSince")
+    .and[NumberField](ReportFieldType.Number.name)
+    .and[StatusField](ReportFieldType.Status.name)
+    .and[CaseTypeField](ReportFieldType.CaseType.name)
+    .and[ChapterField](ReportFieldType.Chapter.name)
+    .and[DateField](ReportFieldType.Date.name)
+    .and[UserField](ReportFieldType.User.name)
+    .and[StringField](ReportFieldType.String.name)
+    .and[DaysSinceField](ReportFieldType.DaysSince.name)
     .format
 
   implicit val formatNumberResultField: OFormat[NumberResultField]     = Json.format[NumberResultField]
@@ -181,12 +181,12 @@ object RESTFormatters {
 
   implicit val formatReportResultField: Format[ReportResultField[_]] = Union
     .from[ReportResultField[_]]("type")
-    .and[NumberResultField]("number")
-    .and[StatusResultField]("status")
-    .and[CaseTypeResultField]("caseType")
-    .and[DateResultField]("date")
-    .and[UserResultField]("user")
-    .and[StringResultField]("string")
+    .and[NumberResultField](ReportFieldType.Number.name)
+    .and[StatusResultField](ReportFieldType.Status.name)
+    .and[CaseTypeResultField](ReportFieldType.CaseType.name)
+    .and[DateResultField](ReportFieldType.Date.name)
+    .and[UserResultField](ReportFieldType.User.name)
+    .and[StringResultField](ReportFieldType.String.name)
     .format
 
   implicit val formatSimpleResultGroup: OFormat[SimpleResultGroup] = Json.format[SimpleResultGroup]

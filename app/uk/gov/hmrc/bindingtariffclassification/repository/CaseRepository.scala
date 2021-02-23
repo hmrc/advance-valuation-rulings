@@ -400,7 +400,7 @@ class CaseMongoRepository @Inject() (
         (first, rest)
 
       }
-      .head
+      .headOption
 
     val runAggregation = collection
       .aggregateWith[JsObject](allowDiskUse = true) { framework =>
@@ -444,7 +444,7 @@ class CaseMongoRepository @Inject() (
 
     (runCount, runAggregation).mapN {
       case (count, results) =>
-        Paged(results, pagination, count(countField).as[Int])
+        Paged(results, pagination, count.map(_(countField).as[Int]).getOrElse(0))
     }
   }
 
@@ -467,7 +467,7 @@ class CaseMongoRepository @Inject() (
         (first, rest)
 
       }
-      .head
+      .headOption
 
     val runAggregation = collection
       .aggregateWith[JsObject](allowDiskUse = true) { framework =>
@@ -508,7 +508,7 @@ class CaseMongoRepository @Inject() (
 
     (runCount, runAggregation).mapN {
       case (count, results) =>
-        Paged(results, pagination, count(countField).as[Int])
+        Paged(results, pagination, count.map(_(countField).as[Int]).getOrElse(0))
     }
   }
 }
