@@ -19,11 +19,12 @@ package uk.gov.hmrc.bindingtariffclassification.model.utils
 import java.time.Instant
 
 import uk.gov.hmrc.bindingtariffclassification.model.ApplicationType.ApplicationType
+import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model.PseudoCaseStatus.PseudoCaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model.reporting.CaseReportField.CaseReportField
 import uk.gov.hmrc.bindingtariffclassification.model.reporting.CaseReportGroup.CaseReportGroup
 import uk.gov.hmrc.bindingtariffclassification.model.reporting.{CaseReportField, CaseReportGroup}
-import uk.gov.hmrc.bindingtariffclassification.model.{ApplicationType, PseudoCaseStatus}
+import uk.gov.hmrc.bindingtariffclassification.model.{ApplicationType, CaseStatus, PseudoCaseStatus}
 import uk.gov.hmrc.bindingtariffclassification.sort.CaseSortField.CaseSortField
 import uk.gov.hmrc.bindingtariffclassification.sort.SortDirection.SortDirection
 import uk.gov.hmrc.bindingtariffclassification.sort.{CaseSortField, SortDirection}
@@ -46,6 +47,9 @@ object BinderUtil {
 
   def bindPseudoCaseStatus(value: String): Option[PseudoCaseStatus] =
     PseudoCaseStatus.values.find(_.toString.equalsIgnoreCase(value))
+
+  def bindCaseStatus(value: String): Option[CaseStatus] =
+    CaseStatus.values.find(_.toString.equalsIgnoreCase(value))
 
   def bindApplicationType(value: String): Option[ApplicationType] =
     ApplicationType.values.find(_.toString.equalsIgnoreCase(value))

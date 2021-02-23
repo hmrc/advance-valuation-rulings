@@ -283,6 +283,12 @@ class CaseMongoRepository @Inject() (
       else
         Json.obj("application.type" -> Json.obj("$in" -> report.caseTypes.map(Json.toJson(_))))
 
+    val statusFilter =
+      if (report.statuses.isEmpty)
+        Json.obj()
+      else
+        Json.obj("status" -> Json.obj("$in" -> report.statuses.map(Json.toJson(_))))
+
     val teamFilter =
       if (report.teams.isEmpty)
         Json.obj()
@@ -307,7 +313,7 @@ class CaseMongoRepository @Inject() (
       else
         Json.obj("createdDate" -> (minDateFilter ++ maxDateFilter))
 
-    Match(caseTypeFilter ++ teamFilter ++ dateFilter)
+    Match(caseTypeFilter ++ statusFilter ++ teamFilter ++ dateFilter)
   }
 
   private def sortStage(

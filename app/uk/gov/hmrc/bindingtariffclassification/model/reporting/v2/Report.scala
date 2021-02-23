@@ -21,11 +21,13 @@ import play.api.mvc.QueryStringBindable
 import uk.gov.hmrc.bindingtariffclassification.model.ApplicationType
 import uk.gov.hmrc.bindingtariffclassification.model.reporting.InstantRange
 import uk.gov.hmrc.bindingtariffclassification.sort.SortDirection
+import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus
 
 sealed abstract class Report extends Product with Serializable {
   def sortBy: ReportField[_]
   def sortOrder: SortDirection.Value
   def caseTypes: Set[ApplicationType.Value]
+  def statuses: Set[CaseStatus.Value]
   def teams: Set[String]
   def dateRange: InstantRange
 }
@@ -35,6 +37,7 @@ case class SummaryReport(
   sortBy: ReportField[_],
   sortOrder: SortDirection.Value        = SortDirection.ASCENDING,
   caseTypes: Set[ApplicationType.Value] = Set.empty,
+  statuses: Set[CaseStatus.Value]       = Set.empty,
   teams: Set[String]                    = Set.empty,
   dateRange: InstantRange               = InstantRange.allTime,
   maxFields: Set[ReportField[Long]]     = Set.empty,
@@ -50,6 +53,7 @@ object SummaryReport {
   private val teamsKey        = "team"
   private val maxFieldsKey    = "max_fields"
   private val includeCasesKey = "include_cases"
+  private val statusesKey     = "status"
 
   implicit def summaryReportQueryStringBindable(
     implicit
@@ -69,10 +73,13 @@ object SummaryReport {
       val caseTypes = params(caseTypesKey)(requestParams)
         .map(_.map(bindApplicationType).collect { case Some(value) => value })
         .getOrElse(Set.empty)
+      val statuses = params(statusesKey)(requestParams)
+        .map(_.map(bindCaseStatus).collect { case Some(status) => status })
+        .getOrElse(Set.empty)
       val maxFields = params(maxFieldsKey)(requestParams)
         .map(_.flatMap(ReportField.fields.get(_).collect[ReportField[Long]] {
           case days @ DaysSinceField(_, _) => days
-          case num @ NumberField(_, _) => num
+          case num @ NumberField(_, _)     => num
         }))
         .getOrElse(Set.empty)
       (groupBy, sortBy).mapN {
@@ -86,6 +93,7 @@ object SummaryReport {
             sortBy       = sortBy,
             sortOrder    = sortOrder,
             caseTypes    = caseTypes,
+            statuses     = statuses,
             teams        = teams,
             maxFields    = maxFields,
             includeCases = include
@@ -111,6 +119,7 @@ case class CaseReport(
   sortBy: ReportField[_],
   sortOrder: SortDirection.Value        = SortDirection.ASCENDING,
   caseTypes: Set[ApplicationType.Value] = Set.empty,
+  statuses: Set[CaseStatus.Value]       = Set.empty,
   teams: Set[String]                    = Set.empty,
   dateRange: InstantRange               = InstantRange.allTime,
   fields: Set[ReportField[_]]           = Set.empty
@@ -123,6 +132,7 @@ object CaseReport {
   private val caseTypesKey = "case_type"
   private val teamsKey     = "team"
   private val fieldsKey    = "fields"
+  private val statusesKey  = "status"
 
   implicit def caseReportQueryStringBindable(
     implicit
@@ -139,6 +149,9 @@ object CaseReport {
       val caseTypes = params(caseTypesKey)(requestParams)
         .map(_.map(bindApplicationType).collect { case Some(value) => value })
         .getOrElse(Set.empty)
+      val statuses = params(statusesKey)(requestParams)
+        .map(_.map(bindCaseStatus).collect { case Some(status) => status })
+        .getOrElse(Set.empty)
       val fields = params(fieldsKey)(requestParams)
         .map(_.flatMap(ReportField.fields.get(_)))
 
@@ -149,6 +162,7 @@ object CaseReport {
           sortBy    = sortBy,
           sortOrder = sortOrder,
           caseTypes = caseTypes,
+          statuses  = statuses,
           teams     = teams,
           dateRange = range,
           fields    = fields
