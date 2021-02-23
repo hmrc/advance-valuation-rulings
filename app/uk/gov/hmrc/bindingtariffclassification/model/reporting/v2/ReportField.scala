@@ -45,10 +45,6 @@ case class DateField(override val fieldName: String, override val underlyingFiel
     extends ReportField[Instant](fieldName, underlyingField) {
   def withValue(value: Option[Instant]): DateResultField = DateResultField(fieldName, value)
 }
-case class UserField(override val fieldName: String, override val underlyingField: String)
-    extends ReportField[Operator](fieldName, underlyingField) {
-  def withValue(value: Option[Operator]): UserResultField = UserResultField(fieldName, value)
-}
 case class StringField(override val fieldName: String, override val underlyingField: String)
     extends ReportField[String](fieldName, underlyingField) {
   def withValue(value: Option[String]): StringResultField = StringResultField(fieldName, value)
@@ -66,7 +62,7 @@ object ReportField {
   val Chapter       = ChapterField("chapter", "decision.bindingCommodityCode")
   val GoodsName     = StringField("goods_name", "application.goodName")
   val TraderName    = StringField("trader_name", "application.traderName")
-  val User          = UserField("assigned_user", "assignee")
+  val User          = StringField("assigned_user", "assignee.id")
   val Team          = StringField("assigned_team", "queueId")
   val DateCreated   = DateField("date_created", "createdDate")
   val DateCompleted = DateField("date_completed", "decision.effectiveStartDate")

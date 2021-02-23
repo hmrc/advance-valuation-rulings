@@ -40,8 +40,6 @@ class ReportFieldSpec extends BaseSpec {
           field.withValue(Some(CaseStatus.OPEN)) shouldBe StatusResultField(fieldName, Some(CaseStatus.OPEN))
         case field @ StringField(fieldName, underlyingField) =>
           field.withValue(Some("Chipotle Paste")) shouldBe StringResultField(fieldName, Some("Chipotle Paste"))
-        case field @ UserField(fieldName, underlyingField) =>
-          field.withValue(Some(Operator("666333", None))) shouldBe UserResultField(fieldName, Some(Operator("666333", None)))
       }
     }
   }

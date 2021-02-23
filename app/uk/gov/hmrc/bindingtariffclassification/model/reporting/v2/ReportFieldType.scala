@@ -24,7 +24,6 @@ object ReportFieldType {
   case object CaseType extends ReportFieldType("caseType")
   case object Chapter extends ReportFieldType("chapter")
   case object Date extends ReportFieldType("date")
-  case object User extends ReportFieldType("user")
   case object String extends ReportFieldType("string")
   case object DaysSince extends ReportFieldType("daysSince")
 }

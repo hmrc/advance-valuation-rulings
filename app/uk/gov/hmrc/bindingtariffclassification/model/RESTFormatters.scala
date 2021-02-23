@@ -156,7 +156,6 @@ object RESTFormatters {
   implicit val formatCaseTypeField: OFormat[CaseTypeField]   = Json.format[CaseTypeField]
   implicit val formatChapterField: OFormat[ChapterField]     = Json.format[ChapterField]
   implicit val formatDateField: OFormat[DateField]           = Json.format[DateField]
-  implicit val formatUserField: OFormat[UserField]           = Json.format[UserField]
   implicit val formatStringField: OFormat[StringField]       = Json.format[StringField]
   implicit val formatDaysSinceField: OFormat[DaysSinceField] = Json.format[DaysSinceField]
 
@@ -167,7 +166,6 @@ object RESTFormatters {
     .and[CaseTypeField](ReportFieldType.CaseType.name)
     .and[ChapterField](ReportFieldType.Chapter.name)
     .and[DateField](ReportFieldType.Date.name)
-    .and[UserField](ReportFieldType.User.name)
     .and[StringField](ReportFieldType.String.name)
     .and[DaysSinceField](ReportFieldType.DaysSince.name)
     .format
@@ -176,7 +174,6 @@ object RESTFormatters {
   implicit val formatStatusResultField: OFormat[StatusResultField]     = Json.format[StatusResultField]
   implicit val formatCaseTypeResultField: OFormat[CaseTypeResultField] = Json.format[CaseTypeResultField]
   implicit val formatDateResultField: OFormat[DateResultField]         = Json.format[DateResultField]
-  implicit val formatUserResultField: OFormat[UserResultField]         = Json.format[UserResultField]
   implicit val formatStringResultField: OFormat[StringResultField]     = Json.format[StringResultField]
 
   implicit val formatReportResultField: Format[ReportResultField[_]] = Union
@@ -185,7 +182,6 @@ object RESTFormatters {
     .and[StatusResultField](ReportFieldType.Status.name)
     .and[CaseTypeResultField](ReportFieldType.CaseType.name)
     .and[DateResultField](ReportFieldType.Date.name)
-    .and[UserResultField](ReportFieldType.User.name)
     .and[StringResultField](ReportFieldType.String.name)
     .format
 

@@ -379,7 +379,6 @@ class CaseMongoRepository @Inject() (
     case field @ NumberField(fieldName, _)    => field.withValue(json.flatMap(_.asOpt[Long]))
     case field @ StatusField(fieldName, _)    => field.withValue(json.flatMap(_.asOpt[CaseStatus.Value]))
     case field @ StringField(fieldName, _)    => field.withValue(json.flatMap(_.asOpt[String]))
-    case field @ UserField(fieldName, _)      => field.withValue(json.flatMap(_.asOpt[Operator]))
   }
 
   private def getNumberFieldValue(field: ReportField[Long], json: Option[JsValue]): NumberResultField = field match {

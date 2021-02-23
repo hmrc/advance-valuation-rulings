@@ -1263,17 +1263,17 @@ class CaseRepositorySpec
       paged.results shouldBe Seq(
         SimpleResultGroup(
           count     = 1,
-          groupKey  = ReportField.User.withValue(Some(Operator("3"))),
+          groupKey  = ReportField.User.withValue(Some("3")),
           maxFields = List(ReportField.TotalDays.withValue(Some(31)))
         ),
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.User.withValue(Some(Operator("2"))),
+          groupKey  = ReportField.User.withValue(Some("2")),
           maxFields = List(ReportField.TotalDays.withValue(Some(32)))
         ),
         SimpleResultGroup(
           count     = 3,
-          groupKey  = ReportField.User.withValue(Some(Operator("1"))),
+          groupKey  = ReportField.User.withValue(Some("1")),
           maxFields = List(ReportField.TotalDays.withValue(Some(397)))
         )
       )
@@ -1283,19 +1283,19 @@ class CaseRepositorySpec
       pagedWithCases.results shouldBe Seq(
         CaseResultGroup(
           count     = 1,
-          groupKey  = ReportField.User.withValue(Some(Operator("3"))),
+          groupKey  = ReportField.User.withValue(Some("3")),
           maxFields = List(ReportField.TotalDays.withValue(Some(31))),
           cases     = List(c6)
         ),
         CaseResultGroup(
           count     = 2,
-          groupKey  = ReportField.User.withValue(Some(Operator("2"))),
+          groupKey  = ReportField.User.withValue(Some("2")),
           maxFields = List(ReportField.TotalDays.withValue(Some(32))),
           cases     = List(c4, c5)
         ),
         CaseResultGroup(
           count     = 3,
-          groupKey  = ReportField.User.withValue(Some(Operator("1"))),
+          groupKey  = ReportField.User.withValue(Some("1")),
           maxFields = List(ReportField.TotalDays.withValue(Some(397))),
           cases     = List(c1, c2, c3)
         )
@@ -1693,25 +1693,25 @@ class CaseRepositorySpec
         Map(
           "reference"     -> ReportField.Reference.withValue(Some("5")),
           "chapter"       -> ReportField.Chapter.withValue(Some("95")),
-          "assigned_user" -> ReportField.User.withValue(Some(Operator("2"))),
+          "assigned_user" -> ReportField.User.withValue(Some("2")),
           "total_days"    -> ReportField.TotalDays.withValue(Some(31))
         ),
         Map(
           "reference"     -> ReportField.Reference.withValue(Some("4")),
           "chapter"       -> ReportField.Chapter.withValue(None),
-          "assigned_user" -> ReportField.User.withValue(Some(Operator("2"))),
+          "assigned_user" -> ReportField.User.withValue(Some("2")),
           "total_days"    -> ReportField.TotalDays.withValue(Some(32))
         ),
         Map(
           "reference"     -> ReportField.Reference.withValue(Some("3")),
           "chapter"       -> ReportField.Chapter.withValue(Some("85")),
-          "assigned_user" -> ReportField.User.withValue(Some(Operator("1"))),
+          "assigned_user" -> ReportField.User.withValue(Some("1")),
           "total_days"    -> ReportField.TotalDays.withValue(Some(32))
         ),
         Map(
           "reference"     -> ReportField.Reference.withValue(Some("2")),
           "chapter"       -> ReportField.Chapter.withValue(Some("95")),
-          "assigned_user" -> ReportField.User.withValue(Some(Operator("1"))),
+          "assigned_user" -> ReportField.User.withValue(Some("1")),
           "total_days"    -> ReportField.TotalDays.withValue(Some(397))
         )
       )

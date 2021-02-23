@@ -33,8 +33,5 @@ case class CaseTypeResultField(override val fieldName: String, override val data
 case class DateResultField(override val fieldName: String, override val data: Option[Instant])
     extends ReportResultField[Instant](fieldName, data)
 
-case class UserResultField(override val fieldName: String, override val data: Option[Operator])
-    extends ReportResultField[Operator](fieldName, data)
-
 case class StringResultField(override val fieldName: String, override val data: Option[String])
     extends ReportResultField[String](fieldName, data)
