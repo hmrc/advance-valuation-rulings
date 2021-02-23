@@ -22,12 +22,12 @@ import play.api.libs.json.{JsObject, JsString, Json}
 import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.commands.JSONAggregationFramework
 import reactivemongo.play.json.commands.JSONAggregationFramework._
-import uk.gov.hmrc.bindingtariffclassification.model.{CaseKeyword, CaseStatus, Paged, Pagination}
 import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters._
+import uk.gov.hmrc.bindingtariffclassification.model.{CaseKeyword, Paged, Pagination}
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 @ImplementedBy(classOf[CaseKeywordMongoView])
 trait CaseKeywordView {
@@ -44,8 +44,6 @@ class CaseKeywordMongoView @Inject()(
 ) with CaseKeywordView {
 
   override protected val pipeline: Seq[JSONAggregationFramework.PipelineOperator] = {
-    val casesFilter = Match(Json.obj("status" -> Json.obj("$nin" -> Json.arr(CaseStatus.COMPLETED,
-      CaseStatus.CANCELLED))))
     val addHeaderFields = AddFields(Json.obj("team" -> "$queueId",
       "goodsName" -> "$application.goodName",
       "caseType" -> "$application.type"))
@@ -59,7 +57,6 @@ class CaseKeywordMongoView @Inject()(
     val project = Project(Json.obj("_id" -> 0))
 
     Seq(
-      casesFilter,
       addHeaderFields,
       projectCaseHeader,
       unwindKeywords,

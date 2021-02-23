@@ -35,7 +35,7 @@ class KeywordsChangeLog {
       val keywordsCollection = mongoDatabase.getCollection("keywords")
       keywordsCollection.bulkWrite(
         keywords.toList.map { keyword =>
-          new InsertOneModel(new Document("name", keyword))
+          new InsertOneModel(new Document("name", keyword).append( "approved", true))
         }.asJava
       )
     }

@@ -73,7 +73,7 @@ class MongockSpec extends BaseSpec with MongoSpecSupport with BeforeAndAfterEach
 
       await(mongockRunner.migrationCompleted.future)
       val actualKeywords = await(keywordService.findAll(Pagination(pageSize = Int.MaxValue))).results
-      val expectedKeywords = keywords.map(Keyword(_))
+      val expectedKeywords = keywords.map(keyword => Keyword(keyword, approved = true))
 
       actualKeywords should contain theSameElementsAs expectedKeywords
 

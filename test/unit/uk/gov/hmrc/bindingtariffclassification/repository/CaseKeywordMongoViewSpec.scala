@@ -83,8 +83,9 @@ class CaseKeywordMongoViewSpec
     "return keywords from the Cases" in {
       await(repository.insert(caseWithKeywords))
       collectionSize shouldBe 1
+      val expected = List(caseKeyword, caseKeyword2)
 
-      await(view.fetchKeywordsFromCases(pagination)) shouldBe Paged(List(caseKeyword, caseKeyword2))
+      await(view.fetchKeywordsFromCases(pagination)).results shouldBe expected
     }
   }
 }
