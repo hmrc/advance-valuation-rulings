@@ -20,7 +20,7 @@ import better.files._
 import com.github.cloudyrock.mongock.{ChangeLog, ChangeSet}
 import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.InsertOneModel
-import org.bson.Document
+import org.bson._
 
 import scala.collection.JavaConverters._
 
