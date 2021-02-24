@@ -22,10 +22,13 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.{CaseReport, ReportResult}
+import uk.gov.hmrc.bindingtariffclassification.model.reporting.{CaseReport => OldReport, ReportResult}
+import uk.gov.hmrc.bindingtariffclassification.model.reporting.v2._
 import uk.gov.hmrc.bindingtariffclassification.service.ReportService
 
 import scala.concurrent.Future
+import uk.gov.hmrc.bindingtariffclassification.model.Pagination
+import uk.gov.hmrc.bindingtariffclassification.model.Paged
 
 class ReportingControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
@@ -41,11 +44,35 @@ class ReportingControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
   "GET report" should {
     "Delegate to service" in {
-      val report = mock[CaseReport]
+      val report = mock[OldReport]
 
       given(reportService.generate(report)) willReturn Future.successful(Seq.empty[ReportResult])
 
       val result = await(controller.report(report)(fakeRequest))
+
+      status(result) shouldBe OK
+    }
+  }
+
+  "GET summary report" should {
+    "delegate to service" in {
+      val report = mock[SummaryReport]
+
+      given(reportService.summaryReport(report, Pagination())) willReturn Future.successful(Paged.empty[ResultGroup])
+
+      val result = await(controller.summaryReport(report, Pagination())(fakeRequest))
+
+      status(result) shouldBe OK
+    }
+  }
+
+  "GET case report" should {
+    "delegate to service" in {
+      val report = mock[CaseReport]
+
+      given(reportService.caseReport(report, Pagination())) willReturn Future.successful(Paged.empty[Map[String, ReportResultField[_]]])
+
+      val result = await(controller.caseReport(report, Pagination())(fakeRequest))
 
       status(result) shouldBe OK
     }

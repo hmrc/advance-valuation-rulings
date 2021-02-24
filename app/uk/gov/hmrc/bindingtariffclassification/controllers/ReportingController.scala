@@ -19,8 +19,10 @@ package uk.gov.hmrc.bindingtariffclassification.controllers
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.bindingtariffclassification.model.Pagination
 import uk.gov.hmrc.bindingtariffclassification.model.RESTFormatters._
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.CaseReport
+import uk.gov.hmrc.bindingtariffclassification.model.reporting.v2._
+import uk.gov.hmrc.bindingtariffclassification.model.reporting.{CaseReport => OldReport}
 import uk.gov.hmrc.bindingtariffclassification.service.ReportService
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -31,8 +33,15 @@ class ReportingController @Inject() (
   mcc: MessagesControllerComponents
 ) extends CommonController(mcc) {
 
-  def report(report: CaseReport): Action[AnyContent] = Action.async {
+  def report(report: OldReport): Action[AnyContent] = Action.async {
     reportService.generate(report) map { result => Ok(Json.toJson(result)) }
   }
 
+  def summaryReport(report: SummaryReport, pagination: Pagination): Action[AnyContent] = Action.async {
+    reportService.summaryReport(report, pagination).map(result => Ok(Json.toJson(result)))
+  }
+
+  def caseReport(report: CaseReport, pagination: Pagination): Action[AnyContent] = Action.async {
+    reportService.caseReport(report, pagination).map(result => Ok(Json.toJson(result)))
+  }
 }

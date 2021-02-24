@@ -44,7 +44,7 @@ class CaseKeywordMongoViewSpec
   private val view       = newMongoAggregation
 
   private def newMongoRepository: CaseMongoRepository =
-    new CaseMongoRepository(mongoDbProvider, new SearchMapper(config), new UpdateMapper)
+    new CaseMongoRepository(config, mongoDbProvider, new SearchMapper(config), new UpdateMapper)
 
   private def newMongoAggregation: CaseKeywordMongoView =
     new CaseKeywordMongoView(mongoDbProvider)

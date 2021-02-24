@@ -26,6 +26,7 @@ case class InstantRange(
 )
 
 object InstantRange {
+  val allTime = InstantRange(Instant.MIN, Instant.MAX)
 
   implicit def bindable(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[InstantRange] =
     new QueryStringBindable[InstantRange] {
@@ -38,14 +39,14 @@ object InstantRange {
         import uk.gov.hmrc.bindingtariffclassification.model.utils.BinderUtil._
         implicit val rp: Map[String, Seq[String]] = requestParams
 
-        val minValue: Option[Instant] = param(min(key)).flatMap(bindInstant)
-        val maxValue: Option[Instant] = param(max(key)).flatMap(bindInstant)
+        val minValue: Instant = param(min(key)).flatMap(bindInstant).getOrElse(Instant.MIN)
+        val maxValue: Instant = param(max(key)).flatMap(bindInstant).getOrElse(Instant.MAX)
+        val range = InstantRange(minValue, maxValue)
 
-        (minValue, maxValue) match {
-          case (Some(mn), Some(mx)) => Some(Right(InstantRange(mn, mx)))
-          case (None, None)         => None
-          case _                    => Some(Left(s"Params ${min(key)} and ${max(key)} are both required"))
-        }
+        if (range == InstantRange.allTime)
+          None
+        else
+          Some(Right(range))
       }
 
       override def unbind(key: String, filter: InstantRange): String =
