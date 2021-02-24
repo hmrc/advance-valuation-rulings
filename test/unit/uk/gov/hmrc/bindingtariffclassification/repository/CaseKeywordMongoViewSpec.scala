@@ -28,7 +28,7 @@ import util.CaseData.createNewCaseWithExtraFields
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class CaseKeywordMongoViewSpec
-  extends BaseMongoIndexSpec
+    extends BaseMongoIndexSpec
     with BeforeAndAfterAll
     with BeforeAndAfterEach
     with MongoSpecSupport
@@ -39,9 +39,9 @@ class CaseKeywordMongoViewSpec
     override val mongo: () => DB = self.mongo
   }
 
-  private val config = mock[AppConfig]
+  private val config     = mock[AppConfig]
   private val repository = newMongoRepository
-  private val view = newMongoAggregation
+  private val view       = newMongoAggregation
 
   private def newMongoRepository: CaseMongoRepository =
     new CaseMongoRepository(mongoDbProvider, new SearchMapper(config), new UpdateMapper)
@@ -52,11 +52,16 @@ class CaseKeywordMongoViewSpec
   private val caseWithKeywords: Case = createNewCaseWithExtraFields()
 
   private val caseHeader = CaseHeader(
-    reference = "9999999999", Some(Operator("0", None, None, CLASSIFICATION_OFFICER, List(), List(), false)), Some("3"),
+    reference = "9999999999",
+    Some(Operator("0", None, None, CLASSIFICATION_OFFICER, List(), List())),
+    Some("3"),
     Some("HTC Wildfire smartphone"),
-    ApplicationType.BTI, CaseStatus.OPEN)
+    ApplicationType.BTI,
+    CaseStatus.OPEN,
+    0
+  )
 
-  private val caseKeyword = CaseKeyword(Keyword("tool"), List(caseHeader))
+  private val caseKeyword  = CaseKeyword(Keyword("tool"), List(caseHeader))
   private val caseKeyword2 = CaseKeyword(Keyword("bike"), List(caseHeader))
 
   override def beforeEach(): Unit = {

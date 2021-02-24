@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.bindingtariffclassification.controllers
 
-
 import org.mockito.ArgumentMatchers.{any, refEq}
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -39,24 +38,29 @@ import scala.concurrent.Future._
 
 class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
-  override protected def beforeEach() =
+  override protected def beforeEach(): Unit =
     Mockito.reset(keywordService)
 
   private val newKeywordRequest: NewKeywordRequest = CaseData.createNewKeyword()
-  private val keyword1: Keyword = CaseData.createKeyword()
-  private val keyword2: Keyword = CaseData.createKeyword()
-  private val pagination = Pagination()
+  private val keyword1: Keyword                    = CaseData.createKeyword()
+  private val keyword2: Keyword                    = CaseData.createKeyword()
+  private val pagination                           = Pagination()
 
   private val caseHeader = CaseHeader(
-    reference = "9999999999", Some(Operator("0", None, None, CLASSIFICATION_OFFICER, List(), List(), false)), Some("3"),
+    reference = "9999999999",
+    Some(Operator("0", None, None, CLASSIFICATION_OFFICER, List(), List())),
+    Some("3"),
     Some("Smartphone"),
-    ApplicationType.BTI, CaseStatus.OPEN)
+    ApplicationType.BTI,
+    CaseStatus.OPEN,
+    0
+  )
 
-  private val caseKeyword = CaseKeyword(Keyword("tool"), List(caseHeader))
+  private val caseKeyword  = CaseKeyword(Keyword("tool"), List(caseHeader))
   private val caseKeyword2 = CaseKeyword(Keyword("bike"), List(caseHeader))
 
   private val keywordService = mock[KeywordService]
-  private val appConfig = mock[AppConfig]
+  private val appConfig      = mock[AppConfig]
 
   private val fakeRequest = FakeRequest()
 
@@ -87,7 +91,6 @@ class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
   }
 
-
   "addKeyword" should {
 
     "return 201 when the keyword has been created successfully" in {
@@ -100,7 +103,7 @@ class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
     }
 
     "return 400 when the JSON request payload is not a Keyword" in {
-      val body = """{"a":"b"}"""
+      val body   = """{"a":"b"}"""
       val result = await(controller.addKeyword()(fakeRequest.withBody(toJson(body))))
 
       status(result) shouldEqual BAD_REQUEST
@@ -128,7 +131,7 @@ class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
   "approveKeyword" should {
 
     "return 200 when the keyword has been updated/approved successfully" in {
-      when(keywordService.approveKeyword(keyword1, false)).thenReturn(successful(Some(keyword1)))
+      when(keywordService.approveKeyword(keyword1, upsert = false)).thenReturn(successful(Some(keyword1)))
 
       val result = await(controller.approveKeyword(keyword1.name)(fakeRequest.withBody(toJson(keyword1))))
 
@@ -137,7 +140,7 @@ class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
     }
 
     "return 400 when the JSON request payload is invalid" in {
-      val body = """{"a":"b"}"""
+      val body   = """{"a":"b"}"""
       val result = await(controller.approveKeyword("")(fakeRequest.withBody(toJson(body))))
 
       status(result) shouldEqual BAD_REQUEST
@@ -145,7 +148,7 @@ class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
     "return 404 when there are no keywords with the provided name" in {
       val keyword3 = Keyword("not in the list")
-      when(keywordService.approveKeyword(keyword3, false)).thenReturn(successful(None))
+      when(keywordService.approveKeyword(keyword3, upsert = false)).thenReturn(successful(None))
 
       val result = await(controller.approveKeyword(keyword3.name)(fakeRequest.withBody(toJson(keyword3))))
 
@@ -154,10 +157,10 @@ class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
     }
 
     "return 500 when an error occurred" in {
-      val error = new RuntimeException
+      val error    = new RuntimeException
       val keyword3 = Keyword("not in the list")
 
-      when(keywordService.approveKeyword(keyword3, false)).thenReturn(failed(error))
+      when(keywordService.approveKeyword(keyword3, upsert = false)).thenReturn(failed(error))
 
       val result = await(controller.approveKeyword(keyword3.name)(fakeRequest.withBody(toJson(keyword3))))
 

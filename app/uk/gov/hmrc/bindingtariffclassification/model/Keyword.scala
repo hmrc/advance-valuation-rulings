@@ -27,7 +27,8 @@ case class CaseHeader(
                        team: Option[String],
                        goodsName: Option[String],
                        caseType: ApplicationType.Value,
-                       status: CaseStatus.Value
+                       status: CaseStatus.Value,
+                       daysElapsed: Long
                      )
 
 case class CaseKeyword(keyword: Keyword,

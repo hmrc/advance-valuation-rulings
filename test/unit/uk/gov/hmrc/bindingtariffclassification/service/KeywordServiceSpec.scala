@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.bindingtariffclassification.service
 
-
 import org.mockito.ArgumentMatchers.refEq
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
@@ -29,20 +28,25 @@ import scala.concurrent.Future.successful
 
 class KeywordServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
-  private val keyword = mock[Keyword]
+  private val keyword      = mock[Keyword]
   private val addedKeyword = mock[Keyword]
 
-  private val keywordRepository = mock[KeywordsRepository]
+  private val keywordRepository      = mock[KeywordsRepository]
   private val caseKeywordAggregation = mock[CaseKeywordMongoView]
 
   private val pagination = mock[Pagination]
 
   private val caseHeader = CaseHeader(
-    reference = "9999999999", Some(Operator("0", None, None, CLASSIFICATION_OFFICER, List(), List(), false)), Some("3"),
+    reference = "9999999999",
+    Some(Operator("0", None, None, CLASSIFICATION_OFFICER, List(), List())),
+    Some("3"),
     Some("Smartphone"),
-    ApplicationType.BTI, CaseStatus.OPEN)
+    ApplicationType.BTI,
+    CaseStatus.OPEN,
+    0
+  )
 
-  private val caseKeyword = CaseKeyword(Keyword("tool"), List(caseHeader))
+  private val caseKeyword  = CaseKeyword(Keyword("tool"), List(caseHeader))
   private val caseKeyword2 = CaseKeyword(Keyword("bike"), List(caseHeader))
 
   private val service =
@@ -139,7 +143,7 @@ class KeywordServiceSpec extends BaseSpec with BeforeAndAfterEach {
     }
   }
 
-  "fetchCaseKeywords" should{
+  "fetchCaseKeywords" should {
     "run the aggregation and return the results" in {
       when(caseKeywordAggregation.fetchKeywordsFromCases(pagination))
         .thenReturn(successful(Paged(Seq(caseKeyword, caseKeyword2))))
