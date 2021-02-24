@@ -93,6 +93,11 @@ object Cases {
       modifier.apply(current)
     )
 
+  def aCase(cse: Case)(withModifier: (Case => Case)*): Case =
+    withModifier.foldLeft(cse.copy(reference = UUID.randomUUID().toString))((current: Case, modifier) =>
+      modifier.apply(current)
+    )
+
   def withAssignee(operator: Option[Operator]): Case => Case =
     _.copy(assignee = operator)
 

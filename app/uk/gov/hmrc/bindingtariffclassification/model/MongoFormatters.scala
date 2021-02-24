@@ -47,9 +47,9 @@ object MongoFormatters {
     )
 
   // User formatters
-  implicit val role: Format[Role.Value]                               = EnumJson.format(Role)
-  implicit val formatApplicationType: Format[ApplicationType.Value]   = EnumJson.format(ApplicationType)
-  implicit val formatOperator: OFormat[Operator]                      = Json.using[Json.WithDefaultValues].format[Operator]
+  implicit val role: Format[Role.Value]                             = EnumJson.format(Role)
+  implicit val formatApplicationType: Format[ApplicationType.Value] = EnumJson.format(ApplicationType)
+  implicit val formatOperator: OFormat[Operator]                    = Json.using[Json.WithDefaultValues].format[Operator]
 
   // `Sequence` formatters
   implicit val formatSequence: OFormat[Sequence] = Json.format[Sequence]

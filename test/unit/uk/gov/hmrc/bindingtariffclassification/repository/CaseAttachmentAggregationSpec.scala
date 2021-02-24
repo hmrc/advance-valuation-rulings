@@ -43,7 +43,7 @@ class CaseAttachmentViewSpec
   private val aggregation = newMongoAggregation
 
   private def newMongoRepository: CaseMongoRepository =
-    new CaseMongoRepository(mongoDbProvider, new SearchMapper(config), new UpdateMapper)
+    new CaseMongoRepository(config, mongoDbProvider, new SearchMapper(config), new UpdateMapper)
 
   private def newMongoAggregation: CaseAttachmentAggregation =
     new CaseAttachmentAggregation(mongoDbProvider)
