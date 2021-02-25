@@ -23,8 +23,9 @@ import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.Role.CLASSIFICATION_OFFICER
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.mongo.MongoSpecSupport
-import util.CaseData.createNewCaseWithExtraFields
+import util.CaseData.{createBasicBTIApplication, createDecision, createLiabilityOrder}
 
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class CaseKeywordMongoViewSpec
@@ -49,20 +50,57 @@ class CaseKeywordMongoViewSpec
   private def newMongoAggregation: CaseKeywordMongoView =
     new CaseKeywordMongoView(mongoDbProvider)
 
-  private val caseWithKeywords: Case = createNewCaseWithExtraFields()
+  private val secondsInAYear = 3600 * 24 * 365
 
-  private val caseHeader = CaseHeader(
-    reference = "9999999999",
-    Some(Operator("0", None, None, CLASSIFICATION_OFFICER, List(), List())),
+  private val caseWithKeywordsBTI: Case =
+    Case(
+      reference   = "0000001",
+      status      = CaseStatus.OPEN,
+      createdDate = Instant.now.minusSeconds(1 * secondsInAYear),
+      queueId     = Some("3"),
+      assignee    = Some(Operator("001")),
+      application = createBasicBTIApplication,
+      decision    = Some(createDecision()),
+      attachments = Seq.empty,
+      keywords    = Set("bike")
+    )
+  private val caseWithKeywordsLiability: Case =
+    Case(
+      reference   = "0000002",
+      status      = CaseStatus.OPEN,
+      createdDate = Instant.now.minusSeconds(1 * secondsInAYear),
+      queueId     = Some("3"),
+      assignee    = Some(Operator("002")),
+      application = createLiabilityOrder,
+      decision    = Some(createDecision()),
+      attachments = Seq.empty,
+      keywords    = Set("bike", "tool")
+    )
+
+  private val btiCaseHeader = CaseHeader(
+    reference = "0000001",
+    Some(Operator("001", None, None, CLASSIFICATION_OFFICER, List(), List())),
     Some("3"),
     Some("HTC Wildfire smartphone"),
     ApplicationType.BTI,
     CaseStatus.OPEN,
-    0
+    0,
+    None
   )
 
-  private val caseKeyword  = CaseKeyword(Keyword("tool"), List(caseHeader))
-  private val caseKeyword2 = CaseKeyword(Keyword("bike"), List(caseHeader))
+  private val liabilityCaseHeader = CaseHeader(
+    reference = "0000002",
+    Some(Operator("002", None, None, CLASSIFICATION_OFFICER, List(), List())),
+    Some("3"),
+    Some("Hair dryer"),
+    ApplicationType.LIABILITY_ORDER,
+    CaseStatus.OPEN,
+    0,
+    Some(LiabilityStatus.LIVE)
+  )
+
+  private val caseKeywordBike = CaseKeyword(Keyword("bike"), List(btiCaseHeader, liabilityCaseHeader))
+  private val caseKeywordTool = CaseKeyword(Keyword("tool"), List(liabilityCaseHeader))
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -86,11 +124,12 @@ class CaseKeywordMongoViewSpec
   "fetchKeywordsFromCases" should {
 
     "return keywords from the Cases" in {
-      await(repository.insert(caseWithKeywords))
-      collectionSize shouldBe 1
-      val expected = List(caseKeyword, caseKeyword2)
+      await(repository.insert(caseWithKeywordsBTI))
+      await(repository.insert(caseWithKeywordsLiability))
+      collectionSize shouldBe 2
+      val expected = List(caseKeywordBike, caseKeywordTool)
 
-      await(view.fetchKeywordsFromCases(pagination)).results shouldBe expected
+      await(view.fetchKeywordsFromCases(pagination)).results contains expected
     }
   }
 }

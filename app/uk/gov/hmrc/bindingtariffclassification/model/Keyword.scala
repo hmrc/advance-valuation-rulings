@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.bindingtariffclassification.model
 
+import uk.gov.hmrc.bindingtariffclassification.model.LiabilityStatus.LiabilityStatus
+
 case class Keyword(
                     name: String,
                     approved: Boolean = false
@@ -28,7 +30,8 @@ case class CaseHeader(
                        goodsName: Option[String],
                        caseType: ApplicationType.Value,
                        status: CaseStatus.Value,
-                       daysElapsed: Long
+                       daysElapsed: Long,
+                       liabilityStatus: Option[LiabilityStatus]
                      )
 
 case class CaseKeyword(keyword: Keyword,

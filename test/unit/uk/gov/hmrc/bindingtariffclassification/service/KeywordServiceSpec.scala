@@ -43,7 +43,8 @@ class KeywordServiceSpec extends BaseSpec with BeforeAndAfterEach {
     Some("Smartphone"),
     ApplicationType.BTI,
     CaseStatus.OPEN,
-    0
+    0,
+    None
   )
 
   private val caseKeyword  = CaseKeyword(Keyword("tool"), List(caseHeader))

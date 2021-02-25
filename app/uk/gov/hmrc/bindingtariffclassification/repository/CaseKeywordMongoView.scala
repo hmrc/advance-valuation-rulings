@@ -47,18 +47,24 @@ class CaseKeywordMongoView @Inject() (
 
   override protected val pipeline: Seq[JSONAggregationFramework.PipelineOperator] = {
     val addHeaderFields = AddFields(
-      Json.obj("team" -> "$queueId", "goodsName" -> "$application.goodName", "caseType" -> "$application.type")
+      Json.obj(
+        "team"            -> "$queueId",
+        "goodsName"       -> "$application.goodName",
+        "caseType"        -> "$application.type",
+        "liabilityStatus" -> "$application.status"
+      )
     )
     val projectCaseHeader = Project(
       Json.obj(
-        "reference"   -> 1,
-        "status"      -> 1,
-        "assignee"    -> 1,
-        "team"        -> 1,
-        "goodsName"   -> 1,
-        "caseType"    -> 1,
-        "keywords"    -> 1,
-        "daysElapsed" -> 1
+        "reference"       -> 1,
+        "status"          -> 1,
+        "assignee"        -> 1,
+        "team"            -> 1,
+        "goodsName"       -> 1,
+        "caseType"        -> 1,
+        "keywords"        -> 1,
+        "daysElapsed"     -> 1,
+        "liabilityStatus" -> 1
       )
     )
     val unwindKeywords  = UnwindField("keywords")
