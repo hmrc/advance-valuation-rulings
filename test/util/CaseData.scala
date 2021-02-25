@@ -32,79 +32,79 @@ object CaseData {
 
   def createBasicBTIApplication: BTIApplication =
     BTIApplication(
-      holder          = createEORIDetails,
-      contact         = createContact,
+      holder = createEORIDetails,
+      contact = createContact,
       goodDescription = "this is a BTI application for HTC Wildfire mobile phones",
-      goodName        = "HTC Wildfire smartphone"
+      goodName = "HTC Wildfire smartphone"
     )
 
   def createBTIApplicationWithAllFields(
-    applicationPdf: Option[Attachment]        = Some(createAttachment),
-    letterOfAuthorization: Option[Attachment] = Some(createAttachment)
-  ): BTIApplication =
+                                         applicationPdf: Option[Attachment] = Some(createAttachment),
+                                         letterOfAuthorization: Option[Attachment] = Some(createAttachment)
+                                       ): BTIApplication =
     BTIApplication(
-      holder                  = createEORIDetails,
-      agent                   = Some(createAgentDetails(letterOfAuthorization = letterOfAuthorization)),
-      contact                 = createContact,
-      goodDescription         = "this is a BTI application for HTC Wildfire mobile phones",
-      goodName                = "HTC Wildfire smartphone",
+      holder = createEORIDetails,
+      agent = Some(createAgentDetails(letterOfAuthorization = letterOfAuthorization)),
+      contact = createContact,
+      goodDescription = "this is a BTI application for HTC Wildfire mobile phones",
+      goodName = "HTC Wildfire smartphone",
       confidentialInformation = Some("This phone has a secret processor."),
-      otherInformation        = Some("The phone comes in multiple colors"),
-      reissuedBTIReference    = Some("BTI123"),
-      relatedBTIReference     = Some("BTI987"),
-      knownLegalProceedings   = Some("Someone is suing me!"),
-      envisagedCommodityCode  = Some("12345"),
-      sampleToBeProvided      = true,
-      sampleToBeReturned      = true,
-      applicationPdf          = applicationPdf
+      otherInformation = Some("The phone comes in multiple colors"),
+      reissuedBTIReference = Some("BTI123"),
+      relatedBTIReference = Some("BTI987"),
+      knownLegalProceedings = Some("Someone is suing me!"),
+      envisagedCommodityCode = Some("12345"),
+      sampleToBeProvided = true,
+      sampleToBeReturned = true,
+      applicationPdf = applicationPdf
     )
 
   def createDecision(
-    bindingCommodityCode: String                 = "12345678",
-    effectiveStartDate: Option[Instant]          = Some(Instant.now()),
-    effectiveEndDate: Option[Instant]            = Some(Instant.now().plusSeconds(3 * secondsInAYear)),
-    methodSearch: Option[String]                 = Some("bike spanner"),
-    justification: String                        = "Found precedent case",
-    goodsDescription: String                     = "Bike tool",
-    methodCommercialDenomination: Option[String] = None,
-    decisionPdf: Option[Attachment]              = Some(createAttachment)
-  ): Decision =
+                      bindingCommodityCode: String = "12345678",
+                      effectiveStartDate: Option[Instant] = Some(Instant.now()),
+                      effectiveEndDate: Option[Instant] = Some(Instant.now().plusSeconds(3 * secondsInAYear)),
+                      methodSearch: Option[String] = Some("bike spanner"),
+                      justification: String = "Found precedent case",
+                      goodsDescription: String = "Bike tool",
+                      methodCommercialDenomination: Option[String] = None,
+                      decisionPdf: Option[Attachment] = Some(createAttachment)
+                    ): Decision =
     Decision(
-      bindingCommodityCode         = bindingCommodityCode,
-      effectiveStartDate           = effectiveStartDate,
-      effectiveEndDate             = effectiveEndDate,
-      methodSearch                 = methodSearch,
-      justification                = justification,
-      goodsDescription             = goodsDescription,
+      bindingCommodityCode = bindingCommodityCode,
+      effectiveStartDate = effectiveStartDate,
+      effectiveEndDate = effectiveEndDate,
+      methodSearch = methodSearch,
+      justification = justification,
+      goodsDescription = goodsDescription,
       methodCommercialDenomination = methodCommercialDenomination,
-      decisionPdf                  = decisionPdf
+      decisionPdf = decisionPdf
     )
 
   def createLiabilityOrder: LiabilityOrder =
     LiabilityOrder(
-      contact              = createContact,
-      status               = LiabilityStatus.LIVE,
-      traderName           = "John Lewis",
-      goodName             = Some("Hair dryer"),
-      entryNumber          = Some("23-SGD"),
-      entryDate            = Some(Instant.now()),
-      traderCommodityCode  = Some("1234567890"),
+      contact = createContact,
+      status = LiabilityStatus.LIVE,
+      traderName = "John Lewis",
+      goodName = Some("Hair dryer"),
+      entryNumber = Some("23-SGD"),
+      entryDate = Some(Instant.now()),
+      traderCommodityCode = Some("1234567890"),
       officerCommodityCode = Some("0987654321")
     )
 
   def createLiabilityOrderWithExtraFields: LiabilityOrder =
     LiabilityOrder(
-      contact              = createContact,
-      status               = LiabilityStatus.LIVE,
-      traderName           = "Acme Corp.",
-      goodName             = Some("Large Iron Anvil"),
-      entryNumber          = Some("23-SGD"),
-      entryDate            = Some(Instant.now()),
-      traderCommodityCode  = Some("6666666666"),
+      contact = createContact,
+      status = LiabilityStatus.LIVE,
+      traderName = "Acme Corp.",
+      goodName = Some("Large Iron Anvil"),
+      entryNumber = Some("23-SGD"),
+      entryDate = Some(Instant.now()),
+      traderCommodityCode = Some("6666666666"),
       officerCommodityCode = Some("0987654321"),
-      btiReference         = Some("BTI-REFERENCE"),
-      repaymentClaim       = Some(RepaymentClaim(dvrNumber = Some("DVR-123456"), dateForRepayment = Some(Instant.now()))),
-      dateOfReceipt        = Some(Instant.now()),
+      btiReference = Some("BTI-REFERENCE"),
+      repaymentClaim = Some(RepaymentClaim(dvrNumber = Some("DVR-123456"), dateForRepayment = Some(Instant.now()))),
+      dateOfReceipt = Some(Instant.now()),
       traderContactDetails = Some(
         TraderContactDetails(
           Some("email"),
@@ -113,7 +113,7 @@ object CaseData {
         )
       ),
       agentName = Some("agent"),
-      port      = Some("port")
+      port = Some("port")
     )
 
   def createCorrespondenceApplication: CorrespondenceApplication =
@@ -141,10 +141,10 @@ object CaseData {
     )
 
   def createAgentDetails(
-    letterOfAuthorization: Option[Attachment] = Some(createAttachment.copy(public = false))
-  ): AgentDetails =
+                          letterOfAuthorization: Option[Attachment] = Some(createAttachment.copy(public = false))
+                        ): AgentDetails =
     AgentDetails(
-      eoriDetails           = createEORIDetails.copy(businessName = "Frank Agent-Smith"),
+      eoriDetails = createEORIDetails.copy(businessName = "Frank Agent-Smith"),
       letterOfAuthorisation = letterOfAuthorization
     )
 
@@ -179,9 +179,9 @@ object CaseData {
     )
 
   def createNewCase(
-    app: Application             = createBasicBTIApplication,
-    attachments: Seq[Attachment] = Seq.empty
-  ): NewCaseRequest =
+                     app: Application = createBasicBTIApplication,
+                     attachments: Seq[Attachment] = Seq.empty
+                   ): NewCaseRequest =
     NewCaseRequest(
       application = app,
       attachments = attachments
@@ -190,54 +190,57 @@ object CaseData {
   def createNewUser(user: Operator = createUser()): NewUserRequest =
     NewUserRequest(operator = user)
 
+  def createNewKeyword(keyword: Keyword = createKeyword()): NewKeywordRequest =
+    NewKeywordRequest(keyword = keyword)
+
   def createNewCaseWithExtraFields(): Case =
     Case(
-      reference   = "9999999999",
-      status      = CaseStatus.OPEN,
+      reference = "9999999999",
+      status = CaseStatus.OPEN,
       createdDate = Instant.now.minusSeconds(1 * secondsInAYear),
-      queueId     = Some("3"),
-      assignee    = Some(Operator("0")),
+      queueId = Some("3"),
+      assignee = Some(Operator("0")),
       application = createBasicBTIApplication,
-      decision    = Some(createDecision()),
+      decision = Some(createDecision()),
       attachments = Seq.empty,
-      keywords    = Set("bike", "tool")
+      keywords = Set("bike", "tool")
     )
 
   def createCase(
-    app: Application               = createBasicBTIApplication,
-    r: String                      = RandomGenerator.randomUUID(),
-    status: CaseStatus             = CaseStatus.NEW,
-    decision: Option[Decision]     = None,
-    queue: Option[String]          = None,
-    assignee: Option[Operator]     = None,
-    attachments: Seq[Attachment]   = Seq.empty,
-    keywords: Set[String]          = Set.empty,
-    dateOfExtract: Option[Instant] = None
-  ): Case =
+                  app: Application = createBasicBTIApplication,
+                  r: String = RandomGenerator.randomUUID(),
+                  status: CaseStatus = CaseStatus.NEW,
+                  decision: Option[Decision] = None,
+                  queue: Option[String] = None,
+                  assignee: Option[Operator] = None,
+                  attachments: Seq[Attachment] = Seq.empty,
+                  keywords: Set[String] = Set.empty,
+                  dateOfExtract: Option[Instant] = None
+                ): Case =
     Case(
-      reference     = r,
-      status        = status,
-      queueId       = queue,
-      assignee      = assignee,
-      application   = app,
-      decision      = decision,
-      attachments   = attachments,
-      keywords      = keywords,
+      reference = r,
+      status = status,
+      queueId = queue,
+      assignee = assignee,
+      application = app,
+      decision = decision,
+      attachments = attachments,
+      keywords = keywords,
       dateOfExtract = dateOfExtract
     )
 
   def createAttachment: Attachment =
     Attachment(
-      id                     = RandomGenerator.randomUUID(),
-      public                 = true,
+      id = RandomGenerator.randomUUID(),
+      public = true,
       shouldPublishToRulings = true
     )
 
   def createAttachmentWithOperator: Attachment =
     Attachment(
-      id                     = RandomGenerator.randomUUID(),
-      public                 = true,
-      operator               = Some(Operator(id = "0", Some("OperatorName"))),
+      id = RandomGenerator.randomUUID(),
+      public = true,
+      operator = Some(Operator(id = "0", Some("OperatorName"))),
       shouldPublishToRulings = false
     )
 
@@ -250,4 +253,7 @@ object CaseData {
                  deleted: Boolean = false): Operator =
     Operator(id, name, email, role, memberOfTeams, managerOfTeams, deleted)
 
+  def createKeyword(name: String = "keyword example",
+                    approved: Boolean = false): Keyword =
+    Keyword(name = name, approved = approved)
 }

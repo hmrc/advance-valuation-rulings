@@ -27,6 +27,7 @@ object RESTFormatters {
   implicit val role: Format[Role.Value]                             = EnumJson.format(Role)
   implicit val formatOperator: OFormat[Operator]                    = Json.using[Json.WithDefaultValues].format[Operator]
 
+  implicit val formatKeyword: OFormat[Keyword]                      = Json.using[Json.WithDefaultValues].format[Keyword]
   // `Case` formatters
   implicit val formatRepaymentClaim: OFormat[RepaymentClaim]             = Json.format[RepaymentClaim]
   implicit val formatAddress: OFormat[Address]                           = Json.format[Address]
@@ -76,6 +77,8 @@ object RESTFormatters {
 
   implicit val formatCase: OFormat[Case]              = Json.using[Json.WithDefaultValues].format[Case]
   implicit val formatNewCase: OFormat[NewCaseRequest] = Json.format[NewCaseRequest]
+  implicit val formatCaseHeader: OFormat[CaseHeader]              = Json.format[CaseHeader]
+  implicit val formatCaseKeyword: OFormat[CaseKeyword]              = Json.format[CaseKeyword]
 
   // `Event` formatters
   implicit val formatCaseStatusChange: OFormat[CaseStatusChange] = Json.format[CaseStatusChange]
@@ -114,9 +117,10 @@ object RESTFormatters {
     .and[ExpertAdviceReceived](EventType.EXPERT_ADVICE_RECEIVED.toString)
     .format
 
-  implicit val formatEvent: OFormat[Event]                     = Json.format[Event]
-  implicit val formatNewEventRequest: OFormat[NewEventRequest] = Json.format[NewEventRequest]
-  implicit val formatNewUserRequest: OFormat[NewUserRequest]   = Json.format[NewUserRequest]
+  implicit val formatEvent: OFormat[Event]                         = Json.format[Event]
+  implicit val formatNewEventRequest: OFormat[NewEventRequest]     = Json.format[NewEventRequest]
+  implicit val formatNewUserRequest: OFormat[NewUserRequest]       = Json.format[NewUserRequest]
+  implicit val formatNewKeywordRequest: OFormat[NewKeywordRequest] = Json.format[NewKeywordRequest]
 
   implicit val formatBankHoliday: OFormat[BankHoliday]                   = Json.format[BankHoliday]
   implicit val formatBankHolidaysSet: OFormat[BankHolidaySet]            = Json.format[BankHolidaySet]
