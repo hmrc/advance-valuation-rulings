@@ -25,7 +25,6 @@ import uk.gov.hmrc.bindingtariffclassification.repository.{CaseRepository, Event
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import play.api.libs.json.JsObject
 
 class ReportService @Inject() (caseRepository: CaseRepository, eventRepository: EventRepository) {
 
@@ -33,42 +32,8 @@ class ReportService @Inject() (caseRepository: CaseRepository, eventRepository: 
     caseRepository.summaryReport(report, pagination)
 
   def caseReport(report: CaseReport, pagination: Pagination): Future[Paged[Map[String, ReportResultField[_]]]] =
-    caseRepository.caseReport(report, pagination: Pagination)
+    caseRepository.caseReport(report, pagination)
 
-  def generate(report: OldReport): Future[Seq[ReportResult]] =
-    for {
-      report: OldReport <- report.filter.referralDate match {
-                             case Some(range) => appendReferredCaseReferencesTo(report, range)
-                             case None        => Future.successful(report)
-                           }
-
-      report <- caseRepository.generateReport(report)
-    } yield report
-
-  private def appendReferredCaseReferencesTo(report: OldReport, range: InstantRange): Future[OldReport] = {
-    val caseStatusChangeEventTypes =
-      Set(EventType.CASE_STATUS_CHANGE, EventType.CASE_REFERRAL, EventType.CASE_COMPLETED, EventType.CASE_CANCELLATION)
-    val filter = report.filter
-    val search = EventSearch(
-      timestampMin = Some(range.min),
-      timestampMax = Some(range.max),
-      `type`       = Some(caseStatusChangeEventTypes)
-    )
-
-    eventRepository
-      .search(search, Pagination.max)
-      .map(_.results)
-      .map {
-        _.filter { event =>
-          val change = event.details.asInstanceOf[FieldChange[CaseStatus]]
-          change.to == CaseStatus.REFERRED || change.from == CaseStatus.REFERRED
-        }
-      }
-      .map(_.map(_.caseReference))
-      .map { referredCaseReferences =>
-        val references = filter.reference.getOrElse(Set.empty) ++ referredCaseReferences
-        report.copy(filter = filter.copy(reference = Some(references), referralDate = None))
-      }
-  }
-
+  def queueReport(report: QueueReport, pagination: Pagination): Future[Paged[QueueResultGroup]] =
+    caseRepository.queueReport(report, pagination)
 }

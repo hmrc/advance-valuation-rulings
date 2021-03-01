@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.model
+package uk.gov.hmrc.bindingtariffclassification.model.reporting.v2
 
-object CaseStatus extends Enumeration {
-  type CaseStatus = Value
-  val DRAFT, NEW, OPEN, SUPPRESSED, REFERRED, REJECTED, CANCELLED, SUSPENDED, COMPLETED, REVOKED, ANNULLED = Value
+import uk.gov.hmrc.bindingtariffclassification.model.ApplicationType
 
-  def fromPseudoStatus(pseudoStatus: PseudoCaseStatus.Value): Option[CaseStatus.Value] =
-    CaseStatus.values.find(_.toString == pseudoStatus.toString)
-}
+case class QueueResultGroup(
+  count: Int,
+  team: Option[String],
+  caseType: ApplicationType.Value
+)

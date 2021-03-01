@@ -48,7 +48,7 @@ class ReportServiceTest extends BaseSpec with BeforeAndAfterEach {
     "delegate to case repository" in {
       val report = CaseReport(
         sortBy = ReportField.Reference,
-        fields = Set(ReportField.Reference, ReportField.Status)
+        fields = Seq(ReportField.Reference, ReportField.Status)
       )
 
       given(caseRepository.caseReport(report, Pagination())) willReturn Future.successful(Paged.empty[Map[String, ReportResultField[_]]])
@@ -70,163 +70,15 @@ class ReportServiceTest extends BaseSpec with BeforeAndAfterEach {
     }
   }
 
-  "Service 'Get Report'" should {
-    "Delegate to Case Repository for simple report" in {
-      val report = OldReport(
-        filter = CaseReportFilter(),
-        group  = Set(CaseReportGroup.QUEUE),
-        field  = CaseReportField.ACTIVE_DAYS_ELAPSED
+  "ReportService.queueReport" should {
+    "delegate to case repository" in {
+      val report = QueueReport(
+        sortBy = ReportField.Count,
       )
 
-      given(caseRepository.generateReport(report)) willReturn Future.successful(Seq.empty[ReportResult])
+      given(caseRepository.queueReport(report, Pagination())) willReturn Future.successful(Paged.empty[QueueResultGroup])
 
-      await(service.generate(report)) shouldBe Seq.empty
+      await(service.queueReport(report, Pagination())) shouldBe Paged.empty
     }
   }
-
-  "Service 'Get Report' with Referred Date Filter" should {
-
-    "Append Case References of status changes to referred" in {
-      val events = Seq(statusChange("ref2", CaseStatus.OPEN, CaseStatus.REFERRED))
-      given(eventRepository.search(any[EventSearch], any[Pagination])) willReturn Future.successful(Paged(events))
-      given(caseRepository.generateReport(any[OldReport])) willReturn Future.successful(Seq.empty[ReportResult])
-
-      val report = OldReport(
-        filter = CaseReportFilter(
-          reference = Some(Set("ref1")),
-          referralDate = Some(
-            InstantRange(
-              min = Instant.MIN,
-              max = Instant.MAX
-            )
-          )
-        ),
-        group = Set(CaseReportGroup.QUEUE),
-        field = CaseReportField.ACTIVE_DAYS_ELAPSED
-      )
-
-      await(service.generate(report)) shouldBe Seq.empty
-
-      theEventSearch shouldBe EventSearch(
-        `type` = Some(
-          Set(
-            EventType.CASE_STATUS_CHANGE,
-            EventType.CASE_REFERRAL,
-            EventType.CASE_COMPLETED,
-            EventType.CASE_CANCELLATION
-          )
-        ),
-        timestampMin = Some(Instant.MIN),
-        timestampMax = Some(Instant.MAX)
-      )
-
-      theReportGenerated shouldBe OldReport(
-        filter = CaseReportFilter(reference = Some(Set("ref1", "ref2"))),
-        group  = Set(CaseReportGroup.QUEUE),
-        field  = CaseReportField.ACTIVE_DAYS_ELAPSED
-      )
-    }
-
-    "Append Case References of status changes from referred" in {
-      val events = Seq(statusChange("ref2", CaseStatus.REFERRED, CaseStatus.OPEN))
-      given(eventRepository.search(any[EventSearch], any[Pagination])) willReturn Future.successful(Paged(events))
-      given(caseRepository.generateReport(any[OldReport])) willReturn Future.successful(Seq.empty[ReportResult])
-
-      val report = OldReport(
-        filter = CaseReportFilter(
-          reference = Some(Set("ref1")),
-          referralDate = Some(
-            InstantRange(
-              min = Instant.MIN,
-              max = Instant.MAX
-            )
-          )
-        ),
-        group = Set(CaseReportGroup.QUEUE),
-        field = CaseReportField.ACTIVE_DAYS_ELAPSED
-      )
-
-      await(service.generate(report)) shouldBe Seq.empty
-
-      theEventSearch shouldBe EventSearch(
-        `type` = Some(
-          Set(
-            EventType.CASE_STATUS_CHANGE,
-            EventType.CASE_REFERRAL,
-            EventType.CASE_COMPLETED,
-            EventType.CASE_CANCELLATION
-          )
-        ),
-        timestampMin = Some(Instant.MIN),
-        timestampMax = Some(Instant.MAX)
-      )
-
-      theReportGenerated shouldBe OldReport(
-        filter = CaseReportFilter(reference = Some(Set("ref1", "ref2"))),
-        group  = Set(CaseReportGroup.QUEUE),
-        field  = CaseReportField.ACTIVE_DAYS_ELAPSED
-      )
-    }
-
-    "Not append case references of non-referral events" in {
-      val events = Seq(statusChange("ref2", CaseStatus.NEW, CaseStatus.OPEN))
-      given(eventRepository.search(any[EventSearch], any[Pagination])) willReturn Future.successful(Paged(events))
-      given(caseRepository.generateReport(any[OldReport])) willReturn Future.successful(Seq.empty[ReportResult])
-
-      val report = OldReport(
-        filter = CaseReportFilter(
-          reference = Some(Set("ref1")),
-          referralDate = Some(
-            InstantRange(
-              min = Instant.MIN,
-              max = Instant.MAX
-            )
-          )
-        ),
-        group = Set(CaseReportGroup.QUEUE),
-        field = CaseReportField.ACTIVE_DAYS_ELAPSED
-      )
-
-      await(service.generate(report)) shouldBe Seq.empty
-
-      theEventSearch shouldBe EventSearch(
-        `type` = Some(
-          Set(
-            EventType.CASE_STATUS_CHANGE,
-            EventType.CASE_REFERRAL,
-            EventType.CASE_COMPLETED,
-            EventType.CASE_CANCELLATION
-          )
-        ),
-        timestampMin = Some(Instant.MIN),
-        timestampMax = Some(Instant.MAX)
-      )
-
-      theReportGenerated shouldBe OldReport(
-        filter = CaseReportFilter(reference = Some(Set("ref1"))),
-        group  = Set(CaseReportGroup.QUEUE),
-        field  = CaseReportField.ACTIVE_DAYS_ELAPSED
-      )
-    }
-  }
-
-  def statusChange(reference: String, from: CaseStatus, to: CaseStatus): Event = Event(
-    details       = createCaseStatusChangeEventDetails(from, to),
-    operator      = mock[Operator],
-    caseReference = reference,
-    timestamp     = Instant.EPOCH
-  )
-
-  def theEventSearch: EventSearch = {
-    val captor = ArgumentCaptor.forClass(classOf[EventSearch])
-    verify(eventRepository).search(captor.capture(), any[Pagination])
-    captor.getValue
-  }
-
-  def theReportGenerated: OldReport = {
-    val captor = ArgumentCaptor.forClass(classOf[OldReport])
-    verify(caseRepository).generateReport(captor.capture())
-    captor.getValue
-  }
-
 }

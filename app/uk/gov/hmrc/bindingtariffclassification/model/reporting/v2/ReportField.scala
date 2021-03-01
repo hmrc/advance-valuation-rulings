@@ -30,8 +30,8 @@ case class NumberField(override val fieldName: String, override val underlyingFi
   def withValue(value: Option[Long]): NumberResultField = NumberResultField(fieldName, value)
 }
 case class StatusField(override val fieldName: String, override val underlyingField: String)
-    extends ReportField[CaseStatus.Value](fieldName, underlyingField) {
-  def withValue(value: Option[CaseStatus.Value]): StatusResultField = StatusResultField(fieldName, value)
+    extends ReportField[PseudoCaseStatus.Value](fieldName, underlyingField) {
+  def withValue(value: Option[PseudoCaseStatus.Value]): StatusResultField = StatusResultField(fieldName, value)
 }
 case class CaseTypeField(override val fieldName: String, override val underlyingField: String)
     extends ReportField[ApplicationType.Value](fieldName, underlyingField) {

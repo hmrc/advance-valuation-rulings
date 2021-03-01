@@ -33,15 +33,15 @@ class ReportingController @Inject() (
   mcc: MessagesControllerComponents
 ) extends CommonController(mcc) {
 
-  def report(report: OldReport): Action[AnyContent] = Action.async {
-    reportService.generate(report) map { result => Ok(Json.toJson(result)) }
-  }
-
   def summaryReport(report: SummaryReport, pagination: Pagination): Action[AnyContent] = Action.async {
     reportService.summaryReport(report, pagination).map(result => Ok(Json.toJson(result)))
   }
 
   def caseReport(report: CaseReport, pagination: Pagination): Action[AnyContent] = Action.async {
     reportService.caseReport(report, pagination).map(result => Ok(Json.toJson(result)))
+  }
+
+  def queueReport(report: QueueReport, pagination: Pagination): Action[AnyContent] = Action.async {
+    reportService.queueReport(report, pagination).map(result => Ok(Json.toJson(result)))
   }
 }

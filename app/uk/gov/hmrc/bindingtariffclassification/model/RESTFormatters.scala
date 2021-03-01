@@ -32,16 +32,17 @@ object RESTFormatters {
   implicit val formatAddress: OFormat[Address]                           = Json.format[Address]
   implicit val formatTraderContactDetails: OFormat[TraderContactDetails] = Json.format[TraderContactDetails]
 
-  implicit val formatCaseStatus: Format[CaseStatus.Value]           = EnumJson.format(CaseStatus)
-  implicit val formatLiabilityStatus: Format[LiabilityStatus.Value] = EnumJson.format(LiabilityStatus)
-  implicit val formatAppealStatus: Format[AppealStatus.Value]       = EnumJson.format(AppealStatus)
-  implicit val formatAppealType: Format[AppealType.Value]           = EnumJson.format(AppealType)
-  implicit val formatSampleStatus: Format[SampleStatus.Value]       = EnumJson.format(SampleStatus)
-  implicit val formatSampleReturn: Format[SampleReturn.Value]       = EnumJson.format(SampleReturn)
-  implicit val formatCancelReason: Format[CancelReason.Value]       = EnumJson.format(CancelReason)
-  implicit val formatReferralReason: Format[ReferralReason.Value]   = EnumJson.format(ReferralReason)
-  implicit val formatCaseReportGroup: Format[CaseReportGroup.Value] = EnumJson.format(CaseReportGroup)
-  implicit val miscCaseType: Format[MiscCaseType.Value]             = EnumJson.format(MiscCaseType)
+  implicit val formatCaseStatus: Format[CaseStatus.Value]             = EnumJson.format(CaseStatus)
+  implicit val formatPseudoCaseStatus: Format[PseudoCaseStatus.Value] = EnumJson.format(PseudoCaseStatus)
+  implicit val formatLiabilityStatus: Format[LiabilityStatus.Value]   = EnumJson.format(LiabilityStatus)
+  implicit val formatAppealStatus: Format[AppealStatus.Value]         = EnumJson.format(AppealStatus)
+  implicit val formatAppealType: Format[AppealType.Value]             = EnumJson.format(AppealType)
+  implicit val formatSampleStatus: Format[SampleStatus.Value]         = EnumJson.format(SampleStatus)
+  implicit val formatSampleReturn: Format[SampleReturn.Value]         = EnumJson.format(SampleReturn)
+  implicit val formatCancelReason: Format[CancelReason.Value]         = EnumJson.format(CancelReason)
+  implicit val formatReferralReason: Format[ReferralReason.Value]     = EnumJson.format(ReferralReason)
+  implicit val formatCaseReportGroup: Format[CaseReportGroup.Value]   = EnumJson.format(CaseReportGroup)
+  implicit val miscCaseType: Format[MiscCaseType.Value]               = EnumJson.format(MiscCaseType)
 
   implicit val formatReportResultMap: OFormat[Map[CaseReportGroup.Value, Option[String]]] = {
     implicit val optrds: Reads[Option[String]] = Reads.optionNoError[String]
@@ -200,4 +201,6 @@ object RESTFormatters {
   }
 
   implicit val formatResultGroup: OFormat[ResultGroup] = OFormat(readResultGroup, writeResultGroup)
+
+  implicit val formatQueueResultGroup: OFormat[QueueResultGroup] = Json.format[QueueResultGroup]
 }

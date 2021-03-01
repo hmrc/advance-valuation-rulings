@@ -42,18 +42,6 @@ class ReportingControllerSpec extends BaseSpec with BeforeAndAfterEach {
     Mockito.reset(reportService)
   }
 
-  "GET report" should {
-    "Delegate to service" in {
-      val report = mock[OldReport]
-
-      given(reportService.generate(report)) willReturn Future.successful(Seq.empty[ReportResult])
-
-      val result = await(controller.report(report)(fakeRequest))
-
-      status(result) shouldBe OK
-    }
-  }
-
   "GET summary report" should {
     "delegate to service" in {
       val report = mock[SummaryReport]
@@ -78,4 +66,15 @@ class ReportingControllerSpec extends BaseSpec with BeforeAndAfterEach {
     }
   }
 
+  "GET queue report" should {
+    "delegate to service" in {
+      val report = mock[QueueReport]
+
+      given(reportService.queueReport(report, Pagination())) willReturn Future.successful(Paged.empty[QueueResultGroup])
+
+      val result = await(controller.queueReport(report, Pagination())(fakeRequest))
+
+      status(result) shouldBe OK
+    }
+  }
 }

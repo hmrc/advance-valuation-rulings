@@ -59,6 +59,9 @@ object BinderUtil {
   def params(name: String)(implicit requestParams: Map[String, Seq[String]]): Option[Set[String]] =
     requestParams.get(name).map(_.flatMap(_.split(",")).toSet).filterNot(_.exists(_.isEmpty))
 
+  def orderedParams(name: String)(implicit requestParams: Map[String, Seq[String]]): Option[Seq[String]] =
+    requestParams.get(name).map(_.flatMap(_.split(","))).filterNot(_.exists(_.isEmpty))
+
   def param(name: String)(implicit requestParams: Map[String, Seq[String]]): Option[String] =
     params(name).map(_.head)
 

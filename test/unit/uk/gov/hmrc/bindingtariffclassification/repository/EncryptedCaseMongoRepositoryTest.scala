@@ -86,11 +86,4 @@ class EncryptedCaseMongoRepositoryTest extends BaseMongoIndexSpec with BeforeAnd
       verify(underlyingRepo).deleteAll()
     }
   }
-
-  "Generate Report" should {
-    "Encrypt and delegate to Repository" in {
-      given(underlyingRepo.generateReport(rawReport)) willReturn successful(Seq(rawReportResult))
-      await(repo.generateReport(rawReport)) shouldBe Seq(rawReportResult)
-    }
-  }
 }

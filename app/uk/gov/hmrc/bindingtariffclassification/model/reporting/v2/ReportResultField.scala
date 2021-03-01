@@ -24,8 +24,8 @@ sealed abstract class ReportResultField[A](val fieldName: String, val data: Opti
 case class NumberResultField(override val fieldName: String, override val data: Option[Long])
     extends ReportResultField[Long](fieldName, data)
 
-case class StatusResultField(override val fieldName: String, override val data: Option[CaseStatus.Value])
-    extends ReportResultField[CaseStatus.Value](fieldName, data)
+case class StatusResultField(override val fieldName: String, override val data: Option[PseudoCaseStatus.Value])
+    extends ReportResultField[PseudoCaseStatus.Value](fieldName, data)
 
 case class CaseTypeResultField(override val fieldName: String, override val data: Option[ApplicationType.Value])
     extends ReportResultField[ApplicationType.Value](fieldName, data)
