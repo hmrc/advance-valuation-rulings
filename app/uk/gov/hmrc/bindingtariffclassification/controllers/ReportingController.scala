@@ -21,8 +21,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.bindingtariffclassification.model.Pagination
 import uk.gov.hmrc.bindingtariffclassification.model.RESTFormatters._
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.v2._
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.{CaseReport => OldReport}
+import uk.gov.hmrc.bindingtariffclassification.model.reporting._
 import uk.gov.hmrc.bindingtariffclassification.service.ReportService
 
 import scala.concurrent.ExecutionContext.Implicits.global

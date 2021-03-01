@@ -21,9 +21,6 @@ import java.time.Instant
 import uk.gov.hmrc.bindingtariffclassification.model.ApplicationType.ApplicationType
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model.PseudoCaseStatus.PseudoCaseStatus
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.CaseReportField.CaseReportField
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.CaseReportGroup.CaseReportGroup
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.{CaseReportField, CaseReportGroup}
 import uk.gov.hmrc.bindingtariffclassification.model.{ApplicationType, CaseStatus, PseudoCaseStatus}
 import uk.gov.hmrc.bindingtariffclassification.sort.CaseSortField.CaseSortField
 import uk.gov.hmrc.bindingtariffclassification.sort.SortDirection.SortDirection
@@ -32,12 +29,6 @@ import uk.gov.hmrc.bindingtariffclassification.sort.{CaseSortField, SortDirectio
 import scala.util.Try
 
 object BinderUtil {
-
-  def bindCaseReportGroup(value: String): Option[CaseReportGroup] =
-    CaseReportGroup.values.find(_.toString == value)
-
-  def bindCaseReportField(value: String): Option[CaseReportField] =
-    CaseReportField.values.find(_.toString == value)
 
   def bindSortField(value: String): Option[CaseSortField] =
     CaseSortField.values.find(_.toString == value)

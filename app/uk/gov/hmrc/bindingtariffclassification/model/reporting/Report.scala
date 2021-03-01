@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.model.reporting.v2
+package uk.gov.hmrc.bindingtariffclassification.model.reporting
 
 import cats.syntax.all._
 import play.api.mvc.QueryStringBindable
 import uk.gov.hmrc.bindingtariffclassification.model.ApplicationType
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.InstantRange
 import uk.gov.hmrc.bindingtariffclassification.sort.SortDirection
-import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model.PseudoCaseStatus
 
 sealed abstract class Report extends Product with Serializable {
@@ -201,7 +199,6 @@ object QueueReport {
   private val sortOrderKey = "sort_order"
   private val caseTypesKey = "case_type"
   private val teamsKey     = "team"
-  private val fieldsKey    = "fields"
   private val statusesKey  = "status"
   private val assigneeKey  = "assigned_user"
 

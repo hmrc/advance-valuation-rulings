@@ -17,13 +17,10 @@
 package uk.gov.hmrc.bindingtariffclassification.service
 
 import javax.inject.Inject
-import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.v2._
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.{CaseReport => OldReport, InstantRange, ReportResult}
+import uk.gov.hmrc.bindingtariffclassification.model.reporting._
 import uk.gov.hmrc.bindingtariffclassification.repository.{CaseRepository, EventRepository}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class ReportService @Inject() (caseRepository: CaseRepository, eventRepository: EventRepository) {

@@ -16,20 +16,13 @@
 
 package uk.gov.hmrc.bindingtariffclassification.service
 
-import java.time.Instant
-
-import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers._
 import org.mockito.BDDMockito._
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
-import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.{CaseReport => OldReport, _}
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.v2._
+import uk.gov.hmrc.bindingtariffclassification.model.reporting._
 import uk.gov.hmrc.bindingtariffclassification.repository.{CaseRepository, EventRepository}
-import util.EventData.createCaseStatusChangeEventDetails
 
 import scala.concurrent.Future
 

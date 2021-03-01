@@ -20,7 +20,6 @@ import java.time.Instant
 import javax.inject.{Inject, Singleton}
 
 import cats.syntax.all._
-import play.api.libs.json.Json.toJson
 import play.api.libs.json._
 import play.api.libs.json.Json.JsValueWrapper
 import reactivemongo.api.indexes.Index
@@ -31,9 +30,7 @@ import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.crypto.Crypto
 import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters._
 import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.v2._
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.CaseReportGroup.CaseReportGroup
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.InstantRange
+import uk.gov.hmrc.bindingtariffclassification.model.reporting._
 import uk.gov.hmrc.bindingtariffclassification.sort.SortDirection
 import uk.gov.hmrc.mongo.ReactiveRepository
 

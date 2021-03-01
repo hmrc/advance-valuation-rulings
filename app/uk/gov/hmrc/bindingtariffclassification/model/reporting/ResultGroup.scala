@@ -16,8 +16,23 @@
 
 package uk.gov.hmrc.bindingtariffclassification.model.reporting
 
-object CaseReportGroup extends Enumeration {
-  type CaseReportGroup = Value
-  val QUEUE            = Value("queue-id")
-  val APPLICATION_TYPE = Value("application-type")
+import uk.gov.hmrc.bindingtariffclassification.model.Case
+
+sealed abstract class ResultGroup {
+  def count: Long
+  def groupKey: ReportResultField[_]
+  def maxFields: List[NumberResultField]
 }
+
+case class SimpleResultGroup(
+  count: Long,
+  groupKey: ReportResultField[_],
+  maxFields: List[NumberResultField] = List.empty
+) extends ResultGroup
+
+case class CaseResultGroup(
+  count: Long,
+  groupKey: ReportResultField[_],
+  maxFields: List[NumberResultField] = List.empty,
+  cases: List[Case] = List.empty
+) extends ResultGroup

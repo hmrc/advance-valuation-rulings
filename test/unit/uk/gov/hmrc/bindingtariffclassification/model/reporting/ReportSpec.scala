@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.model.reporting.v2
+package uk.gov.hmrc.bindingtariffclassification.model.reporting
 
 import java.net.URLDecoder
 import java.time.Instant
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.sort.SortDirection
 import uk.gov.hmrc.bindingtariffclassification.model.ApplicationType
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.InstantRange
 import uk.gov.hmrc.bindingtariffclassification.model.PseudoCaseStatus
 
 class ReportSpec extends BaseSpec {
@@ -328,6 +327,55 @@ class ReportSpec extends BaseSpec {
 
       QueueReport.queueReportQueryStringBindable.bind("", Map.empty) shouldBe Some(Right(QueueReport()))
     }
-    "unbind to query string" in {}
+
+    "unbind to query string" in {
+      URLDecoder.decode(
+        QueueReport.queueReportQueryStringBindable.unbind(
+          "",
+          QueueReport(
+            sortBy    = ReportField.Count,
+            sortOrder = SortDirection.DESCENDING,
+            caseTypes = Set(ApplicationType.BTI, ApplicationType.CORRESPONDENCE),
+            statuses  = Set(PseudoCaseStatus.LIVE, PseudoCaseStatus.NEW),
+            teams     = Set("1", "3"),
+            dateRange = InstantRange(
+              Instant.parse("2020-03-21T12:03:15.000Z"),
+              Instant.parse("2021-03-21T12:03:15.000Z")
+            )
+          )
+        ),
+        "UTF-8"
+      ) shouldBe (
+        "sort_by=count" +
+          "&sort_order=desc" +
+          "&case_type=BTI,CORRESPONDENCE" +
+          "&status=LIVE,NEW" +
+          "&team=1,3" +
+          "&min_date=2020-03-21T12:03:15Z" +
+          "&max_date=2021-03-21T12:03:15Z"
+      )
+
+      URLDecoder.decode(
+        QueueReport.queueReportQueryStringBindable.unbind(
+          "",
+          QueueReport(
+            sortBy    = ReportField.DateCreated,
+            sortOrder = SortDirection.ASCENDING,
+            caseTypes = Set(ApplicationType.MISCELLANEOUS, ApplicationType.CORRESPONDENCE),
+            statuses  = Set(PseudoCaseStatus.COMPLETED, PseudoCaseStatus.REJECTED),
+            teams     = Set("4", "5")
+          )
+        ),
+        "UTF-8"
+      ) shouldBe (
+        "sort_by=date_created" +
+          "&sort_order=asc" +
+          "&case_type=MISCELLANEOUS,CORRESPONDENCE" +
+          "&status=COMPLETED,REJECTED" +
+          "&team=4,5" +
+          "&min_date=-1000000000-01-01T00:00:00Z" +
+          "&max_date=+1000000000-12-31T23:59:59.999999999Z"
+      )
+    }
   }
 }

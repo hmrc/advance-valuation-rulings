@@ -31,8 +31,7 @@ import reactivemongo.core.errors.DatabaseException
 import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatCase
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.v2._
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.{CaseReport => OldReport, _}
+import uk.gov.hmrc.bindingtariffclassification.model.reporting._
 import uk.gov.hmrc.bindingtariffclassification.model.{CaseStatus, PseudoCaseStatus, _}
 import uk.gov.hmrc.bindingtariffclassification.sort.{CaseSortField, SortDirection}
 import uk.gov.hmrc.mongo.MongoSpecSupport

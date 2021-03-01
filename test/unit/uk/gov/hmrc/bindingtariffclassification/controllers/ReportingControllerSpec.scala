@@ -22,8 +22,7 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.{CaseReport => OldReport, ReportResult}
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.v2._
+import uk.gov.hmrc.bindingtariffclassification.model.reporting._
 import uk.gov.hmrc.bindingtariffclassification.service.ReportService
 
 import scala.concurrent.Future

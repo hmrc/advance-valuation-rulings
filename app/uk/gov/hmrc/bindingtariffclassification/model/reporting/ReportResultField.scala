@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.model.reporting.v2
+package uk.gov.hmrc.bindingtariffclassification.model.reporting
 
 import java.time.Instant
 import uk.gov.hmrc.bindingtariffclassification.model._

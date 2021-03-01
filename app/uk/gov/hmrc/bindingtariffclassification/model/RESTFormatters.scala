@@ -17,8 +17,7 @@
 package uk.gov.hmrc.bindingtariffclassification.model
 
 import play.api.libs.json._
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.v2._
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.{CaseReportGroup, ReportResult}
+import uk.gov.hmrc.bindingtariffclassification.model.reporting._
 import uk.gov.hmrc.play.json.Union
 
 object RESTFormatters {
@@ -41,15 +40,7 @@ object RESTFormatters {
   implicit val formatSampleReturn: Format[SampleReturn.Value]         = EnumJson.format(SampleReturn)
   implicit val formatCancelReason: Format[CancelReason.Value]         = EnumJson.format(CancelReason)
   implicit val formatReferralReason: Format[ReferralReason.Value]     = EnumJson.format(ReferralReason)
-  implicit val formatCaseReportGroup: Format[CaseReportGroup.Value]   = EnumJson.format(CaseReportGroup)
   implicit val miscCaseType: Format[MiscCaseType.Value]               = EnumJson.format(MiscCaseType)
-
-  implicit val formatReportResultMap: OFormat[Map[CaseReportGroup.Value, Option[String]]] = {
-    implicit val optrds: Reads[Option[String]] = Reads.optionNoError[String]
-    EnumJson.formatMap[CaseReportGroup.Value, Option[String]]
-  }
-
-  implicit val formatReportResult: OFormat[ReportResult] = Json.format[ReportResult]
 
   implicit val formatEORIDetails: OFormat[EORIDetails]   = Json.format[EORIDetails]
   implicit val formatAttachment: OFormat[Attachment]     = Json.using[Json.WithDefaultValues].format[Attachment]

@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.repository.v2
+package uk.gov.hmrc.bindingtariffclassification.model
+package reporting
 
 import java.time.{LocalDateTime, ZoneOffset}
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
-import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.v2._
 
 class ReportFieldSpec extends BaseSpec {
   "ReportField" should {

@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.model.reporting.v2
+package uk.gov.hmrc.bindingtariffclassification.model.reporting
 
-import uk.gov.hmrc.bindingtariffclassification.model.ApplicationType
+sealed abstract class ReportFieldType(val name: String) extends Product with Serializable
 
-case class QueueResultGroup(
-  count: Int,
-  team: Option[String],
-  caseType: ApplicationType.Value
-)
+object ReportFieldType {
+  case object Number extends ReportFieldType("number")
+  case object Status extends ReportFieldType("status")
+  case object CaseType extends ReportFieldType("caseType")
+  case object Chapter extends ReportFieldType("chapter")
+  case object Date extends ReportFieldType("date")
+  case object String extends ReportFieldType("string")
+  case object DaysSince extends ReportFieldType("daysSince")
+}
