@@ -275,4 +275,59 @@ class ReportSpec extends BaseSpec {
       )
     }
   }
+
+  "QueueReport" should {
+    "bind from query string" in {
+      val params1 = Map[String, Seq[String]](
+        "sort_by"       -> Seq("count"),
+        "sort_order"    -> Seq("desc"),
+        "case_type"     -> Seq("BTI", "CORRESPONDENCE"),
+        "status"        -> Seq("LIVE", "REFERRED"),
+        "team"          -> Seq("1", "3"),
+        "assigned_user" -> Seq("1"),
+        "min_date"      -> Seq("2020-03-21T12:03:15.000Z"),
+        "max_date"      -> Seq("2021-03-21T12:03:15.000Z")
+      )
+
+      QueueReport.queueReportQueryStringBindable.bind("", params1) shouldBe Some(
+        Right(
+          QueueReport(
+            sortBy    = ReportField.Count,
+            sortOrder = SortDirection.DESCENDING,
+            caseTypes = Set(ApplicationType.BTI, ApplicationType.CORRESPONDENCE),
+            statuses  = Set(PseudoCaseStatus.LIVE, PseudoCaseStatus.REFERRED),
+            teams     = Set("1", "3"),
+            assignee = Some("1"),
+            dateRange = InstantRange(
+              Instant.parse("2020-03-21T12:03:15.000Z"),
+              Instant.parse("2021-03-21T12:03:15.000Z")
+            )
+          )
+        )
+      )
+
+      val params2 = Map[String, Seq[String]](
+        "sort_by"    -> Seq("date_created"),
+        "sort_order" -> Seq("asc"),
+        "case_type"  -> Seq("MISCELLANEOUS", "CORRESPONDENCE"),
+        "status"     -> Seq("COMPLETED", "REJECTED"),
+        "team"       -> Seq("4", "5")
+      )
+
+      QueueReport.queueReportQueryStringBindable.bind("", params2) shouldBe Some(
+        Right(
+          QueueReport(
+            sortBy    = ReportField.DateCreated,
+            sortOrder = SortDirection.ASCENDING,
+            caseTypes = Set(ApplicationType.MISCELLANEOUS, ApplicationType.CORRESPONDENCE),
+            statuses  = Set(PseudoCaseStatus.COMPLETED, PseudoCaseStatus.REJECTED),
+            teams     = Set("4", "5")
+          )
+        )
+      )
+
+      QueueReport.queueReportQueryStringBindable.bind("", Map.empty) shouldBe Some(Right(QueueReport()))
+    }
+    "unbind to query string" in {}
+  }
 }
