@@ -17,10 +17,10 @@
 package uk.gov.hmrc.bindingtariffclassification.model
 
 import java.time.Instant
-
 import play.api.libs.json._
 import uk.gov.hmrc.bindingtariffclassification.utils.JsonUtil
 import uk.gov.hmrc.play.json.Union
+
 import java.time.ZonedDateTime
 import java.time.ZoneOffset
 
@@ -68,6 +68,7 @@ object MongoFormatters {
   implicit val formatSampleReturn: Format[SampleReturn.Value]         = EnumJson.format(SampleReturn)
   implicit val formatCancelReason: Format[CancelReason.Value]         = EnumJson.format(CancelReason)
   implicit val formatReferralReason: Format[ReferralReason.Value]     = EnumJson.format(ReferralReason)
+  implicit val formatRejectedReason: Format[RejectReason.Value]       = EnumJson.format(RejectReason)
   implicit val formatLiabilityStatus: Format[LiabilityStatus.Value]   = EnumJson.format(LiabilityStatus)
   implicit val miscCaseType: Format[MiscCaseType.Value]               = EnumJson.format(MiscCaseType)
   implicit val formatAttachment: OFormat[Attachment]                  = Json.using[Json.WithDefaultValues].format[Attachment]
@@ -102,6 +103,7 @@ object MongoFormatters {
   implicit val formatCancellationCaseStatusChange: OFormat[CancellationCaseStatusChange] =
     Json.format[CancellationCaseStatusChange]
   implicit val formatReferralCaseStatusChange: OFormat[ReferralCaseStatusChange] = Json.format[ReferralCaseStatusChange]
+  implicit val formatRejectCaseStatusChange: OFormat[RejectCaseStatusChange] = Json.format[RejectCaseStatusChange]
   implicit val formatCompletedCaseStatusChange: OFormat[CompletedCaseStatusChange] =
     Json.format[CompletedCaseStatusChange]
   implicit val formatAppealStatusChange: OFormat[AppealStatusChange]           = Json.format[AppealStatusChange]
@@ -120,6 +122,7 @@ object MongoFormatters {
     .and[CaseStatusChange](EventType.CASE_STATUS_CHANGE.toString)
     .and[CancellationCaseStatusChange](EventType.CASE_CANCELLATION.toString)
     .and[ReferralCaseStatusChange](EventType.CASE_REFERRAL.toString)
+    .and[RejectCaseStatusChange](EventType.CASE_REJECTED.toString)
     .and[CompletedCaseStatusChange](EventType.CASE_COMPLETED.toString)
     .and[AppealStatusChange](EventType.APPEAL_STATUS_CHANGE.toString)
     .and[AppealAdded](EventType.APPEAL_ADDED.toString)
