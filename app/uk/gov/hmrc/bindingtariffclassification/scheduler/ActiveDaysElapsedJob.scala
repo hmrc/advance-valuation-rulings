@@ -108,7 +108,7 @@ class ActiveDaysElapsedJob @Inject() (
       .map(toInstant)
 
     val caseStatusChangeEventTypes =
-      Set(EventType.CASE_STATUS_CHANGE, EventType.CASE_REFERRAL, EventType.CASE_COMPLETED, EventType.CASE_CANCELLATION)
+      Set(EventType.CASE_STATUS_CHANGE, EventType.CASE_REFERRAL, EventType.CASE_REJECTED, EventType.CASE_COMPLETED, EventType.CASE_CANCELLATION)
 
     for {
       // Get the Status Change events for that case
