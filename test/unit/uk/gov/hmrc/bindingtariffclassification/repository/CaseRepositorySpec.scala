@@ -960,7 +960,7 @@ class CaseRepositorySpec
       val report = SummaryReport(
         groupBy   = ReportField.Status,
         sortBy    = ReportField.Status,
-        maxFields = Set(ReportField.ElapsedDays)
+        maxFields = Seq(ReportField.ElapsedDays)
       )
 
       val paged = await(repository.summaryReport(report, Pagination()))
@@ -1036,7 +1036,7 @@ class CaseRepositorySpec
       val report = SummaryReport(
         groupBy   = ReportField.Team,
         sortBy    = ReportField.Team,
-        maxFields = Set(ReportField.ElapsedDays)
+        maxFields = Seq(ReportField.ElapsedDays)
       )
 
       val paged = await(repository.summaryReport(report, Pagination()))
@@ -1104,7 +1104,7 @@ class CaseRepositorySpec
         groupBy   = ReportField.User,
         sortBy    = ReportField.User,
         sortOrder = SortDirection.DESCENDING,
-        maxFields = Set(ReportField.TotalDays)
+        maxFields = Seq(ReportField.TotalDays)
       )
 
       val paged = await(repository.summaryReport(report, Pagination()))
@@ -1159,7 +1159,7 @@ class CaseRepositorySpec
         groupBy   = ReportField.CaseType,
         sortBy    = ReportField.Count,
         sortOrder = SortDirection.DESCENDING,
-        maxFields = Set(ReportField.ReferredDays)
+        maxFields = Seq(ReportField.ReferredDays)
       )
 
       val paged = await(repository.summaryReport(report, Pagination()))
@@ -1203,7 +1203,7 @@ class CaseRepositorySpec
         groupBy   = ReportField.Chapter,
         sortBy    = ReportField.Count,
         sortOrder = SortDirection.ASCENDING,
-        maxFields = Set(ReportField.ElapsedDays)
+        maxFields = Seq(ReportField.ElapsedDays)
       )
 
       val paged = await(repository.summaryReport(report, Pagination()))
@@ -1258,7 +1258,7 @@ class CaseRepositorySpec
         groupBy   = ReportField.TotalDays,
         sortBy    = ReportField.TotalDays,
         sortOrder = SortDirection.DESCENDING,
-        maxFields = Set(ReportField.ElapsedDays)
+        maxFields = Seq(ReportField.ElapsedDays)
       )
 
       val paged = await(repository.summaryReport(report, Pagination()))
@@ -1312,7 +1312,7 @@ class CaseRepositorySpec
       val report = SummaryReport(
         groupBy   = ReportField.Status,
         sortBy    = ReportField.Status,
-        maxFields = Set(ReportField.ElapsedDays),
+        maxFields = Seq(ReportField.ElapsedDays),
         caseTypes = Set(ApplicationType.BTI)
       )
 
@@ -1345,7 +1345,7 @@ class CaseRepositorySpec
       val report = SummaryReport(
         groupBy   = ReportField.Status,
         sortBy    = ReportField.Status,
-        maxFields = Set(ReportField.ElapsedDays),
+        maxFields = Seq(ReportField.ElapsedDays),
         statuses  = Set(PseudoCaseStatus.OPEN)
       )
 
@@ -1362,7 +1362,7 @@ class CaseRepositorySpec
       val expiredReport = SummaryReport(
         groupBy   = ReportField.User,
         sortBy    = ReportField.User,
-        maxFields = Set(ReportField.ElapsedDays),
+        maxFields = Seq(ReportField.ElapsedDays),
         statuses  = Set(PseudoCaseStatus.EXPIRED)
       )
 
@@ -1390,7 +1390,7 @@ class CaseRepositorySpec
       val report = SummaryReport(
         groupBy   = ReportField.Status,
         sortBy    = ReportField.Status,
-        maxFields = Set(ReportField.ElapsedDays),
+        maxFields = Seq(ReportField.ElapsedDays),
         teams     = Set("2", "3")
       )
 
@@ -1417,7 +1417,7 @@ class CaseRepositorySpec
       val gatewayReport = SummaryReport(
         groupBy   = ReportField.CaseType,
         sortBy    = ReportField.CaseType,
-        maxFields = Set(ReportField.ElapsedDays),
+        maxFields = Seq(ReportField.ElapsedDays),
         teams     = Set("1")
       )
 
@@ -1439,7 +1439,7 @@ class CaseRepositorySpec
       val maxDateReport = SummaryReport(
         groupBy   = ReportField.Status,
         sortBy    = ReportField.Status,
-        maxFields = Set(ReportField.ElapsedDays),
+        maxFields = Seq(ReportField.ElapsedDays),
         dateRange = InstantRange(Instant.MIN, Instant.parse("2020-06-30T09:00:00.00Z"))
       )
 
@@ -1456,7 +1456,7 @@ class CaseRepositorySpec
       val minDateReport = SummaryReport(
         groupBy   = ReportField.Status,
         sortBy    = ReportField.Status,
-        maxFields = Set(ReportField.ElapsedDays),
+        maxFields = Seq(ReportField.ElapsedDays),
         dateRange = InstantRange(Instant.parse("2020-12-31T12:00:00.00Z"), Instant.MAX)
       )
 
@@ -1473,7 +1473,7 @@ class CaseRepositorySpec
       val minMaxDateReport = SummaryReport(
         groupBy   = ReportField.Status,
         sortBy    = ReportField.Status,
-        maxFields = Set(ReportField.ElapsedDays),
+        maxFields = Seq(ReportField.ElapsedDays),
         dateRange = InstantRange(Instant.parse("2020-06-30T09:00:00.00Z"), Instant.parse("2020-12-31T12:00:00.00Z"))
       )
 

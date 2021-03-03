@@ -167,7 +167,7 @@ class ReportSpec extends BaseSpec {
             caseTypes = Set(ApplicationType.BTI, ApplicationType.CORRESPONDENCE),
             statuses  = Set(PseudoCaseStatus.LIVE, PseudoCaseStatus.REFERRED),
             teams     = Set("1", "3"),
-            maxFields = Set(ReportField.TotalDays),
+            maxFields = Seq(ReportField.TotalDays),
             dateRange = InstantRange(
               Instant.parse("2020-03-21T12:03:15.000Z"),
               Instant.parse("2021-03-21T12:03:15.000Z")
@@ -195,7 +195,7 @@ class ReportSpec extends BaseSpec {
             caseTypes = Set(ApplicationType.MISCELLANEOUS, ApplicationType.CORRESPONDENCE),
             statuses  = Set(PseudoCaseStatus.COMPLETED, PseudoCaseStatus.REJECTED),
             teams     = Set("4", "5"),
-            maxFields = Set(ReportField.ElapsedDays)
+            maxFields = Seq(ReportField.ElapsedDays)
           )
         )
       )
@@ -225,7 +225,7 @@ class ReportSpec extends BaseSpec {
             caseTypes = Set(ApplicationType.BTI, ApplicationType.CORRESPONDENCE),
             statuses  = Set(PseudoCaseStatus.LIVE, PseudoCaseStatus.REFERRED),
             teams     = Set("1", "3"),
-            maxFields = Set(ReportField.ElapsedDays),
+            maxFields = Seq(ReportField.ElapsedDays),
             dateRange = InstantRange(
               Instant.parse("2020-03-21T12:03:15.000Z"),
               Instant.parse("2021-03-21T12:03:15.000Z")
@@ -256,7 +256,7 @@ class ReportSpec extends BaseSpec {
             caseTypes = Set(ApplicationType.MISCELLANEOUS, ApplicationType.CORRESPONDENCE),
             statuses  = Set(PseudoCaseStatus.COMPLETED, PseudoCaseStatus.REJECTED),
             teams     = Set("4", "5"),
-            maxFields = Set(ReportField.TotalDays)
+            maxFields = Seq(ReportField.TotalDays)
           )
         ),
         "UTF-8"
