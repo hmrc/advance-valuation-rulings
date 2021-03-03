@@ -41,6 +41,7 @@ object RESTFormatters {
   implicit val formatSampleReturn: Format[SampleReturn.Value]         = EnumJson.format(SampleReturn)
   implicit val formatCancelReason: Format[CancelReason.Value]         = EnumJson.format(CancelReason)
   implicit val formatReferralReason: Format[ReferralReason.Value]     = EnumJson.format(ReferralReason)
+  implicit val formatRejectedReason: Format[RejectReason.Value]       = EnumJson.format(RejectReason)
   implicit val miscCaseType: Format[MiscCaseType.Value]               = EnumJson.format(MiscCaseType)
 
   implicit val formatEORIDetails: OFormat[EORIDetails]   = Json.format[EORIDetails]
