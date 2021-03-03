@@ -220,17 +220,20 @@ class CaseMongoRepository @Inject() (
       )
     )
 
-  private def pseudoStatus(operand: JsValueWrapper): JsValue = {
+  private def pseudoStatus(): JsValue = {
     val time = Json.toJson(appConfig.clock.instant())
+    val statusField = s"$$${ReportField.Status.underlyingField}"
+
+    val isExpired = and(
+      eq(s"$$${ReportField.Status.underlyingField}", CaseStatus.COMPLETED.toString),
+      notNull(s"$$${ReportField.DateCompleted.underlyingField}"),
+      greaterThan(Json.arr(time, s"$$${ReportField.DateCompleted.underlyingField}"))
+    )
 
     cond(
-      ifExpr = and(
-        eq(s"$$${ReportField.Status.underlyingField}", CaseStatus.COMPLETED.toString),
-        notNull(s"$$${ReportField.DateCompleted.underlyingField}"),
-        greaterThan(Json.arr(time, s"$$${ReportField.DateCompleted.underlyingField}"))
-      ),
+      ifExpr = isExpired,
       thenExpr = PseudoCaseStatus.EXPIRED.toString,
-      elseExpr = s"$$${ReportField.Status.underlyingField}"
+      elseExpr = statusField
     )
   }
 
@@ -357,30 +360,30 @@ class CaseMongoRepository @Inject() (
     val groupFields = countField ++ maxFields ++ casesField
 
     report.groupBy match {
-      case ChapterField(_, underlyingField) =>
+      case ChapterField(_, _) =>
         Group(substrBytes(s"$$${report.groupBy.underlyingField}", 0, 2))(groupFields: _*)
       case DaysSinceField(_, underlyingField) =>
         Group(daysSince(s"$$$underlyingField"))(groupFields: _*)
-      case StatusField(fieldName, underlyingField) =>
-        Group(pseudoStatus(s"$$$underlyingField"))(groupFields: _*)
+      case StatusField(_, _) =>
+        Group(pseudoStatus())(groupFields: _*)
       case _ =>
         Group(JsString(s"$$${report.groupBy.underlyingField}"))(groupFields: _*)
     }
   }
 
   private def getFieldValue(field: ReportField[_], json: Option[JsValue]): ReportResultField[_] = field match {
-    case field @ CaseTypeField(fieldName, _)  => field.withValue(json.flatMap(_.asOpt[ApplicationType.Value]))
-    case field @ ChapterField(fieldName, _)   => field.withValue(json.flatMap(_.asOpt[String].filterNot(_.isEmpty)))
-    case field @ DateField(fieldName, _)      => field.withValue(json.flatMap(_.asOpt[Instant]))
-    case field @ DaysSinceField(fieldName, _) => field.withValue(json.flatMap(_.asOpt[Long]))
-    case field @ NumberField(fieldName, _)    => field.withValue(json.flatMap(_.asOpt[Long]))
-    case field @ StatusField(fieldName, _)    => field.withValue(json.flatMap(_.asOpt[PseudoCaseStatus.Value]))
-    case field @ StringField(fieldName, _)    => field.withValue(json.flatMap(_.asOpt[String]))
+    case field @ CaseTypeField(_, _)  => field.withValue(json.flatMap(_.asOpt[ApplicationType.Value]))
+    case field @ ChapterField(_, _)   => field.withValue(json.flatMap(_.asOpt[String].filterNot(_.isEmpty)))
+    case field @ DateField(_, _)      => field.withValue(json.flatMap(_.asOpt[Instant]))
+    case field @ DaysSinceField(_, _) => field.withValue(json.flatMap(_.asOpt[Long]))
+    case field @ NumberField(_, _)    => field.withValue(json.flatMap(_.asOpt[Long]))
+    case field @ StatusField(_, _)    => field.withValue(json.flatMap(_.asOpt[PseudoCaseStatus.Value]))
+    case field @ StringField(_, _)    => field.withValue(json.flatMap(_.asOpt[String]))
   }
 
   private def getNumberFieldValue(field: ReportField[Long], json: Option[JsValue]): NumberResultField = field match {
-    case field @ DaysSinceField(fieldName, _) => field.withValue(json.flatMap(_.asOpt[Long]))
-    case field @ NumberField(fieldName, _)    => field.withValue(json.flatMap(_.asOpt[Long]))
+    case field @ DaysSinceField(_, _) => field.withValue(json.flatMap(_.asOpt[Long]))
+    case field @ NumberField(_, _)    => field.withValue(json.flatMap(_.asOpt[Long]))
   }
 
   override def summaryReport(report: SummaryReport, pagination: Pagination): Future[Paged[ResultGroup]] = {
@@ -481,8 +484,8 @@ class CaseMongoRepository @Inject() (
               fieldName -> (substrBytes(s"$$$underlyingField", 0, 2): JsValueWrapper)
             case DaysSinceField(fieldName, underlyingField) =>
               fieldName -> (daysSince(s"$$$underlyingField"): JsValueWrapper)
-            case StatusField(fieldName, underlyingField) =>
-              fieldName -> (pseudoStatus(s"$$$underlyingField"): JsValueWrapper)
+            case StatusField(fieldName, _) =>
+              fieldName -> (pseudoStatus(): JsValueWrapper)
             case field =>
               field.fieldName -> (s"$$${field.underlyingField}": JsValueWrapper)
           }: _*

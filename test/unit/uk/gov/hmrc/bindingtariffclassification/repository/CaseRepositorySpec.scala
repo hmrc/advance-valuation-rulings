@@ -933,6 +933,21 @@ class CaseRepositorySpec
       )
     )
     val expiredCases = List(c9, c10)
+    val c11 = aCase(
+      withActiveDaysElapsed(2),
+      withReferredDaysElapsed(0),
+      withReference("11"),
+      withStatus(CaseStatus.NEW),
+      withCreatedDate(Instant.parse("2021-01-01T09:00:00.00Z"))
+    )
+    val c12 = aCase(
+      withActiveDaysElapsed(1),
+      withReferredDaysElapsed(0),
+      withReference("12"),
+      withStatus(CaseStatus.NEW),
+      withCreatedDate(Instant.parse("2021-01-01T09:00:00.00Z"))
+    )
+    val gatewayCases = List(c11, c12)
 
     "group by pseudo status" in {
       given(config.clock) willReturn Clock.fixed(Instant.parse("2021-02-01T09:00:00.00Z"), ZoneOffset.UTC)
@@ -1324,7 +1339,8 @@ class CaseRepositorySpec
 
     "filter by pseudo status" in {
       await(cases.traverse(repository.insert))
-      collectionSize shouldBe 6
+      await(expiredCases.traverse(repository.insert))
+      collectionSize shouldBe 8
 
       val report = SummaryReport(
         groupBy   = ReportField.Status,
@@ -1342,11 +1358,34 @@ class CaseRepositorySpec
           maxFields = List(ReportField.ElapsedDays.withValue(Some(4)))
         )
       )
+
+      val expiredReport = SummaryReport(
+        groupBy   = ReportField.User,
+        sortBy    = ReportField.User,
+        maxFields = Set(ReportField.ElapsedDays),
+        statuses  = Set(PseudoCaseStatus.EXPIRED)
+      )
+
+      val expiredPaged = await(repository.summaryReport(expiredReport, Pagination()))
+
+      expiredPaged.results shouldBe Seq(
+        SimpleResultGroup(
+          1,
+          ReportField.User.withValue(Some("2")),
+          List(ReportField.ElapsedDays.withValue(Some(4)))
+        ),
+        SimpleResultGroup(
+          1,
+          ReportField.User.withValue(Some("3")),
+          List(ReportField.ElapsedDays.withValue(Some(9)))
+        ),
+      )
     }
 
     "filter by teams" in {
       await(cases.traverse(repository.insert))
-      collectionSize shouldBe 6
+      await(gatewayCases.traverse(repository.insert))
+      collectionSize shouldBe 8
 
       val report = SummaryReport(
         groupBy   = ReportField.Status,
@@ -1372,6 +1411,23 @@ class CaseRepositorySpec
           count     = 1,
           groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.REFERRED)),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(4)))
+        )
+      )
+
+      val gatewayReport = SummaryReport(
+        groupBy   = ReportField.CaseType,
+        sortBy    = ReportField.CaseType,
+        maxFields = Set(ReportField.ElapsedDays),
+        teams     = Set("1")
+      )
+
+      val gatewayPaged = await(repository.summaryReport(gatewayReport, Pagination()))
+
+      gatewayPaged.results shouldBe Seq(
+        SimpleResultGroup(
+          count     = 2,
+          groupKey  = ReportField.CaseType.withValue(Some(ApplicationType.BTI)),
+          maxFields = List(ReportField.ElapsedDays.withValue(Some(2)))
         )
       )
     }
