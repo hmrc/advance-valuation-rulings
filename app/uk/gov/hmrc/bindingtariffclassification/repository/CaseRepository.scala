@@ -384,6 +384,7 @@ class CaseMongoRepository @Inject() (
     case field @ DaysSinceField(_, _) => field.withValue(json.flatMap(_.asOpt[Long]))
     case field @ NumberField(_, _)    => field.withValue(json.flatMap(_.asOpt[Long]))
     case field @ StatusField(_, _)    => field.withValue(json.flatMap(_.asOpt[PseudoCaseStatus.Value]))
+    case field @ LiabilityStatusField(_, _)    => field.withValue(json.flatMap(_.asOpt[PseudoCaseStatus.Value]))
     case field @ StringField(_, _)    => field.withValue(json.flatMap(_.asOpt[String]))
   }
 

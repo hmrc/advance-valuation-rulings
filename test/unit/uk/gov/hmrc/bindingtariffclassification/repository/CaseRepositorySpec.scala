@@ -1048,8 +1048,7 @@ class CaseRepositorySpec
       given(config.clock) willReturn Clock.fixed(Instant.parse("2021-02-01T09:00:00.00Z"), ZoneOffset.UTC)
 
       await(liabilities.traverse(repository.insert))
-      await(atarCases.traverse(repository.insert))
-      collectionSize shouldBe 8
+      collectionSize shouldBe 5
 
       val report = SummaryReport(
         groupBy   = ReportField.LiabilityStatus,
