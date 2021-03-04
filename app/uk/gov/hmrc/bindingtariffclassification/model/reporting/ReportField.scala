@@ -54,6 +54,11 @@ case class DaysSinceField(override val fieldName: String, override val underlyin
   def withValue(value: Option[Long]): NumberResultField = NumberResultField(fieldName, value)
 }
 
+case class LiabilityStatusField(override val fieldName: String, override val underlyingField: String)
+  extends ReportField[PseudoCaseStatus.Value](fieldName, underlyingField) {
+  def withValue(value: Option[PseudoCaseStatus.Value]): LiabilityStatusResultField = LiabilityStatusResultField(fieldName, value)
+}
+
 object ReportField {
   val Count         = NumberField("count", "count")
   val Reference     = StringField("reference", "reference")
@@ -69,6 +74,7 @@ object ReportField {
   val ElapsedDays   = NumberField("elapsed_days", "daysElapsed")
   val TotalDays     = DaysSinceField("total_days", "createdDate")
   val ReferredDays  = NumberField("referred_days", "referredDaysElapsed")
+  val LiabilityStatus = LiabilityStatusField("liability_status", "application.status")
 
   val fields: Map[String, ReportField[_]] = List(
     Count,
@@ -84,6 +90,7 @@ object ReportField {
     DateCompleted,
     ElapsedDays,
     TotalDays,
-    ReferredDays
+    ReferredDays,
+    LiabilityStatus
   ).map(field => field.fieldName -> field).toMap
 }

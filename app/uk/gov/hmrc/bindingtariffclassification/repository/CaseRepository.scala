@@ -265,6 +265,12 @@ class CaseMongoRepository @Inject() (
                 ReportField.Status.underlyingField        -> Json.toJson(PseudoCaseStatus.COMPLETED),
                 ReportField.DateCompleted.underlyingField -> lessThan(appConfig.clock.instant())
               ): JsValueWrapper
+            case PseudoCaseStatus.NON_LIVE => Json.obj(
+              ReportField.LiabilityStatus.underlyingField -> Json.toJson(PseudoCaseStatus.NON_LIVE)
+            ):JsValueWrapper
+            case PseudoCaseStatus.LIVE => Json.obj(
+              ReportField.LiabilityStatus.underlyingField -> Json.toJson(PseudoCaseStatus.LIVE)
+            ):JsValueWrapper
           }.toSeq: _*
         )
 
