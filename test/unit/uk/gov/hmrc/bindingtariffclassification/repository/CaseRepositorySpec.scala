@@ -953,7 +953,7 @@ class CaseRepositorySpec
       withQueue("3"),
       withActiveDaysElapsed(7),
       withReferredDaysElapsed(6),
-      withReference("4"),
+      withReference("13"),
       withStatus(CaseStatus.NEW),
       withAssignee(Some(Operator("2"))),
       withCreatedDate(Instant.parse("2020-12-31T09:00:00.00Z")),
