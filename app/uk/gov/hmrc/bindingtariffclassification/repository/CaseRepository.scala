@@ -265,12 +265,6 @@ class CaseMongoRepository @Inject() (
                 ReportField.Status.underlyingField        -> Json.toJson(PseudoCaseStatus.COMPLETED),
                 ReportField.DateCompleted.underlyingField -> lessThan(appConfig.clock.instant())
               ): JsValueWrapper
-            case PseudoCaseStatus.NON_LIVE => Json.obj(
-              ReportField.LiabilityStatus.underlyingField -> Json.toJson(PseudoCaseStatus.NON_LIVE)
-            ):JsValueWrapper
-            case PseudoCaseStatus.LIVE => Json.obj(
-              ReportField.LiabilityStatus.underlyingField -> Json.toJson(PseudoCaseStatus.LIVE)
-            ):JsValueWrapper
           }.toSeq: _*
         )
 
@@ -384,7 +378,7 @@ class CaseMongoRepository @Inject() (
     case field @ DaysSinceField(_, _) => field.withValue(json.flatMap(_.asOpt[Long]))
     case field @ NumberField(_, _)    => field.withValue(json.flatMap(_.asOpt[Long]))
     case field @ StatusField(_, _)    => field.withValue(json.flatMap(_.asOpt[PseudoCaseStatus.Value]))
-    case field @ LiabilityStatusField(_, _)    => field.withValue(json.flatMap(_.asOpt[PseudoCaseStatus.Value]))
+    case field @ LiabilityStatusField(_, _)    => field.withValue(json.flatMap(_.asOpt[LiabilityStatus.Value]))
     case field @ StringField(_, _)    => field.withValue(json.flatMap(_.asOpt[String]))
   }
 

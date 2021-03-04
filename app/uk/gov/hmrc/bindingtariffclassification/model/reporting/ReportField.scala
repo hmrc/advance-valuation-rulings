@@ -55,8 +55,8 @@ case class DaysSinceField(override val fieldName: String, override val underlyin
 }
 
 case class LiabilityStatusField(override val fieldName: String, override val underlyingField: String)
-  extends ReportField[PseudoCaseStatus.Value](fieldName, underlyingField) {
-  def withValue(value: Option[PseudoCaseStatus.Value]): LiabilityStatusResultField = LiabilityStatusResultField(fieldName, value)
+  extends ReportField[LiabilityStatus.Value](fieldName, underlyingField) {
+  def withValue(value: Option[LiabilityStatus.Value]): LiabilityStatusResultField = LiabilityStatusResultField(fieldName, value)
 }
 
 object ReportField {
