@@ -24,6 +24,7 @@ import uk.gov.hmrc.bindingtariffclassification.migrations.{AmendDateOfExtractMig
 import uk.gov.hmrc.bindingtariffclassification.repository.{CaseMongoRepository, CaseRepository, EncryptedCaseMongoRepository}
 import uk.gov.hmrc.bindingtariffclassification.scheduler.{ActiveDaysElapsedJob, FileStoreCleanupJob, ReferredDaysElapsedJob, ScheduledJobs}
 import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.bindingtariffclassification.migrations.AddKeywordsMigrationJob
 
 class ModuleTest extends UnitSpec with BeforeAndAfterEach with PlayRunners {
 
@@ -73,7 +74,8 @@ class ModuleTest extends UnitSpec with BeforeAndAfterEach with PlayRunners {
       val application: Application = app()
       running(application) {
         application.injector.instanceOf[MigrationJobs].jobs shouldBe Set(
-          application.injector.instanceOf[AmendDateOfExtractMigrationJob]
+          application.injector.instanceOf[AmendDateOfExtractMigrationJob],
+          application.injector.instanceOf[AddKeywordsMigrationJob]
         )
       }
     }

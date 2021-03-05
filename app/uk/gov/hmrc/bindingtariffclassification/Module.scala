@@ -24,6 +24,7 @@ import uk.gov.hmrc.bindingtariffclassification.migrations.{AmendDateOfExtractMig
 import uk.gov.hmrc.bindingtariffclassification.repository.{CaseMongoRepository, CaseRepository, EncryptedCaseMongoRepository}
 import uk.gov.hmrc.bindingtariffclassification.scheduler._
 import uk.gov.hmrc.crypto.CompositeSymmetricCrypto
+import uk.gov.hmrc.bindingtariffclassification.migrations.AddKeywordsMigrationJob
 
 class Module extends play.api.inject.Module {
 
@@ -42,7 +43,7 @@ class Module extends play.api.inject.Module {
       bind[ScheduledJobs].toProvider[ScheduledJobProvider],
       bind[MigrationJobs].toProvider[MigrationJobProvider],
       bind[Scheduler].toSelf.eagerly(),
-      bind[MongockRunner].toSelf.eagerly(),
+      // bind[MongockRunner].toSelf.eagerly(),
       repositoryBinding
     )
   }
@@ -59,7 +60,8 @@ class ScheduledJobProvider @Inject() (
 }
 
 class MigrationJobProvider @Inject() (
-  amendDateOfExtractMigration: AmendDateOfExtractMigrationJob
+  amendDateOfExtractMigration: AmendDateOfExtractMigrationJob,
+  addKeywordsMigration: AddKeywordsMigrationJob
 ) extends Provider[MigrationJobs] {
-  override def get(): MigrationJobs = MigrationJobs(Set(amendDateOfExtractMigration))
+  override def get(): MigrationJobs = MigrationJobs(Set(amendDateOfExtractMigration, addKeywordsMigration))
 }
