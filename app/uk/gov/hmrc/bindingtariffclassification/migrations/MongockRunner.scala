@@ -20,6 +20,7 @@ import com.github.cloudyrock.mongock.driver.mongodb.sync.v4.driver.MongoSync4Dri
 import com.github.cloudyrock.standalone.MongockStandalone
 import com.github.cloudyrock.standalone.event.StandaloneMigrationSuccessEvent
 import com.mongodb.client.{MongoClient, MongoClients}
+import com.mongodb.connection.ClusterType
 import javax.inject.Inject
 import uk.gov.hmrc.bindingtariffclassification.common.Logging
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
@@ -34,9 +35,17 @@ class MongockRunner @Inject() (appConfig: AppConfig) extends Logging {
 
     val mongoClient: MongoClient = MongoClients.create(appConfig.mongodbUri)
 
+    val mongockDriver = {
+      val driver = MongoSync4Driver.withDefaultLock(mongoClient, appConfig.appName)
+      if (mongoClient.getClusterDescription().getType() == ClusterType.STANDALONE) {
+        driver.disableTransaction()
+      }
+      driver
+    }
+
     MongockStandalone
       .builder()
-      .setDriver(MongoSync4Driver.withDefaultLock(mongoClient, appConfig.appName))
+      .setDriver(mongockDriver)
       .addChangeLogsScanPackage("uk.gov.hmrc.bindingtariffclassification.migrations.changelogs")
       .setMigrationStartedListener(() => logger.info("Started mongock migrations"))
       .setMigrationSuccessListener { successEvent =>

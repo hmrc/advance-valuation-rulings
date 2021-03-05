@@ -42,7 +42,7 @@ class Module extends play.api.inject.Module {
       bind[ScheduledJobs].toProvider[ScheduledJobProvider],
       bind[MigrationJobs].toProvider[MigrationJobProvider],
       bind[Scheduler].toSelf.eagerly(),
-      // bind[MongockRunner].toSelf.eagerly(),
+      bind[MongockRunner].toSelf.eagerly(),
       repositoryBinding
     )
   }
