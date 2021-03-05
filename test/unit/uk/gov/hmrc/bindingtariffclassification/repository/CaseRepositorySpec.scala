@@ -1074,12 +1074,12 @@ class CaseRepositorySpec
       pagedWithCases.results shouldBe Seq(
         CaseResultGroup(
           count     = 4,
-          groupKey  = ReportField.LiabilityStatus.withValue(Some(PseudoCaseStatus.LIVE)),
+          groupKey  = ReportField.LiabilityStatus.withValue(Some(LiabilityStatus.LIVE)),
           cases     = liveLiabilities
         ),
         CaseResultGroup(
           count     = 1,
-          groupKey  = ReportField.LiabilityStatus.withValue(Some(PseudoCaseStatus.NON_LIVE)),
+          groupKey  = ReportField.LiabilityStatus.withValue(Some(LiabilityStatus.NON_LIVE)),
           cases     = nonLiveLiabilities
         )
       )
