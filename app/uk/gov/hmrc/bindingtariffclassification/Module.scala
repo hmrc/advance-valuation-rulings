@@ -20,11 +20,10 @@ import javax.inject.{Inject, Provider}
 import play.api.inject.Binding
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.bindingtariffclassification.crypto.LocalCrypto
-import uk.gov.hmrc.bindingtariffclassification.migrations.{AmendDateOfExtractMigrationJob, MigrationJobs, MongockRunner}
+import uk.gov.hmrc.bindingtariffclassification.migrations.{AmendDateOfExtractMigrationJob, AddKeywordsMigrationJob, MigrationJobs}
 import uk.gov.hmrc.bindingtariffclassification.repository.{CaseMongoRepository, CaseRepository, EncryptedCaseMongoRepository}
 import uk.gov.hmrc.bindingtariffclassification.scheduler._
 import uk.gov.hmrc.crypto.CompositeSymmetricCrypto
-import uk.gov.hmrc.bindingtariffclassification.migrations.AddKeywordsMigrationJob
 
 class Module extends play.api.inject.Module {
 
@@ -43,7 +42,6 @@ class Module extends play.api.inject.Module {
       bind[ScheduledJobs].toProvider[ScheduledJobProvider],
       bind[MigrationJobs].toProvider[MigrationJobProvider],
       bind[Scheduler].toSelf.eagerly(),
-      // bind[MongockRunner].toSelf.eagerly(),
       repositoryBinding
     )
   }

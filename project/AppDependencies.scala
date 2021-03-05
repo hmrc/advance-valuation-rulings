@@ -14,9 +14,6 @@ object AppDependencies {
     "org.typelevel"                 %% "cats-core"                 % "2.4.1",
     "com.github.alonsodomin.cron4s" %% "cron4s-core"               % "0.6.1",
     "com.github.pathikrit"          %% "better-files"              % "3.9.1",
-    "org.mongodb"                    % "mongodb-driver-sync"       % "4.2.0",
-    "com.github.cloudyrock.mongock"  % "mongock-standalone"        % "4.3.4",
-    "com.github.cloudyrock.mongock"  % "mongodb-sync-v4-driver"    % "4.3.4",
     ws
   )
 
