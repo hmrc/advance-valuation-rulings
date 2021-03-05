@@ -37,9 +37,7 @@ class MongockRunner @Inject() (appConfig: AppConfig) extends Logging {
 
     val mongockDriver = {
       val driver = MongoSync4Driver.withDefaultLock(mongoClient, appConfig.appName)
-      if (mongoClient.getClusterDescription().getType() == ClusterType.STANDALONE) {
-        driver.disableTransaction()
-      }
+      driver.disableTransaction()
       driver
     }
 
