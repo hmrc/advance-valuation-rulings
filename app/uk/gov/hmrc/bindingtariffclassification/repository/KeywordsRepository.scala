@@ -50,8 +50,6 @@ class KeywordsMongoRepository @Inject() (mongoDbProvider: MongoDbProvider)
     with KeywordsRepository
     with MongoCrudHelper[Keyword] {
 
-  private val defaultSortBy = Json.obj("timestamp" -> -1)
-
   override protected val mongoCollection: JSONCollection = collection
 
   override def indexes = Seq(
@@ -64,7 +62,7 @@ class KeywordsMongoRepository @Inject() (mongoDbProvider: MongoDbProvider)
     updateDocument(selector = byName(keyword.name), update = keyword, upsert = upsert)
 
   override def findAll(pagination: Pagination): Future[Paged[Keyword]] =
-    getMany(Json.obj(), defaultSortBy, pagination)
+    getMany(Json.obj(), Json.obj(), pagination)
 
   private def byName(name: String): JsObject =
     Json.obj("name" -> name)

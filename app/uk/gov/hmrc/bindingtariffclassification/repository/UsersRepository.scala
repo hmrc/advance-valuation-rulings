@@ -61,15 +61,13 @@ class UsersMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
     )
   )
 
-  private val defaultSortBy = Json.obj("timestamp" -> -1)
-
   override def getById(id: String): Future[Option[Operator]] = {
     getOne(byId(id))
   }
 
   override def search(search: UserSearch,
                       pagination: Pagination): Future[Paged[Operator]] = {
-    getMany(selector(search), defaultSortBy, pagination)
+    getMany(selector(search), Json.obj(), pagination)
   }
 
   override def insert(user: Operator): Future[Operator] = createOne(user)
