@@ -1019,7 +1019,9 @@ class CaseRepositorySpec
     )
     val appealCases = List(c13, c14, c15, c16)
 
-    val c13 = aCase(liabCase1.copy(application = liabCase1.application.asLiabilityOrder.copy(status = LiabilityStatus.NON_LIVE)))(
+    val c17 = aCase(
+      liabCase1.copy(application = liabCase1.application.asLiabilityOrder.copy(status = LiabilityStatus.NON_LIVE))
+    )(
       withQueue("3"),
       withActiveDaysElapsed(7),
       withReferredDaysElapsed(6),
@@ -1029,10 +1031,10 @@ class CaseRepositorySpec
       withCreatedDate(Instant.parse("2020-12-31T09:00:00.00Z")),
       withoutDecision()
     )
-    val liabilities = List(c4, c5, c7, c9, c13)
-    val liveLiabilities = List(c4, c5, c7, c9)
-    val nonLiveLiabilities = List(c13)
-    val atarCases = List(c1,c2,c3)
+    val liabilities        = List(c4, c5, c7, c9, c17)
+    val liveLiabilities    = List(c4, c5, c7, c9)
+    val nonLiveLiabilities = List(c17)
+    val atarCases          = List(c1, c2, c3)
 
     "group by pseudo status" in {
       given(config.clock) willReturn Clock.fixed(Instant.parse("2021-02-01T09:00:00.00Z"), ZoneOffset.UTC)
@@ -1144,21 +1146,20 @@ class CaseRepositorySpec
       collectionSize shouldBe 5
 
       val report = SummaryReport(
-        groupBy   = ReportField.LiabilityStatus,
-        sortBy    = ReportField.LiabilityStatus
+        groupBy = ReportField.LiabilityStatus,
+        sortBy  = ReportField.LiabilityStatus
       )
 
       val paged = await(repository.summaryReport(report, Pagination()))
 
       paged.results shouldBe Seq(
         SimpleResultGroup(
-          count     = 4,
-          groupKey  = ReportField.LiabilityStatus.withValue(Some(LiabilityStatus.LIVE))
+          count    = 4,
+          groupKey = ReportField.LiabilityStatus.withValue(Some(LiabilityStatus.LIVE))
         ),
         SimpleResultGroup(
-          count     = 1,
-          groupKey  = ReportField.LiabilityStatus.withValue(Some(LiabilityStatus.NON_LIVE))
-
+          count    = 1,
+          groupKey = ReportField.LiabilityStatus.withValue(Some(LiabilityStatus.NON_LIVE))
         )
       )
 
@@ -1166,14 +1167,14 @@ class CaseRepositorySpec
 
       pagedWithCases.results shouldBe Seq(
         CaseResultGroup(
-          count     = 4,
-          groupKey  = ReportField.LiabilityStatus.withValue(Some(LiabilityStatus.LIVE)),
-          cases     = liveLiabilities
+          count    = 4,
+          groupKey = ReportField.LiabilityStatus.withValue(Some(LiabilityStatus.LIVE)),
+          cases    = liveLiabilities
         ),
         CaseResultGroup(
-          count     = 1,
-          groupKey  = ReportField.LiabilityStatus.withValue(Some(LiabilityStatus.NON_LIVE)),
-          cases     = nonLiveLiabilities
+          count    = 1,
+          groupKey = ReportField.LiabilityStatus.withValue(Some(LiabilityStatus.NON_LIVE)),
+          cases    = nonLiveLiabilities
         )
       )
     }

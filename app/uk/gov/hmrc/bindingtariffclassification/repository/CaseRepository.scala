@@ -361,8 +361,12 @@ class CaseMongoRepository @Inject() (
       }
 
     val liabilityStatusesFilter =
-      if(report.liabilityStatuses.isEmpty) Json.obj() else{
-        Json.obj(ReportField.LiabilityStatus.underlyingField -> Json.obj("$in" -> report.liabilityStatuses.map(Json.toJson(_))))
+      if (report.liabilityStatuses.isEmpty)
+        Json.obj()
+      else {
+        Json.obj(
+          ReportField.LiabilityStatus.underlyingField -> Json.obj("$in" -> report.liabilityStatuses.map(Json.toJson(_)))
+        )
       }
 
     val teamFilter =
@@ -466,14 +470,14 @@ class CaseMongoRepository @Inject() (
   }
 
   private def getFieldValue(field: ReportField[_], json: Option[JsValue]): ReportResultField[_] = field match {
-    case field @ CaseTypeField(_, _)  => field.withValue(json.flatMap(_.asOpt[ApplicationType.Value]))
-    case field @ ChapterField(_, _)   => field.withValue(json.flatMap(_.asOpt[String].filterNot(_.isEmpty)))
-    case field @ DateField(_, _)      => field.withValue(json.flatMap(_.asOpt[Instant]))
-    case field @ DaysSinceField(_, _) => field.withValue(json.flatMap(_.asOpt[Long]))
-    case field @ NumberField(_, _)    => field.withValue(json.flatMap(_.asOpt[Long]))
-    case field @ StatusField(_, _)    => field.withValue(json.flatMap(_.asOpt[PseudoCaseStatus.Value]))
-    case field @ LiabilityStatusField(_, _)    => field.withValue(json.flatMap(_.asOpt[LiabilityStatus.Value]))
-    case field @ StringField(_, _)    => field.withValue(json.flatMap(_.asOpt[String]))
+    case field @ CaseTypeField(_, _)        => field.withValue(json.flatMap(_.asOpt[ApplicationType.Value]))
+    case field @ ChapterField(_, _)         => field.withValue(json.flatMap(_.asOpt[String].filterNot(_.isEmpty)))
+    case field @ DateField(_, _)            => field.withValue(json.flatMap(_.asOpt[Instant]))
+    case field @ DaysSinceField(_, _)       => field.withValue(json.flatMap(_.asOpt[Long]))
+    case field @ NumberField(_, _)          => field.withValue(json.flatMap(_.asOpt[Long]))
+    case field @ StatusField(_, _)          => field.withValue(json.flatMap(_.asOpt[PseudoCaseStatus.Value]))
+    case field @ LiabilityStatusField(_, _) => field.withValue(json.flatMap(_.asOpt[LiabilityStatus.Value]))
+    case field @ StringField(_, _)          => field.withValue(json.flatMap(_.asOpt[String]))
   }
 
   private def getNumberFieldValue(field: ReportField[Long], json: Option[JsValue]): NumberResultField = field match {
