@@ -30,9 +30,9 @@ import reactivemongo.bson._
 import reactivemongo.core.errors.DatabaseException
 import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
-import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatCase
+import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.model.reporting._
-import uk.gov.hmrc.bindingtariffclassification.model.{CaseStatus, PseudoCaseStatus, _}
+import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatCase
 import uk.gov.hmrc.bindingtariffclassification.sort.{CaseSortField, SortDirection}
 import uk.gov.hmrc.mongo.MongoSpecSupport
 import util.CaseData._
@@ -948,6 +948,76 @@ class CaseRepositorySpec
       withCreatedDate(Instant.parse("2021-01-01T09:00:00.00Z"))
     )
     val gatewayCases = List(c11, c12)
+    val c13 = aCase(liabCase1)(
+      withQueue("3"),
+      withActiveDaysElapsed(4),
+      withReferredDaysElapsed(3),
+      withReference("13"),
+      withStatus(CaseStatus.COMPLETED),
+      withAssignee(Some(Operator("2"))),
+      withCreatedDate(Instant.parse("2021-01-01T09:00:00.00Z")),
+      withDecision(
+        "9507209000",
+        effectiveStartDate = Some(Instant.parse("2018-01-31T09:00:00.00Z")),
+        effectiveEndDate   = None,
+        appeal = Seq(
+          Appeal("1", AppealStatus.IN_PROGRESS, AppealType.APPEAL_TIER_1),
+          Appeal("2", AppealStatus.IN_PROGRESS, AppealType.REVIEW)
+        )
+      )
+    )
+    val c14 = aCase(
+      withQueue("4"),
+      withActiveDaysElapsed(9),
+      withReferredDaysElapsed(0),
+      withReference("14"),
+      withStatus(CaseStatus.COMPLETED),
+      withAssignee(Some(Operator("3"))),
+      withCreatedDate(Instant.parse("2021-01-01T09:00:00.00Z")),
+      withDecision(
+        "9507209000",
+        effectiveStartDate = Some(Instant.parse("2018-01-31T09:00:00.00Z")),
+        effectiveEndDate   = Some(Instant.parse("2022-01-31T09:00:00.00Z")),
+        appeal = Seq(
+          Appeal("1", AppealStatus.IN_PROGRESS, AppealType.APPEAL_TIER_1)
+        )
+      )
+    )
+    val c15 = aCase(
+      withQueue("4"),
+      withActiveDaysElapsed(11),
+      withReferredDaysElapsed(0),
+      withReference("15"),
+      withStatus(CaseStatus.COMPLETED),
+      withAssignee(Some(Operator("3"))),
+      withCreatedDate(Instant.parse("2021-01-01T09:00:00.00Z")),
+      withDecision(
+        "9507209000",
+        effectiveStartDate = Some(Instant.parse("2018-01-31T09:00:00.00Z")),
+        effectiveEndDate   = Some(Instant.parse("2019-01-31T09:00:00.00Z")),
+        appeal = Seq(
+          Appeal("1", AppealStatus.IN_PROGRESS, AppealType.APPEAL_TIER_1)
+        )
+      )
+    )
+    val c16 = aCase(
+      withQueue("4"),
+      withActiveDaysElapsed(12),
+      withReferredDaysElapsed(0),
+      withReference("16"),
+      withStatus(CaseStatus.COMPLETED),
+      withAssignee(Some(Operator("3"))),
+      withCreatedDate(Instant.parse("2021-01-01T09:00:00.00Z")),
+      withDecision(
+        "9507209000",
+        effectiveStartDate = Some(Instant.parse("2018-01-31T09:00:00.00Z")),
+        effectiveEndDate   = Some(Instant.parse("2019-01-31T09:00:00.00Z")),
+        appeal = Seq(
+          Appeal("1", AppealStatus.IN_PROGRESS, AppealType.REVIEW)
+        )
+      )
+    )
+    val appealCases = List(c13, c14, c15, c16)
 
     val c13 = aCase(liabCase1.copy(application = liabCase1.application.asLiabilityOrder.copy(status = LiabilityStatus.NON_LIVE)))(
       withQueue("3"),
@@ -970,7 +1040,8 @@ class CaseRepositorySpec
       await(cases.traverse(repository.insert))
       await(liveCases.traverse(repository.insert))
       await(expiredCases.traverse(repository.insert))
-      collectionSize shouldBe 10
+      await(appealCases.traverse(repository.insert))
+      collectionSize shouldBe 14
 
       val report = SummaryReport(
         groupBy   = ReportField.Status,
@@ -1005,6 +1076,16 @@ class CaseRepositorySpec
           count     = 2,
           groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.REFERRED)),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(5)))
+        ),
+        SimpleResultGroup(
+          count     = 2,
+          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.UNDER_APPEAL)),
+          maxFields = List(ReportField.ElapsedDays.withValue(Some(11)))
+        ),
+        SimpleResultGroup(
+          count     = 2,
+          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.UNDER_REVIEW)),
+          maxFields = List(ReportField.ElapsedDays.withValue(Some(12)))
         )
       )
 
@@ -1040,6 +1121,18 @@ class CaseRepositorySpec
           groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.REFERRED)),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(5))),
           cases     = List(c5, c6)
+        ),
+        CaseResultGroup(
+          count     = 2,
+          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.UNDER_APPEAL)),
+          maxFields = List(ReportField.ElapsedDays.withValue(Some(11))),
+          cases     = List(c14, c15)
+        ),
+        CaseResultGroup(
+          count     = 2,
+          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.UNDER_REVIEW)),
+          maxFields = List(ReportField.ElapsedDays.withValue(Some(12))),
+          cases     = List(c13, c16)
         )
       )
     }
@@ -1393,10 +1486,11 @@ class CaseRepositorySpec
       )
     }
 
-    "filter by pseudo status" in {
+    "filter by pseudo status that is also a concrete status" in {
       await(cases.traverse(repository.insert))
       await(expiredCases.traverse(repository.insert))
-      collectionSize shouldBe 8
+      await(appealCases.traverse(repository.insert))
+      collectionSize shouldBe 12
 
       val report = SummaryReport(
         groupBy   = ReportField.Status,
@@ -1414,6 +1508,13 @@ class CaseRepositorySpec
           maxFields = List(ReportField.ElapsedDays.withValue(Some(4)))
         )
       )
+    }
+
+    "filter by pseudo status EXPIRED" in {
+      await(cases.traverse(repository.insert))
+      await(expiredCases.traverse(repository.insert))
+      await(appealCases.traverse(repository.insert))
+      collectionSize shouldBe 12
 
       val expiredReport = SummaryReport(
         groupBy   = ReportField.User,
@@ -1434,7 +1535,60 @@ class CaseRepositorySpec
           1,
           ReportField.User.withValue(Some("3")),
           List(ReportField.ElapsedDays.withValue(Some(9)))
+        )
+      )
+    }
+
+    "filter by pseudo status UNDER_APPEAL" in {
+      await(cases.traverse(repository.insert))
+      await(expiredCases.traverse(repository.insert))
+      await(appealCases.traverse(repository.insert))
+      collectionSize shouldBe 12
+
+      val appealReport = SummaryReport(
+        groupBy   = ReportField.User,
+        sortBy    = ReportField.User,
+        maxFields = Seq(ReportField.ElapsedDays),
+        statuses  = Set(PseudoCaseStatus.UNDER_APPEAL)
+      )
+
+      val appealPaged = await(repository.summaryReport(appealReport, Pagination()))
+
+      appealPaged.results shouldBe Seq(
+        SimpleResultGroup(
+          2,
+          ReportField.User.withValue(Some("3")),
+          List(ReportField.ElapsedDays.withValue(Some(11)))
+        )
+      )
+    }
+
+    "filter by pseudo status UNDER_REVIEW" in {
+      await(cases.traverse(repository.insert))
+      await(expiredCases.traverse(repository.insert))
+      await(appealCases.traverse(repository.insert))
+      collectionSize shouldBe 12
+
+      val reviewReport = SummaryReport(
+        groupBy   = ReportField.User,
+        sortBy    = ReportField.User,
+        maxFields = Seq(ReportField.ElapsedDays),
+        statuses  = Set(PseudoCaseStatus.UNDER_REVIEW)
+      )
+
+      val reviewPaged = await(repository.summaryReport(reviewReport, Pagination()))
+
+      reviewPaged.results shouldBe Seq(
+        SimpleResultGroup(
+          1,
+          ReportField.User.withValue(Some("2")),
+          List(ReportField.ElapsedDays.withValue(Some(4)))
         ),
+        SimpleResultGroup(
+          1,
+          ReportField.User.withValue(Some("3")),
+          List(ReportField.ElapsedDays.withValue(Some(12)))
+        )
       )
     }
 
@@ -1910,11 +2064,11 @@ class CaseRepositorySpec
       val paged = await(repository.queueReport(report, Pagination()))
 
       paged.results shouldBe Seq(
-        QueueResultGroup(2,Some("4"), ApplicationType.BTI),
-        QueueResultGroup(1,Some("3"), ApplicationType.LIABILITY_ORDER),
-        QueueResultGroup(1,Some("3"), ApplicationType.BTI),
-        QueueResultGroup(1,Some("2"), ApplicationType.BTI),
-        QueueResultGroup(1,Some("1"), ApplicationType.BTI),
+        QueueResultGroup(2, Some("4"), ApplicationType.BTI),
+        QueueResultGroup(1, Some("3"), ApplicationType.LIABILITY_ORDER),
+        QueueResultGroup(1, Some("3"), ApplicationType.BTI),
+        QueueResultGroup(1, Some("2"), ApplicationType.BTI),
+        QueueResultGroup(1, Some("1"), ApplicationType.BTI)
       )
     }
 
@@ -1931,11 +2085,11 @@ class CaseRepositorySpec
       val paged = await(repository.queueReport(report, Pagination()))
 
       paged.results shouldBe Seq(
-        QueueResultGroup(1,Some("1"), ApplicationType.BTI),
-        QueueResultGroup(1,Some("2"), ApplicationType.BTI),
-        QueueResultGroup(1,Some("3"), ApplicationType.BTI),
-        QueueResultGroup(1,Some("3"), ApplicationType.LIABILITY_ORDER),
-        QueueResultGroup(2,Some("4"), ApplicationType.BTI),
+        QueueResultGroup(1, Some("1"), ApplicationType.BTI),
+        QueueResultGroup(1, Some("2"), ApplicationType.BTI),
+        QueueResultGroup(1, Some("3"), ApplicationType.BTI),
+        QueueResultGroup(1, Some("3"), ApplicationType.LIABILITY_ORDER),
+        QueueResultGroup(2, Some("4"), ApplicationType.BTI)
       )
     }
 
@@ -1952,8 +2106,8 @@ class CaseRepositorySpec
       val pagedPid1 = await(repository.queueReport(reportPid1, Pagination()))
 
       pagedPid1.results shouldBe Seq(
-        QueueResultGroup(1,Some("2"), ApplicationType.BTI),
-        QueueResultGroup(1,Some("3"), ApplicationType.LIABILITY_ORDER),
+        QueueResultGroup(1, Some("2"), ApplicationType.BTI),
+        QueueResultGroup(1, Some("3"), ApplicationType.LIABILITY_ORDER)
       )
 
       val reportPid2 = QueueReport(assignee = Some("2"))
@@ -1961,8 +2115,8 @@ class CaseRepositorySpec
       val pagedPid2 = await(repository.queueReport(reportPid2, Pagination()))
 
       pagedPid2.results shouldBe Seq(
-        QueueResultGroup(1,Some("3"), ApplicationType.BTI),
-        QueueResultGroup(1,Some("4"), ApplicationType.BTI)
+        QueueResultGroup(1, Some("3"), ApplicationType.BTI),
+        QueueResultGroup(1, Some("4"), ApplicationType.BTI)
       )
     }
   }

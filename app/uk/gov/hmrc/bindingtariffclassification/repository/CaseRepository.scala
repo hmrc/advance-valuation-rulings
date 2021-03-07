@@ -182,23 +182,41 @@ class CaseMongoRepository @Inject() (
   private def lessThan(json: JsValueWrapper): JsObject =
     Json.obj("$lte" -> json)
 
-  private def trunc(json: JsValueWrapper): JsValue =
+  private def trunc(json: JsValueWrapper): JsObject =
     Json.obj("$trunc" -> json)
 
-  private def divide(dividend: JsValueWrapper, divisor: JsValueWrapper): JsValue =
+  private def divide(dividend: JsValueWrapper, divisor: JsValueWrapper): JsObject =
     Json.obj("$divide" -> Json.arr(dividend, divisor))
 
-  private def subtract(minuend: JsValueWrapper, subtrahend: JsValueWrapper): JsValue =
+  private def subtract(minuend: JsValueWrapper, subtrahend: JsValueWrapper): JsObject =
     Json.obj("$subtract" -> Json.arr(minuend, subtrahend))
 
-  private def substrBytes(operand: JsValueWrapper, offset: JsValueWrapper, length: JsValueWrapper): JsValue =
+  private def substrBytes(operand: JsValueWrapper, offset: JsValueWrapper, length: JsValueWrapper): JsObject =
     Json.obj("$substrBytes" -> Json.arr(operand, offset, length))
 
-  private def and(operands: JsValueWrapper*): JsValue =
+  private def and(operands: JsValueWrapper*): JsObject =
     Json.obj("$and" -> Json.arr(operands: _*))
 
-  private def eq(lExpr: JsValueWrapper, rExpr: JsValueWrapper): JsValue =
+  private def eq(lExpr: JsValueWrapper, rExpr: JsValueWrapper): JsObject =
     Json.obj("$eq" -> Json.arr(lExpr, rExpr))
+
+  private def neq(operand: JsValueWrapper): JsObject =
+    Json.obj("$ne" -> operand)
+
+  private def neq(lExpr: JsValueWrapper, rExpr: JsValueWrapper): JsObject =
+    Json.obj("$ne" -> Json.arr(lExpr, rExpr))
+
+  private def not(operand: JsValueWrapper): JsObject =
+    Json.obj("$not" -> operand)
+
+  private def elemMatch(conditions: JsValueWrapper): JsObject =
+    Json.obj("$elemMatch" -> conditions)
+
+  private def notEmpty(operand: JsValueWrapper): JsObject =
+    Json.obj("$gt" -> Json.arr(Json.obj("$size" -> operand), 0))
+
+  private def filter(input: JsValueWrapper, cond: JsValueWrapper): JsObject =
+    Json.obj("$filter" -> Json.obj("input" -> input, "cond" -> cond))
 
   private def daysSince(operand: JsValueWrapper): JsValue =
     trunc(
@@ -207,6 +225,9 @@ class CaseMongoRepository @Inject() (
         86400000
       )
     )
+
+  private def notNull(): JsValue =
+    Json.obj("$ne" -> JsNull)
 
   private def notNull(operandExpr: JsValueWrapper): JsValue =
     Json.obj("$gt" -> Json.arr(operandExpr, JsNull))
@@ -221,8 +242,36 @@ class CaseMongoRepository @Inject() (
     )
 
   private def pseudoStatus(): JsValue = {
-    val time = Json.toJson(appConfig.clock.instant())
+    val time        = Json.toJson(appConfig.clock.instant())
     val statusField = s"$$${ReportField.Status.underlyingField}"
+
+    val isAppeal = and(
+      eq(s"$$${ReportField.Status.underlyingField}", CaseStatus.COMPLETED.toString),
+      notNull("$decision.appeal"),
+      notEmpty(
+        filter(
+          input = "$decision.appeal",
+          cond = and(
+            neq("$$this.type", Json.toJson(AppealType.REVIEW)),
+            eq("$$this.status", Json.toJson(AppealStatus.IN_PROGRESS))
+          )
+        )
+      )
+    )
+
+    val isReview = and(
+      eq(s"$$${ReportField.Status.underlyingField}", CaseStatus.COMPLETED.toString),
+      notNull("$decision.appeal"),
+      notEmpty(
+        filter(
+          input = "$decision.appeal",
+          cond = and(
+            eq("$$this.type", Json.toJson(AppealType.REVIEW)),
+            eq("$$this.status", Json.toJson(AppealStatus.IN_PROGRESS))
+          )
+        )
+      )
+    )
 
     val isExpired = and(
       eq(s"$$${ReportField.Status.underlyingField}", CaseStatus.COMPLETED.toString),
@@ -231,9 +280,17 @@ class CaseMongoRepository @Inject() (
     )
 
     cond(
-      ifExpr = isExpired,
-      thenExpr = PseudoCaseStatus.EXPIRED.toString,
-      elseExpr = statusField
+      ifExpr   = isReview,
+      thenExpr = Json.toJson(PseudoCaseStatus.UNDER_REVIEW),
+      elseExpr = cond(
+        ifExpr   = isAppeal,
+        thenExpr = Json.toJson(PseudoCaseStatus.UNDER_APPEAL),
+        elseExpr = cond(
+          ifExpr   = isExpired,
+          thenExpr = Json.toJson(PseudoCaseStatus.EXPIRED),
+          elseExpr = statusField
+        )
+      )
     )
   }
 
@@ -263,7 +320,39 @@ class CaseMongoRepository @Inject() (
             case PseudoCaseStatus.EXPIRED =>
               Json.obj(
                 ReportField.Status.underlyingField        -> Json.toJson(PseudoCaseStatus.COMPLETED),
-                ReportField.DateCompleted.underlyingField -> lessThan(appConfig.clock.instant())
+                ReportField.DateCompleted.underlyingField -> lessThan(appConfig.clock.instant()),
+                "decision.appeal" -> not(
+                  elemMatch(
+                    Json.obj(
+                      "status" -> Json.toJson(AppealStatus.IN_PROGRESS)
+                    )
+                  )
+                )
+              ): JsValueWrapper
+            case PseudoCaseStatus.UNDER_APPEAL =>
+              Json.obj(ReportField.Status.underlyingField -> Json.toJson(PseudoCaseStatus.COMPLETED)) ++ and(
+                Json.obj(
+                  "decision.appeal.status" -> Json.toJson(AppealStatus.IN_PROGRESS)
+                ),
+                Json.obj(
+                  "decision.appeal" -> not(
+                    elemMatch(
+                      Json.obj(
+                        "type" -> Json.toJson(AppealType.REVIEW)
+                      )
+                    )
+                  )
+                )
+              ): JsValueWrapper
+            case PseudoCaseStatus.UNDER_REVIEW =>
+              Json.obj(
+                ReportField.Status.underlyingField -> Json.toJson(PseudoCaseStatus.COMPLETED),
+                "decision.appeal" -> elemMatch(
+                  Json.obj(
+                    "type"   -> Json.toJson(AppealType.REVIEW),
+                    "status" -> Json.toJson(AppealStatus.IN_PROGRESS)
+                  )
+                )
               ): JsValueWrapper
           }.toSeq: _*
         )
@@ -306,9 +395,9 @@ class CaseMongoRepository @Inject() (
         Json.obj(ReportField.DateCreated.underlyingField -> (minDateFilter ++ maxDateFilter))
 
     val assigneeFilter = report match {
-      case cse: CaseReport =>
+      case _: CaseReport =>
         Json.obj()
-      case sum: SummaryReport =>
+      case _: SummaryReport =>
         Json.obj()
       case queue: QueueReport =>
         queue.assignee.map(assignee => Json.obj(ReportField.User.underlyingField -> assignee)).getOrElse {
