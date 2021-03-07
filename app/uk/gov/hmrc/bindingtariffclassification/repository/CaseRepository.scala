@@ -412,31 +412,44 @@ class CaseMongoRepository @Inject() (
     Match(caseTypeFilter ++ statusFilter ++ teamFilter ++ dateFilter ++ assigneeFilter ++ liabilityStatusesFilter)
   }
 
+  private def summarySortStage(
+    framework: collection.AggregationFramework,
+    report: SummaryReport
+  ) = {
+    import framework._
+
+    val sortField = report match {
+      case summary: SummaryReport if summary.groupBy.toSeq.contains(report.sortBy) =>
+        s"groupKey.${report.sortBy.fieldName}"
+      case _ =>
+        report.sortBy.fieldName
+    }
+
+    report.sortOrder match {
+      case SortDirection.ASCENDING =>
+        Sort(Ascending(sortField))
+      case SortDirection.DESCENDING =>
+        Sort(Descending(sortField))
+    }
+  }
+
   private def sortStage(
     framework: collection.AggregationFramework,
-    report: Report,
     sortBy: ReportField[_],
     sortOrder: SortDirection.Value
   ) = {
     import framework._
 
-    val sortField = report match {
-      case summary: SummaryReport if summary.groupBy == sortBy =>
-        "groupKey"
-      case _ =>
-        sortBy.underlyingField
-    }
-
     // If not sorting by reference, add it as a secondary sort field to ensure stable sorting
     (sortOrder, sortBy) match {
       case (SortDirection.ASCENDING, ReportField.Reference) =>
-        Sort(Ascending(sortField))
+        Sort(Ascending(sortBy.underlyingField))
       case (SortDirection.DESCENDING, ReportField.Reference) =>
-        Sort(Descending(sortField))
+        Sort(Descending(sortBy.underlyingField))
       case (SortDirection.ASCENDING, _) =>
-        Sort(Ascending(sortField), Ascending(ReportField.Reference.underlyingField))
+        Sort(Ascending(sortBy.underlyingField), Ascending(ReportField.Reference.underlyingField))
       case (SortDirection.DESCENDING, _) =>
-        Sort(Descending(sortField), Descending(ReportField.Reference.underlyingField))
+        Sort(Descending(sortBy.underlyingField), Descending(ReportField.Reference.underlyingField))
     }
   }
 
@@ -457,16 +470,18 @@ class CaseMongoRepository @Inject() (
 
     val groupFields = countField ++ maxFields ++ casesField
 
-    report.groupBy match {
-      case ChapterField(_, _) =>
-        Group(substrBytes(s"$$${report.groupBy.underlyingField}", 0, 2))(groupFields: _*)
-      case DaysSinceField(_, underlyingField) =>
-        Group(daysSince(s"$$$underlyingField"))(groupFields: _*)
-      case StatusField(_, _) =>
-        Group(pseudoStatus())(groupFields: _*)
-      case _ =>
-        Group(JsString(s"$$${report.groupBy.underlyingField}"))(groupFields: _*)
-    }
+    val groupBy = Json.obj(report.groupBy.map {
+      case ChapterField(fieldName, underlyingField) =>
+        fieldName -> (substrBytes(s"$$$underlyingField", 0, 2): JsValueWrapper)
+      case DaysSinceField(fieldName, underlyingField) =>
+        fieldName -> (daysSince(s"$$$underlyingField"): JsValueWrapper)
+      case StatusField(fieldName, _) =>
+        fieldName -> (pseudoStatus(): JsValueWrapper)
+      case field =>
+        field.fieldName -> (JsString(s"$$${field.underlyingField}"): JsValueWrapper)
+    }.toSeq: _*)
+
+    Group(groupBy)(groupFields: _*)
   }
 
   private def getFieldValue(field: ReportField[_], json: Option[JsValue]): ReportResultField[_] = field match {
@@ -513,11 +528,11 @@ class CaseMongoRepository @Inject() (
         val first = matchStage(framework, report)
 
         val rest = List(
-          sortStage(framework, report, ReportField.Reference, SortDirection.ASCENDING),
+          sortStage(framework, ReportField.Reference, SortDirection.ASCENDING),
           groupStage(framework, report),
           AddFields(Json.obj("groupKey" -> "$_id")),
           Project(Json.obj("_id"        -> 0)),
-          sortStage(framework, report, report.sortBy, report.sortOrder),
+          summarySortStage(framework, report),
           Skip((pagination.page - 1) * pagination.pageSize),
           Limit(pagination.pageSize)
         )
@@ -530,16 +545,18 @@ class CaseMongoRepository @Inject() (
           rows ++ Seq(
             if (report.includeCases)
               CaseResultGroup(
-                count    = json(ReportField.Count.fieldName).as[Long],
-                groupKey = getFieldValue(report.groupBy, json.value.get("groupKey")),
+                count = json(ReportField.Count.fieldName).as[Long],
+                groupKey = report.groupBy
+                  .map(groupBy => getFieldValue(groupBy, (json \ "groupKey" \ groupBy.fieldName).toOption)),
                 maxFields =
                   report.maxFields.map(field => getNumberFieldValue(field, json.value.get(field.fieldName))).toList,
                 cases = json("cases").as[List[Case]]
               )
             else
               SimpleResultGroup(
-                count    = json(ReportField.Count.fieldName).as[Long],
-                groupKey = getFieldValue(report.groupBy, json.value.get("groupKey")),
+                count = json(ReportField.Count.fieldName).as[Long],
+                groupKey = report.groupBy
+                  .map(groupBy => getFieldValue(groupBy, (json \ "groupKey" \ groupBy.fieldName).toOption)),
                 maxFields =
                   report.maxFields.map(field => getNumberFieldValue(field, json.value.get(field.fieldName))).toList
               )
@@ -593,7 +610,7 @@ class CaseMongoRepository @Inject() (
         val first = matchStage(framework, report)
 
         val rest = List(
-          sortStage(framework, report, report.sortBy, report.sortOrder),
+          sortStage(framework, report.sortBy, report.sortOrder),
           AddFields(fields),
           Project(Json.obj("_id" -> JsNumber(0))),
           Skip((pagination.page - 1) * pagination.pageSize),
@@ -606,7 +623,7 @@ class CaseMongoRepository @Inject() (
       .fold[Seq[Map[String, ReportResultField[_]]]](Seq.empty, pagination.pageSize) {
         case (rows, json) =>
           rows ++ Seq(
-            report.fields
+            report.fields.toSeq
               .map(field => field.fieldName -> getFieldValue(field, json.value.get(field.fieldName)))
               .toMap[String, ReportResultField[_]]
           )

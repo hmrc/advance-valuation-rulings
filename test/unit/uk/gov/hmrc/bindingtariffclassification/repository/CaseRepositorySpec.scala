@@ -18,6 +18,7 @@ package uk.gov.hmrc.bindingtariffclassification.repository
 
 import java.time._
 
+import cats.data.NonEmptySeq
 import cats.syntax.all._
 import org.mockito.BDDMockito.given
 import org.scalatest.concurrent.Eventually
@@ -1046,7 +1047,7 @@ class CaseRepositorySpec
       collectionSize shouldBe 14
 
       val report = SummaryReport(
-        groupBy   = ReportField.Status,
+        groupBy   = NonEmptySeq.one(ReportField.Status),
         sortBy    = ReportField.Status,
         maxFields = Seq(ReportField.ElapsedDays)
       )
@@ -1056,37 +1057,37 @@ class CaseRepositorySpec
       paged.results shouldBe Seq(
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.COMPLETED)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.COMPLETED))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(8)))
         ),
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.EXPIRED)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.EXPIRED))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(9)))
         ),
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.NEW)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.NEW))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(7)))
         ),
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.OPEN)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.OPEN))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(4)))
         ),
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.REFERRED)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.REFERRED))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(5)))
         ),
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.UNDER_APPEAL)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.UNDER_APPEAL))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(11)))
         ),
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.UNDER_REVIEW)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.UNDER_REVIEW))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(12)))
         )
       )
@@ -1096,43 +1097,43 @@ class CaseRepositorySpec
       pagedWithCases.results shouldBe Seq(
         CaseResultGroup(
           count     = 2,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.COMPLETED)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.COMPLETED))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(8))),
           cases     = List(c7, c8)
         ),
         CaseResultGroup(
           count     = 2,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.EXPIRED)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.EXPIRED))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(9))),
           cases     = List(c10, c9)
         ),
         CaseResultGroup(
           count     = 2,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.NEW)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.NEW))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(7))),
           cases     = List(c3, c4)
         ),
         CaseResultGroup(
           count     = 2,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.OPEN)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.OPEN))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(4))),
           cases     = List(c1, c2)
         ),
         CaseResultGroup(
           count     = 2,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.REFERRED)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.REFERRED))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(5))),
           cases     = List(c5, c6)
         ),
         CaseResultGroup(
           count     = 2,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.UNDER_APPEAL)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.UNDER_APPEAL))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(11))),
           cases     = List(c14, c15)
         ),
         CaseResultGroup(
           count     = 2,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.UNDER_REVIEW)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.UNDER_REVIEW))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(12))),
           cases     = List(c13, c16)
         )
@@ -1146,7 +1147,7 @@ class CaseRepositorySpec
       collectionSize shouldBe 5
 
       val report = SummaryReport(
-        groupBy = ReportField.LiabilityStatus,
+        groupBy = NonEmptySeq.one(ReportField.LiabilityStatus),
         sortBy  = ReportField.LiabilityStatus
       )
 
@@ -1155,11 +1156,11 @@ class CaseRepositorySpec
       paged.results shouldBe Seq(
         SimpleResultGroup(
           count    = 4,
-          groupKey = ReportField.LiabilityStatus.withValue(Some(LiabilityStatus.LIVE))
+          groupKey = NonEmptySeq.one(ReportField.LiabilityStatus.withValue(Some(LiabilityStatus.LIVE)))
         ),
         SimpleResultGroup(
           count    = 1,
-          groupKey = ReportField.LiabilityStatus.withValue(Some(LiabilityStatus.NON_LIVE))
+          groupKey = NonEmptySeq.one(ReportField.LiabilityStatus.withValue(Some(LiabilityStatus.NON_LIVE)))
         )
       )
 
@@ -1168,12 +1169,12 @@ class CaseRepositorySpec
       pagedWithCases.results shouldBe Seq(
         CaseResultGroup(
           count    = 4,
-          groupKey = ReportField.LiabilityStatus.withValue(Some(LiabilityStatus.LIVE)),
+          groupKey = NonEmptySeq.one(ReportField.LiabilityStatus.withValue(Some(LiabilityStatus.LIVE))),
           cases    = liveLiabilities
         ),
         CaseResultGroup(
           count    = 1,
-          groupKey = ReportField.LiabilityStatus.withValue(Some(LiabilityStatus.NON_LIVE)),
+          groupKey = NonEmptySeq.one(ReportField.LiabilityStatus.withValue(Some(LiabilityStatus.NON_LIVE))),
           cases    = nonLiveLiabilities
         )
       )
@@ -1184,7 +1185,7 @@ class CaseRepositorySpec
       collectionSize shouldBe 6
 
       val report = SummaryReport(
-        groupBy   = ReportField.Team,
+        groupBy   = NonEmptySeq.one(ReportField.Team),
         sortBy    = ReportField.Team,
         maxFields = Seq(ReportField.ElapsedDays)
       )
@@ -1194,22 +1195,22 @@ class CaseRepositorySpec
       paged.results shouldBe Seq(
         SimpleResultGroup(
           count     = 1,
-          groupKey  = ReportField.Team.withValue(Some("1")),
+          groupKey  = NonEmptySeq.one(ReportField.Team.withValue(Some("1"))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(2)))
         ),
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.Team.withValue(Some("2")),
+          groupKey  = NonEmptySeq.one(ReportField.Team.withValue(Some("2"))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(4)))
         ),
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.Team.withValue(Some("3")),
+          groupKey  = NonEmptySeq.one(ReportField.Team.withValue(Some("3"))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(7)))
         ),
         SimpleResultGroup(
           count     = 1,
-          groupKey  = ReportField.Team.withValue(Some("4")),
+          groupKey  = NonEmptySeq.one(ReportField.Team.withValue(Some("4"))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(5)))
         )
       )
@@ -1219,25 +1220,25 @@ class CaseRepositorySpec
       pagedWithCases.results shouldBe Seq(
         CaseResultGroup(
           count     = 1,
-          groupKey  = ReportField.Team.withValue(Some("1")),
+          groupKey  = NonEmptySeq.one(ReportField.Team.withValue(Some("1"))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(2))),
           cases     = List(c1)
         ),
         CaseResultGroup(
           count     = 2,
-          groupKey  = ReportField.Team.withValue(Some("2")),
+          groupKey  = NonEmptySeq.one(ReportField.Team.withValue(Some("2"))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(4))),
           cases     = List(c2, c3)
         ),
         CaseResultGroup(
           count     = 2,
-          groupKey  = ReportField.Team.withValue(Some("3")),
+          groupKey  = NonEmptySeq.one(ReportField.Team.withValue(Some("3"))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(7))),
           cases     = List(c4, c5)
         ),
         CaseResultGroup(
           count     = 1,
-          groupKey  = ReportField.Team.withValue(Some("4")),
+          groupKey  = NonEmptySeq.one(ReportField.Team.withValue(Some("4"))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(5))),
           cases     = List(c6)
         )
@@ -1251,7 +1252,7 @@ class CaseRepositorySpec
       collectionSize shouldBe 6
 
       val report = SummaryReport(
-        groupBy   = ReportField.User,
+        groupBy   = NonEmptySeq.one(ReportField.User),
         sortBy    = ReportField.User,
         sortOrder = SortDirection.DESCENDING,
         maxFields = Seq(ReportField.TotalDays)
@@ -1262,17 +1263,17 @@ class CaseRepositorySpec
       paged.results shouldBe Seq(
         SimpleResultGroup(
           count     = 1,
-          groupKey  = ReportField.User.withValue(Some("3")),
+          groupKey  = NonEmptySeq.one(ReportField.User.withValue(Some("3"))),
           maxFields = List(ReportField.TotalDays.withValue(Some(31)))
         ),
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.User.withValue(Some("2")),
+          groupKey  = NonEmptySeq.one(ReportField.User.withValue(Some("2"))),
           maxFields = List(ReportField.TotalDays.withValue(Some(32)))
         ),
         SimpleResultGroup(
           count     = 3,
-          groupKey  = ReportField.User.withValue(Some("1")),
+          groupKey  = NonEmptySeq.one(ReportField.User.withValue(Some("1"))),
           maxFields = List(ReportField.TotalDays.withValue(Some(397)))
         )
       )
@@ -1282,19 +1283,19 @@ class CaseRepositorySpec
       pagedWithCases.results shouldBe Seq(
         CaseResultGroup(
           count     = 1,
-          groupKey  = ReportField.User.withValue(Some("3")),
+          groupKey  = NonEmptySeq.one(ReportField.User.withValue(Some("3"))),
           maxFields = List(ReportField.TotalDays.withValue(Some(31))),
           cases     = List(c6)
         ),
         CaseResultGroup(
           count     = 2,
-          groupKey  = ReportField.User.withValue(Some("2")),
+          groupKey  = NonEmptySeq.one(ReportField.User.withValue(Some("2"))),
           maxFields = List(ReportField.TotalDays.withValue(Some(32))),
           cases     = List(c4, c5)
         ),
         CaseResultGroup(
           count     = 3,
-          groupKey  = ReportField.User.withValue(Some("1")),
+          groupKey  = NonEmptySeq.one(ReportField.User.withValue(Some("1"))),
           maxFields = List(ReportField.TotalDays.withValue(Some(397))),
           cases     = List(c1, c2, c3)
         )
@@ -1306,7 +1307,7 @@ class CaseRepositorySpec
       collectionSize shouldBe 6
 
       val report = SummaryReport(
-        groupBy   = ReportField.CaseType,
+        groupBy   = NonEmptySeq.one(ReportField.CaseType),
         sortBy    = ReportField.Count,
         sortOrder = SortDirection.DESCENDING,
         maxFields = Seq(ReportField.ReferredDays)
@@ -1317,12 +1318,12 @@ class CaseRepositorySpec
       paged.results shouldBe Seq(
         SimpleResultGroup(
           count     = 4,
-          groupKey  = ReportField.CaseType.withValue(Some(ApplicationType.BTI)),
+          groupKey  = NonEmptySeq.one(ReportField.CaseType.withValue(Some(ApplicationType.BTI))),
           maxFields = List(ReportField.ReferredDays.withValue(Some(7)))
         ),
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.CaseType.withValue(Some(ApplicationType.LIABILITY_ORDER)),
+          groupKey  = NonEmptySeq.one(ReportField.CaseType.withValue(Some(ApplicationType.LIABILITY_ORDER))),
           maxFields = List(ReportField.ReferredDays.withValue(Some(6)))
         )
       )
@@ -1332,13 +1333,13 @@ class CaseRepositorySpec
       pagedWithCases.results shouldBe Seq(
         CaseResultGroup(
           count     = 4,
-          groupKey  = ReportField.CaseType.withValue(Some(ApplicationType.BTI)),
+          groupKey  = NonEmptySeq.one(ReportField.CaseType.withValue(Some(ApplicationType.BTI))),
           maxFields = List(ReportField.ReferredDays.withValue(Some(7))),
           cases     = List(c1, c2, c3, c6)
         ),
         CaseResultGroup(
           count     = 2,
-          groupKey  = ReportField.CaseType.withValue(Some(ApplicationType.LIABILITY_ORDER)),
+          groupKey  = NonEmptySeq.one(ReportField.CaseType.withValue(Some(ApplicationType.LIABILITY_ORDER))),
           maxFields = List(ReportField.ReferredDays.withValue(Some(6))),
           cases     = List(c4, c5)
         )
@@ -1350,7 +1351,7 @@ class CaseRepositorySpec
       collectionSize shouldBe 6
 
       val report = SummaryReport(
-        groupBy   = ReportField.Chapter,
+        groupBy   = NonEmptySeq.one(ReportField.Chapter),
         sortBy    = ReportField.Count,
         sortOrder = SortDirection.ASCENDING,
         maxFields = Seq(ReportField.ElapsedDays)
@@ -1361,17 +1362,17 @@ class CaseRepositorySpec
       paged.results shouldBe Seq(
         SimpleResultGroup(
           count     = 1,
-          groupKey  = ReportField.Chapter.withValue(Some("85")),
+          groupKey  = NonEmptySeq.one(ReportField.Chapter.withValue(Some("85"))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(4)))
         ),
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.Chapter.withValue(None),
+          groupKey  = NonEmptySeq.one(ReportField.Chapter.withValue(None)),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(7)))
         ),
         SimpleResultGroup(
           count     = 3,
-          groupKey  = ReportField.Chapter.withValue(Some("95")),
+          groupKey  = NonEmptySeq.one(ReportField.Chapter.withValue(Some("95"))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(4)))
         )
       )
@@ -1381,19 +1382,19 @@ class CaseRepositorySpec
       pagedWithCases.results shouldBe Seq(
         CaseResultGroup(
           count     = 1,
-          groupKey  = ReportField.Chapter.withValue(Some("85")),
+          groupKey  = NonEmptySeq.one(ReportField.Chapter.withValue(Some("85"))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(4))),
           cases     = List(c3)
         ),
         CaseResultGroup(
           count     = 2,
-          groupKey  = ReportField.Chapter.withValue(None),
+          groupKey  = NonEmptySeq.one(ReportField.Chapter.withValue(None)),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(7))),
           cases     = List(c4, c6)
         ),
         CaseResultGroup(
           count     = 3,
-          groupKey  = ReportField.Chapter.withValue(Some("95")),
+          groupKey  = NonEmptySeq.one(ReportField.Chapter.withValue(Some("95"))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(4))),
           cases     = List(c1, c2, c5)
         )
@@ -1405,7 +1406,7 @@ class CaseRepositorySpec
       collectionSize shouldBe 6
 
       val report = SummaryReport(
-        groupBy   = ReportField.TotalDays,
+        groupBy   = NonEmptySeq.one(ReportField.TotalDays),
         sortBy    = ReportField.TotalDays,
         sortOrder = SortDirection.DESCENDING,
         maxFields = Seq(ReportField.ElapsedDays)
@@ -1416,17 +1417,17 @@ class CaseRepositorySpec
       paged.results shouldBe Seq(
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.TotalDays.withValue(Some(397)),
+          groupKey  = NonEmptySeq.one(ReportField.TotalDays.withValue(Some(397))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(4)))
         ),
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.TotalDays.withValue(Some(32)),
+          groupKey  = NonEmptySeq.one(ReportField.TotalDays.withValue(Some(32))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(7)))
         ),
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.TotalDays.withValue(Some(31)),
+          groupKey  = NonEmptySeq.one(ReportField.TotalDays.withValue(Some(31))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(5)))
         )
       )
@@ -1436,21 +1437,111 @@ class CaseRepositorySpec
       pagedWithCases.results shouldBe Seq(
         CaseResultGroup(
           count     = 2,
-          groupKey  = ReportField.TotalDays.withValue(Some(397)),
+          groupKey  = NonEmptySeq.one(ReportField.TotalDays.withValue(Some(397))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(4))),
           cases     = List(c1, c2)
         ),
         CaseResultGroup(
           count     = 2,
-          groupKey  = ReportField.TotalDays.withValue(Some(32)),
+          groupKey  = NonEmptySeq.one(ReportField.TotalDays.withValue(Some(32))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(7))),
           cases     = List(c3, c4)
         ),
         CaseResultGroup(
           count     = 2,
-          groupKey  = ReportField.TotalDays.withValue(Some(31)),
+          groupKey  = NonEmptySeq.one(ReportField.TotalDays.withValue(Some(31))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(5))),
           cases     = List(c5, c6)
+        )
+      )
+    }
+
+    "group by multiple fields" in {
+      await(cases.traverse(repository.insert))
+      collectionSize shouldBe 6
+
+      val report = SummaryReport(
+        groupBy   = NonEmptySeq.of(ReportField.Team, ReportField.CaseType),
+        sortBy    = ReportField.ElapsedDays,
+        sortOrder = SortDirection.DESCENDING,
+        maxFields = Seq(ReportField.ElapsedDays)
+      )
+
+      val paged = await(repository.summaryReport(report, Pagination()))
+
+      paged.results shouldBe Seq(
+        SimpleResultGroup(
+          count = 2,
+          groupKey = NonEmptySeq.of(
+            ReportField.Team.withValue(Some("3")),
+            ReportField.CaseType.withValue(Some(ApplicationType.LIABILITY_ORDER))
+          ),
+          maxFields = List(ReportField.ElapsedDays.withValue(Some(7)))
+        ),
+        SimpleResultGroup(
+          count = 1,
+          groupKey = NonEmptySeq.of(
+            ReportField.Team.withValue(Some("4")),
+            ReportField.CaseType.withValue(Some(ApplicationType.BTI))
+          ),
+          maxFields = List(ReportField.ElapsedDays.withValue(Some(5)))
+        ),
+        SimpleResultGroup(
+          count = 2,
+          groupKey = NonEmptySeq.of(
+            ReportField.Team.withValue(Some("2")),
+            ReportField.CaseType.withValue(Some(ApplicationType.BTI))
+          ),
+          maxFields = List(ReportField.ElapsedDays.withValue(Some(4)))
+        ),
+        SimpleResultGroup(
+          count = 1,
+          groupKey = NonEmptySeq.of(
+            ReportField.Team.withValue(Some("1")),
+            ReportField.CaseType.withValue(Some(ApplicationType.BTI))
+          ),
+          maxFields = List(ReportField.ElapsedDays.withValue(Some(2)))
+        )
+      )
+
+      val pagedWithCases = await(repository.summaryReport(report.copy(includeCases = true), Pagination()))
+
+      pagedWithCases.results shouldBe Seq(
+        CaseResultGroup(
+          count = 2,
+          groupKey = NonEmptySeq.of(
+            ReportField.Team.withValue(Some("3")),
+            ReportField.CaseType.withValue(Some(ApplicationType.LIABILITY_ORDER))
+          ),
+          maxFields = List(ReportField.ElapsedDays.withValue(Some(7))),
+          cases     = List(c4, c5)
+        ),
+        CaseResultGroup(
+          count = 1,
+          groupKey = NonEmptySeq.of(
+            ReportField.Team.withValue(Some("4")),
+            ReportField.CaseType.withValue(Some(ApplicationType.BTI))
+          ),
+          maxFields = List(ReportField.ElapsedDays.withValue(Some(5))),
+          cases     = List(c6)
+        ),
+        CaseResultGroup(
+          count = 2,
+          groupKey = NonEmptySeq.of(
+            ReportField.Team.withValue(Some("2")),
+            ReportField.CaseType.withValue(Some(ApplicationType.BTI))
+          ),
+          maxFields = List(ReportField.ElapsedDays.withValue(Some(4))),
+          cases     = List(c2, c3)
+        ),
+        CaseResultGroup(
+          count = 1,
+          groupKey = NonEmptySeq.of(
+            ReportField.Team.withValue(Some("1")),
+            ReportField.CaseType.withValue(Some(ApplicationType.BTI))
+          ),
+          maxFields = List(ReportField.ElapsedDays.withValue(Some(2))),
+          cases     = List(c1)
         )
       )
     }
@@ -1460,7 +1551,7 @@ class CaseRepositorySpec
       collectionSize shouldBe 6
 
       val report = SummaryReport(
-        groupBy   = ReportField.Status,
+        groupBy   = NonEmptySeq.one(ReportField.Status),
         sortBy    = ReportField.Status,
         maxFields = Seq(ReportField.ElapsedDays),
         caseTypes = Set(ApplicationType.BTI)
@@ -1471,17 +1562,17 @@ class CaseRepositorySpec
       paged.results shouldBe Seq(
         SimpleResultGroup(
           count     = 1,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.NEW)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.NEW))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(4)))
         ),
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.OPEN)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.OPEN))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(4)))
         ),
         SimpleResultGroup(
           count     = 1,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.REFERRED)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.REFERRED))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(5)))
         )
       )
@@ -1494,7 +1585,7 @@ class CaseRepositorySpec
       collectionSize shouldBe 12
 
       val report = SummaryReport(
-        groupBy   = ReportField.Status,
+        groupBy   = NonEmptySeq.one(ReportField.Status),
         sortBy    = ReportField.Status,
         maxFields = Seq(ReportField.ElapsedDays),
         statuses  = Set(PseudoCaseStatus.OPEN)
@@ -1505,7 +1596,7 @@ class CaseRepositorySpec
       paged.results shouldBe Seq(
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.OPEN)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.OPEN))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(4)))
         )
       )
@@ -1518,7 +1609,7 @@ class CaseRepositorySpec
       collectionSize shouldBe 12
 
       val expiredReport = SummaryReport(
-        groupBy   = ReportField.User,
+        groupBy   = NonEmptySeq.one(ReportField.User),
         sortBy    = ReportField.User,
         maxFields = Seq(ReportField.ElapsedDays),
         statuses  = Set(PseudoCaseStatus.EXPIRED)
@@ -1529,12 +1620,12 @@ class CaseRepositorySpec
       expiredPaged.results shouldBe Seq(
         SimpleResultGroup(
           1,
-          ReportField.User.withValue(Some("2")),
+          NonEmptySeq.one(ReportField.User.withValue(Some("2"))),
           List(ReportField.ElapsedDays.withValue(Some(4)))
         ),
         SimpleResultGroup(
           1,
-          ReportField.User.withValue(Some("3")),
+          NonEmptySeq.one(ReportField.User.withValue(Some("3"))),
           List(ReportField.ElapsedDays.withValue(Some(9)))
         )
       )
@@ -1547,7 +1638,7 @@ class CaseRepositorySpec
       collectionSize shouldBe 12
 
       val appealReport = SummaryReport(
-        groupBy   = ReportField.User,
+        groupBy   = NonEmptySeq.one(ReportField.User),
         sortBy    = ReportField.User,
         maxFields = Seq(ReportField.ElapsedDays),
         statuses  = Set(PseudoCaseStatus.UNDER_APPEAL)
@@ -1558,7 +1649,7 @@ class CaseRepositorySpec
       appealPaged.results shouldBe Seq(
         SimpleResultGroup(
           2,
-          ReportField.User.withValue(Some("3")),
+          NonEmptySeq.one(ReportField.User.withValue(Some("3"))),
           List(ReportField.ElapsedDays.withValue(Some(11)))
         )
       )
@@ -1571,7 +1662,7 @@ class CaseRepositorySpec
       collectionSize shouldBe 12
 
       val reviewReport = SummaryReport(
-        groupBy   = ReportField.User,
+        groupBy   = NonEmptySeq.one(ReportField.User),
         sortBy    = ReportField.User,
         maxFields = Seq(ReportField.ElapsedDays),
         statuses  = Set(PseudoCaseStatus.UNDER_REVIEW)
@@ -1582,12 +1673,12 @@ class CaseRepositorySpec
       reviewPaged.results shouldBe Seq(
         SimpleResultGroup(
           1,
-          ReportField.User.withValue(Some("2")),
+          NonEmptySeq.one(ReportField.User.withValue(Some("2"))),
           List(ReportField.ElapsedDays.withValue(Some(4)))
         ),
         SimpleResultGroup(
           1,
-          ReportField.User.withValue(Some("3")),
+          NonEmptySeq.one(ReportField.User.withValue(Some("3"))),
           List(ReportField.ElapsedDays.withValue(Some(12)))
         )
       )
@@ -1599,7 +1690,7 @@ class CaseRepositorySpec
       collectionSize shouldBe 8
 
       val report = SummaryReport(
-        groupBy   = ReportField.Status,
+        groupBy   = NonEmptySeq.one(ReportField.Status),
         sortBy    = ReportField.Status,
         maxFields = Seq(ReportField.ElapsedDays),
         teams     = Set("2", "3")
@@ -1610,23 +1701,23 @@ class CaseRepositorySpec
       paged.results shouldBe Seq(
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.NEW)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.NEW))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(7)))
         ),
         SimpleResultGroup(
           count     = 1,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.OPEN)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.OPEN))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(4)))
         ),
         SimpleResultGroup(
           count     = 1,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.REFERRED)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.REFERRED))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(4)))
         )
       )
 
       val gatewayReport = SummaryReport(
-        groupBy   = ReportField.CaseType,
+        groupBy   = NonEmptySeq.one(ReportField.CaseType),
         sortBy    = ReportField.CaseType,
         maxFields = Seq(ReportField.ElapsedDays),
         teams     = Set("1")
@@ -1637,7 +1728,7 @@ class CaseRepositorySpec
       gatewayPaged.results shouldBe Seq(
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.CaseType.withValue(Some(ApplicationType.BTI)),
+          groupKey  = NonEmptySeq.one(ReportField.CaseType.withValue(Some(ApplicationType.BTI))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(2)))
         )
       )
@@ -1648,7 +1739,7 @@ class CaseRepositorySpec
       collectionSize shouldBe 6
 
       val maxDateReport = SummaryReport(
-        groupBy   = ReportField.Status,
+        groupBy   = NonEmptySeq.one(ReportField.Status),
         sortBy    = ReportField.Status,
         maxFields = Seq(ReportField.ElapsedDays),
         dateRange = InstantRange(Instant.MIN, Instant.parse("2020-06-30T09:00:00.00Z"))
@@ -1659,13 +1750,13 @@ class CaseRepositorySpec
       maxDatePaged.results shouldBe Seq(
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.OPEN)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.OPEN))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(4)))
         )
       )
 
       val minDateReport = SummaryReport(
-        groupBy   = ReportField.Status,
+        groupBy   = NonEmptySeq.one(ReportField.Status),
         sortBy    = ReportField.Status,
         maxFields = Seq(ReportField.ElapsedDays),
         dateRange = InstantRange(Instant.parse("2020-12-31T12:00:00.00Z"), Instant.MAX)
@@ -1676,13 +1767,13 @@ class CaseRepositorySpec
       minDatePaged.results shouldBe Seq(
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.REFERRED)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.REFERRED))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(5)))
         )
       )
 
       val minMaxDateReport = SummaryReport(
-        groupBy   = ReportField.Status,
+        groupBy   = NonEmptySeq.one(ReportField.Status),
         sortBy    = ReportField.Status,
         maxFields = Seq(ReportField.ElapsedDays),
         dateRange = InstantRange(Instant.parse("2020-06-30T09:00:00.00Z"), Instant.parse("2020-12-31T12:00:00.00Z"))
@@ -1693,7 +1784,7 @@ class CaseRepositorySpec
       minMaxDatePaged.results shouldBe Seq(
         SimpleResultGroup(
           count     = 2,
-          groupKey  = ReportField.Status.withValue(Some(PseudoCaseStatus.NEW)),
+          groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.NEW))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(7)))
         )
       )
@@ -1769,7 +1860,7 @@ class CaseRepositorySpec
 
       val report = CaseReport(
         sortBy    = ReportField.Reference,
-        fields    = Seq(ReportField.Reference, ReportField.DateCreated, ReportField.ElapsedDays),
+        fields    = NonEmptySeq.of(ReportField.Reference, ReportField.DateCreated, ReportField.ElapsedDays),
         caseTypes = Set(ApplicationType.BTI)
       )
 
@@ -1804,8 +1895,9 @@ class CaseRepositorySpec
       collectionSize shouldBe 6
 
       val report = CaseReport(
-        sortBy   = ReportField.Reference,
-        fields   = Seq(ReportField.Reference, ReportField.Status, ReportField.DateCreated, ReportField.ElapsedDays),
+        sortBy = ReportField.Reference,
+        fields =
+          NonEmptySeq.of(ReportField.Reference, ReportField.Status, ReportField.DateCreated, ReportField.ElapsedDays),
         statuses = Set(PseudoCaseStatus.OPEN)
       )
 
@@ -1834,7 +1926,7 @@ class CaseRepositorySpec
       val report = CaseReport(
         sortBy    = ReportField.Reference,
         sortOrder = SortDirection.DESCENDING,
-        fields    = Seq(ReportField.Reference, ReportField.Chapter, ReportField.User, ReportField.TotalDays),
+        fields    = NonEmptySeq.of(ReportField.Reference, ReportField.Chapter, ReportField.User, ReportField.TotalDays),
         teams     = Set("2", "3")
       )
 
@@ -1874,7 +1966,7 @@ class CaseRepositorySpec
 
       val maxDateReport = CaseReport(
         sortBy    = ReportField.Status,
-        fields    = Seq(ReportField.Reference, ReportField.Status, ReportField.Team, ReportField.ReferredDays),
+        fields    = NonEmptySeq.of(ReportField.Reference, ReportField.Status, ReportField.Team, ReportField.ReferredDays),
         dateRange = InstantRange(Instant.MIN, Instant.parse("2020-06-30T09:00:00.00Z"))
       )
 
@@ -1897,7 +1989,7 @@ class CaseRepositorySpec
 
       val minDateReport = CaseReport(
         sortBy    = ReportField.Status,
-        fields    = Seq(ReportField.Reference, ReportField.Status, ReportField.Team, ReportField.ReferredDays),
+        fields    = NonEmptySeq.of(ReportField.Reference, ReportField.Status, ReportField.Team, ReportField.ReferredDays),
         dateRange = InstantRange(Instant.parse("2020-12-31T12:00:00.00Z"), Instant.MAX)
       )
 
@@ -1920,7 +2012,7 @@ class CaseRepositorySpec
 
       val minMaxDateReport = CaseReport(
         sortBy    = ReportField.Status,
-        fields    = Seq(ReportField.Reference, ReportField.Status, ReportField.Team, ReportField.ReferredDays),
+        fields    = NonEmptySeq.of(ReportField.Reference, ReportField.Status, ReportField.Team, ReportField.ReferredDays),
         dateRange = InstantRange(Instant.parse("2020-06-30T09:00:00.00Z"), Instant.parse("2020-12-31T12:00:00.00Z"))
       )
 
