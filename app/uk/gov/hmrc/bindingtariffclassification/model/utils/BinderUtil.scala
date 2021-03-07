@@ -20,8 +20,9 @@ import java.time.Instant
 
 import uk.gov.hmrc.bindingtariffclassification.model.ApplicationType.ApplicationType
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
+import uk.gov.hmrc.bindingtariffclassification.model.LiabilityStatus.LiabilityStatus
 import uk.gov.hmrc.bindingtariffclassification.model.PseudoCaseStatus.PseudoCaseStatus
-import uk.gov.hmrc.bindingtariffclassification.model.{ApplicationType, CaseStatus, PseudoCaseStatus}
+import uk.gov.hmrc.bindingtariffclassification.model.{ApplicationType, CaseStatus, LiabilityStatus, PseudoCaseStatus}
 import uk.gov.hmrc.bindingtariffclassification.sort.CaseSortField.CaseSortField
 import uk.gov.hmrc.bindingtariffclassification.sort.SortDirection.SortDirection
 import uk.gov.hmrc.bindingtariffclassification.sort.{CaseSortField, SortDirection}
@@ -38,6 +39,9 @@ object BinderUtil {
 
   def bindPseudoCaseStatus(value: String): Option[PseudoCaseStatus] =
     PseudoCaseStatus.values.find(_.toString.equalsIgnoreCase(value))
+
+  def bindLiabilityStatus(value: String): Option[LiabilityStatus] =
+    LiabilityStatus.values.find(_.toString.equalsIgnoreCase(value))
 
   def bindApplicationType(value: String): Option[ApplicationType] =
     ApplicationType.values.find(_.toString.equalsIgnoreCase(value))

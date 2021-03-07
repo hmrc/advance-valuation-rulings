@@ -18,29 +18,31 @@ package uk.gov.hmrc.bindingtariffclassification.model.reporting
 
 import cats.syntax.all._
 import play.api.mvc.QueryStringBindable
-import uk.gov.hmrc.bindingtariffclassification.model.ApplicationType
+import uk.gov.hmrc.bindingtariffclassification.model.reporting.CaseReport.liabilityStatusesKey
+import uk.gov.hmrc.bindingtariffclassification.model.{ApplicationType, LiabilityStatus, PseudoCaseStatus}
 import uk.gov.hmrc.bindingtariffclassification.sort.SortDirection
-import uk.gov.hmrc.bindingtariffclassification.model.PseudoCaseStatus
 
 sealed abstract class Report extends Product with Serializable {
   def sortBy: ReportField[_]
   def sortOrder: SortDirection.Value
   def caseTypes: Set[ApplicationType.Value]
   def statuses: Set[PseudoCaseStatus.Value]
+  def liabilityStatuses: Set[LiabilityStatus.Value]
   def teams: Set[String]
   def dateRange: InstantRange
 }
 
 case class SummaryReport(
-  groupBy: ReportField[_],
-  sortBy: ReportField[_],
-  sortOrder: SortDirection.Value        = SortDirection.ASCENDING,
-  caseTypes: Set[ApplicationType.Value] = Set.empty,
-  statuses: Set[PseudoCaseStatus.Value] = Set.empty,
-  teams: Set[String]                    = Set.empty,
-  dateRange: InstantRange               = InstantRange.allTime,
-  maxFields: Seq[ReportField[Long]]     = Seq.empty,
-  includeCases: Boolean                 = false
+                          groupBy: ReportField[_],
+                          sortBy: ReportField[_],
+                          sortOrder: SortDirection.Value        = SortDirection.ASCENDING,
+                          caseTypes: Set[ApplicationType.Value] = Set.empty,
+                          statuses: Set[PseudoCaseStatus.Value] = Set.empty,
+                          liabilityStatuses: Set[LiabilityStatus.Value] = Set.empty,
+                          teams: Set[String]                    = Set.empty,
+                          dateRange: InstantRange               = InstantRange.allTime,
+                          maxFields: Seq[ReportField[Long]]     = Seq.empty,
+                          includeCases: Boolean                 = false
 ) extends Report
 
 object SummaryReport {
@@ -53,6 +55,7 @@ object SummaryReport {
   private val maxFieldsKey    = "max_fields"
   private val includeCasesKey = "include_cases"
   private val statusesKey     = "status"
+  private val liabilityStatusesKey     = "liability_status"
 
   implicit def summaryReportQueryStringBindable(
     implicit
@@ -75,6 +78,9 @@ object SummaryReport {
       val statuses = params(statusesKey)(requestParams)
         .map(_.map(bindPseudoCaseStatus).collect { case Some(status) => status })
         .getOrElse(Set.empty)
+      val liabilityStatuses = params(liabilityStatusesKey)(requestParams)
+        .map(_.map(bindLiabilityStatus).collect { case Some(status) => status })
+        .getOrElse(Set.empty)
       val maxFields = orderedParams(maxFieldsKey)(requestParams)
         .map(_.flatMap(ReportField.fields.get(_).collect[ReportField[Long]] {
           case days @ DaysSinceField(_, _) => days
@@ -93,6 +99,7 @@ object SummaryReport {
             sortOrder    = sortOrder,
             caseTypes    = caseTypes,
             statuses     = statuses,
+            liabilityStatuses = liabilityStatuses,
             teams        = teams,
             maxFields    = maxFields,
             includeCases = include
@@ -107,6 +114,7 @@ object SummaryReport {
         stringBindable.unbind(sortOrderKey, value.sortOrder.toString),
         stringBindable.unbind(caseTypesKey, value.caseTypes.map(_.toString).mkString(",")),
         stringBindable.unbind(statusesKey, value.statuses.map(_.toString).mkString(",")),
+        stringBindable.unbind(liabilityStatusesKey, value.liabilityStatuses.map(_.toString).mkString(",")),
         stringBindable.unbind(teamsKey, value.teams.mkString(",")),
         rangeBindable.unbind(dateRangeKey, value.dateRange),
         stringBindable.unbind(maxFieldsKey, value.maxFields.map(_.fieldName).mkString(",")),
@@ -120,6 +128,7 @@ case class CaseReport(
   sortOrder: SortDirection.Value        = SortDirection.ASCENDING,
   caseTypes: Set[ApplicationType.Value] = Set.empty,
   statuses: Set[PseudoCaseStatus.Value] = Set.empty,
+  liabilityStatuses: Set[LiabilityStatus.Value] = Set.empty,
   teams: Set[String]                    = Set.empty,
   dateRange: InstantRange               = InstantRange.allTime,
   fields: Seq[ReportField[_]]           = Seq.empty
@@ -133,6 +142,7 @@ object CaseReport {
   private val teamsKey     = "team"
   private val fieldsKey    = "fields"
   private val statusesKey  = "status"
+  private val liabilityStatusesKey     = "liability_status"
 
   implicit def caseReportQueryStringBindable(
     implicit
@@ -152,6 +162,9 @@ object CaseReport {
       val statuses = params(statusesKey)(requestParams)
         .map(_.map(bindPseudoCaseStatus).collect { case Some(status) => status })
         .getOrElse(Set.empty)
+      val liabilityStatuses = params(liabilityStatusesKey)(requestParams)
+        .map(_.map(bindLiabilityStatus).collect { case Some(status) => status })
+        .getOrElse(Set.empty)
       val fields = orderedParams(fieldsKey)(requestParams)
         .map(_.flatMap(ReportField.fields.get(_)))
 
@@ -163,6 +176,7 @@ object CaseReport {
           sortOrder = sortOrder,
           caseTypes = caseTypes,
           statuses  = statuses,
+          liabilityStatuses = liabilityStatuses,
           teams     = teams,
           dateRange = range,
           fields    = fields
@@ -176,6 +190,7 @@ object CaseReport {
         stringBindable.unbind(sortOrderKey, value.sortOrder.toString),
         stringBindable.unbind(caseTypesKey, value.caseTypes.map(_.toString).mkString(",")),
         stringBindable.unbind(statusesKey, value.statuses.map(_.toString).mkString(",")),
+        stringBindable.unbind(liabilityStatusesKey, value.liabilityStatuses.map(_.toString).mkString(",")),
         stringBindable.unbind(teamsKey, value.teams.mkString(",")),
         rangeBindable.unbind(dateRangeKey, value.dateRange),
         stringBindable.unbind(fieldsKey, value.fields.map(_.fieldName).mkString(","))
@@ -188,6 +203,7 @@ case class QueueReport(
   sortOrder: SortDirection.Value        = SortDirection.ASCENDING,
   caseTypes: Set[ApplicationType.Value] = Set.empty,
   statuses: Set[PseudoCaseStatus.Value] = Set.empty,
+  liabilityStatuses: Set[LiabilityStatus.Value] = Set.empty,
   teams: Set[String]                    = Set.empty,
   assignee: Option[String]              = Option.empty,
   dateRange: InstantRange               = InstantRange.allTime
@@ -201,6 +217,7 @@ object QueueReport {
   private val teamsKey     = "team"
   private val statusesKey  = "status"
   private val assigneeKey  = "assigned_user"
+  private val liabilityStatusesKey     = "liability_status"
 
   implicit def queueReportQueryStringBindable(
     implicit
@@ -221,7 +238,9 @@ object QueueReport {
       val statuses = params(statusesKey)(requestParams)
         .map(_.map(bindPseudoCaseStatus).collect { case Some(status) => status })
         .getOrElse(Set.empty)
-
+      val liabilityStatuses = params(liabilityStatusesKey)(requestParams)
+        .map(_.map(bindLiabilityStatus).collect { case Some(status) => status })
+        .getOrElse(Set.empty)
       Some(
         for {
           range <- dateRange
@@ -230,6 +249,7 @@ object QueueReport {
           sortOrder = sortOrder,
           caseTypes = caseTypes,
           statuses  = statuses,
+          liabilityStatuses = liabilityStatuses,
           teams     = teams,
           dateRange = range,
           assignee  = assignee
@@ -243,6 +263,7 @@ object QueueReport {
         stringBindable.unbind(sortOrderKey, value.sortOrder.toString),
         stringBindable.unbind(caseTypesKey, value.caseTypes.map(_.toString).mkString(",")),
         stringBindable.unbind(statusesKey, value.statuses.map(_.toString).mkString(",")),
+        stringBindable.unbind(liabilityStatusesKey, value.liabilityStatuses.map(_.toString).mkString(",")),
         stringBindable.unbind(teamsKey, value.teams.mkString(",")),
         rangeBindable.unbind(dateRangeKey, value.dateRange),
         value.assignee.map(stringBindable.unbind(assigneeKey, _)).getOrElse("")

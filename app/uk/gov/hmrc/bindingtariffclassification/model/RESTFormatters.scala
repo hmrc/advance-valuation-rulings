@@ -152,6 +152,7 @@ object RESTFormatters {
 
   implicit val formatNumberField: OFormat[NumberField]       = Json.format[NumberField]
   implicit val formatStatusField: OFormat[StatusField]       = Json.format[StatusField]
+  implicit val formatLiabilityStatusField: OFormat[LiabilityStatusField]       = Json.format[LiabilityStatusField]
   implicit val formatCaseTypeField: OFormat[CaseTypeField]   = Json.format[CaseTypeField]
   implicit val formatChapterField: OFormat[ChapterField]     = Json.format[ChapterField]
   implicit val formatDateField: OFormat[DateField]           = Json.format[DateField]
@@ -162,6 +163,7 @@ object RESTFormatters {
     .from[ReportField[_]]("type")
     .and[NumberField](ReportFieldType.Number.name)
     .and[StatusField](ReportFieldType.Status.name)
+    .and[LiabilityStatusField](ReportFieldType.LiabilityStatus.name)
     .and[CaseTypeField](ReportFieldType.CaseType.name)
     .and[ChapterField](ReportFieldType.Chapter.name)
     .and[DateField](ReportFieldType.Date.name)
@@ -171,6 +173,7 @@ object RESTFormatters {
 
   implicit val formatNumberResultField: OFormat[NumberResultField]     = Json.format[NumberResultField]
   implicit val formatStatusResultField: OFormat[StatusResultField]     = Json.format[StatusResultField]
+  implicit val formatLiabilityStatusResultField: OFormat[LiabilityStatusResultField]     = Json.format[LiabilityStatusResultField]
   implicit val formatCaseTypeResultField: OFormat[CaseTypeResultField] = Json.format[CaseTypeResultField]
   implicit val formatDateResultField: OFormat[DateResultField]         = Json.format[DateResultField]
   implicit val formatStringResultField: OFormat[StringResultField]     = Json.format[StringResultField]
@@ -179,6 +182,7 @@ object RESTFormatters {
     .from[ReportResultField[_]]("type")
     .and[NumberResultField](ReportFieldType.Number.name)
     .and[StatusResultField](ReportFieldType.Status.name)
+    .and[LiabilityStatusResultField](ReportFieldType.LiabilityStatus.name)
     .and[CaseTypeResultField](ReportFieldType.CaseType.name)
     .and[DateResultField](ReportFieldType.Date.name)
     .and[StringResultField](ReportFieldType.String.name)

@@ -271,6 +271,11 @@ class CaseMongoRepository @Inject() (
         Json.obj("$or" -> (concreteFilter ++ pseudoFilters))
       }
 
+    val liabilityStatusesFilter =
+      if(report.liabilityStatuses.isEmpty) Json.obj() else{
+        Json.obj(ReportField.LiabilityStatus.underlyingField -> Json.obj("$in" -> report.liabilityStatuses.map(Json.toJson(_))))
+      }
+
     val teamFilter =
       if (report.teams.isEmpty)
         Json.obj()
@@ -311,7 +316,7 @@ class CaseMongoRepository @Inject() (
         }
     }
 
-    Match(caseTypeFilter ++ statusFilter ++ teamFilter ++ dateFilter ++ assigneeFilter)
+    Match(caseTypeFilter ++ statusFilter ++ teamFilter ++ dateFilter ++ assigneeFilter ++ liabilityStatusesFilter)
   }
 
   private def sortStage(
@@ -378,6 +383,7 @@ class CaseMongoRepository @Inject() (
     case field @ DaysSinceField(_, _) => field.withValue(json.flatMap(_.asOpt[Long]))
     case field @ NumberField(_, _)    => field.withValue(json.flatMap(_.asOpt[Long]))
     case field @ StatusField(_, _)    => field.withValue(json.flatMap(_.asOpt[PseudoCaseStatus.Value]))
+    case field @ LiabilityStatusField(_, _)    => field.withValue(json.flatMap(_.asOpt[LiabilityStatus.Value]))
     case field @ StringField(_, _)    => field.withValue(json.flatMap(_.asOpt[String]))
   }
 
