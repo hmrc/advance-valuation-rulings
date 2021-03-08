@@ -55,25 +55,27 @@ case class DaysSinceField(override val fieldName: String, override val underlyin
 }
 
 case class LiabilityStatusField(override val fieldName: String, override val underlyingField: String)
-  extends ReportField[LiabilityStatus.Value](fieldName, underlyingField) {
-  def withValue(value: Option[LiabilityStatus.Value]): LiabilityStatusResultField = LiabilityStatusResultField(fieldName, value)
+    extends ReportField[LiabilityStatus.Value](fieldName, underlyingField) {
+  def withValue(value: Option[LiabilityStatus.Value]): LiabilityStatusResultField =
+    LiabilityStatusResultField(fieldName, value)
 }
 
 object ReportField {
-  val Count         = NumberField("count", "count")
-  val Reference     = StringField("reference", "reference")
-  val Status        = StatusField("status", "status")
-  val CaseType      = CaseTypeField("case_type", "application.type")
-  val Chapter       = ChapterField("chapter", "decision.bindingCommodityCode")
-  val GoodsName     = StringField("goods_name", "application.goodName")
-  val TraderName    = StringField("trader_name", "application.traderName")
-  val User          = StringField("assigned_user", "assignee.id")
-  val Team          = StringField("assigned_team", "queueId")
-  val DateCreated   = DateField("date_created", "createdDate")
-  val DateCompleted = DateField("date_completed", "decision.effectiveStartDate")
-  val ElapsedDays   = NumberField("elapsed_days", "daysElapsed")
-  val TotalDays     = DaysSinceField("total_days", "createdDate")
-  val ReferredDays  = NumberField("referred_days", "referredDaysElapsed")
+  val Count           = NumberField("count", "count")
+  val Reference       = StringField("reference", "reference")
+  val Status          = StatusField("status", "status")
+  val CaseType        = CaseTypeField("case_type", "application.type")
+  val Chapter         = ChapterField("chapter", "decision.bindingCommodityCode")
+  val GoodsName       = StringField("goods_name", "application.goodName")
+  val TraderName      = StringField("trader_name", "application.traderName")
+  val User            = StringField("assigned_user", "assignee.id")
+  val Team            = StringField("assigned_team", "queueId")
+  val DateCreated     = DateField("date_created", "createdDate")
+  val DateCompleted   = DateField("date_completed", "decision.effectiveStartDate")
+  val DateExpired     = DateField("date_expired", "decision.effectiveEndDate")
+  val ElapsedDays     = NumberField("elapsed_days", "daysElapsed")
+  val TotalDays       = DaysSinceField("total_days", "createdDate")
+  val ReferredDays    = NumberField("referred_days", "referredDaysElapsed")
   val LiabilityStatus = LiabilityStatusField("liability_status", "application.status")
 
   val fields: Map[String, ReportField[_]] = List(

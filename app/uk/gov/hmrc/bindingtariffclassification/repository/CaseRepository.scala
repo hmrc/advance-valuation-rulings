@@ -266,8 +266,8 @@ class CaseMongoRepository @Inject() (
 
     val isExpired = and(
       eq(s"$$${ReportField.Status.underlyingField}", CaseStatus.COMPLETED.toString),
-      notNull(s"$$${ReportField.DateCompleted.underlyingField}"),
-      greaterThan(Json.arr(time, s"$$${ReportField.DateCompleted.underlyingField}"))
+      notNull(s"$$${ReportField.DateExpired.underlyingField}"),
+      greaterThan(Json.arr(time, s"$$${ReportField.DateExpired.underlyingField}"))
     )
 
     cond(
@@ -310,9 +310,9 @@ class CaseMongoRepository @Inject() (
           pseudoStatuses.collect {
             case PseudoCaseStatus.EXPIRED =>
               Json.obj(
-                ReportField.Status.underlyingField        -> Json.toJson(PseudoCaseStatus.COMPLETED),
-                ReportField.DateCompleted.underlyingField -> lessThan(appConfig.clock.instant()),
-                "decision.appeal"                         -> Json.obj("$size" -> 0)
+                ReportField.Status.underlyingField      -> Json.toJson(PseudoCaseStatus.COMPLETED),
+                ReportField.DateExpired.underlyingField -> lessThan(appConfig.clock.instant()),
+                "decision.appeal"                       -> Json.obj("$size" -> 0)
               ): JsValueWrapper
             case PseudoCaseStatus.UNDER_APPEAL =>
               Json.obj(
