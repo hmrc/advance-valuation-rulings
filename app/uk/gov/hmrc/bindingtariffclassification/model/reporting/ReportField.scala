@@ -58,7 +58,6 @@ case class CoalesceField(override val fieldName: String, val fieldChoices: NonEm
   extends ReportField[String](fieldName, fieldChoices.head) {
   def withValue(value: Option[String]): StringResultField = StringResultField(fieldName, value)
 }
-
 case class LiabilityStatusField(override val fieldName: String, override val underlyingField: String)
   extends ReportField[LiabilityStatus.Value](fieldName, underlyingField) {
   def withValue(value: Option[LiabilityStatus.Value]): LiabilityStatusResultField = LiabilityStatusResultField(fieldName, value)
@@ -68,7 +67,7 @@ object ReportField {
   val Count         = NumberField("count", "count")
   val Reference     = StringField("reference", "reference")
   val Description   = StringField("description", "application.detailedDescription")
-  val CaseSource    = CoalesceField("source", NonEmptySeq("$application.correspondenceStarter", List("$application.caseType")))
+  val CaseSource    = CoalesceField("source", NonEmptySeq.of("application.correspondenceStarter", ("application.caseType")))
   val Status        = StatusField("status", "status")
   val CaseType      = CaseTypeField("case_type", "application.type")
   val Chapter       = ChapterField("chapter", "decision.bindingCommodityCode")
