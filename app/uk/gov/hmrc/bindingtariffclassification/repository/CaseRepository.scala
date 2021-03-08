@@ -183,23 +183,41 @@ class CaseMongoRepository @Inject() (
   private def lessThan(json: JsValueWrapper): JsObject =
     Json.obj("$lte" -> json)
 
-  private def trunc(json: JsValueWrapper): JsValue =
+  private def trunc(json: JsValueWrapper): JsObject =
     Json.obj("$trunc" -> json)
 
-  private def divide(dividend: JsValueWrapper, divisor: JsValueWrapper): JsValue =
+  private def divide(dividend: JsValueWrapper, divisor: JsValueWrapper): JsObject =
     Json.obj("$divide" -> Json.arr(dividend, divisor))
 
-  private def subtract(minuend: JsValueWrapper, subtrahend: JsValueWrapper): JsValue =
+  private def subtract(minuend: JsValueWrapper, subtrahend: JsValueWrapper): JsObject =
     Json.obj("$subtract" -> Json.arr(minuend, subtrahend))
 
-  private def substrBytes(operand: JsValueWrapper, offset: JsValueWrapper, length: JsValueWrapper): JsValue =
+  private def substrBytes(operand: JsValueWrapper, offset: JsValueWrapper, length: JsValueWrapper): JsObject =
     Json.obj("$substrBytes" -> Json.arr(operand, offset, length))
 
-  private def and(operands: JsValueWrapper*): JsValue =
+  private def and(operands: JsValueWrapper*): JsObject =
     Json.obj("$and" -> Json.arr(operands: _*))
 
-  private def eq(lExpr: JsValueWrapper, rExpr: JsValueWrapper): JsValue =
+  private def eq(lExpr: JsValueWrapper, rExpr: JsValueWrapper): JsObject =
     Json.obj("$eq" -> Json.arr(lExpr, rExpr))
+
+  private def neq(operand: JsValueWrapper): JsObject =
+    Json.obj("$ne" -> operand)
+
+  private def neq(lExpr: JsValueWrapper, rExpr: JsValueWrapper): JsObject =
+    Json.obj("$ne" -> Json.arr(lExpr, rExpr))
+
+  private def not(operand: JsValueWrapper): JsObject =
+    Json.obj("$not" -> operand)
+
+  private def elemMatch(conditions: JsValueWrapper): JsObject =
+    Json.obj("$elemMatch" -> conditions)
+
+  private def notEmpty(operand: JsValueWrapper): JsObject =
+    Json.obj("$gt" -> Json.arr(Json.obj("$size" -> operand), 0))
+
+  private def filter(input: JsValueWrapper, cond: JsValueWrapper): JsObject =
+    Json.obj("$filter" -> Json.obj("input" -> input, "cond" -> cond))
 
   private def daysSince(operand: JsValueWrapper): JsValue =
     trunc(
@@ -208,6 +226,9 @@ class CaseMongoRepository @Inject() (
         86400000
       )
     )
+
+  private def notNull(): JsValue =
+    Json.obj("$ne" -> JsNull)
 
   private def notNull(operandExpr: JsValueWrapper): JsValue =
     Json.obj("$gt" -> Json.arr(operandExpr, JsNull))
@@ -222,8 +243,36 @@ class CaseMongoRepository @Inject() (
     )
 
   private def pseudoStatus(): JsValue = {
-    val time = Json.toJson(appConfig.clock.instant())
+    val time        = Json.toJson(appConfig.clock.instant())
     val statusField = s"$$${ReportField.Status.underlyingField}"
+
+    val isAppeal = and(
+      eq(s"$$${ReportField.Status.underlyingField}", CaseStatus.COMPLETED.toString),
+      notNull("$decision.appeal"),
+      notEmpty(
+        filter(
+          input = "$decision.appeal",
+          cond = and(
+            neq("$$this.type", Json.toJson(AppealType.REVIEW)),
+            eq("$$this.status", Json.toJson(AppealStatus.IN_PROGRESS))
+          )
+        )
+      )
+    )
+
+    val isReview = and(
+      eq(s"$$${ReportField.Status.underlyingField}", CaseStatus.COMPLETED.toString),
+      notNull("$decision.appeal"),
+      notEmpty(
+        filter(
+          input = "$decision.appeal",
+          cond = and(
+            eq("$$this.type", Json.toJson(AppealType.REVIEW)),
+            eq("$$this.status", Json.toJson(AppealStatus.IN_PROGRESS))
+          )
+        )
+      )
+    )
 
     val isExpired = and(
       eq(s"$$${ReportField.Status.underlyingField}", CaseStatus.COMPLETED.toString),
@@ -232,9 +281,17 @@ class CaseMongoRepository @Inject() (
     )
 
     cond(
-      ifExpr = isExpired,
-      thenExpr = PseudoCaseStatus.EXPIRED.toString,
-      elseExpr = statusField
+      ifExpr   = isReview,
+      thenExpr = Json.toJson(PseudoCaseStatus.UNDER_REVIEW),
+      elseExpr = cond(
+        ifExpr   = isAppeal,
+        thenExpr = Json.toJson(PseudoCaseStatus.UNDER_APPEAL),
+        elseExpr = cond(
+          ifExpr   = isExpired,
+          thenExpr = Json.toJson(PseudoCaseStatus.EXPIRED),
+          elseExpr = statusField
+        )
+      )
     )
   }
 
@@ -269,12 +326,53 @@ class CaseMongoRepository @Inject() (
             case PseudoCaseStatus.EXPIRED =>
               Json.obj(
                 ReportField.Status.underlyingField        -> Json.toJson(PseudoCaseStatus.COMPLETED),
-                ReportField.DateCompleted.underlyingField -> lessThan(appConfig.clock.instant())
+                ReportField.DateCompleted.underlyingField -> lessThan(appConfig.clock.instant()),
+                "decision.appeal" -> not(
+                  elemMatch(
+                    Json.obj(
+                      "status" -> Json.toJson(AppealStatus.IN_PROGRESS)
+                    )
+                  )
+                )
+              ): JsValueWrapper
+            case PseudoCaseStatus.UNDER_APPEAL =>
+              Json.obj(ReportField.Status.underlyingField -> Json.toJson(PseudoCaseStatus.COMPLETED)) ++ and(
+                Json.obj(
+                  "decision.appeal.status" -> Json.toJson(AppealStatus.IN_PROGRESS)
+                ),
+                Json.obj(
+                  "decision.appeal" -> not(
+                    elemMatch(
+                      Json.obj(
+                        "type" -> Json.toJson(AppealType.REVIEW)
+                      )
+                    )
+                  )
+                )
+              ): JsValueWrapper
+            case PseudoCaseStatus.UNDER_REVIEW =>
+              Json.obj(
+                ReportField.Status.underlyingField -> Json.toJson(PseudoCaseStatus.COMPLETED),
+                "decision.appeal" -> elemMatch(
+                  Json.obj(
+                    "type"   -> Json.toJson(AppealType.REVIEW),
+                    "status" -> Json.toJson(AppealStatus.IN_PROGRESS)
+                  )
+                )
               ): JsValueWrapper
           }.toSeq: _*
         )
 
         Json.obj("$or" -> (concreteFilter ++ pseudoFilters))
+      }
+
+    val liabilityStatusesFilter =
+      if (report.liabilityStatuses.isEmpty)
+        Json.obj()
+      else {
+        Json.obj(
+          ReportField.LiabilityStatus.underlyingField -> Json.obj("$in" -> report.liabilityStatuses.map(Json.toJson(_)))
+        )
       }
 
     val teamFilter =
@@ -307,9 +405,9 @@ class CaseMongoRepository @Inject() (
         Json.obj(ReportField.DateCreated.underlyingField -> (minDateFilter ++ maxDateFilter))
 
     val assigneeFilter = report match {
-      case cse: CaseReport =>
+      case _: CaseReport =>
         Json.obj()
-      case sum: SummaryReport =>
+      case _: SummaryReport =>
         Json.obj()
       case queue: QueueReport =>
         queue.assignee.map(assignee => Json.obj(ReportField.User.underlyingField -> assignee)).getOrElse {
@@ -317,34 +415,47 @@ class CaseMongoRepository @Inject() (
         }
     }
 
-    Match(caseTypeFilter ++ statusFilter ++ teamFilter ++ dateFilter ++ assigneeFilter)
+    Match(caseTypeFilter ++ statusFilter ++ teamFilter ++ dateFilter ++ assigneeFilter ++ liabilityStatusesFilter)
+  }
+
+  private def summarySortStage(
+    framework: collection.AggregationFramework,
+    report: SummaryReport
+  ) = {
+    import framework._
+
+    val sortField = report match {
+      case summary: SummaryReport if summary.groupBy.toSeq.contains(report.sortBy) =>
+        s"groupKey.${report.sortBy.fieldName}"
+      case _ =>
+        report.sortBy.fieldName
+    }
+
+    report.sortOrder match {
+      case SortDirection.ASCENDING =>
+        Sort(Ascending(sortField))
+      case SortDirection.DESCENDING =>
+        Sort(Descending(sortField))
+    }
   }
 
   private def sortStage(
     framework: collection.AggregationFramework,
-    report: Report,
     sortBy: ReportField[_],
     sortOrder: SortDirection.Value
   ) = {
     import framework._
 
-    val sortField = report match {
-      case summary: SummaryReport if summary.groupBy == sortBy =>
-        "groupKey"
-      case _ =>
-        sortBy.underlyingField
-    }
-
     // If not sorting by reference, add it as a secondary sort field to ensure stable sorting
     (sortOrder, sortBy) match {
       case (SortDirection.ASCENDING, ReportField.Reference) =>
-        Sort(Ascending(sortField))
+        Sort(Ascending(sortBy.underlyingField))
       case (SortDirection.DESCENDING, ReportField.Reference) =>
-        Sort(Descending(sortField))
+        Sort(Descending(sortBy.underlyingField))
       case (SortDirection.ASCENDING, _) =>
-        Sort(Ascending(sortField), Ascending(ReportField.Reference.underlyingField))
+        Sort(Ascending(sortBy.underlyingField), Ascending(ReportField.Reference.underlyingField))
       case (SortDirection.DESCENDING, _) =>
-        Sort(Descending(sortField), Descending(ReportField.Reference.underlyingField))
+        Sort(Descending(sortBy.underlyingField), Descending(ReportField.Reference.underlyingField))
     }
   }
 
@@ -365,28 +476,31 @@ class CaseMongoRepository @Inject() (
 
     val groupFields = countField ++ maxFields ++ casesField
 
-    report.groupBy match {
-      case ChapterField(_, _) =>
-        Group(substrBytes(s"$$${report.groupBy.underlyingField}", 0, 2))(groupFields: _*)
-      case DaysSinceField(_, underlyingField) =>
-        Group(daysSince(s"$$$underlyingField"))(groupFields: _*)
-      case StatusField(_, _) =>
-        Group(pseudoStatus())(groupFields: _*)
+    val groupBy = Json.obj(report.groupBy.map {
+      case ChapterField(fieldName, underlyingField) =>
+        fieldName -> (substrBytes(s"$$$underlyingField", 0, 2): JsValueWrapper)
+      case DaysSinceField(fieldName, underlyingField) =>
+        fieldName -> (daysSince(s"$$$underlyingField"): JsValueWrapper)
+      case StatusField(fieldName, _) =>
+        fieldName -> (pseudoStatus(): JsValueWrapper)
       case CoalesceField(_, fieldChoices) =>
         Group(coalesce(fieldChoices))(groupFields: _*)
-      case _ =>
-        Group(JsString(s"$$${report.groupBy.underlyingField}"))(groupFields: _*)
-    }
+      case field =>
+        field.fieldName -> (JsString(s"$$${field.underlyingField}"): JsValueWrapper)
+    }.toSeq: _*)
+
+    Group(groupBy)(groupFields: _*)
   }
 
   private def getFieldValue(field: ReportField[_], json: Option[JsValue]): ReportResultField[_] = field match {
-    case field @ CaseTypeField(_, _)  => field.withValue(json.flatMap(_.asOpt[ApplicationType.Value]))
-    case field @ ChapterField(_, _)   => field.withValue(json.flatMap(_.asOpt[String].filterNot(_.isEmpty)))
-    case field @ DateField(_, _)      => field.withValue(json.flatMap(_.asOpt[Instant]))
-    case field @ DaysSinceField(_, _) => field.withValue(json.flatMap(_.asOpt[Long]))
-    case field @ NumberField(_, _)    => field.withValue(json.flatMap(_.asOpt[Long]))
-    case field @ StatusField(_, _)    => field.withValue(json.flatMap(_.asOpt[PseudoCaseStatus.Value]))
-    case field @ StringField(_, _)    => field.withValue(json.flatMap(_.asOpt[String]))
+    case field @ CaseTypeField(_, _)        => field.withValue(json.flatMap(_.asOpt[ApplicationType.Value]))
+    case field @ ChapterField(_, _)         => field.withValue(json.flatMap(_.asOpt[String].filterNot(_.isEmpty)))
+    case field @ DateField(_, _)            => field.withValue(json.flatMap(_.asOpt[Instant]))
+    case field @ DaysSinceField(_, _)       => field.withValue(json.flatMap(_.asOpt[Long]))
+    case field @ NumberField(_, _)          => field.withValue(json.flatMap(_.asOpt[Long]))
+    case field @ StatusField(_, _)          => field.withValue(json.flatMap(_.asOpt[PseudoCaseStatus.Value]))
+    case field @ LiabilityStatusField(_, _) => field.withValue(json.flatMap(_.asOpt[LiabilityStatus.Value]))
+    case field @ StringField(_, _)          => field.withValue(json.flatMap(_.asOpt[String]))
     case field @ CoalesceField(_, _)  => field.withValue(json.flatMap(_.asOpt[String].filterNot(_.isEmpty)))
   }
 
@@ -423,11 +537,11 @@ class CaseMongoRepository @Inject() (
         val first = matchStage(framework, report)
 
         val rest = List(
-          sortStage(framework, report, ReportField.Reference, SortDirection.ASCENDING),
+          sortStage(framework, ReportField.Reference, SortDirection.ASCENDING),
           groupStage(framework, report),
           AddFields(Json.obj("groupKey" -> "$_id")),
           Project(Json.obj("_id"        -> 0)),
-          sortStage(framework, report, report.sortBy, report.sortOrder),
+          summarySortStage(framework, report),
           Skip((pagination.page - 1) * pagination.pageSize),
           Limit(pagination.pageSize)
         )
@@ -440,16 +554,18 @@ class CaseMongoRepository @Inject() (
           rows ++ Seq(
             if (report.includeCases)
               CaseResultGroup(
-                count    = json(ReportField.Count.fieldName).as[Long],
-                groupKey = getFieldValue(report.groupBy, json.value.get("groupKey")),
+                count = json(ReportField.Count.fieldName).as[Long],
+                groupKey = report.groupBy
+                  .map(groupBy => getFieldValue(groupBy, (json \ "groupKey" \ groupBy.fieldName).toOption)),
                 maxFields =
                   report.maxFields.map(field => getNumberFieldValue(field, json.value.get(field.fieldName))).toList,
                 cases = json("cases").as[List[Case]]
               )
             else
               SimpleResultGroup(
-                count    = json(ReportField.Count.fieldName).as[Long],
-                groupKey = getFieldValue(report.groupBy, json.value.get("groupKey")),
+                count = json(ReportField.Count.fieldName).as[Long],
+                groupKey = report.groupBy
+                  .map(groupBy => getFieldValue(groupBy, (json \ "groupKey" \ groupBy.fieldName).toOption)),
                 maxFields =
                   report.maxFields.map(field => getNumberFieldValue(field, json.value.get(field.fieldName))).toList
               )
@@ -505,7 +621,7 @@ class CaseMongoRepository @Inject() (
         val first = matchStage(framework, report)
 
         val rest = List(
-          sortStage(framework, report, report.sortBy, report.sortOrder),
+          sortStage(framework, report.sortBy, report.sortOrder),
           AddFields(fields),
           Project(Json.obj("_id" -> JsNumber(0))),
           Skip((pagination.page - 1) * pagination.pageSize),
@@ -518,7 +634,7 @@ class CaseMongoRepository @Inject() (
       .fold[Seq[Map[String, ReportResultField[_]]]](Seq.empty, pagination.pageSize) {
         case (rows, json) =>
           rows ++ Seq(
-            report.fields
+            report.fields.toSeq
               .map(field => field.fieldName -> getFieldValue(field, json.value.get(field.fieldName)))
               .toMap[String, ReportResultField[_]]
           )

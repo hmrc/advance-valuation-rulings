@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.bindingtariffclassification.service
 
+import cats.data.NonEmptySeq
 import org.mockito.BDDMockito._
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
@@ -41,7 +42,7 @@ class ReportServiceTest extends BaseSpec with BeforeAndAfterEach {
     "delegate to case repository" in {
       val report = CaseReport(
         sortBy = ReportField.Reference,
-        fields = Seq(ReportField.Reference, ReportField.Status)
+        fields = NonEmptySeq.of(ReportField.Reference, ReportField.Status)
       )
 
       given(caseRepository.caseReport(report, Pagination())) willReturn Future.successful(Paged.empty[Map[String, ReportResultField[_]]])
@@ -53,7 +54,7 @@ class ReportServiceTest extends BaseSpec with BeforeAndAfterEach {
   "ReportService.summaryReport" should {
     "delegate to case repository" in {
       val report = SummaryReport(
-        groupBy = ReportField.Status,
+        groupBy = NonEmptySeq.one(ReportField.Status),
         sortBy = ReportField.Count,
       )
 
