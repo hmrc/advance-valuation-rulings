@@ -200,11 +200,11 @@ class CaseMongoRepository @Inject() (
   private def eq(lExpr: JsValueWrapper, rExpr: JsValueWrapper): JsObject =
     Json.obj("$eq" -> Json.arr(lExpr, rExpr))
 
-  private def neq(operand: JsValueWrapper): JsObject =
-    Json.obj("$ne" -> operand)
+  private def in(expr: JsValueWrapper, arrayExpr: JsValueWrapper): JsObject =
+    Json.obj("$in" -> Json.arr(expr, arrayExpr))
 
-  private def neq(lExpr: JsValueWrapper, rExpr: JsValueWrapper): JsObject =
-    Json.obj("$ne" -> Json.arr(lExpr, rExpr))
+  private def in(arrayExpr: JsValueWrapper): JsObject =
+    Json.obj("$in" -> arrayExpr)
 
   private def not(operand: JsValueWrapper): JsObject =
     Json.obj("$not" -> operand)
@@ -225,9 +225,6 @@ class CaseMongoRepository @Inject() (
         86400000
       )
     )
-
-  private def notNull(): JsValue =
-    Json.obj("$ne" -> JsNull)
 
   private def notNull(operandExpr: JsValueWrapper): JsValue =
     Json.obj("$gt" -> Json.arr(operandExpr, JsNull))
@@ -251,10 +248,7 @@ class CaseMongoRepository @Inject() (
       notEmpty(
         filter(
           input = "$decision.appeal",
-          cond = and(
-            neq("$$this.type", Json.toJson(AppealType.REVIEW)),
-            eq("$$this.status", Json.toJson(AppealStatus.IN_PROGRESS))
-          )
+          cond  = in("$$this.type", AppealType.appealTypes.map(Json.toJson(_)))
         )
       )
     )
@@ -265,10 +259,7 @@ class CaseMongoRepository @Inject() (
       notEmpty(
         filter(
           input = "$decision.appeal",
-          cond = and(
-            eq("$$this.type", Json.toJson(AppealType.REVIEW)),
-            eq("$$this.status", Json.toJson(AppealStatus.IN_PROGRESS))
-          )
+          cond  = in("$$this.type", AppealType.reviewTypes.map(Json.toJson(_)))
         )
       )
     )
@@ -280,11 +271,11 @@ class CaseMongoRepository @Inject() (
     )
 
     cond(
-      ifExpr   = isReview,
-      thenExpr = Json.toJson(PseudoCaseStatus.UNDER_REVIEW),
+      ifExpr   = isAppeal,
+      thenExpr = Json.toJson(PseudoCaseStatus.UNDER_APPEAL),
       elseExpr = cond(
-        ifExpr   = isAppeal,
-        thenExpr = Json.toJson(PseudoCaseStatus.UNDER_APPEAL),
+        ifExpr   = isReview,
+        thenExpr = Json.toJson(PseudoCaseStatus.UNDER_REVIEW),
         elseExpr = cond(
           ifExpr   = isExpired,
           thenExpr = Json.toJson(PseudoCaseStatus.EXPIRED),
@@ -321,36 +312,29 @@ class CaseMongoRepository @Inject() (
               Json.obj(
                 ReportField.Status.underlyingField        -> Json.toJson(PseudoCaseStatus.COMPLETED),
                 ReportField.DateCompleted.underlyingField -> lessThan(appConfig.clock.instant()),
-                "decision.appeal" -> not(
-                  elemMatch(
-                    Json.obj(
-                      "status" -> Json.toJson(AppealStatus.IN_PROGRESS)
-                    )
-                  )
-                )
+                "decision.appeal"                         -> Json.obj("$size" -> 0)
               ): JsValueWrapper
             case PseudoCaseStatus.UNDER_APPEAL =>
-              Json.obj(ReportField.Status.underlyingField -> Json.toJson(PseudoCaseStatus.COMPLETED)) ++ and(
-                Json.obj(
-                  "decision.appeal.status" -> Json.toJson(AppealStatus.IN_PROGRESS)
-                ),
-                Json.obj(
-                  "decision.appeal" -> not(
-                    elemMatch(
-                      Json.obj(
-                        "type" -> Json.toJson(AppealType.REVIEW)
-                      )
-                    )
-                  )
-                )
-              ): JsValueWrapper
-            case PseudoCaseStatus.UNDER_REVIEW =>
               Json.obj(
                 ReportField.Status.underlyingField -> Json.toJson(PseudoCaseStatus.COMPLETED),
                 "decision.appeal" -> elemMatch(
-                  Json.obj(
-                    "type"   -> Json.toJson(AppealType.REVIEW),
-                    "status" -> Json.toJson(AppealStatus.IN_PROGRESS)
+                  Json.obj("type" -> in(AppealType.appealTypes.map(Json.toJson(_))))
+                )
+              ): JsValueWrapper
+            case PseudoCaseStatus.UNDER_REVIEW =>
+              Json.obj(ReportField.Status.underlyingField -> Json.toJson(PseudoCaseStatus.COMPLETED)) ++ and(
+                Json.obj(
+                  "decision.appeal" -> not(
+                    elemMatch(
+                      Json.obj("type" -> in(AppealType.appealTypes.map(Json.toJson(_))))
+                    )
+                  )
+                ),
+                Json.obj(
+                  "decision.appeal" -> elemMatch(
+                    Json.obj(
+                      "type" -> in(AppealType.reviewTypes.map(Json.toJson(_)))
+                    )
                   )
                 )
               ): JsValueWrapper
