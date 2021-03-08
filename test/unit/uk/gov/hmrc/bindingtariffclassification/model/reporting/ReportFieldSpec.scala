@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.repository.v2
+package uk.gov.hmrc.bindingtariffclassification.model
+package reporting
 
 import java.time.{LocalDateTime, ZoneOffset}
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
-import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.v2._
 
 class ReportFieldSpec extends BaseSpec {
   "ReportField" should {
@@ -37,9 +36,11 @@ class ReportFieldSpec extends BaseSpec {
         case field @ NumberField(fieldName, underlyingField) =>
           field.withValue(Some(3L)) shouldBe NumberResultField(fieldName, Some(3L))
         case field @ StatusField(fieldName, underlyingField) =>
-          field.withValue(Some(CaseStatus.OPEN)) shouldBe StatusResultField(fieldName, Some(CaseStatus.OPEN))
+          field.withValue(Some(PseudoCaseStatus.OPEN)) shouldBe StatusResultField(fieldName, Some(PseudoCaseStatus.OPEN))
         case field @ StringField(fieldName, underlyingField) =>
           field.withValue(Some("Chipotle Paste")) shouldBe StringResultField(fieldName, Some("Chipotle Paste"))
+        case field @ LiabilityStatusField(fieldName, underlyingField) =>
+          field.withValue(Some(LiabilityStatus.LIVE)) shouldBe LiabilityStatusResultField(fieldName, Some(LiabilityStatus.LIVE))
       }
     }
   }

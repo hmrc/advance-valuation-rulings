@@ -19,4 +19,7 @@ package uk.gov.hmrc.bindingtariffclassification.model
 object CaseStatus extends Enumeration {
   type CaseStatus = Value
   val DRAFT, NEW, OPEN, SUPPRESSED, REFERRED, REJECTED, CANCELLED, SUSPENDED, COMPLETED, REVOKED, ANNULLED = Value
+
+  def fromPseudoStatus(pseudoStatus: PseudoCaseStatus.Value): Option[CaseStatus.Value] =
+    CaseStatus.values.find(_.toString == pseudoStatus.toString)
 }

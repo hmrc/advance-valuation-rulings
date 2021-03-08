@@ -22,8 +22,7 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.{CaseReport => OldReport, ReportResult}
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.v2._
+import uk.gov.hmrc.bindingtariffclassification.model.reporting._
 import uk.gov.hmrc.bindingtariffclassification.service.ReportService
 
 import scala.concurrent.Future
@@ -40,18 +39,6 @@ class ReportingControllerSpec extends BaseSpec with BeforeAndAfterEach {
   override protected def afterEach(): Unit = {
     super.afterEach()
     Mockito.reset(reportService)
-  }
-
-  "GET report" should {
-    "Delegate to service" in {
-      val report = mock[OldReport]
-
-      given(reportService.generate(report)) willReturn Future.successful(Seq.empty[ReportResult])
-
-      val result = await(controller.report(report)(fakeRequest))
-
-      status(result) shouldBe OK
-    }
   }
 
   "GET summary report" should {
@@ -78,4 +65,15 @@ class ReportingControllerSpec extends BaseSpec with BeforeAndAfterEach {
     }
   }
 
+  "GET queue report" should {
+    "delegate to service" in {
+      val report = mock[QueueReport]
+
+      given(reportService.queueReport(report, Pagination())) willReturn Future.successful(Paged.empty[QueueResultGroup])
+
+      val result = await(controller.queueReport(report, Pagination())(fakeRequest))
+
+      status(result) shouldBe OK
+    }
+  }
 }

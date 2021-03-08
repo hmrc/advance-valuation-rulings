@@ -16,8 +16,15 @@
 
 package uk.gov.hmrc.bindingtariffclassification.model.reporting
 
-object CaseReportField extends Enumeration {
-  type CaseReportField = Value
-  val ACTIVE_DAYS_ELAPSED   = Value("active-days-elapsed")
-  val REFERRED_DAYS_ELAPSED = Value("referred-days-elapsed")
+sealed abstract class ReportFieldType(val name: String) extends Product with Serializable
+
+object ReportFieldType {
+  case object Number extends ReportFieldType("number")
+  case object Status extends ReportFieldType("status")
+  case object LiabilityStatus extends ReportFieldType("liability_status")
+  case object CaseType extends ReportFieldType("caseType")
+  case object Chapter extends ReportFieldType("chapter")
+  case object Date extends ReportFieldType("date")
+  case object String extends ReportFieldType("string")
+  case object DaysSince extends ReportFieldType("daysSince")
 }

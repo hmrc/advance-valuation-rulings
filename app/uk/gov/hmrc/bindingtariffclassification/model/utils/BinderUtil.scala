@@ -18,13 +18,11 @@ package uk.gov.hmrc.bindingtariffclassification.model.utils
 
 import java.time.Instant
 
+import cats.data.NonEmptySeq
 import uk.gov.hmrc.bindingtariffclassification.model.ApplicationType.ApplicationType
-import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
+import uk.gov.hmrc.bindingtariffclassification.model.LiabilityStatus.LiabilityStatus
 import uk.gov.hmrc.bindingtariffclassification.model.PseudoCaseStatus.PseudoCaseStatus
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.CaseReportField.CaseReportField
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.CaseReportGroup.CaseReportGroup
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.{CaseReportField, CaseReportGroup}
-import uk.gov.hmrc.bindingtariffclassification.model.{ApplicationType, CaseStatus, PseudoCaseStatus}
+import uk.gov.hmrc.bindingtariffclassification.model.{ApplicationType, LiabilityStatus, PseudoCaseStatus}
 import uk.gov.hmrc.bindingtariffclassification.sort.CaseSortField.CaseSortField
 import uk.gov.hmrc.bindingtariffclassification.sort.SortDirection.SortDirection
 import uk.gov.hmrc.bindingtariffclassification.sort.{CaseSortField, SortDirection}
@@ -32,12 +30,6 @@ import uk.gov.hmrc.bindingtariffclassification.sort.{CaseSortField, SortDirectio
 import scala.util.Try
 
 object BinderUtil {
-
-  def bindCaseReportGroup(value: String): Option[CaseReportGroup] =
-    CaseReportGroup.values.find(_.toString == value)
-
-  def bindCaseReportField(value: String): Option[CaseReportField] =
-    CaseReportField.values.find(_.toString == value)
 
   def bindSortField(value: String): Option[CaseSortField] =
     CaseSortField.values.find(_.toString == value)
@@ -48,8 +40,8 @@ object BinderUtil {
   def bindPseudoCaseStatus(value: String): Option[PseudoCaseStatus] =
     PseudoCaseStatus.values.find(_.toString.equalsIgnoreCase(value))
 
-  def bindCaseStatus(value: String): Option[CaseStatus] =
-    CaseStatus.values.find(_.toString.equalsIgnoreCase(value))
+  def bindLiabilityStatus(value: String): Option[LiabilityStatus] =
+    LiabilityStatus.values.find(_.toString.equalsIgnoreCase(value))
 
   def bindApplicationType(value: String): Option[ApplicationType] =
     ApplicationType.values.find(_.toString.equalsIgnoreCase(value))
@@ -58,6 +50,9 @@ object BinderUtil {
 
   def params(name: String)(implicit requestParams: Map[String, Seq[String]]): Option[Set[String]] =
     requestParams.get(name).map(_.flatMap(_.split(",")).toSet).filterNot(_.exists(_.isEmpty))
+
+  def orderedParams(name: String)(implicit requestParams: Map[String, Seq[String]]): Option[List[String]] =
+    requestParams.get(name).map(_.flatMap(_.split(",")).toList).filterNot(_.exists(_.isEmpty))
 
   def param(name: String)(implicit requestParams: Map[String, Seq[String]]): Option[String] =
     params(name).map(_.head)

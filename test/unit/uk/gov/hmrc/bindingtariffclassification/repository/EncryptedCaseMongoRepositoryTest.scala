@@ -21,7 +21,6 @@ import org.mockito.Mockito
 import org.mockito.Mockito.verify
 import org.scalatest.BeforeAndAfterEach
 import uk.gov.hmrc.bindingtariffclassification.crypto.Crypto
-import uk.gov.hmrc.bindingtariffclassification.model.reporting.{CaseReport, ReportResult}
 import uk.gov.hmrc.bindingtariffclassification.model.{Case, CaseSearch, Paged, Pagination}
 
 import scala.concurrent.Future.successful
@@ -33,8 +32,6 @@ class EncryptedCaseMongoRepositoryTest extends BaseMongoIndexSpec with BeforeAnd
   private val encryptedCase      = mock[Case]
   private val encryptedCaseSaved = mock[Case]
   private val search             = CaseSearch()
-  private val rawReport          = mock[CaseReport]
-  private val rawReportResult    = mock[ReportResult]
   private val pagination         = mock[Pagination]
   private val crypto             = mock[Crypto]
   private val underlyingRepo     = mock[CaseMongoRepository]
@@ -84,13 +81,6 @@ class EncryptedCaseMongoRepositoryTest extends BaseMongoIndexSpec with BeforeAnd
       given(underlyingRepo.deleteAll()) willReturn successful((): Unit)
       await(repo.deleteAll())
       verify(underlyingRepo).deleteAll()
-    }
-  }
-
-  "Generate Report" should {
-    "Encrypt and delegate to Repository" in {
-      given(underlyingRepo.generateReport(rawReport)) willReturn successful(Seq(rawReportResult))
-      await(repo.generateReport(rawReport)) shouldBe Seq(rawReportResult)
     }
   }
 }

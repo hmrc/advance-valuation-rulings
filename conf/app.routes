@@ -13,9 +13,9 @@ GET           /cases/:reference/events          @uk.gov.hmrc.bindingtariffclassi
 POST          /cases/:reference/events          @uk.gov.hmrc.bindingtariffclassification.controllers.EventController.create(reference: String)
 
 # reporting endpoints
-GET           /report                           @uk.gov.hmrc.bindingtariffclassification.controllers.ReportingController.report(report: uk.gov.hmrc.bindingtariffclassification.model.reporting.CaseReport)
-GET           /report/summary                   @uk.gov.hmrc.bindingtariffclassification.controllers.ReportingController.summaryReport(report: uk.gov.hmrc.bindingtariffclassification.model.reporting.v2.SummaryReport, pagination: uk.gov.hmrc.bindingtariffclassification.model.Pagination ?= uk.gov.hmrc.bindingtariffclassification.model.Pagination())
-GET           /report/cases                     @uk.gov.hmrc.bindingtariffclassification.controllers.ReportingController.caseReport(report: uk.gov.hmrc.bindingtariffclassification.model.reporting.v2.CaseReport, pagination: uk.gov.hmrc.bindingtariffclassification.model.Pagination ?= uk.gov.hmrc.bindingtariffclassification.model.Pagination())
+GET           /report/summary                   @uk.gov.hmrc.bindingtariffclassification.controllers.ReportingController.summaryReport(report: uk.gov.hmrc.bindingtariffclassification.model.reporting.SummaryReport, pagination: uk.gov.hmrc.bindingtariffclassification.model.Pagination ?= uk.gov.hmrc.bindingtariffclassification.model.Pagination())
+GET           /report/cases                     @uk.gov.hmrc.bindingtariffclassification.controllers.ReportingController.caseReport(report: uk.gov.hmrc.bindingtariffclassification.model.reporting.CaseReport, pagination: uk.gov.hmrc.bindingtariffclassification.model.Pagination ?= uk.gov.hmrc.bindingtariffclassification.model.Pagination())
+GET           /report/queues                    @uk.gov.hmrc.bindingtariffclassification.controllers.ReportingController.queueReport(report: uk.gov.hmrc.bindingtariffclassification.model.reporting.QueueReport, pagination: uk.gov.hmrc.bindingtariffclassification.model.Pagination ?= uk.gov.hmrc.bindingtariffclassification.model.Pagination())
 
 # users endpoints
 POST          /users                            @uk.gov.hmrc.bindingtariffclassification.controllers.UsersController.createUser

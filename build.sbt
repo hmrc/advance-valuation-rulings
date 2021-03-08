@@ -32,6 +32,14 @@ lazy val microservice = (project in file("."))
     retrieveManaged := true,
     // Use the silencer plugin to suppress warnings from unused imports in compiled twirl templates
     scalacOptions += "-P:silencer:pathFilters=views;routes",
+    scalacOptions ~= { opts =>
+      opts.filterNot(
+        Set(
+          "-Xfatal-warnings",
+          "-Ywarn-value-discard"
+        )
+      )
+    },
     libraryDependencies ++= Seq(
       compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.1" cross CrossVersion.full),
       "com.github.ghik" % "silencer-lib" % "1.7.1" % Provided cross CrossVersion.full
