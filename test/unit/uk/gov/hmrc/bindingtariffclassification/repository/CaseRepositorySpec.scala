@@ -963,7 +963,7 @@ class CaseRepositorySpec
         effectiveEndDate   = None,
         appeal = Seq(
           Appeal("1", AppealStatus.IN_PROGRESS, AppealType.APPEAL_TIER_1),
-          Appeal("2", AppealStatus.IN_PROGRESS, AppealType.REVIEW)
+          Appeal("2", AppealStatus.ALLOWED, AppealType.REVIEW)
         )
       )
     )
@@ -980,7 +980,7 @@ class CaseRepositorySpec
         effectiveStartDate = Some(Instant.parse("2018-01-31T09:00:00.00Z")),
         effectiveEndDate   = Some(Instant.parse("2022-01-31T09:00:00.00Z")),
         appeal = Seq(
-          Appeal("1", AppealStatus.IN_PROGRESS, AppealType.APPEAL_TIER_1)
+          Appeal("1", AppealStatus.IN_PROGRESS, AppealType.ADR)
         )
       )
     )
@@ -997,7 +997,7 @@ class CaseRepositorySpec
         effectiveStartDate = Some(Instant.parse("2018-01-31T09:00:00.00Z")),
         effectiveEndDate   = Some(Instant.parse("2019-01-31T09:00:00.00Z")),
         appeal = Seq(
-          Appeal("1", AppealStatus.IN_PROGRESS, AppealType.APPEAL_TIER_1)
+          Appeal("1", AppealStatus.IN_PROGRESS, AppealType.SUPREME_COURT)
         )
       )
     )
@@ -1014,7 +1014,7 @@ class CaseRepositorySpec
         effectiveStartDate = Some(Instant.parse("2018-01-31T09:00:00.00Z")),
         effectiveEndDate   = Some(Instant.parse("2019-01-31T09:00:00.00Z")),
         appeal = Seq(
-          Appeal("1", AppealStatus.IN_PROGRESS, AppealType.REVIEW)
+          Appeal("1", AppealStatus.ALLOWED, AppealType.REVIEW)
         )
       )
     )
@@ -1129,13 +1129,13 @@ class CaseRepositorySpec
           count     = 2,
           groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.UNDER_APPEAL))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(11))),
-          cases     = List(c14, c15)
+          cases     = List(c13, c15)
         ),
         CaseResultGroup(
           count     = 2,
           groupKey  = NonEmptySeq.one(ReportField.Status.withValue(Some(PseudoCaseStatus.UNDER_REVIEW))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(12))),
-          cases     = List(c13, c16)
+          cases     = List(c14, c16)
         )
       )
     }
@@ -1648,7 +1648,12 @@ class CaseRepositorySpec
 
       appealPaged.results shouldBe Seq(
         SimpleResultGroup(
-          2,
+          1,
+          NonEmptySeq.one(ReportField.User.withValue(Some("2"))),
+          List(ReportField.ElapsedDays.withValue(Some(4)))
+        ),
+        SimpleResultGroup(
+          1,
           NonEmptySeq.one(ReportField.User.withValue(Some("3"))),
           List(ReportField.ElapsedDays.withValue(Some(11)))
         )
@@ -1672,12 +1677,7 @@ class CaseRepositorySpec
 
       reviewPaged.results shouldBe Seq(
         SimpleResultGroup(
-          1,
-          NonEmptySeq.one(ReportField.User.withValue(Some("2"))),
-          List(ReportField.ElapsedDays.withValue(Some(4)))
-        ),
-        SimpleResultGroup(
-          1,
+          2,
           NonEmptySeq.one(ReportField.User.withValue(Some("3"))),
           List(ReportField.ElapsedDays.withValue(Some(12)))
         )
