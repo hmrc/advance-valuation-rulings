@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
+import cats.data.NonEmptySeq
+
 import java.time.Instant
 import javax.inject.{Inject, Singleton}
-
 import cats.syntax.all._
 import play.api.libs.json._
 import play.api.libs.json.Json.JsValueWrapper
@@ -285,6 +286,11 @@ class CaseMongoRepository @Inject() (
     )
   }
 
+  private def coalesce(fieldChoices: NonEmptySeq[String]): JsValue =
+    fieldChoices.init.foldRight(JsString("$" + fieldChoices.last): JsValue) {
+      case (field, expr) => Json.obj("$ifNull" -> Json.arr("$" + field, expr))
+    }
+
   private def matchStage(framework: collection.AggregationFramework, report: Report) = {
     import framework._
 
@@ -461,6 +467,8 @@ class CaseMongoRepository @Inject() (
         fieldName -> (daysSince(s"$$$underlyingField"): JsValueWrapper)
       case StatusField(fieldName, _) =>
         fieldName -> (pseudoStatus(): JsValueWrapper)
+      case CoalesceField(fieldName, fieldChoices) =>
+        fieldName -> (coalesce(fieldChoices): JsValueWrapper)
       case field =>
         field.fieldName -> (JsString(s"$$${field.underlyingField}"): JsValueWrapper)
     }.toSeq: _*)
@@ -477,6 +485,7 @@ class CaseMongoRepository @Inject() (
     case field @ StatusField(_, _)          => field.withValue(json.flatMap(_.asOpt[PseudoCaseStatus.Value]))
     case field @ LiabilityStatusField(_, _) => field.withValue(json.flatMap(_.asOpt[LiabilityStatus.Value]))
     case field @ StringField(_, _)          => field.withValue(json.flatMap(_.asOpt[String]))
+    case field @ CoalesceField(_, _)        => field.withValue(json.flatMap(_.asOpt[String].filterNot(_.isEmpty)))
   }
 
   private def getNumberFieldValue(field: ReportField[Long], json: Option[JsValue]): NumberResultField = field match {
@@ -586,6 +595,8 @@ class CaseMongoRepository @Inject() (
               fieldName -> (daysSince(s"$$$underlyingField"): JsValueWrapper)
             case StatusField(fieldName, _) =>
               fieldName -> (pseudoStatus(): JsValueWrapper)
+            case CoalesceField(fieldName, fieldChoices) =>
+              fieldName -> (coalesce(fieldChoices): JsValueWrapper)
             case field =>
               field.fieldName -> (s"$$${field.underlyingField}": JsValueWrapper)
           }: _*

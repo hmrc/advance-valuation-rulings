@@ -41,6 +41,8 @@ class ReportFieldSpec extends BaseSpec {
           field.withValue(Some("Chipotle Paste")) shouldBe StringResultField(fieldName, Some("Chipotle Paste"))
         case field @ LiabilityStatusField(fieldName, underlyingField) =>
           field.withValue(Some(LiabilityStatus.LIVE)) shouldBe LiabilityStatusResultField(fieldName, Some(LiabilityStatus.LIVE))
+        case field @ CoalesceField(fieldName, fieldChoices) =>
+          field.withValue(Some("Port Officer")) shouldBe StringResultField(fieldName, Some("Port Officer"))
       }
     }
   }

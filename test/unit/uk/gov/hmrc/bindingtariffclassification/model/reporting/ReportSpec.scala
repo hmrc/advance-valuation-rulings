@@ -36,7 +36,7 @@ class ReportSpec extends BaseSpec {
         "team"       -> Seq("1", "3"),
         "min_date"   -> Seq("2020-03-21T12:03:15.000Z"),
         "max_date"   -> Seq("2021-03-21T12:03:15.000Z"),
-        "fields"     -> Seq("reference", "status", "assigned_user")
+        "fields"     -> Seq("reference", "status", "assigned_user", "source")
       )
 
       CaseReport.caseReportQueryStringBindable.bind("", params1) shouldBe Some(
@@ -46,13 +46,14 @@ class ReportSpec extends BaseSpec {
             sortOrder = SortDirection.DESCENDING,
             caseTypes = Set(ApplicationType.BTI, ApplicationType.CORRESPONDENCE),
             statuses  = Set(PseudoCaseStatus.LIVE, PseudoCaseStatus.REFERRED),
+
             liabilityStatuses = Set(),
             teams     = Set("1", "3"),
             dateRange = InstantRange(
               Instant.parse("2020-03-21T12:03:15.000Z"),
               Instant.parse("2021-03-21T12:03:15.000Z")
             ),
-            fields = NonEmptySeq.of(ReportField.Reference, ReportField.Status, ReportField.User)
+            fields = NonEmptySeq.of(ReportField.Reference, ReportField.Status, ReportField.User, ReportField.CaseSource)
           )
         )
       )
@@ -136,7 +137,7 @@ class ReportSpec extends BaseSpec {
             statuses  = Set(PseudoCaseStatus.COMPLETED, PseudoCaseStatus.REJECTED),
             liabilityStatuses = Set(LiabilityStatus.NON_LIVE),
             teams     = Set("4", "5"),
-            fields    = NonEmptySeq.of(ReportField.Reference, ReportField.Status, ReportField.ElapsedDays, ReportField.TotalDays)
+            fields    = NonEmptySeq.of(ReportField.Reference, ReportField.CaseSource, ReportField.Status, ReportField.ElapsedDays, ReportField.TotalDays)
           )
         ),
         "UTF-8"
@@ -149,7 +150,7 @@ class ReportSpec extends BaseSpec {
           "&team=4,5" +
           "&min_date=-1000000000-01-01T00:00:00Z" +
           "&max_date=+1000000000-12-31T23:59:59.999999999Z" +
-          "&fields=reference,status,elapsed_days,total_days"
+          "&fields=reference,source,status,elapsed_days,total_days"
       )
     }
   }
