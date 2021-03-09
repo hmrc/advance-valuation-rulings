@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.bindingtariffclassification.model.reporting
 
+import cats.data.NonEmptySeq
 import java.time.Instant
 import uk.gov.hmrc.bindingtariffclassification.model._
 
@@ -53,7 +54,10 @@ case class DaysSinceField(override val fieldName: String, override val underlyin
     extends ReportField[Long](fieldName, underlyingField) {
   def withValue(value: Option[Long]): NumberResultField = NumberResultField(fieldName, value)
 }
-
+case class CoalesceField(override val fieldName: String, val fieldChoices: NonEmptySeq[String])
+  extends ReportField[String](fieldName, fieldChoices.head) {
+  def withValue(value: Option[String]): StringResultField = StringResultField(fieldName, value)
+}
 case class LiabilityStatusField(override val fieldName: String, override val underlyingField: String)
     extends ReportField[LiabilityStatus.Value](fieldName, underlyingField) {
   def withValue(value: Option[LiabilityStatus.Value]): LiabilityStatusResultField =
@@ -63,6 +67,8 @@ case class LiabilityStatusField(override val fieldName: String, override val und
 object ReportField {
   val Count           = NumberField("count", "count")
   val Reference       = StringField("reference", "reference")
+  val Description   = StringField("description", "application.detailedDescription")
+  val CaseSource    = CoalesceField("source", NonEmptySeq.of("application.correspondenceStarter", ("application.caseType")))
   val Status          = StatusField("status", "status")
   val CaseType        = CaseTypeField("case_type", "application.type")
   val Chapter         = ChapterField("chapter", "decision.bindingCommodityCode")
@@ -81,6 +87,8 @@ object ReportField {
   val fields: Map[String, ReportField[_]] = List(
     Count,
     Reference,
+    Description,
+    CaseSource,
     Status,
     CaseType,
     Chapter,
