@@ -1037,6 +1037,21 @@ class CaseRepositorySpec
     val nonLiveLiabilities = List(c17)
     val atarCases          = List(c1, c2, c3)
 
+    val c18 = aCase(createCase(createMiscApplication))(
+      withReference("18"),
+      withQueue("3"),
+      withActiveDaysElapsed(7),
+      withReferredDaysElapsed(6),
+    )
+
+    val c19 = aCase(createCase(createCorrespondenceApplication))(
+      withReference("19"),
+      withQueue("4"),
+      withActiveDaysElapsed(12),
+      withReferredDaysElapsed(0),
+    )
+    val corresMiscCases = List(c18, c19)
+
     "group by pseudo status" in {
       given(config.clock) willReturn Clock.fixed(Instant.parse("2021-02-01T09:00:00.00Z"), ZoneOffset.UTC)
 
@@ -1452,6 +1467,50 @@ class CaseRepositorySpec
           groupKey  = NonEmptySeq.one(ReportField.TotalDays.withValue(Some(31))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(5))),
           cases     = List(c5, c6)
+        )
+      )
+    }
+
+    "group by case source" in {
+      await(corresMiscCases.traverse(repository.insert))
+      collectionSize shouldBe 2
+
+      val report = SummaryReport(
+        groupBy   = NonEmptySeq.one(ReportField.CaseSource),
+        sortBy    = ReportField.ElapsedDays,
+        sortOrder = SortDirection.DESCENDING,
+        maxFields = Seq(ReportField.ElapsedDays)
+      )
+
+      val paged = await(repository.summaryReport(report, Pagination()))
+
+      paged.results shouldBe Seq(
+        SimpleResultGroup(
+          count     = 1,
+          groupKey  = NonEmptySeq.one(ReportField.CaseSource.withValue(None)),
+          maxFields = List(ReportField.ElapsedDays.withValue(Some(12)))
+        ),
+        SimpleResultGroup(
+          count     = 1,
+          groupKey  = NonEmptySeq.one(ReportField.CaseSource.withValue(Some("Harmonised systems"))),
+          maxFields = List(ReportField.ElapsedDays.withValue(Some(7)))
+        )
+      )
+
+      val pagedWithCases = await(repository.summaryReport(report.copy(includeCases = true), Pagination()))
+
+      pagedWithCases.results shouldBe Seq(
+        CaseResultGroup(
+          count     = 1,
+          groupKey  = NonEmptySeq.one(ReportField.CaseSource.withValue(None)),
+          maxFields = List(ReportField.ElapsedDays.withValue(Some(12))),
+          cases = List(c19)
+        ),
+        CaseResultGroup(
+          count     = 1,
+          groupKey  = NonEmptySeq.one(ReportField.CaseSource.withValue(Some("Harmonised systems"))),
+          maxFields = List(ReportField.ElapsedDays.withValue(Some(7))),
+          cases = List(c18)
         )
       )
     }
