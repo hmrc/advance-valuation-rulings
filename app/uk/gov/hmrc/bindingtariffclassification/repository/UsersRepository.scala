@@ -81,7 +81,7 @@ class UsersMongoRepository @Inject()(mongoDbProvider: MongoDbProvider)
     Json.obj("id" -> id)
 
   private def selector(search: UserSearch): JsObject = {
-    val queries = Seq[JsObject]()
+    val queries = Seq[JsObject](Json.obj("deleted" -> false))
       .++(search.role.map(r => Json.obj("role" -> in(r))))
       .++(
         search.team.map(t => Json.obj("memberOfTeams" -> mappingNoneOrSome(t)))
