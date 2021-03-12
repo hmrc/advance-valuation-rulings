@@ -44,10 +44,20 @@ class SearchMapper @Inject() (appConfig: AppConfig) extends Mapper {
         .filterNot(ids => ids.contains("some") && ids.contains("none"))
         .map("queueId"                    -> inArrayOrNone[String](_)),
       filter.assigneeId.map("assignee.id" -> mappingNoneOrSome(_)),
-      filter.traderName.map(traderName =>
+      filter.caseDetails.map(details =>
+      either(
+        "application.goodName"->contains(details),
+        "application.summary"->contains(details),
+        "application.detailedDescription"->contains(details),
+        "application.detailedDescription"->contains(details),
+        "application.name"->contains(details),
+      )),
+      filter.caseSource.map(source =>
         either(
-          "application.holder.businessName" -> contains(traderName),
-          "application.traderName"          -> contains(traderName)
+          "application.holder.businessName" -> contains(source),
+          "application.traderName"          -> contains(source),
+          "application.correspondenceStarter" ->contains(source),
+          "application.contactName" ->contains(source),
         )
       ),
       filter.minDecisionEnd.map("decision.effectiveEndDate"    -> greaterThan(_)(formatInstant)),
