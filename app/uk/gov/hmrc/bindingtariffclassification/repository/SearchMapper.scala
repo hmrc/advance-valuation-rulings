@@ -49,7 +49,6 @@ class SearchMapper @Inject() (appConfig: AppConfig) extends Mapper {
         "application.goodName"->contains(details),
         "application.summary"->contains(details),
         "application.detailedDescription"->contains(details),
-        "application.detailedDescription"->contains(details),
         "application.name"->contains(details),
       )),
       filter.caseSource.map(source =>

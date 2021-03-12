@@ -41,7 +41,7 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
         eori            = Some("eori-number"),
         assigneeId      = Some("valid_assignee"),
         statuses        = Some(Set(PseudoCaseStatus.NEW, PseudoCaseStatus.OPEN)),
-        traderName      = Some("trader_name"),
+        caseSource      = Some("case_source"),
         minDecisionEnd  = Some(Instant.EPOCH),
         commodityCode   = Some(12345.toString),
         decisionDetails = Some("strawberry"),
@@ -59,8 +59,10 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
         "$and" -> Json.arr(
           Json.obj(
             "$or" -> Json.arr(
-              Json.obj("application.holder.businessName" -> Json.obj("$regex" -> ".*trader_name.*", "$options" -> "i")),
-              Json.obj("application.traderName"          -> Json.obj("$regex" -> ".*trader_name.*", "$options" -> "i"))
+              Json.obj("application.holder.businessName" -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i")),
+              Json.obj("application.traderName"          -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i")),
+              Json.obj("application.correspondenceStarter"          -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i")),
+              Json.obj("application.contactName"          -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i")),
             )
           ),
           Json.obj(
@@ -181,12 +183,26 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
       )
     }
 
-    "filter by 'trader name'" in {
-      jsonMapper.filterBy(CaseFilter(traderName = Some("trader_name"))) shouldBe Json.obj(
+    "filter by 'case source'" in {
+      jsonMapper.filterBy(CaseFilter(caseSource = Some("case_source"))) shouldBe Json.obj(
         "$or" ->
           Json.arr(
-            Json.obj("application.holder.businessName" -> Json.obj("$regex" -> ".*trader_name.*", "$options" -> "i")),
-            Json.obj("application.traderName"          -> Json.obj("$regex" -> ".*trader_name.*", "$options" -> "i"))
+            Json.obj("application.holder.businessName" -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i")),
+            Json.obj("application.traderName"          -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i")),
+            Json.obj("application.correspondenceStarter"          -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i")),
+            Json.obj("application.contactName"          -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i")),
+          )
+      )
+    }
+
+    "filter by 'case details'" in {
+      jsonMapper.filterBy(CaseFilter(caseDetails = Some("case_details"))) shouldBe Json.obj(
+        "$or" ->
+          Json.arr(
+            Json.obj("application.goodName" -> Json.obj("$regex" -> ".*case_details.*", "$options" -> "i")),
+            Json.obj("application.summary"          -> Json.obj("$regex" -> ".*case_details.*", "$options" -> "i")),
+            Json.obj("application.detailedDescription"          -> Json.obj("$regex" -> ".*case_details.*", "$options" -> "i")),
+            Json.obj("application.name"          -> Json.obj("$regex" -> ".*case_details.*", "$options" -> "i")),
           )
       )
     }
