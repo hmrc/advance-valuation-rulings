@@ -798,7 +798,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       storeCases(c1, c2, c5)
 
-      val result = Http(s"$serviceUrl/cases?trader_name=John%20Lewis")
+      val result = Http(s"$serviceUrl/cases?case_source=John%20Lewis")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
@@ -810,7 +810,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       storeCases(c1)
 
-      val result = Http(s"$serviceUrl/cases?trader_name=john%20Lewis")
+      val result = Http(s"$serviceUrl/cases?case_source=john%20Lewis")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
@@ -822,7 +822,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       storeCases(c1)
 
-      val result = Http(s"$serviceUrl/cases?trader_name=Lewis")
+      val result = Http(s"$serviceUrl/cases?case_source=Lewis")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
@@ -834,7 +834,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       storeCases(c1)
 
-      val result = Http(s"$serviceUrl/cases?trader_name=Albert")
+      val result = Http(s"$serviceUrl/cases?case_source=Albert")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 

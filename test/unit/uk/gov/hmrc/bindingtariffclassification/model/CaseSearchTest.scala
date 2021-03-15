@@ -32,7 +32,7 @@ class CaseSearchTest extends UnitSpec {
   private val filter = CaseFilter(
     reference       = Some(Set("id1", "id2")),
     applicationType = Some(Set(ApplicationType.BTI, ApplicationType.LIABILITY_ORDER)),
-    traderName      = Some("trader-name"),
+    caseSource      = Some("trader-name"),
     queueId         = Some(Set("queue-id")),
     eori            = Some("eori-number"),
     assigneeId      = Some("assignee-id"),
@@ -47,7 +47,7 @@ class CaseSearchTest extends UnitSpec {
   private val params: Map[String, Seq[String]] = Map(
     "reference"        -> Seq("id1", "id2"),
     "application_type" -> Seq("BTI", "LIABILITY_ORDER"),
-    "trader_name"      -> Seq("trader-name"),
+    "case_source"      -> Seq("trader-name"),
     "queue_id"         -> Seq("queue-id"),
     "eori"             -> Seq("eori-number"),
     "assignee_id"      -> Seq("assignee-id"),
@@ -62,7 +62,7 @@ class CaseSearchTest extends UnitSpec {
   private val emptyParams: Map[String, Seq[String]] = Map(
     "reference"        -> Seq(""),
     "application_type" -> Seq(""),
-    "trader_name"      -> Seq(""),
+    "case_source"      -> Seq(""),
     "queue_id"         -> Seq(""),
     "eori"             -> Seq(""),
     "assignee_id"      -> Seq(""),
@@ -93,7 +93,7 @@ class CaseSearchTest extends UnitSpec {
           "&assignee_id=assignee-id" +
           "&status=NEW" +
           "&status=OPEN" +
-          "&trader_name=trader-name" +
+          "&case_source=trader-name" +
           "&min_decision_end=1970-01-01T00:00:00Z" +
           "&decision_details=decision-details" +
           "&keyword=BIKE" +
@@ -137,7 +137,7 @@ class CaseSearchTest extends UnitSpec {
           "&assignee_id=assignee-id" +
           "&status=NEW" +
           "&status=OPEN" +
-          "&trader_name=trader-name" +
+          "&case_source=trader-name" +
           "&min_decision_end=1970-01-01T00:00:00Z" +
           "&decision_details=decision-details" +
           "&keyword=BIKE" +

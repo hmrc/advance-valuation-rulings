@@ -29,7 +29,8 @@ case class CaseFilter(
   eori: Option[String]                          = None,
   assigneeId: Option[String]                    = None,
   statuses: Option[Set[PseudoCaseStatus]]       = None,
-  traderName: Option[String]                    = None,
+  caseDetails: Option[String] = None,
+  caseSource: Option[String]                    = None,
   minDecisionEnd: Option[Instant]               = None,
   commodityCode: Option[String]                 = None,
   decisionDetails: Option[String]               = None,
@@ -45,7 +46,8 @@ object CaseFilter {
   private val eoriKey            = "eori"
   private val assigneeIdKey      = "assignee_id"
   private val statusKey          = "status"
-  private val traderNameKey      = "trader_name"
+  private val caseSourceKey      = "case_source"
+  private val caseDetailseKey      = "case_details"
   private val minDecisionEndKey  = "min_decision_end"
   private val commodityCodeKey   = "commodity_code"
   private val decisionDetailsKey = "decision_details"
@@ -71,7 +73,8 @@ object CaseFilter {
             eori            = param(eoriKey),
             assigneeId      = param(assigneeIdKey),
             statuses        = params(statusKey).map(_.map(bindPseudoCaseStatus).filter(_.isDefined).map(_.get)),
-            traderName      = param(traderNameKey),
+            caseSource      = param(caseSourceKey),
+            caseDetails      = param(caseDetailseKey),
             minDecisionEnd  = param(minDecisionEndKey).flatMap(bindInstant),
             commodityCode   = param(commodityCodeKey),
             decisionDetails = param(decisionDetailsKey),
@@ -90,7 +93,8 @@ object CaseFilter {
         filter.eori.map(stringBinder.unbind(eoriKey, _)),
         filter.assigneeId.map(stringBinder.unbind(assigneeIdKey, _)),
         filter.statuses.map(_.map(s => stringBinder.unbind(statusKey, s.toString)).mkString("&")),
-        filter.traderName.map(stringBinder.unbind(traderNameKey, _)),
+        filter.caseSource.map(stringBinder.unbind(caseSourceKey, _)),
+        filter.caseDetails.map(stringBinder.unbind(caseDetailseKey, _)),
         filter.minDecisionEnd.map(i => stringBinder.unbind(minDecisionEndKey, i.toString)),
         filter.commodityCode.map(stringBinder.unbind(commodityCodeKey, _)),
         filter.decisionDetails.map(stringBinder.unbind(decisionDetailsKey, _)),

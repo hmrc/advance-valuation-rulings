@@ -571,27 +571,27 @@ class CaseRepositorySpec
     "return an empty sequence when there are no matches" in {
       store(case1, caseX)
 
-      await(repository.get(CaseSearch(CaseFilter(traderName = Some("Alfred"))), Pagination())).results shouldBe Seq.empty
+      await(repository.get(CaseSearch(CaseFilter(caseSource = Some("Alfred"))), Pagination())).results shouldBe Seq.empty
     }
 
     "return the expected document when there is one match" in {
       store(case1, caseX)
 
       // full name search
-      await(repository.get(CaseSearch(CaseFilter(traderName = Some("Novak Djokovic"))), Pagination())).results shouldBe Seq(
+      await(repository.get(CaseSearch(CaseFilter(caseSource = Some("Novak Djokovic"))), Pagination())).results shouldBe Seq(
         caseX
       )
 
       // substring search
-      await(repository.get(CaseSearch(CaseFilter(traderName = Some("Novak"))), Pagination())).results shouldBe Seq(
+      await(repository.get(CaseSearch(CaseFilter(caseSource = Some("Novak"))), Pagination())).results shouldBe Seq(
         caseX
       )
-      await(repository.get(CaseSearch(CaseFilter(traderName = Some("Djokovic"))), Pagination())).results shouldBe Seq(
+      await(repository.get(CaseSearch(CaseFilter(caseSource = Some("Djokovic"))), Pagination())).results shouldBe Seq(
         caseX
       )
 
       // case-insensitive
-      await(repository.get(CaseSearch(CaseFilter(traderName = Some("novak djokovic"))), Pagination())).results shouldBe Seq(
+      await(repository.get(CaseSearch(CaseFilter(caseSource = Some("novak djokovic"))), Pagination())).results shouldBe Seq(
         caseX
       )
     }
@@ -601,7 +601,7 @@ class CaseRepositorySpec
       val caseX2    = createCase(app                        = novakApp2)
       store(caseX, caseX2)
 
-      val search = CaseSearch(CaseFilter(traderName = Some("Novak Djokovic")))
+      val search = CaseSearch(CaseFilter(caseSource = Some("Novak Djokovic")))
       await(repository.get(search, Pagination())).results shouldBe Seq(caseX, caseX2)
     }
   }
