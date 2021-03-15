@@ -16,13 +16,8 @@
 
 package uk.gov.hmrc.bindingtariffclassification.model
 
-import uk.gov.hmrc.bindingtariffclassification.model.SampleReturn.SampleReturn
-import uk.gov.hmrc.bindingtariffclassification.model.SampleSend.SampleSend
-import uk.gov.hmrc.bindingtariffclassification.model.SampleStatus.SampleStatus
+object SampleSend extends Enumeration {
+  type SampleSend = Value
 
-case class Sample(
-  status: Option[SampleStatus]       = None,
-  requestedBy: Option[Operator]      = None,
-  returnStatus: Option[SampleReturn] = None,
-  whoIsSending: Option[SampleSend]   = None
-)
+  val TRADER, AGENT, COMPLIANCE_OR_PORT_OFFICER, UNKNOWN = Value
+}

@@ -18,6 +18,7 @@ package uk.gov.hmrc.bindingtariffclassification.model
 
 import java.time.Instant
 import java.util.UUID
+
 import uk.gov.hmrc.bindingtariffclassification.model.AppealStatus.AppealStatus
 import uk.gov.hmrc.bindingtariffclassification.model.AppealType.AppealType
 import uk.gov.hmrc.bindingtariffclassification.model.CancelReason.CancelReason
@@ -26,6 +27,7 @@ import uk.gov.hmrc.bindingtariffclassification.model.EventType.EventType
 import uk.gov.hmrc.bindingtariffclassification.model.ReferralReason.ReferralReason
 import uk.gov.hmrc.bindingtariffclassification.model.RejectReason.RejectReason
 import uk.gov.hmrc.bindingtariffclassification.model.SampleReturn.SampleReturn
+import uk.gov.hmrc.bindingtariffclassification.model.SampleSend.SampleSend
 import uk.gov.hmrc.bindingtariffclassification.model.SampleStatus.SampleStatus
 
 case class Event(
@@ -177,6 +179,14 @@ case class SampleReturnChange(
   override val `type`: EventType.Value = EventType.SAMPLE_RETURN_CHANGE
 }
 
+case class SampleSendChange(
+  override val from: Option[SampleSend],
+  override val to: Option[SampleSend],
+  override val comment: Option[String] = None
+) extends FieldChange[Option[SampleSend]] {
+  override val `type`: EventType.Value = EventType.SAMPLE_SEND_CHANGE
+}
+
 case class ExpertAdviceReceived(
   comment: String
 ) extends Details {
@@ -198,6 +208,7 @@ object EventType extends Enumeration {
   val NOTE                       = Value
   val SAMPLE_STATUS_CHANGE       = Value
   val SAMPLE_RETURN_CHANGE       = Value
+  val SAMPLE_SEND_CHANGE         = Value
   val CASE_CREATED               = Value
   val EXPERT_ADVICE_RECEIVED     = Value
 }
