@@ -49,14 +49,14 @@ class SearchMapper @Inject() (appConfig: AppConfig) extends Mapper {
         "application.goodName"->contains(details),
         "application.summary"->contains(details),
         "application.detailedDescription"->contains(details),
-        "application.name"->contains(details),
+        "application.name"->contains(details)
       )),
       filter.caseSource.map(source =>
         either(
           "application.holder.businessName" -> contains(source),
           "application.traderName"          -> contains(source),
           "application.correspondenceStarter" ->contains(source),
-          "application.contactName" ->contains(source),
+          "application.contactName" ->contains(source)
         )
       ),
       filter.minDecisionEnd.map("decision.effectiveEndDate"    -> greaterThan(_)(formatInstant)),
