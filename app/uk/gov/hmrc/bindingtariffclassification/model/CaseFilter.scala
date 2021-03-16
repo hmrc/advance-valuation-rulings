@@ -29,8 +29,9 @@ case class CaseFilter(
   eori: Option[String]                          = None,
   assigneeId: Option[String]                    = None,
   statuses: Option[Set[PseudoCaseStatus]]       = None,
-  caseDetails: Option[String] = None,
+  caseDetails: Option[String]                   = None,
   caseSource: Option[String]                    = None,
+  minDecisionStart: Option[Instant]             = None,
   minDecisionEnd: Option[Instant]               = None,
   commodityCode: Option[String]                 = None,
   decisionDetails: Option[String]               = None,
@@ -40,19 +41,20 @@ case class CaseFilter(
 
 object CaseFilter {
 
-  private val referenceKey       = "reference"
-  private val applicationTypeKey = "application_type"
-  private val queueIdKey         = "queue_id"
-  private val eoriKey            = "eori"
-  private val assigneeIdKey      = "assignee_id"
-  private val statusKey          = "status"
-  private val caseSourceKey      = "case_source"
-  private val caseDetailseKey      = "case_details"
-  private val minDecisionEndKey  = "min_decision_end"
-  private val commodityCodeKey   = "commodity_code"
-  private val decisionDetailsKey = "decision_details"
-  private val keywordKey         = "keyword"
-  private val migratedKey        = "migrated"
+  private val referenceKey        = "reference"
+  private val applicationTypeKey  = "application_type"
+  private val queueIdKey          = "queue_id"
+  private val eoriKey             = "eori"
+  private val assigneeIdKey       = "assignee_id"
+  private val statusKey           = "status"
+  private val caseSourceKey       = "case_source"
+  private val caseDetailseKey     = "case_details"
+  private val minDecisionStartKey = "min_decision_start"
+  private val minDecisionEndKey   = "min_decision_end"
+  private val commodityCodeKey    = "commodity_code"
+  private val decisionDetailsKey  = "decision_details"
+  private val keywordKey          = "keyword"
+  private val migratedKey         = "migrated"
 
   implicit def bindable(
     implicit
@@ -67,19 +69,20 @@ object CaseFilter {
       Some(
         Right(
           CaseFilter(
-            reference       = params(referenceKey),
-            applicationType = params(applicationTypeKey).map(_.map(bindApplicationType).filter(_.isDefined).map(_.get)),
-            queueId         = params(queueIdKey),
-            eori            = param(eoriKey),
-            assigneeId      = param(assigneeIdKey),
-            statuses        = params(statusKey).map(_.map(bindPseudoCaseStatus).filter(_.isDefined).map(_.get)),
-            caseSource      = param(caseSourceKey),
+            reference        = params(referenceKey),
+            applicationType  = params(applicationTypeKey).map(_.map(bindApplicationType).filter(_.isDefined).map(_.get)),
+            queueId          = params(queueIdKey),
+            eori             = param(eoriKey),
+            assigneeId       = param(assigneeIdKey),
+            statuses         = params(statusKey).map(_.map(bindPseudoCaseStatus).filter(_.isDefined).map(_.get)),
+            caseSource       = param(caseSourceKey),
             caseDetails      = param(caseDetailseKey),
-            minDecisionEnd  = param(minDecisionEndKey).flatMap(bindInstant),
-            commodityCode   = param(commodityCodeKey),
-            decisionDetails = param(decisionDetailsKey),
-            keywords        = params(keywordKey).map(_.map(_.toUpperCase)),
-            migrated        = boolBinder.bind(migratedKey, requestParams).flatMap(_.toOption)
+            minDecisionStart = param(minDecisionStartKey).flatMap(bindInstant),
+            minDecisionEnd   = param(minDecisionEndKey).flatMap(bindInstant),
+            commodityCode    = param(commodityCodeKey),
+            decisionDetails  = param(decisionDetailsKey),
+            keywords         = params(keywordKey).map(_.map(_.toUpperCase)),
+            migrated         = boolBinder.bind(migratedKey, requestParams).flatMap(_.toOption)
           )
         )
       )

@@ -35,17 +35,18 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
     "filter by all fields " in {
 
       val filter = CaseFilter(
-        reference       = Some(Set("id1", "id2")),
-        applicationType = Some(Set(ApplicationType.BTI, ApplicationType.LIABILITY_ORDER)),
-        queueId         = Some(Set("valid_queue")),
-        eori            = Some("eori-number"),
-        assigneeId      = Some("valid_assignee"),
-        statuses        = Some(Set(PseudoCaseStatus.NEW, PseudoCaseStatus.OPEN)),
-        caseSource      = Some("case_source"),
-        minDecisionEnd  = Some(Instant.EPOCH),
-        commodityCode   = Some(12345.toString),
-        decisionDetails = Some("strawberry"),
-        keywords        = Some(Set("MTB", "BIKE"))
+        reference        = Some(Set("id1", "id2")),
+        applicationType  = Some(Set(ApplicationType.BTI, ApplicationType.LIABILITY_ORDER)),
+        queueId          = Some(Set("valid_queue")),
+        eori             = Some("eori-number"),
+        assigneeId       = Some("valid_assignee"),
+        statuses         = Some(Set(PseudoCaseStatus.NEW, PseudoCaseStatus.OPEN)),
+        caseSource       = Some("case_source"),
+        minDecisionStart = Some(Instant.EPOCH),
+        minDecisionEnd   = Some(Instant.EPOCH),
+        commodityCode    = Some(12345.toString),
+        decisionDetails  = Some("strawberry"),
+        keywords         = Some(Set("MTB", "BIKE"))
       )
 
       jsonMapper.filterBy(filter) shouldBe Json.obj(
@@ -54,6 +55,7 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
         "queueId"                       -> Json.obj("$in" -> Json.arr("valid_queue")),
         "assignee.id"                   -> "valid_assignee",
         "status"                        -> Json.obj("$in" -> Json.arr("NEW", "OPEN")),
+        "decision.effectiveStartDate"   -> Json.obj("$gte" -> Json.obj("$date" -> 0)),
         "decision.effectiveEndDate"     -> Json.obj("$gte" -> Json.obj("$date" -> 0)),
         "decision.bindingCommodityCode" -> Json.obj("$regex" -> "^12345\\d*"),
         "$and" -> Json.arr(
@@ -61,8 +63,10 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
             "$or" -> Json.arr(
               Json.obj("application.holder.businessName" -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i")),
               Json.obj("application.traderName"          -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i")),
-              Json.obj("application.correspondenceStarter"          -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i")),
-              Json.obj("application.contactName"          -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i")),
+              Json.obj(
+                "application.correspondenceStarter" -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i")
+              ),
+              Json.obj("application.contactName" -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i"))
             )
           ),
           Json.obj(
@@ -187,10 +191,10 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
       jsonMapper.filterBy(CaseFilter(caseSource = Some("case_source"))) shouldBe Json.obj(
         "$or" ->
           Json.arr(
-            Json.obj("application.holder.businessName" -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i")),
-            Json.obj("application.traderName"          -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i")),
-            Json.obj("application.correspondenceStarter"          -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i")),
-            Json.obj("application.contactName"          -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i")),
+            Json.obj("application.holder.businessName"   -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i")),
+            Json.obj("application.traderName"            -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i")),
+            Json.obj("application.correspondenceStarter" -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i")),
+            Json.obj("application.contactName"           -> Json.obj("$regex" -> ".*case_source.*", "$options" -> "i"))
           )
       )
     }
@@ -199,14 +203,19 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
       jsonMapper.filterBy(CaseFilter(caseDetails = Some("case_details"))) shouldBe Json.obj(
         "$or" ->
           Json.arr(
-            Json.obj("application.goodName" -> Json.obj("$regex" -> ".*case_details.*", "$options" -> "i")),
-            Json.obj("application.summary"          -> Json.obj("$regex" -> ".*case_details.*", "$options" -> "i")),
-            Json.obj("application.detailedDescription"          -> Json.obj("$regex" -> ".*case_details.*", "$options" -> "i")),
-            Json.obj("application.name"          -> Json.obj("$regex" -> ".*case_details.*", "$options" -> "i")),
+            Json.obj("application.goodName"            -> Json.obj("$regex" -> ".*case_details.*", "$options" -> "i")),
+            Json.obj("application.summary"             -> Json.obj("$regex" -> ".*case_details.*", "$options" -> "i")),
+            Json.obj("application.detailedDescription" -> Json.obj("$regex" -> ".*case_details.*", "$options" -> "i")),
+            Json.obj("application.name"                -> Json.obj("$regex" -> ".*case_details.*", "$options" -> "i"))
           )
       )
     }
 
+    "filter by 'min decision start'" in {
+      jsonMapper.filterBy(CaseFilter(minDecisionStart = Some(Instant.EPOCH))) shouldBe Json.obj(
+        "decision.effectiveStartDate" -> Json.obj("$gte" -> Json.obj("$date" -> 0))
+      )
+    }
     "filter by 'min decision end'" in {
       jsonMapper.filterBy(CaseFilter(minDecisionEnd = Some(Instant.EPOCH))) shouldBe Json.obj(
         "decision.effectiveEndDate" -> Json.obj("$gte" -> Json.obj("$date" -> 0))
