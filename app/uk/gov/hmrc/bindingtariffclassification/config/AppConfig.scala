@@ -19,10 +19,8 @@ package uk.gov.hmrc.bindingtariffclassification.config
 import java.time.Clock
 import javax.inject._
 
-import cron4s.Cron
-import cron4s.expr.CronExpr
+import org.quartz.CronExpression
 import play.api.{Configuration, Logger}
-import scala.concurrent.duration._
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
@@ -34,9 +32,6 @@ class AppConfig @Inject() (
   private def configNotFoundError(key: String): Nothing =
     throw new RuntimeException(s"Could not find config key '$key'")
 
-  def getDuration(key: String): Duration =
-    configuration.getOptional[String](key).map(Duration.create).getOrElse(configNotFoundError(key))
-
   lazy val isTestMode: Boolean = getBooleanConfig("testMode")
 
   lazy val atarCaseReferenceOffset: Long  = configuration.get[Long]("atar-case-reference-offset")
@@ -45,18 +40,21 @@ class AppConfig @Inject() (
   lazy val clock: Clock = Clock.systemUTC()
 
   lazy val activeDaysElapsed: JobConfig = JobConfig(
+    "ActiveDaysElapsed",
     getBooleanConfig("scheduler.active-days-elapsed.enabled"),
-    Cron.unsafeParse(configuration.get[String]("scheduler.active-days-elapsed.schedule"))
+    new CronExpression(getString("scheduler.active-days-elapsed.schedule"))
   )
 
   lazy val referredDaysElapsed: JobConfig = JobConfig(
+    "ReferredDaysElapsed",
     getBooleanConfig("scheduler.referred-days-elapsed.enabled"),
-    Cron.unsafeParse(configuration.get[String]("scheduler.referred-days-elapsed.schedule"))
+    new CronExpression(getString("scheduler.referred-days-elapsed.schedule"))
   )
 
   lazy val fileStoreCleanup: JobConfig = JobConfig(
+    "FileStoreCleanup",
     getBooleanConfig("scheduler.filestore-cleanup.enabled"),
-    Cron.unsafeParse(configuration.get[String]("scheduler.filestore-cleanup.schedule"))
+    new CronExpression(getString("scheduler.filestore-cleanup.schedule"))
   )
 
   lazy val authorization: String = configuration.get[String]("auth.api-token")
@@ -74,7 +72,7 @@ class AppConfig @Inject() (
     configuration.getOptional[String](key).getOrElse(configNotFoundError(key))
 
   lazy val mongodbUri = configuration.get[String]("mongodb.uri")
-  lazy val appName = configuration.get[String]("appName")
+  lazy val appName    = configuration.get[String]("appName")
 
   lazy val mongoEncryption: MongoEncryption = {
     val encryptionEnabled = getBooleanConfig("mongodb.encryption.enabled")
@@ -95,4 +93,4 @@ class AppConfig @Inject() (
 
 case class MongoEncryption(enabled: Boolean = false, key: Option[String] = None)
 
-case class JobConfig(enabled: Boolean, schedule: CronExpr)
+case class JobConfig(name: String, enabled: Boolean, schedule: CronExpression)

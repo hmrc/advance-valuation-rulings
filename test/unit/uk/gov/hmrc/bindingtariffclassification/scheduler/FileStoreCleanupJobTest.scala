@@ -17,24 +17,25 @@
 package uk.gov.hmrc.bindingtariffclassification.scheduler
 
 import java.time._
-import java.time.temporal.TemporalAdjusters
 
-import cron4s.Cron
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, refEq}
 import org.mockito.BDDMockito.given
 import org.mockito.Mockito._
+import org.quartz.CronExpression
 import org.scalatest.BeforeAndAfterEach
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.{AppConfig, JobConfig}
 import uk.gov.hmrc.bindingtariffclassification.connector.FileStoreConnector
 import uk.gov.hmrc.bindingtariffclassification.model.filestore.{FileMetadata, FileSearch}
 import uk.gov.hmrc.bindingtariffclassification.model.{Paged, Pagination}
+import uk.gov.hmrc.bindingtariffclassification.repository.LockRepoProvider
 import uk.gov.hmrc.bindingtariffclassification.service.CaseService
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.lock.LockRepository
 
 import scala.concurrent.Future.{failed, successful}
-import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class FileStoreCleanupJobTest extends BaseSpec with BeforeAndAfterEach {
 
@@ -43,6 +44,13 @@ class FileStoreCleanupJobTest extends BaseSpec with BeforeAndAfterEach {
   private val appConfig          = mock[AppConfig]
   private val caseService        = mock[CaseService]
   private val fileStoreConnector = mock[FileStoreConnector]
+  private val lockRepo           = mock[LockRepository]
+  private val lockRepoProvider = new LockRepoProvider {
+    override def repo: () => LockRepository = () => lockRepo
+  }
+
+  private val cronExpr  = new CronExpression("0 0 14 ? * 7")
+  private val jobConfig = JobConfig("FileStoreCleanup", enabled = true, schedule = cronExpr)
 
   private final val emulatedFailure = new RuntimeException("Emulated failure.")
   private val fileSearch            = FileSearch(published = Some(true))
@@ -56,29 +64,24 @@ class FileStoreCleanupJobTest extends BaseSpec with BeforeAndAfterEach {
   override def beforeEach(): Unit = {
     super.beforeEach()
     given(appConfig.clock).willReturn(clock)
+    given(appConfig.fileStoreCleanup).willReturn(jobConfig)
     given(caseService.refreshAttachments()).willReturn(successful(()))
     given(caseService.attachmentExists(any[String])).willReturn(successful(false))
+    given(lockRepo.lock(any[String], any[String], any[org.joda.time.Duration])).willReturn(successful(true))
   }
 
   "Scheduled Job" should {
-
-    val runTime   = LocalTime.of(14, 0)
-    val jobConfig = JobConfig(enabled = true, schedule = Cron.unsafeParse("0 0 14 ? * 6"))
 
     "Configure 'Name'" in {
       newJob.name shouldBe "FileStoreCleanup"
     }
 
     "Configure 'enabled'" in {
-      given(appConfig.fileStoreCleanup).willReturn(jobConfig)
-
       newJob.enabled shouldBe true
     }
 
-    "Configure 'nextRunTime'" in {
-      given(appConfig.fileStoreCleanup).willReturn(jobConfig)
-
-      newJob.nextRunTime.get shouldBe fixedDate.`with`(runTime).`with`(TemporalAdjusters.next(DayOfWeek.SUNDAY))
+    "Configure 'schedule'" in {
+      newJob.schedule shouldBe cronExpr
     }
   }
 
@@ -133,7 +136,7 @@ class FileStoreCleanupJobTest extends BaseSpec with BeforeAndAfterEach {
   }
 
   private def newJob: FileStoreCleanupJob =
-    new FileStoreCleanupJob(appConfig, caseService, fileStoreConnector)
+    new FileStoreCleanupJob(caseService, fileStoreConnector, lockRepoProvider, appConfig)
 
   private def givenNoUploadedFiles(): Unit =
     given(fileStoreConnector.find(refEq(fileSearch), refEq(Pagination(page = 1)))(any[HeaderCarrier]))

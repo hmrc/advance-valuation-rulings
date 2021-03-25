@@ -18,7 +18,7 @@ package uk.gov.hmrc.bindingtariffclassification.config
 
 import java.time.ZoneOffset
 
-import cron4s.Cron
+import org.quartz.CronExpression
 import play.api.Configuration
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 
@@ -43,8 +43,9 @@ class AppConfigTest extends BaseSpec {
         "scheduler.active-days-elapsed.enabled"  -> "true",
         "scheduler.active-days-elapsed.schedule" -> "0 0 3 * * ?"
       ).activeDaysElapsed
-      config.enabled    shouldBe true
-      config.schedule   shouldBe Cron.unsafeParse("0 0 3 * * ?")
+
+      config.enabled  shouldBe true
+      config.schedule.getCronExpression shouldBe "0 0 3 * * ?"
     }
 
     "build 'ReferredDaysElapsedConfig'" in {
@@ -52,17 +53,17 @@ class AppConfigTest extends BaseSpec {
         "scheduler.referred-days-elapsed.enabled"  -> "true",
         "scheduler.referred-days-elapsed.schedule" -> "0 0 2 * * ?"
       ).referredDaysElapsed
-      config.enabled    shouldBe true
-      config.schedule   shouldBe Cron.unsafeParse("0 0 2 * * ?")
+      config.enabled  shouldBe true
+      config.schedule.getCronExpression shouldBe "0 0 2 * * ?"
     }
 
     "build 'fileStoreCleanupConfig'" in {
       val config = configWith(
         "scheduler.filestore-cleanup.enabled"  -> "true",
-        "scheduler.filestore-cleanup.schedule" -> "0 0 1 ? * 0"
+        "scheduler.filestore-cleanup.schedule" -> "0 0 1 ? * 1"
       ).fileStoreCleanup
-      config.enabled    shouldBe true
-      config.schedule   shouldBe Cron.unsafeParse("0 0 1 ? * 0")
+      config.enabled  shouldBe true
+      config.schedule.getCronExpression shouldBe "0 0 1 ? * 1"
     }
 
     "build 'fileStoreUrl'" in {
@@ -123,16 +124,5 @@ class AppConfigTest extends BaseSpec {
       configWith("atar-case-reference-offset"  -> "10").atarCaseReferenceOffset  shouldBe 10
       configWith("other-case-reference-offset" -> "20").otherCaseReferenceOffset shouldBe 20
     }
-
-    "throw and exception when key is missing for duration" in {
-      val keyToPass = "run-time"
-      val caught = intercept[RuntimeException] {
-        configWith().getDuration(keyToPass)
-      }
-
-      caught.getMessage shouldBe s"Could not find config key '$keyToPass'"
-    }
-
   }
-
 }

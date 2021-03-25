@@ -18,27 +18,28 @@ package uk.gov.hmrc.bindingtariffclassification.scheduler
 
 import java.time._
 
-import cron4s.Cron
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers._
 import org.mockito.BDDMockito.given
 import org.mockito.Mockito._
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
+import org.quartz.CronExpression
 import org.scalatest.BeforeAndAfterEach
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.{AppConfig, JobConfig}
 import uk.gov.hmrc.bindingtariffclassification.connector.BankHolidaysConnector
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model._
+import uk.gov.hmrc.bindingtariffclassification.repository.LockRepoProvider
 import uk.gov.hmrc.bindingtariffclassification.service.{CaseService, EventService}
 import uk.gov.hmrc.bindingtariffclassification.sort.CaseSortField
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.lock.LockRepository
 import util.CaseData
 import util.EventData.createCaseStatusChangeEventDetails
 
 import scala.concurrent.Future
-import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
@@ -49,6 +50,16 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
   private val fixedDate             = ZonedDateTime.of(2021, 2, 15, 12, 0, 0, 0, ZoneOffset.UTC)
   private val clock                 = Clock.fixed(fixedDate.toInstant, ZoneOffset.UTC)
   private val appConfig             = mock[AppConfig]
+  private val lockRepo              = mock[LockRepository]
+  private val lockRepoProvider = new LockRepoProvider {
+    override def repo: () => LockRepository = () => lockRepo
+  }
+
+  private val cronExpr = new CronExpression("0 0 14 * * ?")
+
+  private val jobConfig =
+    JobConfig(name = "ReferredDaysElapsed", enabled = true, schedule = cronExpr)
+
   private val caseSearch = CaseSearch(
     filter = CaseFilter(statuses = Some(Set(PseudoCaseStatus.REFERRED, PseudoCaseStatus.SUSPENDED))),
     sort   = Some(CaseSort(Set(CaseSortField.REFERENCE)))
@@ -61,27 +72,22 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
 
   override protected def beforeEach(): Unit = {
     given(appConfig.clock).willReturn(clock)
+    given(appConfig.referredDaysElapsed).willReturn(jobConfig)
+    given(lockRepo.lock(any[String], any[String], any[org.joda.time.Duration])).willReturn(Future.successful(true))
   }
 
   "Scheduled Job" should {
-
-    val runTime   = LocalTime.of(14, 0)
-    val jobConfig = JobConfig(enabled = true, schedule = Cron.unsafeParse("0 0 14 * * ?"))
 
     "Configure 'Name'" in {
       newJob.name shouldBe "ReferredDaysElapsed"
     }
 
     "Configure 'enabled'" in {
-      given(appConfig.referredDaysElapsed).willReturn(jobConfig)
-
       newJob.enabled shouldBe true
     }
 
     "Configure 'nextRunTime'" in {
-      given(appConfig.referredDaysElapsed).willReturn(jobConfig)
-
-      newJob.nextRunTime.get shouldBe fixedDate.`with`(runTime)
+      newJob.schedule shouldBe cronExpr
     }
   }
 
@@ -365,7 +371,7 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
   }
 
   private def newJob: ReferredDaysElapsedJob =
-    new ReferredDaysElapsedJob(appConfig, caseService, eventService, bankHolidaysConnector)
+    new ReferredDaysElapsedJob(caseService, eventService, bankHolidaysConnector, lockRepoProvider, appConfig)
 
   private def givenABankHolidayOn(date: String*): Unit =
     when(bankHolidaysConnector.get()(any[HeaderCarrier])).thenReturn(date.map(LocalDate.parse).toSet)

@@ -37,15 +37,15 @@ class ReferredDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
   override lazy val port   = 14683
   protected val serviceUrl = s"http://localhost:$port"
 
-  private val injector = new GuiceApplicationBuilder()
+  override lazy val app = new GuiceApplicationBuilder()
     .bindings(bind[AppConfig].to[AppConfigWithAFixedDate])
     .disable[com.kenshoo.play.metrics.PlayModule]
     .configure("metrics.enabled" -> false)
     .configure("mongodb.uri" -> "mongodb://localhost:27017/test-ClassificationMongoRepositoryTest")
     .overrides(bind[Metrics].toInstance(new TestMetrics))
-    .injector()
+    .build()
 
-  private val job: ReferredDaysElapsedJob = injector.instanceOf[ReferredDaysElapsedJob]
+  private val job: ReferredDaysElapsedJob = app.injector.instanceOf[ReferredDaysElapsedJob]
 
   feature("Referred Days Elapsed Job") {
     scenario("Calculates elapsed days for REFERRED cases") {

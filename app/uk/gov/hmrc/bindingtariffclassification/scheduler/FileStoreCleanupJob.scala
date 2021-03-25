@@ -16,20 +16,20 @@
 
 package uk.gov.hmrc.bindingtariffclassification.scheduler
 
-import java.time._
 import javax.inject.{Inject, Singleton}
 
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
-import cron4s._
-import cron4s.lib.javatime._
+import org.joda.time
 import uk.gov.hmrc.bindingtariffclassification.common.Logging
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.connector.FileStoreConnector
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.model.filestore.{FileMetadata, FileSearch}
+import uk.gov.hmrc.bindingtariffclassification.repository.LockRepoProvider
 import uk.gov.hmrc.bindingtariffclassification.service.CaseService
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.lock.{LockKeeper, LockRepository}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.Future._
@@ -37,31 +37,25 @@ import scala.util.control.NonFatal
 
 @Singleton
 class FileStoreCleanupJob @Inject() (
-  appConfig: AppConfig,
   caseService: CaseService,
-  fileStoreConnector: FileStoreConnector
-)(implicit mat: Materializer)
+  fileStoreConnector: FileStoreConnector,
+  lockRepo: LockRepoProvider,
+  implicit val appConfig: AppConfig
+)(implicit ec: ExecutionContext, mat: Materializer)
     extends ScheduledJob
+    with LockKeeper
     with Logging {
 
-  private implicit val ec: ExecutionContext = mat.executionContext
+  override val jobConfig = appConfig.fileStoreCleanup
+
+  override val repo: LockRepository                 = lockRepo.repo()
+  override val lockId: String                       = "filestore_cleanup"
+  override val forceLockReleaseAfter: time.Duration = time.Duration.standardMinutes(5)
+
   private implicit val carrier: HeaderCarrier = HeaderCarrier()
-  private lazy val jobConfig                  = appConfig.fileStoreCleanup
   private lazy val criteria = FileSearch(
     published = Some(true)
   )
-
-  override val name: String = "FileStoreCleanup"
-
-  override def enabled: Boolean = jobConfig.enabled
-
-  override def schedule: CronExpr = jobConfig.schedule
-
-  override def nextRunTime: Option[ZonedDateTime] =
-    jobConfig.schedule.next(
-      appConfig.clock.instant()
-        .atZone(appConfig.clock.getZone())
-    )
 
   override def execute(): Future[Unit] =
     caseService.refreshAttachments().flatMap { _ =>
