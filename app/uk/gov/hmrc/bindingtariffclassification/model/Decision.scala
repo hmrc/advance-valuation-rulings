@@ -18,6 +18,7 @@ package uk.gov.hmrc.bindingtariffclassification.model
 
 import java.time.Instant
 
+
 case class Decision(
   bindingCommodityCode: String,
   effectiveStartDate: Option[Instant] = None,
@@ -30,5 +31,7 @@ case class Decision(
   appeal: Seq[Appeal]                          = Seq.empty,
   cancellation: Option[Cancellation]           = None,
   explanation: Option[String]                  = None,
-  decisionPdf: Option[Attachment]              = None
-)
+  decisionPdf: Option[Attachment]              = None,
+  letterPdf: Option[Attachment]                = None
+
+                   )
