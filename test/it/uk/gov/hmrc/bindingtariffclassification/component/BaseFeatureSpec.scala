@@ -22,11 +22,14 @@ import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
+import uk.gov.hmrc.lock.LockRepository
 import uk.gov.hmrc.bindingtariffclassification.model.{Case, Event, Sequence}
-import uk.gov.hmrc.bindingtariffclassification.repository.{CaseMongoRepository, EventMongoRepository, SchedulerLockMongoRepository, SequenceMongoRepository}
+import uk.gov.hmrc.bindingtariffclassification.repository.{CaseMongoRepository, EventMongoRepository, SequenceMongoRepository}
+import uk.gov.hmrc.bindingtariffclassification.scheduler.ScheduledJobs
 import util.TestMetrics
 
 import scala.concurrent.Await.result
+import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
@@ -52,21 +55,21 @@ abstract class BaseFeatureSpec
   private lazy val caseStore: CaseMongoRepository         = app.injector.instanceOf[CaseMongoRepository]
   private lazy val eventStore: EventMongoRepository       = app.injector.instanceOf[EventMongoRepository]
   private lazy val sequenceStore: SequenceMongoRepository = app.injector.instanceOf[SequenceMongoRepository]
-  private lazy val schedulerLockStore: SchedulerLockMongoRepository =
-    app.injector.instanceOf[SchedulerLockMongoRepository]
+  private lazy val scheduledJobStores: Iterable[LockRepository] =
+    app.injector.instanceOf[ScheduledJobs].jobs.map(_.repo)
 
   private def dropStores(): Unit = {
     result(caseStore.drop, timeout)
     result(eventStore.drop, timeout)
     result(sequenceStore.drop, timeout)
-    result(schedulerLockStore.drop, timeout)
+    result(Future.traverse(scheduledJobStores)(_.drop), timeout)
   }
 
   private def ensureStoresIndexes(): Unit = {
     result(caseStore.ensureIndexes, timeout)
     result(eventStore.ensureIndexes, timeout)
     result(sequenceStore.ensureIndexes, timeout)
-    result(schedulerLockStore.ensureIndexes, timeout)
+    result(Future.traverse(scheduledJobStores)(_.ensureIndexes), timeout)
   }
 
   override protected def beforeEach(): Unit = {
@@ -97,9 +100,6 @@ abstract class BaseFeatureSpec
 
   protected def eventStoreSize: Int =
     result(eventStore.mongoCollection.count(), timeout)
-
-  protected def schedulerLockStoreSize: Int =
-    result(schedulerLockStore.mongoCollection.count(), timeout)
 
   protected def getCase(ref: String): Option[Case] =
     // for simplicity decryption is not tested here (because disabled in application.conf)

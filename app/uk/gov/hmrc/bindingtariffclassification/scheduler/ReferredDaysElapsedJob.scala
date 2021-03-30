@@ -20,49 +20,45 @@ import java.time._
 import java.time.temporal.ChronoUnit
 import javax.inject.{Inject, Singleton}
 
-import cron4s._
-import cron4s.lib.javatime._
+import org.joda.time
 import uk.gov.hmrc.bindingtariffclassification.common.Logging
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.connector.BankHolidaysConnector
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model._
+import uk.gov.hmrc.bindingtariffclassification.repository.LockRepoProvider
 import uk.gov.hmrc.bindingtariffclassification.service.{CaseService, EventService}
 import uk.gov.hmrc.bindingtariffclassification.sort.CaseSortField
 import uk.gov.hmrc.bindingtariffclassification.utils.DateUtil._
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.lock.{LockKeeper, LockRepository}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.Future._
 
 @Singleton
 class ReferredDaysElapsedJob @Inject() (
-  appConfig: AppConfig,
   caseService: CaseService,
   eventService: EventService,
-  bankHolidaysConnector: BankHolidaysConnector
+  bankHolidaysConnector: BankHolidaysConnector,
+  lockRepo: LockRepoProvider,
+  implicit val appConfig: AppConfig
 )(implicit ec: ExecutionContext)
     extends ScheduledJob
+    with LockKeeper
     with Logging {
 
+  override val jobConfig = appConfig.referredDaysElapsed
+
+  override val repo: LockRepository                 = lockRepo.repo()
+  override val lockId: String                       = "referred_days_elapsed"
+  override val forceLockReleaseAfter: time.Duration = time.Duration.standardMinutes(5)
+
   private implicit val carrier: HeaderCarrier = HeaderCarrier()
-  private lazy val jobConfig                  = appConfig.referredDaysElapsed
   private lazy val criteria = CaseSearch(
     filter = CaseFilter(statuses = Some(Set(PseudoCaseStatus.REFERRED, PseudoCaseStatus.SUSPENDED))),
     sort   = Some(CaseSort(Set(CaseSortField.REFERENCE)))
   )
-
-  override val name: String = "ReferredDaysElapsed"
-
-  override def enabled: Boolean = jobConfig.enabled
-
-  override def schedule: CronExpr = jobConfig.schedule
-
-  override def nextRunTime: Option[ZonedDateTime] =
-    jobConfig.schedule.next(
-      appConfig.clock.instant()
-        .atZone(appConfig.clock.getZone())
-    )
 
   override def execute(): Future[Unit] =
     for {

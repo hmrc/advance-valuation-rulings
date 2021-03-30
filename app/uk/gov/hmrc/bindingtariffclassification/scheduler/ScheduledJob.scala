@@ -16,14 +16,27 @@
 
 package uk.gov.hmrc.bindingtariffclassification.scheduler
 
-import cron4s.expr.CronExpr
-import java.time.ZonedDateTime
-import scala.concurrent.Future
+import java.time.{Duration, LocalTime}
+import org.quartz.{CronExpression, Job, JobExecutionContext}
+import uk.gov.hmrc.bindingtariffclassification.config.JobConfig
+import uk.gov.hmrc.lock.LockKeeper
 
-trait ScheduledJob {
-  def name: String
-  def enabled: Boolean
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.duration.{Duration => ScalaDuration}
+
+abstract class ScheduledJob(implicit ec: ExecutionContext) extends Job with LockKeeper {
+  def jobConfig: JobConfig
+
   def execute(): Future[Unit]
-  def schedule: CronExpr
-  def nextRunTime: Option[ZonedDateTime]
+
+  def name: String = jobConfig.name
+
+  def enabled: Boolean = jobConfig.enabled
+
+  def schedule: CronExpression = jobConfig.schedule
+
+  def execute(context: JobExecutionContext): Unit = {
+    // Quartz gives us no choice but to block here
+    Await.result(tryLock(execute()), ScalaDuration.Inf)
+  }
 }
