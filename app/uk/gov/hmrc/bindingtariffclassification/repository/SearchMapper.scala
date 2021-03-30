@@ -45,22 +45,24 @@ class SearchMapper @Inject() (appConfig: AppConfig) extends Mapper {
         .map("queueId"                    -> inArrayOrNone[String](_)),
       filter.assigneeId.map("assignee.id" -> mappingNoneOrSome(_)),
       filter.caseDetails.map(details =>
-      either(
-        "application.goodName"->contains(details),
-        "application.summary"->contains(details),
-        "application.detailedDescription"->contains(details),
-        "application.name"->contains(details)
-      )),
-      filter.caseSource.map(source =>
         either(
-          "application.holder.businessName" -> contains(source),
-          "application.traderName"          -> contains(source),
-          "application.correspondenceStarter" ->contains(source),
-          "application.contactName" ->contains(source)
+          "application.goodName"            -> contains(details),
+          "application.summary"             -> contains(details),
+          "application.detailedDescription" -> contains(details),
+          "application.name"                -> contains(details)
         )
       ),
-      filter.minDecisionEnd.map("decision.effectiveEndDate"    -> greaterThan(_)(formatInstant)),
-      filter.commodityCode.map("decision.bindingCommodityCode" -> numberStartingWith(_)),
+      filter.caseSource.map(source =>
+        either(
+          "application.holder.businessName"   -> contains(source),
+          "application.traderName"            -> contains(source),
+          "application.correspondenceStarter" -> contains(source),
+          "application.contactName"           -> contains(source)
+        )
+      ),
+      filter.minDecisionStart.map("decision.effectiveStartDate" -> greaterThan(_)(formatInstant)),
+      filter.minDecisionEnd.map("decision.effectiveEndDate"     -> greaterThan(_)(formatInstant)),
+      filter.commodityCode.map("decision.bindingCommodityCode"  -> numberStartingWith(_)),
       filter.decisionDetails.map(desc =>
         either(
           "decision.goodsDescription"             -> contains(desc),

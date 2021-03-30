@@ -73,7 +73,7 @@ object ReportField {
   val CaseType        = CaseTypeField("case_type", "application.type")
   val Chapter         = ChapterField("chapter", "decision.bindingCommodityCode")
   val GoodsName       = StringField("goods_name", "application.goodName")
-  val TraderName      = StringField("trader_name", "application.traderName")
+  val TraderName      = CoalesceField("trader_name", NonEmptySeq.of("application.traderName", "application.holder.businessName"))
   val User            = StringField("assigned_user", "assignee.id")
   val Team            = StringField("assigned_team", "queueId")
   val DateCreated     = DateField("date_created", "createdDate")
