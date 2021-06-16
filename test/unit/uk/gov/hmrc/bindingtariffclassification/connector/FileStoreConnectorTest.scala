@@ -16,23 +16,22 @@
 
 package uk.gov.hmrc.bindingtariffclassification.connector
 
-import java.time.Instant
-import java.util.UUID
-
 import akka.actor.ActorSystem
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.BDDMockito.given
 import org.scalatest.BeforeAndAfterAll
 import play.api.http.Status
 import play.api.libs.json.Json
-import play.api.libs.ws.WSClient
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.filestore.{FileMetadata, FileSearch, ScanStatus}
 import uk.gov.hmrc.bindingtariffclassification.model.{Paged, Pagination}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.audit.http.HttpAuditing
+import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 import util.TestMetrics
+
+import java.time.Instant
+import java.util.UUID
 
 class FileStoreConnectorTest extends BaseSpec with WiremockTestServer with BeforeAndAfterAll {
 
@@ -41,24 +40,19 @@ class FileStoreConnectorTest extends BaseSpec with WiremockTestServer with Befor
   private implicit val headers: HeaderCarrier   = HeaderCarrier()
   private implicit val actorSystem: ActorSystem = ActorSystem("test")
 
-  private val realConfig = app.injector.instanceOf[AppConfig]
+  private val realConfig = fakeApplication.injector.instanceOf[AppConfig]
 
-  private val wsClient: WSClient = fakeApplication.injector.instanceOf[WSClient]
-  private val httpAuditEvent     = fakeApplication.injector.instanceOf[HttpAuditing]
-  private val hmrcAuthenticatedHttpClient = new AuthenticatedHttpClient(
-    fakeApplication.configuration,
-    httpAuditEvent,
-    wsClient,
-    realConfig,
-    actorSystem
-  )
+  private val defaultHttpClient: DefaultHttpClient = fakeApplication.injector.instanceOf[DefaultHttpClient]
 
-  private val connector = new FileStoreConnector(config, hmrcAuthenticatedHttpClient, new TestMetrics)
+  private val connector = new FileStoreConnector(config, defaultHttpClient, new TestMetrics)
+
+  private val maxUriLength = 2048
 
   override protected def beforeAll(): Unit = {
     super.beforeAll()
     given(config.fileStoreUrl).willReturn(wireMockUrl)
-    given(config.maxUriLength).willReturn(2048)
+    given(config.maxUriLength).willReturn(maxUriLength)
+    given(config.authorization).willReturn(realConfig.authorization)
   }
 
   private val uploadedFile: FileMetadata = FileMetadata(
