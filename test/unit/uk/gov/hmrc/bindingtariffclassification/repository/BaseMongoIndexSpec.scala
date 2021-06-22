@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
+import play.api.test.Helpers._
 import reactivemongo.api.indexes.Index
 import reactivemongo.play.json.collection.JSONCollection
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
-import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
