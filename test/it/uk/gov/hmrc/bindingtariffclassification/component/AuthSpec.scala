@@ -24,9 +24,9 @@ class AuthSpec extends BaseFeatureSpec {
 
   protected val serviceUrl = s"http://localhost:$port"
 
-  feature("Authentication") {
+  Feature("Authentication") {
 
-    scenario("Auth header present with correct value") {
+    Scenario("Auth header present with correct value") {
 
       When("I call an endpoint with the correct auth token")
       val result = Http(s"$serviceUrl/cases")
@@ -38,7 +38,7 @@ class AuthSpec extends BaseFeatureSpec {
       result.code shouldEqual OK
     }
 
-    scenario("Auth header present with incorrect value") {
+    Scenario("Auth header present with incorrect value") {
 
       When("I call an endpoint with an incorrect auth token")
       val result = Http(s"$serviceUrl/cases")
@@ -51,7 +51,7 @@ class AuthSpec extends BaseFeatureSpec {
       result.body shouldBe "Missing or invalid 'X-Api-Token'"
     }
 
-    scenario("Auth header not present") {
+    Scenario("Auth header not present") {
 
       When("I call an endpoint with the no auth token")
       val result = Http(s"$serviceUrl/cases")
@@ -63,7 +63,7 @@ class AuthSpec extends BaseFeatureSpec {
       result.body shouldBe "Missing or invalid 'X-Api-Token'"
     }
 
-    scenario("Calls to the health endpoint do not require auth token") {
+    Scenario("Calls to the health endpoint do not require auth token") {
       val result = Http(s"$serviceUrl/ping/ping")
         .method(HttpVerbs.GET)
         .asString

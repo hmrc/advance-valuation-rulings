@@ -46,8 +46,8 @@ class ReferredDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
 
   private val job: ReferredDaysElapsedJob = app.injector.instanceOf[ReferredDaysElapsedJob]
 
-  feature("Referred Days Elapsed Job") {
-    scenario("Calculates elapsed days for REFERRED cases") {
+  Feature("Referred Days Elapsed Job") {
+    Scenario("Calculates elapsed days for REFERRED cases") {
       Given("There are cases with mixed statuses in the database")
 
       givenThereIs(aCaseWith(reference = "ref-20181220", status = REFERRED, createdDate = "2018-12-20"))
@@ -80,7 +80,7 @@ class ReferredDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
       referredDaysElapsedForCase("completed")    shouldBe -1 // Unchanged
     }
 
-    scenario("Calculates elapsed days for SUSPENDED cases") {
+    Scenario("Calculates elapsed days for SUSPENDED cases") {
       Given("There are cases with mixed statuses in the database")
 
       givenThereIs(aCaseWith(reference = "s-ref-20181220", status = SUSPENDED, createdDate = "2018-12-20"))

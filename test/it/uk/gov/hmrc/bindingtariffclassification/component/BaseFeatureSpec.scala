@@ -18,24 +18,26 @@ package uk.gov.hmrc.bindingtariffclassification.component
 
 import com.kenshoo.play.metrics.Metrics
 import org.scalatest._
+import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
-import uk.gov.hmrc.lock.LockRepository
 import uk.gov.hmrc.bindingtariffclassification.model.{Case, Event, Sequence}
 import uk.gov.hmrc.bindingtariffclassification.repository.{CaseMongoRepository, EventMongoRepository, SequenceMongoRepository}
 import uk.gov.hmrc.bindingtariffclassification.scheduler.ScheduledJobs
+import uk.gov.hmrc.lock.LockRepository
 import util.TestMetrics
 
 import scala.concurrent.Await.result
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.concurrent.duration._
 
 abstract class BaseFeatureSpec
-    extends FeatureSpec
+  extends AnyFeatureSpec
     with Matchers
     with GivenWhenThen
     with GuiceOneServerPerSuite
@@ -53,8 +55,8 @@ abstract class BaseFeatureSpec
 
   protected lazy val apiTokenKey = "X-Api-Token"
 
-  private lazy val caseStore: CaseMongoRepository         = app.injector.instanceOf[CaseMongoRepository]
-  private lazy val eventStore: EventMongoRepository       = app.injector.instanceOf[EventMongoRepository]
+  private lazy val caseStore: CaseMongoRepository = app.injector.instanceOf[CaseMongoRepository]
+  private lazy val eventStore: EventMongoRepository = app.injector.instanceOf[EventMongoRepository]
   private lazy val sequenceStore: SequenceMongoRepository = app.injector.instanceOf[SequenceMongoRepository]
   private lazy val scheduledJobStores: Iterable[LockRepository] =
     app.injector.instanceOf[ScheduledJobs].jobs.map(_.repo)
@@ -103,7 +105,7 @@ abstract class BaseFeatureSpec
     result(eventStore.mongoCollection.count(), timeout)
 
   protected def getCase(ref: String): Option[Case] =
-    // for simplicity decryption is not tested here (because disabled in application.conf)
+  // for simplicity decryption is not tested here (because disabled in application.conf)
     result(caseStore.getByReference(ref), timeout)
 
 }

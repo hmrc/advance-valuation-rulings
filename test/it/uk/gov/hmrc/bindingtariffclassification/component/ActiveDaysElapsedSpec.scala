@@ -47,8 +47,8 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
 
   private val job: ActiveDaysElapsedJob = app.injector.instanceOf[ActiveDaysElapsedJob]
 
-  feature("Days Elapsed Job") {
-    scenario("Calculates elapsed days for OPEN & NEW cases") {
+  Feature("Days Elapsed Job") {
+    Scenario("Calculates elapsed days for OPEN & NEW cases") {
       Given("There are cases with mixed statuses in the database")
 
       givenThereIs(aCaseWith(reference = "ref-20181220", status = OPEN, createdDate      = "2018-12-20"))
@@ -70,7 +70,7 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
       daysElapsedForCase("completed")    shouldBe -1 // Unchanged
     }
 
-    scenario("Calculates elapsed days for OPEN & NEW Liability cases") {
+    Scenario("Calculates elapsed days for OPEN & NEW Liability cases") {
       Given("There are cases with mixed statuses in the database")
 
       //OPEN
@@ -114,7 +114,7 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
       daysElapsedForCase("ref-4") shouldBe 37
     }
 
-    scenario("Calculates elapsed days for a referred case") {
+    Scenario("Calculates elapsed days for a referred case") {
       Given("A Case which was REFERRED in the past")
       givenThereIs(aCaseWith(reference             = "valid-ref", status = OPEN, createdDate = "2019-01-10"))
       givenThereIs(aStatusChangeWith(caseReference = "valid-ref", status = REFERRED, date    = "2019-01-15"))
@@ -126,7 +126,7 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
       daysElapsedForCase("valid-ref") shouldBe 3
     }
 
-    scenario("Calculates elapsed days for a case created & referred on the same day") {
+    Scenario("Calculates elapsed days for a case created & referred on the same day") {
       Given("There is case which was REFERRED the day it was created")
       givenThereIs(aCaseWith(reference             = "valid-ref", status = OPEN, createdDate = "2019-02-01"))
       givenThereIs(aStatusChangeWith(caseReference = "valid-ref", status = REFERRED, date    = "2019-02-01"))
@@ -138,7 +138,7 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
       daysElapsedForCase("valid-ref") shouldBe 0
     }
 
-    scenario("Calculates elapsed days for a case referred today") {
+    Scenario("Calculates elapsed days for a case referred today") {
       Given("There is case with a referred case")
       givenThereIs(aCaseWith(reference             = "valid-ref", status = OPEN, createdDate = "2019-02-03"))
       givenThereIs(aStatusChangeWith(caseReference = "valid-ref", status = REFERRED, date    = "2019-02-03"))
@@ -150,7 +150,7 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
       daysElapsedForCase("valid-ref") shouldBe 0
     }
 
-    scenario("Calculates elapsed days for a suspended case") {
+    Scenario("Calculates elapsed days for a suspended case") {
       Given("A Case which was SUSPENDED in the past")
       givenThereIs(aCaseWith(reference             = "valid-ref", status = OPEN, createdDate = "2019-01-10"))
       givenThereIs(aStatusChangeWith(caseReference = "valid-ref", status = SUSPENDED, date   = "2019-01-15"))
@@ -162,7 +162,7 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
       daysElapsedForCase("valid-ref") shouldBe 3
     }
 
-    scenario("Calculates elapsed days for a case created & suspended on the same day") {
+    Scenario("Calculates elapsed days for a case created & suspended on the same day") {
       Given("There is case which was REFERRED the day it was created")
       givenThereIs(aCaseWith(reference             = "valid-ref", status = OPEN, createdDate = "2019-02-01"))
       givenThereIs(aStatusChangeWith(caseReference = "valid-ref", status = SUSPENDED, date   = "2019-02-01"))
@@ -174,7 +174,7 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
       daysElapsedForCase("valid-ref") shouldBe 0
     }
 
-    scenario("Calculates elapsed days for a case suspended today") {
+    Scenario("Calculates elapsed days for a case suspended today") {
       Given("There is case with a referred case")
       givenThereIs(aCaseWith(reference             = "valid-ref", status = OPEN, createdDate = "2019-02-03"))
       givenThereIs(aStatusChangeWith(caseReference = "valid-ref", status = SUSPENDED, date   = "2019-02-03"))
@@ -186,7 +186,7 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
       daysElapsedForCase("valid-ref") shouldBe 0
     }
 
-    scenario("Calculates elapsed days for migrated cases") {
+    Scenario("Calculates elapsed days for migrated cases") {
       Given("There are migrated cases with mixed statuses in the database")
 
       givenThereIs(
