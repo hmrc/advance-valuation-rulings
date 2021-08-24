@@ -37,9 +37,9 @@ class EventSpec extends BaseFeatureSpec {
   private val e1      = createCaseStatusChangeEvent(caseReference = caseRef)
   private val e2      = createNoteEvent(caseReference = caseRef)
 
-  feature("Delete All") {
+  Feature("Delete All") {
 
-    scenario("Clear Collection") {
+    Scenario("Clear Collection") {
 
       Given("There are some documents in the collection")
       storeEvents(e1, e2)
@@ -62,9 +62,9 @@ class EventSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Get Events by case reference") {
+  Feature("Get Events by case reference") {
 
-    scenario("No events found") {
+    Scenario("No events found") {
 
       Given("There is a case")
       storeCases(c1)
@@ -81,7 +81,7 @@ class EventSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged.empty[Event])
     }
 
-    scenario("Events found in any order") {
+    Scenario("Events found in any order") {
 
       Given("There is a case with events")
       storeCases(c1)
@@ -101,9 +101,9 @@ class EventSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Search Events") {
+  Feature("Search Events") {
 
-    scenario("No events found") {
+    Scenario("No events found") {
       When("I get the events")
       val result = Http(s"$serviceUrl/events")
         .header(apiTokenKey, appConfig.authorization)
@@ -116,7 +116,7 @@ class EventSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged.empty[Event])
     }
 
-    scenario("Returns all Events") {
+    Scenario("Returns all Events") {
       Given("There is a case with events")
       storeCases(c1)
       storeEvents(e1)
@@ -133,7 +133,7 @@ class EventSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(e1)))
     }
 
-    scenario("Returns Events by reference") {
+    Scenario("Returns Events by reference") {
       Given("There is a case with events")
       storeCases(c1)
       storeEvents(e1)
@@ -150,7 +150,7 @@ class EventSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(e1)))
     }
 
-    scenario("Returns Events by type") {
+    Scenario("Returns Events by type") {
       Given("There is a case with events")
       storeCases(c1)
       storeEvents(e1)
@@ -170,9 +170,9 @@ class EventSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Create Event by case reference") {
+  Feature("Create Event by case reference") {
 
-    scenario("Create new event") {
+    Scenario("Create new event") {
 
       Given("An existing Case")
       storeCases(c1)
@@ -195,9 +195,9 @@ class EventSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Add a case created event") {
+  Feature("Add a case created event") {
 
-    scenario("Create new event") {
+    Scenario("Create new event") {
       Given("A case that will get created")
       storeCases(c1)
 

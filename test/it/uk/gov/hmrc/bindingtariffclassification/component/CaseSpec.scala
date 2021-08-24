@@ -114,9 +114,9 @@ class CaseSpec extends BaseFeatureSpec {
   private val correspondenceCaseJson      = Json.toJson(correspondenceCase)
   private val miscCaseJson                = Json.toJson(miscCase)
 
-  feature("Delete All") {
+  Feature("Delete All") {
 
-    scenario("Clear Collection") {
+    Scenario("Clear Collection") {
 
       Given("There are some documents in the collection")
       storeCases(c1, c2)
@@ -139,9 +139,9 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Create Case") {
+  Feature("Create Case") {
 
-    scenario("Create a new case") {
+    Scenario("Create a new case") {
 
       When("I create a new case")
       val result: HttpResponse[String] = Http(s"$serviceUrl/cases")
@@ -159,7 +159,7 @@ class CaseSpec extends BaseFeatureSpec {
       responseCase.status    shouldBe CaseStatus.NEW
     }
 
-    scenario("Extra fields are ignored when creating a case") {
+    Scenario("Extra fields are ignored when creating a case") {
       When("I create a new case with extra fields")
       val result: HttpResponse[String] = Http(s"$serviceUrl/cases")
         .header(apiTokenKey, appConfig.authorization)
@@ -180,7 +180,7 @@ class CaseSpec extends BaseFeatureSpec {
       responseCase.decision    shouldBe None
     }
 
-    scenario("Create a new case with all fields") {
+    Scenario("Create a new case with all fields") {
 
       When("I create a new case")
       val result: HttpResponse[String] = Http(s"$serviceUrl/cases")
@@ -198,7 +198,7 @@ class CaseSpec extends BaseFeatureSpec {
       responseCase.status    shouldBe CaseStatus.NEW
     }
 
-    scenario("Create a new liability case with new fields DIT-1962") {
+    Scenario("Create a new liability case with new fields DIT-1962") {
 
       When("I create a new liability case")
       val result: HttpResponse[String] = Http(s"$serviceUrl/cases")
@@ -230,7 +230,7 @@ class CaseSpec extends BaseFeatureSpec {
       responseCase.application.asLiabilityOrder.port      shouldBe Some("port")
     }
 
-    scenario("Create a new Correspondence case") {
+    Scenario("Create a new Correspondence case") {
 
       When("I create a new Correspondence case")
       val result: HttpResponse[String] = Http(s"$serviceUrl/cases")
@@ -264,7 +264,7 @@ class CaseSpec extends BaseFeatureSpec {
       responseCase.application.asCorrespondence.sampleToBeReturned shouldBe false
     }
 
-    scenario("Create a new Misc case") {
+    Scenario("Create a new Misc case") {
 
       When("I create a new Misc case")
       val result: HttpResponse[String] = Http(s"$serviceUrl/cases")
@@ -289,9 +289,9 @@ class CaseSpec extends BaseFeatureSpec {
     }
   }
 
-  feature("Update Case") {
+  Feature("Update Case") {
 
-    scenario("Update an non-existing case") {
+    Scenario("Update an non-existing case") {
 
       When("I update a non-existing case")
       val result = Http(s"$serviceUrl/cases/${c1.reference}")
@@ -304,7 +304,7 @@ class CaseSpec extends BaseFeatureSpec {
       result.code shouldEqual NOT_FOUND
     }
 
-    scenario("Update an existing case") {
+    Scenario("Update an existing case") {
 
       Given("There is a case in the database")
       storeCases(c1)
@@ -323,7 +323,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe c1UpdatedJson
     }
 
-    scenario("Update an existing case with new fields DIT-1962") {
+    Scenario("Update an existing case with new fields DIT-1962") {
 
       Given("There is an existing case in the database")
       storeCases(c2)
@@ -343,9 +343,9 @@ class CaseSpec extends BaseFeatureSpec {
     }
   }
 
-  feature("Get Case by Reference") {
+  Feature("Get Case by Reference") {
 
-    scenario("Get existing case") {
+    Scenario("Get existing case") {
 
       Given("There is a case in the database")
       storeCases(c1)
@@ -362,7 +362,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe c1Json
     }
 
-    scenario("Get a non-existing case") {
+    Scenario("Get a non-existing case") {
 
       When("I get a case")
       val result = Http(s"$serviceUrl/cases/${c1.reference}")
@@ -375,9 +375,9 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Get All Cases") {
+  Feature("Get All Cases") {
 
-    scenario("Get all cases") {
+    Scenario("Get all cases") {
 
       Given("There are few cases in the database")
       storeCases(c1, c2)
@@ -394,7 +394,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1, c2)))
     }
 
-    scenario("Get no cases") {
+    Scenario("Get no cases") {
 
       Given("There are no cases in the database")
 
@@ -412,9 +412,9 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Get Cases by Queue Id") {
+  Feature("Get Cases by Queue Id") {
 
-    scenario("Filtering cases that have undefined queueId") {
+    Scenario("Filtering cases that have undefined queueId") {
 
       Given("There are few cases in the database")
       storeCases(c1, c2)
@@ -431,7 +431,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2)))
     }
 
-    scenario("Filtering cases that have defined queueId") {
+    Scenario("Filtering cases that have defined queueId") {
 
       Given("There are few cases in the database")
       storeCases(c1, c2)
@@ -448,7 +448,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1)))
     }
 
-    scenario("Filtering cases by a valid queueId") {
+    Scenario("Filtering cases by a valid queueId") {
 
       Given("There are few cases in the database")
       storeCases(c1, c2)
@@ -465,7 +465,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1)))
     }
 
-    scenario("Filtering cases by a wrong queueId") {
+    Scenario("Filtering cases by a wrong queueId") {
 
       Given("There are few cases in the database")
       storeCases(c1, c2)
@@ -484,9 +484,9 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Get Cases by Assignee Id") {
+  Feature("Get Cases by Assignee Id") {
 
-    scenario("Filtering cases that have undefined assigneeId") {
+    Scenario("Filtering cases that have undefined assigneeId") {
 
       Given("There are few cases in the database")
       storeCases(c1, c2)
@@ -503,7 +503,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2)))
     }
 
-    scenario("Filtering cases that have defined assigneeId") {
+    Scenario("Filtering cases that have defined assigneeId") {
 
       Given("There are few cases in the database")
       storeCases(c1, c2)
@@ -520,7 +520,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1)))
     }
 
-    scenario("Filtering cases by a valid assigneeId") {
+    Scenario("Filtering cases by a valid assigneeId") {
 
       Given("There are few cases in the database")
       storeCases(c1, c2)
@@ -537,7 +537,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1)))
     }
 
-    scenario("Filtering cases by a wrong assigneeId") {
+    Scenario("Filtering cases by a wrong assigneeId") {
 
       Given("There are few cases in the database")
       storeCases(c1, c2)
@@ -556,9 +556,9 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Get Cases by Assignee Id and Queue Id") {
+  Feature("Get Cases by Assignee Id and Queue Id") {
 
-    scenario("Filtering cases that have undefined assigneeId and undefined queueId") {
+    Scenario("Filtering cases that have undefined assigneeId and undefined queueId") {
 
       Given("There are few cases in the database")
       storeCases(c1, c2)
@@ -575,7 +575,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2)))
     }
 
-    scenario("Filtering cases by a valid assigneeId and a valid queueId") {
+    Scenario("Filtering cases by a valid assigneeId and a valid queueId") {
 
       Given("There are few cases in the database")
       storeCases(c1, c2)
@@ -592,7 +592,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1)))
     }
 
-    scenario("Filtering cases by a wrong assigneeId and a valid queueId") {
+    Scenario("Filtering cases by a wrong assigneeId and a valid queueId") {
 
       Given("There are few cases in the database")
       storeCases(c1, c2)
@@ -611,9 +611,9 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Get Cases by statuses") {
+  Feature("Get Cases by statuses") {
 
-    scenario("No matches") {
+    Scenario("No matches") {
 
       storeCases(c1_updated, c2, c5)
 
@@ -625,7 +625,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged.empty[Case])
     }
 
-    scenario("Filtering cases by single status") {
+    Scenario("Filtering cases by single status") {
 
       storeCases(c1_updated, c2, c5)
 
@@ -637,7 +637,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2, c5)))
     }
 
-    scenario("Filtering cases by single pseudo status") {
+    Scenario("Filtering cases by single pseudo status") {
 
       storeCases(c1_updated, c2, c6_live)
 
@@ -649,7 +649,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c6_live)))
     }
 
-    scenario("Filtering cases by multiple statuses") {
+    Scenario("Filtering cases by multiple statuses") {
 
       storeCases(c1_updated, c2, c5)
 
@@ -661,7 +661,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1_updated, c2, c5)))
     }
 
-    scenario("Filtering cases by multiple pseudo statuses") {
+    Scenario("Filtering cases by multiple pseudo statuses") {
 
       storeCases(c1_updated, c6_expired, c6_live)
 
@@ -673,7 +673,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c6_expired, c6_live)))
     }
 
-    scenario("Filtering cases by multiple statuses - comma separated") {
+    Scenario("Filtering cases by multiple statuses - comma separated") {
 
       storeCases(c1_updated, c2, c5)
 
@@ -687,9 +687,9 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Get Cases by references") {
+  Feature("Get Cases by references") {
 
-    scenario("No matches") {
+    Scenario("No matches") {
 
       storeCases(c2, c10)
 
@@ -701,7 +701,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged.empty[Case])
     }
 
-    scenario("Filtering cases by single reference") {
+    Scenario("Filtering cases by single reference") {
 
       storeCases(c2, c5, c10)
 
@@ -713,7 +713,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2)))
     }
 
-    scenario("Filtering cases by multiple references") {
+    Scenario("Filtering cases by multiple references") {
 
       storeCases(c2, c5, c10)
 
@@ -725,7 +725,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body).as[Paged[Case]].results.map(_.reference) should contain only (c2.reference, c5.reference)
     }
 
-    scenario("Filtering cases by multiple references - comma separated") {
+    Scenario("Filtering cases by multiple references - comma separated") {
 
       storeCases(c2, c5, c10)
 
@@ -739,9 +739,9 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Get Cases by keywords") {
+  Feature("Get Cases by keywords") {
 
-    scenario("No matches") {
+    Scenario("No matches") {
 
       storeCases(c2, c10)
 
@@ -753,7 +753,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged.empty[Case])
     }
 
-    scenario("Filtering cases by single keyword") {
+    Scenario("Filtering cases by single keyword") {
 
       storeCases(c2, c5, c10)
 
@@ -765,7 +765,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2, c10)))
     }
 
-    scenario("Filtering cases by multiple keywords") {
+    Scenario("Filtering cases by multiple keywords") {
 
       storeCases(c2, c5, c10)
 
@@ -777,7 +777,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2)))
     }
 
-    scenario("Filtering cases by multiple keywords - comma separated") {
+    Scenario("Filtering cases by multiple keywords - comma separated") {
 
       storeCases(c2, c5, c10)
 
@@ -791,9 +791,9 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Get Cases by trader name") {
+  Feature("Get Cases by trader name") {
 
-    scenario("Filtering cases by trader name") {
+    Scenario("Filtering cases by trader name") {
 
       storeCases(c1, c2, c5)
 
@@ -805,7 +805,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1, c2)))
     }
 
-    scenario("Case-insensitive search") {
+    Scenario("Case-insensitive search") {
 
       storeCases(c1)
 
@@ -817,7 +817,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1)))
     }
 
-    scenario("Search by substring") {
+    Scenario("Search by substring") {
 
       storeCases(c1)
 
@@ -829,7 +829,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1)))
     }
 
-    scenario("No matches") {
+    Scenario("No matches") {
 
       storeCases(c1)
 
@@ -843,9 +843,9 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Get Cases by Min Decision End Date") {
+  Feature("Get Cases by Min Decision End Date") {
 
-    scenario("Filtering cases by Min Decision End Date") {
+    Scenario("Filtering cases by Min Decision End Date") {
 
       storeCases(c1, c6_live)
 
@@ -857,7 +857,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c6_live)))
     }
 
-    scenario("Filtering cases by Min Decision End Date - filters decisions in the past") {
+    Scenario("Filtering cases by Min Decision End Date - filters decisions in the past") {
 
       storeCases(c1, c6_live)
 
@@ -871,9 +871,9 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Get Cases by commodity code") {
+  Feature("Get Cases by commodity code") {
 
-    scenario("filtering by non-existing commodity code") {
+    Scenario("filtering by non-existing commodity code") {
 
       storeCases(c1, c2, c5)
 
@@ -885,7 +885,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged.empty[Case])
     }
 
-    scenario("filtering by existing commodity code") {
+    Scenario("filtering by existing commodity code") {
 
       storeCases(c1, c2, c5, c6_live)
 
@@ -897,7 +897,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2, c6_live)))
     }
 
-    scenario("Starts-with match") {
+    Scenario("Starts-with match") {
 
       storeCases(c1, c2, c5, c6_live)
 
@@ -909,7 +909,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2, c6_live)))
     }
 
-    scenario("Contains-match does not return any result") {
+    Scenario("Contains-match does not return any result") {
 
       storeCases(c2, c6_live)
 
@@ -923,9 +923,9 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Get Cases by decision details") {
+  Feature("Get Cases by decision details") {
 
-    scenario("No matches") {
+    Scenario("No matches") {
 
       storeCases(c1, c2, c5)
 
@@ -937,7 +937,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged.empty[Case])
     }
 
-    scenario("Filtering by existing good description") {
+    Scenario("Filtering by existing good description") {
 
       storeCases(c1, c2, c7)
 
@@ -949,7 +949,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c7)))
     }
 
-    scenario("Filtering by method commercial denomination") {
+    Scenario("Filtering by method commercial denomination") {
 
       storeCases(c1, c2, c8)
 
@@ -961,7 +961,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c8)))
     }
 
-    scenario("Filtering by justification") {
+    Scenario("Filtering by justification") {
 
       storeCases(c1, c2, c9)
 
@@ -973,7 +973,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c9)))
     }
 
-    scenario("Case-insensitive search") {
+    Scenario("Case-insensitive search") {
 
       storeCases(c1, c2, c7)
 
@@ -985,7 +985,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c7)))
     }
 
-    scenario("Filtering by substring") {
+    Scenario("Filtering by substring") {
 
       storeCases(c1, c2, c7, c8, c9)
 
@@ -997,7 +997,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c7, c8, c9)))
     }
 
-    scenario("Filtering by goods description and expired case status") {
+    Scenario("Filtering by goods description and expired case status") {
 
       storeCases(c11, c12, c13)
 
@@ -1010,7 +1010,7 @@ class CaseSpec extends BaseFeatureSpec {
     }
   }
 
-  feature("Get Cases by EORI number") {
+  Feature("Get Cases by EORI number") {
 
     val holderEori = "eori_01234"
     val agentEori  = "eori_98765"
@@ -1024,7 +1024,7 @@ class CaseSpec extends BaseFeatureSpec {
     val agentCase  = createCase(app = agentApp)
     val holderCase = createCase(app = holderApp)
 
-    scenario("No matches") {
+    Scenario("No matches") {
       storeCases(c1, c2)
 
       val result = Http(s"$serviceUrl/cases?eori=333333")
@@ -1035,7 +1035,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged.empty[Case])
     }
 
-    scenario("Filtering by agent EORI") {
+    Scenario("Filtering by agent EORI") {
       storeCases(c1, c2, agentCase, holderCase)
 
       val result = Http(s"$serviceUrl/cases?eori=eori_98765")
@@ -1046,7 +1046,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(agentCase)))
     }
 
-    scenario("Filtering by applicant EORI") {
+    Scenario("Filtering by applicant EORI") {
       storeCases(c1, c2, agentCase, holderCase)
 
       val result = Http(s"$serviceUrl/cases?eori=eori_01234")
@@ -1057,7 +1057,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(agentCase, holderCase)))
     }
 
-    scenario("Case-insensitive search") {
+    Scenario("Case-insensitive search") {
       storeCases(c1, c2, agentCase, holderCase)
 
       val result = Http(s"$serviceUrl/cases?eori=EORI_98765")
@@ -1068,7 +1068,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged.empty[Case])
     }
 
-    scenario("Filtering by substring") {
+    Scenario("Filtering by substring") {
       storeCases(c1, c2, agentCase, holderCase)
 
       val result = Http(s"$serviceUrl/cases?eori=2345")
@@ -1081,9 +1081,9 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Get Cases by application type") {
+  Feature("Get Cases by application type") {
 
-    scenario("No matches") {
+    Scenario("No matches") {
 
       storeCases(c1, c5)
 
@@ -1095,7 +1095,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged.empty[Case])
     }
 
-    scenario("Filtering by existing application type") {
+    Scenario("Filtering by existing application type") {
 
       storeCases(c1, c2, c7)
 
@@ -1107,7 +1107,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1, c7)))
     }
 
-    scenario("Case-insensitive search") {
+    Scenario("Case-insensitive search") {
 
       storeCases(c7)
 
@@ -1120,14 +1120,14 @@ class CaseSpec extends BaseFeatureSpec {
     }
   }
 
-  feature("Get Cases sorted by commodity code") {
+  Feature("Get Cases sorted by commodity code") {
 
     val caseWithEmptyCommCode = createCase().copy(decision = None)
     val caseY1                = createCase().copy(decision = Some(createDecision(bindingCommodityCode = "777")))
     val caseY2                = createCase().copy(decision = Some(createDecision(bindingCommodityCode = "777")))
     val caseZ                 = createCase().copy(decision = Some(createDecision(bindingCommodityCode = "1111111111")))
 
-    scenario("Sorting default - ascending order") {
+    Scenario("Sorting default - ascending order") {
       Given("There are few cases in the database")
       storeCases(caseY2, caseWithEmptyCommCode, caseY1, caseZ)
 
@@ -1143,7 +1143,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(caseWithEmptyCommCode, caseZ, caseY2, caseY1)))
     }
 
-    scenario("Sorting in ascending order") {
+    Scenario("Sorting in ascending order") {
       Given("There are few cases in the database")
       storeCases(caseY1, caseWithEmptyCommCode, caseY2, caseZ)
 
@@ -1159,7 +1159,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(caseWithEmptyCommCode, caseZ, caseY1, caseY2)))
     }
 
-    scenario("Sorting in descending order") {
+    Scenario("Sorting in descending order") {
       Given("There are few cases in the database")
       storeCases(caseZ, caseWithEmptyCommCode, caseY1, caseY2)
 
@@ -1177,12 +1177,12 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Get Case sorted by reference") {
+  Feature("Get Case sorted by reference") {
 
     val case1 = createCase().copy(reference = "1")
     val case2 = createCase().copy(reference = "2")
 
-    scenario("Sorting default - ascending order") {
+    Scenario("Sorting default - ascending order") {
       Given("There are few cases in the database")
       storeCases(case1, case2)
 
@@ -1198,7 +1198,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(case1, case2)))
     }
 
-    scenario("Sorting in ascending order") {
+    Scenario("Sorting in ascending order") {
       Given("There are few cases in the database")
       storeCases(case2, case1)
 
@@ -1214,7 +1214,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(case1, case2)))
     }
 
-    scenario("Sorting in descending order") {
+    Scenario("Sorting in descending order") {
       Given("There are few cases in the database")
       storeCases(case1, case2)
 
@@ -1232,12 +1232,12 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Get Cases sorted by days elapsed") {
+  Feature("Get Cases sorted by days elapsed") {
 
     val oldCase = c1.copy(daysElapsed = 1)
     val newCase = c2.copy(daysElapsed = 0)
 
-    scenario("Sorting default - ascending order") {
+    Scenario("Sorting default - ascending order") {
       Given("There are few cases in the database")
       storeCases(oldCase, newCase)
 
@@ -1253,7 +1253,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(newCase, oldCase)))
     }
 
-    scenario("Sorting in ascending order") {
+    Scenario("Sorting in ascending order") {
       Given("There are few cases in the database")
       storeCases(oldCase, newCase)
 
@@ -1269,7 +1269,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(newCase, oldCase)))
     }
 
-    scenario("Sorting in descending order") {
+    Scenario("Sorting in descending order") {
       Given("There are few cases in the database")
       storeCases(oldCase, newCase)
 
@@ -1287,9 +1287,9 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Get Cases with Pagination") {
+  Feature("Get Cases with Pagination") {
 
-    scenario("Paginates with 'page_size' and 'page'") {
+    Scenario("Paginates with 'page_size' and 'page'") {
 
       storeCases(c1, c2)
 
@@ -1314,14 +1314,14 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Get Cases sorted by case created date") {
+  Feature("Get Cases sorted by case created date") {
 
     val caseD0 = createCase().copy(createdDate = Instant.now())
     val caseD1 = createCase().copy(createdDate = Instant.now().minus(1, ChronoUnit.DAYS))
     val caseD2 = createCase().copy(createdDate = Instant.now().minus(2, ChronoUnit.DAYS))
     val caseD3 = createCase().copy(createdDate = Instant.now().minus(3, ChronoUnit.DAYS))
 
-    scenario("Sorting default - ascending order") {
+    Scenario("Sorting default - ascending order") {
       Given("There are few cases in the database")
       storeCases(caseD0, caseD1, caseD2, caseD3)
 
@@ -1337,7 +1337,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(caseD3, caseD2, caseD1, caseD0)))
     }
 
-    scenario("Sorting in ascending order") {
+    Scenario("Sorting in ascending order") {
       Given("There are few cases in the database")
       storeCases(caseD0, caseD1, caseD2, caseD3)
 
@@ -1353,7 +1353,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(caseD3, caseD2, caseD1, caseD0)))
     }
 
-    scenario("Sorting in descending order") {
+    Scenario("Sorting in descending order") {
       Given("There are few cases in the database")
       storeCases(caseD0, caseD1, caseD2, caseD3)
 
@@ -1371,7 +1371,7 @@ class CaseSpec extends BaseFeatureSpec {
 
   }
 
-  feature("Get Cases sorted by case decision effective start date") {
+  Feature("Get Cases sorted by case decision effective start date") {
 
     val caseD0 = createCase().copy(decision = Some(createDecision(effectiveStartDate = Some(Instant.now()))))
     val caseD1 = createCase()
@@ -1381,7 +1381,7 @@ class CaseSpec extends BaseFeatureSpec {
     val caseD3 = createCase()
       .copy(decision = Some(createDecision(effectiveStartDate = Some(Instant.now().minus(3, ChronoUnit.DAYS)))))
 
-    scenario("Sorting default - ascending order") {
+    Scenario("Sorting default - ascending order") {
       Given("There are few cases in the database")
       storeCases(caseD0, caseD3, caseD2, caseD1)
 
@@ -1397,7 +1397,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(caseD3, caseD2, caseD1, caseD0)))
     }
 
-    scenario("Sorting in ascending order") {
+    Scenario("Sorting in ascending order") {
       Given("There are few cases in the database")
       storeCases(caseD0, caseD1, caseD2, caseD3)
 
@@ -1413,7 +1413,7 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(caseD3, caseD2, caseD1, caseD0)))
     }
 
-    scenario("Sorting in descending order") {
+    Scenario("Sorting in descending order") {
       Given("There are few cases in the database")
       storeCases(caseD0, caseD3, caseD2, caseD1)
 

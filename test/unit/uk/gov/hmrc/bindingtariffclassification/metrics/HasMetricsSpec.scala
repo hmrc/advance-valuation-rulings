@@ -22,7 +22,9 @@ import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito
 import org.mockito.Mockito._
 import org.scalatest.compatible.Assertion
-import org.scalatest.{AsyncWordSpecLike, BeforeAndAfterAll, Matchers, OptionValues}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AsyncWordSpecLike
+import org.scalatest.{BeforeAndAfterAll, OptionValues}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.mvc.Results
 import play.api.test.{FakeRequest, Helpers}
@@ -31,13 +33,14 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import scala.concurrent.Future
 
 class HasMetricsSpec
-    extends AsyncWordSpecLike
+  extends AsyncWordSpecLike
     with Matchers
     with OptionValues
     with MockitoSugar
     with BeforeAndAfterAll {
 
-  trait MockHasMetrics { self: HasMetrics =>
+  trait MockHasMetrics {
+    self: HasMetrics =>
     val timer: Timer.Context = mock[Timer.Context]
     val metrics: Metrics = mock[Metrics]
     override val localMetrics: LocalMetrics = mock[LocalMetrics]
@@ -47,7 +50,7 @@ class HasMetricsSpec
   class TestHasMetrics extends HasMetrics with MockHasMetrics
 
   class TestHasActionMetrics
-      extends BackendController(Helpers.stubControllerComponents())
+    extends BackendController(Helpers.stubControllerComponents())
       with HasActionMetrics
       with MockHasMetrics
 

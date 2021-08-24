@@ -19,7 +19,8 @@ package uk.gov.hmrc.bindingtariffclassification.base
 import akka.stream.Materializer
 import com.kenshoo.play.metrics.Metrics
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
@@ -34,7 +35,7 @@ import util.TestMetrics
 import scala.concurrent.Future
 import scala.language.implicitConversions
 
-abstract class BaseSpec extends WordSpecLike with GuiceOneAppPerSuite with MockitoSugar with ResourceFiles with Matchers with ScalaFutures {
+abstract class BaseSpec extends AnyWordSpecLike with GuiceOneAppPerSuite with MockitoSugar with ResourceFiles with Matchers with ScalaFutures {
 
   override lazy val fakeApplication: Application = GuiceApplicationBuilder()
     .configure(
