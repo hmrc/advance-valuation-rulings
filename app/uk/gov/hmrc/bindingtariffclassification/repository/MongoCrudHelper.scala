@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@
 package uk.gov.hmrc.bindingtariffclassification.repository
 
 import play.api.libs.json._
+import reactivemongo.api.Cursor.ErrorHandler
 import reactivemongo.api.{Cursor, QueryOpts, ReadConcern}
+import reactivemongo.bson.BSONDocument
 import reactivemongo.play.json.ImplicitBSONHandlers._
 import reactivemongo.play.json.collection.JSONCollection
 import uk.gov.hmrc.bindingtariffclassification.model.{Paged, Pagination}
@@ -47,6 +49,12 @@ trait MongoCrudHelper[T] extends MongoIndexCreator {
       count <- mongoCollection
                 .count(Some(filterBy), limit = Some(0), skip = 0, hint = None, readConcern = ReadConcern.Local)
     } yield Paged(results, pagination.page, pagination.pageSize, count.toInt)
+
+  import reactivemongo.bson.BSONDocument
+  import reactivemongo.api.collections.bson.BSONCollection
+
+  protected def getAll(selector: JsObject)(implicit r: OFormat[T]): Future[List[T]] =
+    mongoCollection.find(selector).cursor[T]().collect[List](-1, Cursor.FailOnError[List[T]]())
 
   protected def createOne(document: T)(implicit w: OWrites[T]): Future[T] =
     mongoCollection.insert(document).map(_ => document)

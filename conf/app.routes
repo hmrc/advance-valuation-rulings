@@ -37,3 +37,7 @@ DELETE        /events                           @uk.gov.hmrc.bindingtariffclassi
 DELETE        /case/:reference                  @uk.gov.hmrc.bindingtariffclassification.controllers.CaseController.delete(reference: String)
 DELETE        /events/:reference                @uk.gov.hmrc.bindingtariffclassification.controllers.EventController.deleteCaseEvents(reference: String)
 PUT           /migrations/amend-date-of-extract @uk.gov.hmrc.bindingtariffclassification.controllers.MigrationController.amendDateOfExtract()
+
+# bta integration endpoints
+
+GET           /bta-card                         @uk.gov.hmrc.bindingtariffclassification.controllers.BtaCardController.getBtaCard

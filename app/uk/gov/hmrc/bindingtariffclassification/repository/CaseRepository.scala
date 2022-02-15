@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,8 @@ trait CaseRepository {
 
   def get(search: CaseSearch, pagination: Pagination): Future[Paged[Case]]
 
+  def getAllByEori(eori: String): Future[List[Case]]
+
   def deleteAll(): Future[Unit]
 
   def delete(reference: String): Future[Unit]
@@ -81,6 +83,10 @@ class EncryptedCaseMongoRepository @Inject() (repository: CaseMongoRepository, c
 
   override def get(search: CaseSearch, pagination: Pagination): Future[Paged[Case]] =
     repository.get(enryptSearch(search), pagination).map(_.map(decrypt))
+
+  override def getAllByEori(eori: String): Future[List[Case]] = {
+    repository.getAllByEori(eori).map(cases => cases.map(decrypt))
+  }
 
   override def deleteAll(): Future[Unit] = repository.deleteAll()
 
@@ -170,6 +176,10 @@ class CaseMongoRepository @Inject() (
       sortBy   = search.sort.map(mapper.sortBy).getOrElse(Json.obj()),
       pagination
     )
+
+  override def getAllByEori(eori: String): Future[List[Case]] = {
+    getAll(Json.obj("application.holder.eori" -> eori))
+  }
 
   override def deleteAll(): Future[Unit] =
     removeAll().map(_ => ())

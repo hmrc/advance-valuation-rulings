@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,28 +17,28 @@
 package uk.gov.hmrc.bindingtariffclassification.filters
 
 import akka.stream.Materializer
-import javax.inject.{Inject, Singleton}
 import play.api.mvc.{Filter, RequestHeader, Result, Results}
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
-
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton
 class AuthFilter @Inject() (appConfig: AppConfig)(implicit override val mat: Materializer) extends Filter {
 
-  private lazy val healthEndpointUri = "/ping/ping"
-  private lazy val authToken         = "X-Api-Token"
+  private val healthEndpointUri = "/ping/ping"
+  private val btaCardEndpoint = "/bta-card"
+  private val authToken = "X-Api-Token"
 
-  override def apply(f: RequestHeader => Future[Result])(rh: RequestHeader): Future[Result] =
-    rh.uri match {
-      case uri if uri.endsWith(healthEndpointUri) => f(rh)
-      case _                                      => ensureAuthTokenIsPresent(f, rh)
-    }
+  override def apply(f: RequestHeader => Future[Result])(rh: RequestHeader): Future[Result] = {
+    if(isRequestExcludedFromAPIToken(rh)) f(rh) else ensureAuthTokenIsPresent(f, rh)
+  }
 
-  private def ensureAuthTokenIsPresent(f: RequestHeader => Future[Result], rh: RequestHeader) =
+  private def ensureAuthTokenIsPresent(f: RequestHeader => Future[Result], rh: RequestHeader): Future[Result] =
     rh.headers.get(authToken) match {
       case Some(appConfig.authorization) => f(rh)
       case _                             => Future.successful(Results.Forbidden(s"Missing or invalid '$authToken'"))
     }
 
+  private def isRequestExcludedFromAPIToken(requestHeader: RequestHeader): Boolean =
+    requestHeader.uri.endsWith(healthEndpointUri) || requestHeader.path.endsWith(btaCardEndpoint)
 }
