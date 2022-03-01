@@ -61,7 +61,7 @@ abstract class BaseFeatureSpec
   private lazy val scheduledJobStores: Iterable[LockRepository] =
     app.injector.instanceOf[ScheduledJobs].jobs.map(_.repo)
 
-  private def dropStores(): Unit = {
+  def dropStores(): Unit = {
     result(caseStore.drop, timeout)
     result(eventStore.drop, timeout)
     result(sequenceStore.drop, timeout)

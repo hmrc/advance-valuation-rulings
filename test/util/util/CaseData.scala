@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
 
 package util
 
-import java.time.Instant
-
+import org.joda.time.LocalDate
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model.Role.Role
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.utils.RandomGenerator
+
+import java.time.Instant
 
 object CaseData {
 
@@ -205,6 +206,35 @@ object CaseData {
       attachments = Seq.empty,
       keywords = Set("bike", "tool")
     )
+
+  private def decision = Decision(
+    bindingCommodityCode = "code",
+    justification = "something",
+    goodsDescription = "desc"
+  )
+
+  def createBtaCardData(eori: String, totalApplications: Int, actionableApplications: Int, totalRulings: Int, expiringRulings: Int,
+                        expiryMonths: Option[Int] = None, expiryDays: Option[Int] = None): List[Case] = {
+    if (actionableApplications > totalApplications || expiringRulings > totalRulings) {
+      List.empty
+    } else {
+      val now = LocalDate.now()
+      val actionableA = (1 to actionableApplications).map(_ => createCase(status = CaseStatus.REFERRED))
+      val totalA = (1 to (totalApplications - actionableApplications)).map(_ => createCase(status = CaseStatus.OPEN))
+      val expiringR = (1 to expiringRulings).map { _ =>
+        createCase(status = CaseStatus.COMPLETED, decision = Some(decision.copy(
+          effectiveStartDate = Some(now.toDate.toInstant),
+          effectiveEndDate = Some(now.plusMonths(expiryMonths.getOrElse(1)).plusDays(expiryDays.getOrElse(0)).toDate.toInstant)
+        )))
+      }
+      val totalR = (1 to (totalRulings - expiringRulings)).map(_ => createCase(status = CaseStatus.COMPLETED, decision = Some(decision.copy(
+        effectiveStartDate = Some(now.toDate.toInstant),
+        effectiveEndDate = Some(now.plusYears(1).toDate.toInstant)
+      ))))
+      List(actionableA, totalA, expiringR, totalR).flatten.map(i => i.copy(application = i.application.asBTI
+        .copy(holder = EORIDetails(eori, "name", "l1", "l2", "l3", "postcode", "uk"))))
+    }
+  }
 
   def createCase(
                   app: Application = createBasicBTIApplication,
