@@ -5,7 +5,7 @@ import play.core.PlayVersion.current
 object AppDependencies {
 
   lazy val compile = Seq(
-    "uk.gov.hmrc"          %% "bootstrap-backend-play-28"     % "5.24.0",
+    "uk.gov.hmrc"          %% "bootstrap-backend-play-28"     % "6.2.0",
     "uk.gov.hmrc"          %% "crypto"                        % "6.1.0",
     "uk.gov.hmrc"          %% "play-json-union-formatter"     % "1.15.0-play-28",
     "uk.gov.hmrc"          %% "simple-reactivemongo"          % "8.1.0-play-27",
