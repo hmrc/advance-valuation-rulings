@@ -17,15 +17,14 @@
 package uk.gov.hmrc.bindingtariffclassification.repository
 
 import com.google.inject.ImplementedBy
-import javax.inject.{Inject, Singleton}
-import play.api.libs.json._
-import reactivemongo.bson.BSONObjectID
-import reactivemongo.play.json.ImplicitBSONHandlers._
-import reactivemongo.play.json.collection.JSONCollection
-import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters._
+import org.mongodb.scala.bson.conversions.Bson
+import org.mongodb.scala.model.Filters.{and, empty}
+import org.mongodb.scala.model._
 import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.mongo.ReactiveRepository
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -42,57 +41,46 @@ trait EventRepository {
 }
 
 @Singleton
-class EventMongoRepository @Inject() (mongoDbProvider: MongoDbProvider)
-    extends ReactiveRepository[Event, BSONObjectID](
-      collectionName = "events",
-      mongo          = mongoDbProvider.mongo,
-      domainFormat   = MongoFormatters.formatEvent
+class EventMongoRepository @Inject()(mongoComponent: MongoComponent)
+  extends PlayMongoRepository[Event](
+    collectionName = "events",
+    mongoComponent = mongoComponent,
+    domainFormat = MongoFormatters.formatEvent,
+    indexes = Seq(
+      IndexModel(Indexes.ascending("id"), IndexOptions().unique(true).name("id_Index")),
+      IndexModel(Indexes.ascending("caseReference"), IndexOptions().unique(false).name("caseReference_Index")),
+      IndexModel(Indexes.ascending("type"), IndexOptions().unique(false).name("type_Index"))
     )
-    with EventRepository
-    with MongoCrudHelper[Event] {
-
-  override val mongoCollection: JSONCollection = collection
-
-  override def indexes = Seq(
-    // TODO: We need to create an index (composed by a single or multiple fields) considering all possible searches needed by the UI.
-    createSingleFieldAscendingIndex(indexFieldKey = "id", isUnique            = true),
-    createSingleFieldAscendingIndex(indexFieldKey = "caseReference", isUnique = false),
-    createSingleFieldAscendingIndex(indexFieldKey = "type", isUnique          = false)
   )
+    with EventRepository
+    with BaseMongoOperations[Event] {
 
-  override def insert(e: Event): Future[Event] =
-    createOne(e)
-
-  private val defaultSortBy = Json.obj("timestamp" -> -1)
-
-  private def in[T](set: Set[T])(implicit fmt: Format[T]): JsValue =
-    Json.obj("$in" -> JsArray(set.map(elm => Json.toJson(elm)).toSeq))
+  override def insert(e: Event): Future[Event] = createOne(e)
 
   override def search(search: EventSearch, pagination: Pagination): Future[Paged[Event]] =
-    getMany(selector(search), defaultSortBy, pagination)
+    countMany(
+      selector(search),
+      Sorts.orderBy(Sorts.descending("timestamp")),
+      pagination
+    )
 
   override def deleteAll(): Future[Unit] =
-    removeAll().map(_ => ())
+    collection.deleteMany(empty()).toFuture().map(_ => Future.unit)
 
-  override def delete(search: EventSearch): Future[Unit] = {
-    val delete = collection.delete()
-    for {
-      elems <- delete.element(q = selector(search), limit = None)
-      _     <- delete.many(Seq(elems))
-    } yield ()
-  }
+  override def delete(search: EventSearch): Future[Unit] =
+    collection.deleteMany(filter = selector(search)).toFuture().map(_ => Future.unit)
 
-  private def selector(search: EventSearch): JsObject = {
-    val queries = Seq[JsObject]()
-      .++(search.caseReference.map(r => Json.obj("caseReference" -> in(r))))
-      .++(search.`type`.map(t => Json.obj("details.type" -> in(t))))
-      .++(search.timestampMin.map(t => Json.obj("timestamp" -> Json.obj("$gte" -> t))))
-      .++(search.timestampMax.map(t => Json.obj("timestamp" -> Json.obj("$lte" -> t))))
+  private def selector(search: EventSearch): Bson = {
+    val queries = Seq[Bson]()
+      .++(search.caseReference.map(r => Filters.in("caseReference", r.toList: _*)))
+      .++(search.`type`.map(t => Filters.in("details.type", t.map(_.toString).toList: _*)))
+      .++(search.timestampMin.map(t => Filters.gte("timestamp", t)))
+      .++(search.timestampMax.map(t => Filters.lte("timestamp", t)))
 
     queries match {
-      case Nil           => Json.obj()
+      case Nil => empty()
       case single :: Nil => single
-      case many          => JsObject(Seq("$and" -> JsArray(many)))
+      case many => and(many: _*)
     }
   }
 

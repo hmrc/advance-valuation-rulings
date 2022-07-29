@@ -23,8 +23,6 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.libs.json.Json.toJson
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import reactivemongo.bson.BSONDocument
-import reactivemongo.core.errors.DatabaseException
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.RESTFormatters._
@@ -32,7 +30,7 @@ import uk.gov.hmrc.bindingtariffclassification.model.Role.CLASSIFICATION_OFFICER
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.service.KeywordService
 import uk.gov.hmrc.http.HttpVerbs
-import util.CaseData
+import util.{CaseData, DatabaseException}
 
 import scala.concurrent.Future._
 
@@ -86,7 +84,7 @@ class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.deleteKeyword("name")(req)
 
-      status(result) shouldBe INTERNAL_SERVER_ERROR
+      status(result)                   shouldBe INTERNAL_SERVER_ERROR
       contentAsJson(result).toString() shouldBe """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
     }
 
@@ -99,7 +97,7 @@ class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.addKeyword()(fakeRequest.withBody(toJson(newKeywordRequest)))
 
-      status(result) shouldBe CREATED
+      status(result)        shouldBe CREATED
       contentAsJson(result) shouldBe toJson(keyword1)
     }
 
@@ -112,19 +110,13 @@ class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
     "return 500 when an error occurred" in {
       val errorCode: Int = 11000
-      val error = new DatabaseException {
-        override def originalDocument: Option[BSONDocument] = None
-
-        override def code: Option[Int] = Some(errorCode)
-
-        override def message: String = "duplicate value for db index"
-      }
+      val error          = DatabaseException.exception(errorCode, "duplicate value for db index")
 
       when(keywordService.addKeyword(any[Keyword])).thenReturn(failed(error))
 
       val result = controller.addKeyword()(fakeRequest.withBody(toJson(newKeywordRequest)))
 
-      status(result) shouldBe INTERNAL_SERVER_ERROR
+      status(result)                   shouldBe INTERNAL_SERVER_ERROR
       contentAsJson(result).toString() shouldBe """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
     }
 
@@ -137,7 +129,7 @@ class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.approveKeyword(keyword1.name)(fakeRequest.withBody(toJson(keyword1)))
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsJson(result) shouldBe toJson(keyword1)
     }
 
@@ -154,7 +146,7 @@ class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.approveKeyword(keyword3.name)(fakeRequest.withBody(toJson(keyword3)))
 
-      status(result) shouldBe NOT_FOUND
+      status(result)                   shouldBe NOT_FOUND
       contentAsJson(result).toString() shouldBe """{"code":"NOT_FOUND","message":"Keyword not found"}"""
     }
 
@@ -166,7 +158,7 @@ class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.approveKeyword(keyword3.name)(fakeRequest.withBody(toJson(keyword3)))
 
-      status(result) shouldBe INTERNAL_SERVER_ERROR
+      status(result)                   shouldBe INTERNAL_SERVER_ERROR
       contentAsJson(result).toString() shouldBe """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
     }
   }
@@ -178,7 +170,7 @@ class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.getAllKeywords(pagination)(fakeRequest)
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsJson(result) shouldBe toJson(Paged(Seq(keyword1, keyword2)))
     }
 
@@ -188,7 +180,7 @@ class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.getAllKeywords(pagination)(fakeRequest)
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsJson(result) shouldBe toJson(Paged.empty[Keyword])
     }
 
@@ -213,7 +205,7 @@ class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.fetchCaseKeywords(pagination)(fakeRequest)
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsJson(result) shouldBe toJson(Paged(Seq(caseKeyword, caseKeyword2)))
     }
 
@@ -223,7 +215,7 @@ class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.fetchCaseKeywords(pagination)(fakeRequest)
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsJson(result) shouldBe toJson(Paged.empty[CaseKeyword])
     }
 

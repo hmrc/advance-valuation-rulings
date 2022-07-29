@@ -16,16 +16,17 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
-import javax.inject.{Inject, Singleton}
-
 import com.google.inject.ImplementedBy
-import reactivemongo.bson.BSONObjectID
-import reactivemongo.core.errors.DatabaseException
-import reactivemongo.play.json.collection.JSONCollection
-import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatJobRunEvent
+import org.mongodb.scala.MongoWriteException
+import org.mongodb.scala.model.Filters.{empty, equal}
+import org.mongodb.scala.model.Indexes._
+import org.mongodb.scala.model.{IndexModel, IndexOptions}
+import play.api.i18n.Lang.logger
 import uk.gov.hmrc.bindingtariffclassification.model.{JobRunEvent, MongoFormatters}
-import uk.gov.hmrc.mongo.ReactiveRepository
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.control.NonFatal
@@ -42,35 +43,31 @@ trait MigrationLockRepository {
 }
 
 @Singleton
-class MigrationLockMongoRepository @Inject() (mongoDbProvider: MongoDbProvider)
-    extends ReactiveRepository[JobRunEvent, BSONObjectID](
-      collectionName = "migrations",
-      mongo          = mongoDbProvider.mongo,
-      domainFormat   = MongoFormatters.formatJobRunEvent
+class MigrationLockMongoRepository @Inject()(mongoComponent: MongoComponent)
+  extends PlayMongoRepository[JobRunEvent](
+    collectionName = "migrations",
+    mongoComponent = mongoComponent,
+    domainFormat = MongoFormatters.formatJobRunEvent,
+    indexes = Seq(
+      IndexModel(ascending("name"), IndexOptions().unique(true).name("name_Index"))
     )
-    with MigrationLockRepository
-    with MongoCrudHelper[JobRunEvent] {
-
-  override val mongoCollection: JSONCollection = collection
+  )
+    with MigrationLockRepository {
 
   val mongoDuplicateKeyErrorCode: Int = 11000
 
-  override def indexes = Seq(
-    createSingleFieldAscendingIndex("name", isUnique = true)
-  )
-
   override def lock(e: JobRunEvent): Future[Boolean] =
-    createOne(e) map { _ =>
+    collection.insertOne(e).toFuture().map { _ =>
       logger.debug(s"Took Lock for [${e.name}]")
       true
     } recover {
-      case error: DatabaseException if error.isNotAPrimaryError =>
+      case error: MongoWriteException if isNotAPrimaryError(error.getCode) =>
         // Do not allow the migration job to proceed due to errors on secondary nodes, and attempt to rollback the changes
         logger.error(s"Lock failed on secondary node", error)
         rollback(e)
         false
-      case error: DatabaseException if error.code.contains(mongoDuplicateKeyErrorCode) =>
-        logger.debug(s"Lock already exists for [${e.name}]", error)
+      case error: MongoWriteException if error.getCode == mongoDuplicateKeyErrorCode =>
+        logger.error(s"Lock already exists for [${e.name}]", error)
         false
       case NonFatal(error) =>
         logger.error(s"Unable to take Lock for [${e.name}]", error)
@@ -78,11 +75,17 @@ class MigrationLockMongoRepository @Inject() (mongoDbProvider: MongoDbProvider)
     }
 
   override def rollback(e: JobRunEvent): Future[Unit] =
-    remove("name" -> e.name).map { _ =>
+    collection.deleteOne(equal("name", e.name)).toFuture().map { _ =>
       logger.debug(s"Removed Lock for [${e.name}]")
-      ()
+      Future.unit
     }
 
   override def deleteAll(): Future[Unit] =
-    removeAll().map(_ => ())
+    collection.deleteMany(empty()).toFuture().flatMap(_ => Future.unit)
+
+  /** Tells if this error is due to a write on a secondary node. */
+  def isNotAPrimaryError(code: Int): Boolean = Some(code).exists {
+    case 10058 | 10107 | 13435 | 13436 => true
+    case _ => false
+  }
 }

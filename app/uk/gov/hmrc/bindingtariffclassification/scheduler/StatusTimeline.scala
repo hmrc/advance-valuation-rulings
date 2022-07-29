@@ -16,11 +16,10 @@
 
 package uk.gov.hmrc.bindingtariffclassification.scheduler
 
-import java.time.Instant
-
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model.{Event, FieldChange}
 
+import java.time.Instant
 import scala.collection.immutable.SortedMap
 
 class StatusTimeline(statusChanges: Seq[(Instant, CaseStatus)]) {

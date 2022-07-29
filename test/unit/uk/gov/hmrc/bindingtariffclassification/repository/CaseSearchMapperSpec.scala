@@ -16,13 +16,15 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
-import java.time.{Clock, Instant, ZoneOffset}
-
 import org.mockito.BDDMockito._
+import org.mongodb.scala.model.Filters
 import play.api.libs.json._
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.sort.{CaseSortField, SortDirection}
+import uk.gov.hmrc.mongo.play.json.Codecs
+
+import java.time.{Clock, Instant, ZoneOffset}
 
 class CaseSearchMapperSpec extends BaseMongoIndexSpec {
 
@@ -379,7 +381,7 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
     "convert to Json from a valid reference" in {
       val validRef = "valid_reference"
 
-      jsonMapper.reference(validRef) shouldBe Json.obj("reference" -> validRef)
+      jsonMapper.reference(validRef) shouldBe Filters.equal("reference", validRef)
     }
 
   }
@@ -391,8 +393,10 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
       val fieldName  = "employee"
       val fieldValue = "Alex"
 
-      jsonMapper.updateField(fieldName, fieldValue) shouldBe Json.obj(
-        "$set" -> Json.obj("employee" -> "Alex")
+      jsonMapper.updateField(fieldName, fieldValue) shouldBe Codecs.toBson(
+        Json.obj(
+          "$set" -> Json.obj("employee" -> "Alex")
+        )
       )
 
     }

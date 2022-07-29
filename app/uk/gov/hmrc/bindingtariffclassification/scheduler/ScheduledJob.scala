@@ -18,12 +18,12 @@ package uk.gov.hmrc.bindingtariffclassification.scheduler
 
 import org.quartz.{CronExpression, Job, JobExecutionContext}
 import uk.gov.hmrc.bindingtariffclassification.config.JobConfig
-import uk.gov.hmrc.lock.LockKeeper
+import uk.gov.hmrc.mongo.lock.LockService
 
 import scala.concurrent.duration.{Duration => ScalaDuration}
 import scala.concurrent.{Await, ExecutionContext, Future}
 
-abstract class ScheduledJob(implicit ec: ExecutionContext) extends Job with LockKeeper {
+abstract class ScheduledJob(implicit ec: ExecutionContext) extends Job with LockService {
   def jobConfig: JobConfig
 
   def execute(): Future[Unit]
@@ -36,6 +36,6 @@ abstract class ScheduledJob(implicit ec: ExecutionContext) extends Job with Lock
 
   def execute(context: JobExecutionContext): Unit = {
     // Quartz gives us no choice but to block here
-    Await.result(tryLock(execute()), ScalaDuration.Inf)
+    Await.result(withLock(execute()), ScalaDuration.Inf)
   }
 }

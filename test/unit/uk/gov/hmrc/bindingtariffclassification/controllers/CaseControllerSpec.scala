@@ -23,8 +23,6 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.libs.json.Json.toJson
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import reactivemongo.bson.BSONDocument
-import reactivemongo.core.errors.DatabaseException
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.RESTFormatters._
@@ -32,7 +30,7 @@ import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.service.CaseService
 import uk.gov.hmrc.bindingtariffclassification.sort.{CaseSortField, SortDirection}
 import uk.gov.hmrc.http.HttpVerbs
-import util.CaseData
+import util.{CaseData, DatabaseException}
 
 import java.time.Instant
 import scala.concurrent.Future
@@ -85,7 +83,7 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.deleteAll()(req)
 
-      status(result) shouldBe INTERNAL_SERVER_ERROR
+      status(result)                   shouldBe INTERNAL_SERVER_ERROR
       contentAsJson(result).toString() shouldBe """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
     }
 
@@ -121,7 +119,7 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.delete("ref")(req)
 
-      status(result) shouldBe INTERNAL_SERVER_ERROR
+      status(result)                   shouldBe INTERNAL_SERVER_ERROR
       contentAsJson(result).toString() shouldBe """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
     }
 
@@ -136,7 +134,7 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.create()(fakeRequest.withBody(toJson(newCase)))
 
-      status(result) shouldBe CREATED
+      status(result)        shouldBe CREATED
       contentAsJson(result) shouldBe toJson(c1)
     }
 
@@ -148,18 +146,14 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach {
     }
 
     "return 500 when an error occurred" in {
-      val error = new DatabaseException {
-        override def originalDocument: Option[BSONDocument] = None
-        override def code: Option[Int]                      = Some(11000)
-        override def message: String                        = "duplicate value for db index"
-      }
+      val error = DatabaseException.exception(11000, "duplicate value for db index")
 
       when(caseService.nextCaseReference(ApplicationType.BTI)).thenReturn(successful("1"))
       when(caseService.insert(any[Case])).thenReturn(failed(error))
 
       val result = controller.create()(fakeRequest.withBody(toJson(newCase)))
 
-      status(result) shouldBe INTERNAL_SERVER_ERROR
+      status(result)                   shouldBe INTERNAL_SERVER_ERROR
       contentAsJson(result).toString() shouldBe """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
     }
 
@@ -172,7 +166,7 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.put(c1.reference)(fakeRequest.withBody(toJson(c1)))
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsJson(result) shouldBe toJson(c1)
     }
 
@@ -183,7 +177,7 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach {
       val result =
         controller.put(c1.reference)(fakeRequest.withBody(toJson(c1)).withHeaders("User-Agent" -> "agent"))
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsJson(result) shouldBe toJson(c1)
     }
 
@@ -203,7 +197,7 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach {
       val createdCase: Case = captor.getValue
 
       createdCase.migratedDaysElapsed shouldBe Some(5)
-      result.header.status shouldBe OK
+      result.header.status            shouldBe OK
     }
 
     "return 400 when the JSON request payload is not a case" in {
@@ -226,7 +220,7 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.put(c1.reference)(fakeRequest.withBody(toJson(c1)))
 
-      status(result) shouldBe NOT_FOUND
+      status(result)                   shouldBe NOT_FOUND
       contentAsJson(result).toString() shouldBe """{"code":"NOT_FOUND","message":"Case not found"}"""
     }
 
@@ -237,7 +231,7 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.put(c1.reference)(fakeRequest.withBody(toJson(c1)))
 
-      status(result) shouldBe INTERNAL_SERVER_ERROR
+      status(result)                   shouldBe INTERNAL_SERVER_ERROR
       contentAsJson(result).toString() shouldBe """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
     }
 
@@ -247,12 +241,12 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
     "return 200 when the case has been updated successfully" in {
       val applicationPdf = Some(Attachment("id", public = true, None, Instant.now, None))
-      val caseUpdate = CaseUpdate(application = Some(BTIUpdate(applicationPdf = SetValue(applicationPdf))))
+      val caseUpdate     = CaseUpdate(application = Some(BTIUpdate(applicationPdf = SetValue(applicationPdf))))
       when(caseService.update(c1.reference, caseUpdate)).thenReturn(successful(Some(c1)))
 
       val result = controller.update(c1.reference)(fakeRequest.withBody(toJson(caseUpdate)))
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsJson(result) shouldBe toJson(c1)
     }
 
@@ -269,18 +263,18 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.update(c1.reference)(fakeRequest.withBody(toJson(caseUpdate)))
 
-      status(result) shouldBe NOT_FOUND
+      status(result)                   shouldBe NOT_FOUND
       contentAsJson(result).toString() shouldBe """{"code":"NOT_FOUND","message":"Case not found"}"""
     }
 
     "return 500 when an error occurred" in {
-      val error = new RuntimeException
+      val error      = new RuntimeException
       val caseUpdate = CaseUpdate()
       when(caseService.update(c1.reference, caseUpdate)).thenReturn(failed(error))
 
       val result = controller.update(c1.reference)(fakeRequest.withBody(toJson(caseUpdate)))
 
-      status(result) shouldBe INTERNAL_SERVER_ERROR
+      status(result)                   shouldBe INTERNAL_SERVER_ERROR
       contentAsJson(result).toString() shouldBe """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
     }
 
@@ -309,7 +303,7 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.get(search, pagination)(fakeRequest)
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsJson(result) shouldBe toJson(Paged(Seq(c1, c2)))
     }
 
@@ -318,7 +312,7 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.get(search, pagination)(fakeRequest)
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsJson(result) shouldBe toJson(Paged.empty[Case])
     }
 
@@ -330,7 +324,7 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.get(search, pagination)(fakeRequest)
 
-      status(result) shouldBe INTERNAL_SERVER_ERROR
+      status(result)                   shouldBe INTERNAL_SERVER_ERROR
       contentAsJson(result).toString() shouldBe """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
     }
 
@@ -343,7 +337,7 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.getByReference(c1.reference)(fakeRequest)
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsJson(result) shouldBe toJson(c1)
     }
 
@@ -352,7 +346,7 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.getByReference(c1.reference)(fakeRequest)
 
-      status(result) shouldBe NOT_FOUND
+      status(result)                   shouldBe NOT_FOUND
       contentAsJson(result).toString() shouldBe """{"code":"NOT_FOUND","message":"Case not found"}"""
     }
 
@@ -363,7 +357,7 @@ class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.getByReference(c1.reference)(fakeRequest)
 
-      status(result) shouldBe INTERNAL_SERVER_ERROR
+      status(result)                   shouldBe INTERNAL_SERVER_ERROR
       contentAsJson(result).toString() shouldBe """{"code":"UNKNOWN_ERROR","message":"An unexpected error occurred"}"""
     }
 

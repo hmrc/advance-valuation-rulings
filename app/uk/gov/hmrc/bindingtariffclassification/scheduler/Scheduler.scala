@@ -16,27 +16,26 @@
 
 package uk.gov.hmrc.bindingtariffclassification.scheduler
 
-import javax.inject.{Inject, Singleton}
-
 import com.kenshoo.play.metrics.Metrics
-import org.quartz.impl.StdSchedulerFactory
 import org.quartz.CronScheduleBuilder
 import org.quartz.JobBuilder.newJob
 import org.quartz.TriggerBuilder.newTrigger
+import org.quartz.impl.StdSchedulerFactory
 import play.api.inject.ApplicationLifecycle
 import uk.gov.hmrc.bindingtariffclassification.common.Logging
 import uk.gov.hmrc.bindingtariffclassification.metrics.HasMetrics
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class Scheduler @Inject() (
-  lifecycle: ApplicationLifecycle,
-  jobFactory: ScheduledJobFactory,
-  scheduledJobs: ScheduledJobs,
-  val metrics: Metrics
-)(implicit ec: ExecutionContext)
-    extends Logging
+class Scheduler @Inject()(
+                           lifecycle: ApplicationLifecycle,
+                           jobFactory: ScheduledJobFactory,
+                           scheduledJobs: ScheduledJobs,
+                           val metrics: Metrics
+                         )(implicit ec: ExecutionContext)
+  extends Logging
     with HasMetrics {
 
   val quartz = StdSchedulerFactory.getDefaultScheduler

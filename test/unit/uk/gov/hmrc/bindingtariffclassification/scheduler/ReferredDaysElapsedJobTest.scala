@@ -19,21 +19,19 @@ package uk.gov.hmrc.bindingtariffclassification.scheduler
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers._
 import org.mockito.BDDMockito.given
-import org.mockito.Mockito.{verify, when, _}
+import org.mockito.Mockito._
 import org.mockito.invocation.InvocationOnMock
 import org.quartz.CronExpression
 import org.scalatest.BeforeAndAfterEach
-import play.api.test.Helpers. _
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.{AppConfig, JobConfig}
 import uk.gov.hmrc.bindingtariffclassification.connector.BankHolidaysConnector
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.bindingtariffclassification.repository.LockRepoProvider
 import uk.gov.hmrc.bindingtariffclassification.service.{CaseService, EventService}
 import uk.gov.hmrc.bindingtariffclassification.sort.CaseSortField
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.lock.LockRepository
+import uk.gov.hmrc.mongo.lock.LockRepository
 import util.CaseData
 import util.EventData.createCaseStatusChangeEventDetails
 
@@ -52,9 +50,6 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
   private val clock                 = Clock.fixed(fixedDate.toInstant, ZoneOffset.UTC)
   private val appConfig             = mock[AppConfig]
   private val lockRepo              = mock[LockRepository]
-  private val lockRepoProvider = new LockRepoProvider {
-    override def repo: () => LockRepository = () => lockRepo
-  }
 
   private val cronExpr = new CronExpression("0 0 14 * * ?")
 
@@ -74,7 +69,8 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
   override protected def beforeEach(): Unit = {
     given(appConfig.clock).willReturn(clock)
     given(appConfig.referredDaysElapsed).willReturn(jobConfig)
-    given(lockRepo.lock(any[String], any[String], any[org.joda.time.Duration])).willReturn(Future.successful(true))
+    given(lockRepo.takeLock(any[String], any[String], any[scala.concurrent.duration.Duration]))
+      .willReturn(Future.successful(true))
   }
 
   "Scheduled Job" should {
@@ -372,7 +368,7 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
   }
 
   private def newJob: ReferredDaysElapsedJob =
-    new ReferredDaysElapsedJob(caseService, eventService, bankHolidaysConnector, lockRepoProvider, appConfig)
+    new ReferredDaysElapsedJob(caseService, eventService, bankHolidaysConnector, lockRepo, appConfig)
 
   private def givenABankHolidayOn(date: String*): Unit =
     when(bankHolidaysConnector.get()(any[HeaderCarrier])).thenReturn(successful(date.map(LocalDate.parse).toSet))
@@ -388,6 +384,7 @@ class ReferredDaysElapsedJobTest extends BaseSpec with BeforeAndAfterEach {
 
   private def givenUpdatingACaseReturnsItself(): Unit =
     given(caseService.update(any[Case], any[Boolean])).will((invocation: InvocationOnMock) =>
-      Future.successful(Option(invocation.getArgument[Case](0))))
+      Future.successful(Option(invocation.getArgument[Case](0)))
+    )
 
 }

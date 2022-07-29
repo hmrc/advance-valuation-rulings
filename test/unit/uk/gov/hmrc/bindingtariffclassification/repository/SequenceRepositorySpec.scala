@@ -16,18 +16,13 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
+import org.mongodb.scala.MongoWriteException
+import org.mongodb.scala.model.Indexes.ascending
+import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-import play.api.test.Helpers. _
-import reactivemongo.api.indexes.Index
-import reactivemongo.api.indexes.IndexType.Ascending
-import reactivemongo.api.{DB, ReadConcern}
-import reactivemongo.bson._
-import reactivemongo.core.errors.DatabaseException
-import reactivemongo.play.json.ImplicitBSONHandlers._
-import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatSequence
 import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.mongo.MongoSpecSupport
+import uk.gov.hmrc.mongo.test.MongoSupport
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
@@ -36,38 +31,35 @@ class SequenceRepositorySpec
     extends BaseMongoIndexSpec
     with BeforeAndAfterAll
     with BeforeAndAfterEach
-    with MongoSpecSupport
+    with MongoSupport
     with Eventually { self =>
-
-  private val mongoDbProvider: MongoDbProvider = new MongoDbProvider {
-    override val mongo: () => DB = self.mongo
-  }
 
   private val repository = createMongoRepo
 
   private def createMongoRepo: SequenceMongoRepository =
-    new SequenceMongoRepository(mongoDbProvider)
+    new SequenceMongoRepository(mongoComponent)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    await(repository.drop)
-    await(repository.ensureIndexes)
+    await(repository.collection.deleteMany(Filters.empty()).toFuture())
     collectionSize shouldBe 0
   }
 
   override def afterAll(): Unit = {
     super.afterAll()
-    await(repository.drop)
+    await(repository.collection.deleteMany(Filters.empty()).toFuture())
   }
 
   private def collectionSize: Int =
     await(
       repository.collection
-        .count(selector = None, limit = Some(0), skip = 0, hint = None, readConcern = ReadConcern.Local)
-    ).toInt
+        .countDocuments()
+        .toFuture()
+        .map(_.toInt)
+    )
 
-  private def selectorByName(): BSONDocument =
-    BSONDocument("name" -> "name")
+  private def selectorByName() =
+    Filters.equal("name", "name")
 
   "insert" should {
     val sequence = Sequence("name", 0)
@@ -76,24 +68,24 @@ class SequenceRepositorySpec
       await(repository.insert(sequence)) shouldBe sequence
       collectionSize                     shouldBe 1
 
-      await(repository.collection.find(selectorByName()).one[Sequence]) shouldBe Some(sequence)
+      await(repository.collection.find(selectorByName()).headOption()) shouldBe Some(sequence)
     }
 
     "fail to insert a duplicate sequence name" in {
       await(repository.insert(sequence)) shouldBe sequence
       collectionSize                     shouldBe 1
 
-      await(repository.collection.find(selectorByName()).one[Sequence]) shouldBe Some(sequence)
+      await(repository.collection.find(selectorByName()).headOption()) shouldBe Some(sequence)
 
       val updated: Sequence = sequence.copy(value = 2)
-      val errorCode: Int = 11000
+      val errorCode: Int    = 11000
 
-      intercept[DatabaseException] {
+      intercept[MongoWriteException] {
         await(repository.insert(updated))
-      }.code shouldBe Some(errorCode)
+      }.getError.getCode shouldBe errorCode
 
-      collectionSize                                                          shouldBe 1
-      await(repository.collection.find(selectorByName()).one[Sequence]) shouldBe Some(sequence)
+      collectionSize                                                   shouldBe 1
+      await(repository.collection.find(selectorByName()).headOption()) shouldBe Some(sequence)
     }
   }
 
@@ -101,7 +93,7 @@ class SequenceRepositorySpec
 
     "return existing sequence" in {
       val value: Int = 10
-      val sequence = Sequence("name", value)
+      val sequence   = Sequence("name", value)
       await(repository.insert(sequence))
       await(repository.getByName("name")) shouldBe sequence
     }
@@ -129,8 +121,8 @@ class SequenceRepositorySpec
     "have all expected indexes" in {
 
       val expectedIndexes = List(
-        Index(key = Seq("name" -> Ascending), name = Some("name_Index"), unique = true),
-        Index(key = Seq("_id"  -> Ascending), name = Some("_id_"))
+        IndexModel(ascending("name"), IndexOptions().name("name_Index").unique(true)),
+        IndexModel(ascending("_id"), IndexOptions().name("_id_"))
       )
 
       val repo = createMongoRepo
@@ -140,7 +132,7 @@ class SequenceRepositorySpec
         assertIndexes(expectedIndexes.sorted, getIndexes(repo.collection).sorted)
       }
 
-      await(repo.drop)
+      await(repo.collection.drop())
     }
   }
 

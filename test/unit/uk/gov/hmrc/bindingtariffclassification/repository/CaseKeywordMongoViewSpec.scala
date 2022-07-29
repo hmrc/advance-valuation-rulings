@@ -18,12 +18,10 @@ package uk.gov.hmrc.bindingtariffclassification.repository
 
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-import play.api.test.Helpers. _
-import reactivemongo.api.{DB, ReadConcern}
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.Role.CLASSIFICATION_OFFICER
 import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.mongo.MongoSpecSupport
+import uk.gov.hmrc.mongo.test.MongoSupport
 import util.CaseData.{createBasicBTIApplication, createDecision, createLiabilityOrder}
 
 import java.time.Instant
@@ -33,23 +31,19 @@ class CaseKeywordMongoViewSpec
     extends BaseMongoIndexSpec
     with BeforeAndAfterAll
     with BeforeAndAfterEach
-    with MongoSpecSupport
+    with MongoSupport
     with Eventually {
   self =>
-
-  private val mongoDbProvider: MongoDbProvider = new MongoDbProvider {
-    override val mongo: () => DB = self.mongo
-  }
 
   private val config     = mock[AppConfig]
   private val repository = newMongoRepository
   private val view       = newMongoAggregation
 
   private def newMongoRepository: CaseMongoRepository =
-    new CaseMongoRepository(config, mongoDbProvider, new SearchMapper(config), new UpdateMapper)
+    new CaseMongoRepository(config, mongoComponent, new SearchMapper(config), new UpdateMapper)
 
   private def newMongoAggregation: CaseKeywordMongoView =
-    new CaseKeywordMongoView(mongoDbProvider)
+    new CaseKeywordMongoView(mongoComponent)
 
   private val secondsInAYear = 3600 * 24 * 365
 
@@ -105,20 +99,21 @@ class CaseKeywordMongoViewSpec
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    await(repository.drop)
-    await(repository.ensureIndexes)
+    await(repository.deleteAll())
   }
 
   override def afterAll(): Unit = {
     super.afterAll()
-    await(repository.drop)
+    await(repository.deleteAll())
   }
 
   private def collectionSize: Int =
     await(
       repository.collection
-        .count(selector = None, limit = Some(0), skip = 0, hint = None, readConcern = ReadConcern.Local)
-    ).toInt
+        .countDocuments()
+        .toFuture()
+        .map(_.toInt)
+    )
 
   private val pagination = Pagination()
 
@@ -128,7 +123,7 @@ class CaseKeywordMongoViewSpec
       await(repository.insert(caseWithKeywordsBTI))
       await(repository.insert(caseWithKeywordsLiability))
       collectionSize shouldBe 2
-      val expected = List(caseKeywordBike, caseKeywordTool)
+      val expected = Seq(caseKeywordBike, caseKeywordTool)
 
       await(view.fetchKeywordsFromCases(pagination)).results contains expected
     }

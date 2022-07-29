@@ -1161,7 +1161,7 @@ class CaseSpec extends BaseFeatureSpec {
 
     Scenario("Sorting in descending order") {
       Given("There are few cases in the database")
-      storeCases(caseZ, caseWithEmptyCommCode, caseY1, caseY2)
+      storeCases(caseZ, caseWithEmptyCommCode, caseY2, caseY1)
 
       When("I get all cases sorted by commodity code")
       val result = Http(s"$serviceUrl/cases?sort_by=commodity-code&sort_direction=desc")

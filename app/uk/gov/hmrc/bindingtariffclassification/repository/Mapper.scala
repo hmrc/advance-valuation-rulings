@@ -16,22 +16,26 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
-import play.api.libs.json._
+import org.mongodb.scala.bson.conversions.Bson
+import org.mongodb.scala.model.Filters.equal
+import org.mongodb.scala.model.Updates.set
 import play.api.libs.json.Json.JsValueWrapper
+import play.api.libs.json._
+import uk.gov.hmrc.mongo.play.json.Codecs
 
 trait Mapper {
-  def reference(reference: String): JsObject =
-    Json.obj("reference" -> reference)
+  def reference(reference: String): Bson =
+    equal("reference", reference)
 
   def field[A: Writes](fieldName: String, fieldValue: A): Seq[(String, JsValueWrapper)] =
     Seq(fieldName -> Json.toJson(fieldValue))
 
-  def updateField(fieldName: String, fieldValue: JsValue): JsObject =
-    Json.obj("$set" -> Json.obj(fieldName -> fieldValue))
+  def updateField(fieldName: String, fieldValue: JsValue): Bson =
+    set(fieldName, fieldValue)
 
-  def updateField[A: Writes](fieldName: String, fieldValue: A): JsObject =
-    Json.obj("$set" -> Json.obj(field(fieldName, fieldValue): _*))
+  def updateField[A: Writes](fieldName: String, fieldValue: A): Bson =
+    Codecs.toBson(Json.obj("$set" -> Json.obj(field(fieldName, fieldValue): _*))).asDocument()
 
-  def updateFields(fields: (String, JsValueWrapper)*): JsObject =
-    Json.obj("$set" -> Json.obj(fields: _*))
+  def updateFields(fields: (String, JsValueWrapper)*): Bson =
+    Codecs.toBson(Json.obj("$set" -> Json.obj(fields: _*))).asDocument()
 }

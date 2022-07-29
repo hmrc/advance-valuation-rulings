@@ -17,6 +17,7 @@
 package uk.gov.hmrc.bindingtariffclassification.component
 
 import com.kenshoo.play.metrics.Metrics
+import com.mongodb.WriteConcern
 import org.scalatest._
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -28,7 +29,7 @@ import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.{Case, Event, Sequence}
 import uk.gov.hmrc.bindingtariffclassification.repository.{CaseMongoRepository, EventMongoRepository, SequenceMongoRepository}
 import uk.gov.hmrc.bindingtariffclassification.scheduler.ScheduledJobs
-import uk.gov.hmrc.lock.LockRepository
+import uk.gov.hmrc.mongo.lock.{LockRepository, MongoLockRepository}
 import util.TestMetrics
 
 import scala.concurrent.Await.result
@@ -58,31 +59,20 @@ abstract class BaseFeatureSpec
   private lazy val caseStore: CaseMongoRepository = app.injector.instanceOf[CaseMongoRepository]
   private lazy val eventStore: EventMongoRepository = app.injector.instanceOf[EventMongoRepository]
   private lazy val sequenceStore: SequenceMongoRepository = app.injector.instanceOf[SequenceMongoRepository]
+  private lazy val mongoLockRepository: MongoLockRepository = app.injector.instanceOf[MongoLockRepository]
   private lazy val scheduledJobStores: Iterable[LockRepository] =
-    app.injector.instanceOf[ScheduledJobs].jobs.map(_.repo)
+    app.injector.instanceOf[ScheduledJobs].jobs.map(_.lockRepository)
 
   def dropStores(): Unit = {
-    result(caseStore.drop, timeout)
-    result(eventStore.drop, timeout)
-    result(sequenceStore.drop, timeout)
-    result(Future.traverse(scheduledJobStores)(_.drop), timeout)
-  }
-
-  private def ensureStoresIndexes(): Unit = {
-    result(caseStore.ensureIndexes, timeout)
-    result(eventStore.ensureIndexes, timeout)
-    result(sequenceStore.ensureIndexes, timeout)
-    result(Future.traverse(scheduledJobStores)(_.ensureIndexes), timeout)
+    result(caseStore.collection.withWriteConcern(WriteConcern.JOURNALED).drop().toFuture(), timeout)
+    result(eventStore.collection.withWriteConcern(WriteConcern.JOURNALED).drop().toFuture(), timeout)
+    result(sequenceStore.collection.withWriteConcern(WriteConcern.JOURNALED).drop().toFuture(), timeout)
+    result(mongoLockRepository.collection.withWriteConcern(WriteConcern.JOURNALED).drop().toFuture(), timeout)
+    result(Future.traverse(scheduledJobStores)(_.asInstanceOf[MongoLockRepository].collection.drop().toFuture()), timeout)
   }
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-    dropStores()
-    ensureStoresIndexes()
-  }
-
-  override protected def afterAll(): Unit = {
-    super.afterAll()
     dropStores()
   }
 
@@ -98,11 +88,11 @@ abstract class BaseFeatureSpec
   protected def storeSequences(sequences: Sequence*): Seq[Sequence] =
     sequences.map(s => result(sequenceStore.insert(s), timeout))
 
-  protected def caseStoreSize: Int =
-    result(caseStore.mongoCollection.count(), timeout)
+  protected def caseStoreSize: Long =
+    result(caseStore.collection.countDocuments().toFuture(), timeout)
 
-  protected def eventStoreSize: Int =
-    result(eventStore.mongoCollection.count(), timeout)
+  protected def eventStoreSize: Long =
+    result(eventStore.collection.countDocuments().toFuture(), timeout)
 
   protected def getCase(ref: String): Option[Case] =
   // for simplicity decryption is not tested here (because disabled in application.conf)

@@ -16,38 +16,30 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
-import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-import play.api.test.Helpers. _
-import reactivemongo.api.{DB, ReadConcern}
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.Case
-import uk.gov.hmrc.mongo.MongoSpecSupport
+import uk.gov.hmrc.mongo.test.MongoSupport
 import util.CaseData.{createAttachment, createBTIApplicationWithAllFields, createCase, createDecision}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class CaseAttachmentViewSpec
+class CaseAttachmentAggregationSpec
     extends BaseMongoIndexSpec
     with BeforeAndAfterAll
     with BeforeAndAfterEach
-    with MongoSpecSupport
-    with Eventually {
+    with MongoSupport {
   self =>
 
-  private val mongoDbProvider: MongoDbProvider = new MongoDbProvider {
-    override val mongo: () => DB = self.mongo
-  }
-
-  private val config     = mock[AppConfig]
-  private val repository = newMongoRepository
+  private val config      = mock[AppConfig]
+  private val repository  = newMongoRepository
   private val aggregation = newMongoAggregation
 
   private def newMongoRepository: CaseMongoRepository =
-    new CaseMongoRepository(config, mongoDbProvider, new SearchMapper(config), new UpdateMapper)
+    new CaseMongoRepository(config, mongoComponent, new SearchMapper(config), new UpdateMapper)
 
   private def newMongoAggregation: CaseAttachmentAggregation =
-    new CaseAttachmentAggregation(mongoDbProvider)
+    new CaseAttachmentAggregation(mongoComponent)
 
   private val attachment1           = createAttachment
   private val attachment2           = createAttachment
@@ -67,20 +59,18 @@ class CaseAttachmentViewSpec
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    await(repository.drop)
-    await(repository.ensureIndexes)
+    await(repository.deleteAll())
   }
 
   override def afterAll(): Unit = {
     super.afterAll()
-    await(repository.drop)
+    await(repository.deleteAll())
   }
 
   private def collectionSize: Int =
     await(
-      repository.collection
-        .count(selector = None, limit = Some(0), skip = 0, hint = None, readConcern = ReadConcern.Local)
-    ).toInt
+      repository.collection.countDocuments().toFuture().map(f => f.toInt)
+    )
 
   "find" should {
     "return None when there is no matching attachment" in {

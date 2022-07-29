@@ -16,13 +16,12 @@
 
 package util
 
-import org.joda.time.LocalDate
 import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
 import uk.gov.hmrc.bindingtariffclassification.model.Role.Role
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.utils.RandomGenerator
 
-import java.time.Instant
+import java.time.{Instant, LocalDate, ZoneId}
 
 object CaseData {
 
@@ -218,18 +217,21 @@ object CaseData {
     if (actionableApplications > totalApplications || expiringRulings > totalRulings) {
       List.empty
     } else {
+      def dateToInstant(localDate: LocalDate) = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant
       val now = LocalDate.now()
       val actionableA = (1 to actionableApplications).map(_ => createCase(status = CaseStatus.REFERRED))
       val totalA = (1 to (totalApplications - actionableApplications)).map(_ => createCase(status = CaseStatus.OPEN))
       val expiringR = (1 to expiringRulings).map { _ =>
         createCase(status = CaseStatus.COMPLETED, decision = Some(decision.copy(
-          effectiveStartDate = Some(now.toDate.toInstant),
-          effectiveEndDate = Some(now.plusMonths(expiryMonths.getOrElse(1)).plusDays(expiryDays.getOrElse(0)).toDate.toInstant)
+          effectiveStartDate = Some(dateToInstant(now)),
+          effectiveEndDate = Some(dateToInstant(
+            now.plusMonths(expiryMonths.getOrElse(1).toLong).plusDays(expiryDays.getOrElse(0).toLong))
+          )
         )))
       }
       val totalR = (1 to (totalRulings - expiringRulings)).map(_ => createCase(status = CaseStatus.COMPLETED, decision = Some(decision.copy(
-        effectiveStartDate = Some(now.toDate.toInstant),
-        effectiveEndDate = Some(now.plusYears(1).toDate.toInstant)
+        effectiveStartDate = Some(dateToInstant(now)),
+        effectiveEndDate = Some(dateToInstant(now.plusYears(1)))
       ))))
       List(actionableA, totalA, expiringR, totalR).flatten.map(i => i.copy(application = i.application.asBTI
         .copy(holder = EORIDetails(eori, "name", "l1", "l2", "l3", "postcode", "uk"))))

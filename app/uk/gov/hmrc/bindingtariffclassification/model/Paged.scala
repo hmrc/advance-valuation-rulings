@@ -21,13 +21,18 @@ import play.api.libs.json._
 import scala.language.postfixOps
 import scala.util.Try
 
-case class Paged[T](results: Seq[T], pageIndex: Int, pageSize: Int, resultCount: Int) {
+case class Paged[T](results: Seq[T], pageIndex: Int, pageSize: Int, resultCount: Long) {
   def map[X](f: T => X): Paged[X] = this.copy(results = results.map(f))
-  def size: Int                   = results.size
-  def isEmpty: Boolean            = results.isEmpty
-  def nonEmpty: Boolean           = results.nonEmpty
-  def pageCount: Int              = Math.ceil(resultCount.toDouble / pageSize).toInt
-  def hasNextPage: Boolean        = pageCount > pageIndex
+
+  def size: Int = results.size
+
+  def isEmpty: Boolean = results.isEmpty
+
+  def nonEmpty: Boolean = results.nonEmpty
+
+  def pageCount: Int = Math.ceil(resultCount.toDouble / pageSize).toInt
+
+  def hasNextPage: Boolean = pageCount > pageIndex
 }
 
 object Paged {
@@ -36,7 +41,7 @@ object Paged {
 
   def empty[T](pagination: Pagination): Paged[T] = Paged[T](Seq.empty, pagination, 0)
 
-  def apply[T](results: Seq[T], pagination: Pagination, resultCount: Int): Paged[T] =
+  def apply[T](results: Seq[T], pagination: Pagination, resultCount: Long): Paged[T] =
     Paged(results, pagination.page, pagination.pageSize, resultCount)
 
   def apply[T](results: Seq[T]): Paged[T] = Paged(results, Pagination(), results.size)

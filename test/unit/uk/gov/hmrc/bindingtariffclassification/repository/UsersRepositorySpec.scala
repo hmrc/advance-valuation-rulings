@@ -16,16 +16,12 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
+import org.mongodb.scala.MongoWriteException
+import org.mongodb.scala.model.Filters
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-import play.api.test.Helpers. _
-import reactivemongo.api.{DB, ReadConcern}
-import reactivemongo.bson._
-import reactivemongo.core.errors.DatabaseException
-import reactivemongo.play.json.ImplicitBSONHandlers._
-import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters._
 import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.mongo.MongoSpecSupport
+import uk.gov.hmrc.mongo.test.MongoSupport
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -33,43 +29,35 @@ class UsersRepositorySpec
     extends BaseMongoIndexSpec
     with BeforeAndAfterAll
     with BeforeAndAfterEach
-    with MongoSpecSupport
+    with MongoSupport
     with Eventually {
   self =>
   private val mongoErrorCode = 11000
 
-  private val mongoDbProvider: MongoDbProvider = new MongoDbProvider {
-    override val mongo: () => DB = self.mongo
-  }
-
   private val repository = createMongoRepo
 
   private def createMongoRepo =
-    new UsersMongoRepository(mongoDbProvider)
+    new UsersMongoRepository(mongoComponent)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    await(repository.drop)
+    await(repository.collection.deleteMany(Filters.empty()).toFuture())
     await(repository.ensureIndexes)
     collectionSize shouldBe 0
   }
 
   override def afterAll(): Unit = {
     super.afterAll()
-    await(repository.drop)
+    await(repository.collection.deleteMany(Filters.empty()).toFuture())
   }
 
   private def collectionSize: Int =
     await(
       repository.collection
-        .count(
-          selector = None,
-          limit = Some(0),
-          skip = 0,
-          hint = None,
-          readConcern = ReadConcern.Local
-        )
-    ).toInt
+        .countDocuments()
+        .toFuture()
+        .map(_.toInt)
+    )
 
   "get by id" should {
 
@@ -232,8 +220,8 @@ class UsersRepositorySpec
       val size = collectionSize
 
       await(repository.insert(user)) shouldBe user
-      collectionSize shouldBe 1 + size
-      await(repository.collection.find(selectorById(user.id)).one[Operator]) shouldBe Some(
+      collectionSize                 shouldBe 1 + size
+      await(repository.collection.find(selectorById(user.id)).headOption()) shouldBe Some(
         user
       )
     }
@@ -242,12 +230,12 @@ class UsersRepositorySpec
       await(repository.insert(user)) shouldBe user
       val size = collectionSize
 
-      val caught = intercept[DatabaseException] {
+      val caught = intercept[MongoWriteException] {
         await(repository.insert(user))
       }
 
-      caught.code shouldBe Some(mongoErrorCode)
-      collectionSize shouldBe size
+      caught.getError.getCode shouldBe mongoErrorCode
+      collectionSize          shouldBe size
     }
   }
 
@@ -265,7 +253,7 @@ class UsersRepositorySpec
       val size = collectionSize
 
       val updatedUser = user.copy(
-        name = Some("updated-name"),
+        name          = Some("updated-name"),
         memberOfTeams = List("ACT", "ELM")
       )
       await(repository.update(updatedUser, upsert = false)) shouldBe Some(
@@ -274,7 +262,7 @@ class UsersRepositorySpec
       collectionSize shouldBe size
 
       await(
-        repository.collection.find(selectorById(updatedUser.id)).one[Operator]
+        repository.collection.find(selectorById(updatedUser.id)).headOption()
       ) shouldBe Some(updatedUser)
     }
 
@@ -293,7 +281,6 @@ class UsersRepositorySpec
     }
   }
 
-  private def selectorById(id: String) =
-    BSONDocument("id" -> id)
+  private def selectorById(id: String) = Filters.equal("id", id)
 
 }

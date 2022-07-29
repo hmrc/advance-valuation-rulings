@@ -16,17 +16,12 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
+import org.mongodb.scala.model.Indexes.ascending
+import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-import play.api.test.Helpers. _
-import reactivemongo.api.indexes.Index
-import reactivemongo.api.indexes.IndexType.Ascending
-import reactivemongo.api.{DB, ReadConcern}
-import reactivemongo.bson._
-import reactivemongo.play.json.ImplicitBSONHandlers._
-import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatJobRunEvent
 import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.mongo.MongoSpecSupport
+import uk.gov.hmrc.mongo.test.MongoSupport
 
 import java.time.{LocalDate, ZoneOffset, ZonedDateTime}
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -35,38 +30,35 @@ class MigrationLockRepositorySpec
     extends BaseMongoIndexSpec
     with BeforeAndAfterAll
     with BeforeAndAfterEach
-    with MongoSpecSupport
+    with MongoSupport
     with Eventually { self =>
-
-  private val mongoDbProvider: MongoDbProvider = new MongoDbProvider {
-    override val mongo: () => DB = self.mongo
-  }
 
   private val repository = newMongoRepo
 
   private def newMongoRepo: MigrationLockMongoRepository =
-    new MigrationLockMongoRepository(mongoDbProvider)
+    new MigrationLockMongoRepository(mongoComponent)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    await(repository.drop)
+    await(repository.deleteAll())
     await(repository.ensureIndexes)
     collectionSize shouldBe 0
   }
 
   override def afterAll(): Unit = {
     super.afterAll()
-    await(repository.drop)
+    await(repository.deleteAll())
   }
 
   private def collectionSize: Int =
     await(
       repository.collection
-        .count(selector = None, limit = Some(0), skip = 0, hint = None, readConcern = ReadConcern.Local)
-    ).toInt
+        .countDocuments()
+        .toFuture()
+        .map(_.toInt)
+    )
 
-  private def selectorByName(): BSONDocument =
-    BSONDocument("name" -> "name")
+  private def selectorByName() = Filters.equal("name", "name")
 
   private def date(date: String): ZonedDateTime =
     LocalDate.parse(date).atStartOfDay(ZoneOffset.UTC)
@@ -78,7 +70,7 @@ class MigrationLockRepositorySpec
       await(repository.lock(event)) shouldBe true
       collectionSize                shouldBe 1
 
-      await(repository.collection.find(selectorByName()).one[JobRunEvent]) shouldBe Some(event)
+      await(repository.collection.find(selectorByName()).headOption()) shouldBe Some(event)
     }
 
     "fail to insert a duplicate event name" in {
@@ -117,8 +109,8 @@ class MigrationLockRepositorySpec
     "have all expected indexes" in {
 
       val expectedIndexes = List(
-        Index(key = Seq("name" -> Ascending), name = Some("name_Index"), unique = true),
-        Index(key = Seq("_id"  -> Ascending), name = Some("_id_"))
+        IndexModel(ascending("name"), IndexOptions().name("name_Index").unique(true)),
+        IndexModel(ascending("_id"), IndexOptions().name("_id_"))
       )
 
       val repo = newMongoRepo
@@ -130,7 +122,7 @@ class MigrationLockRepositorySpec
         assertIndexes(expectedIndexes.sorted, getIndexes(repo.collection).sorted)
       }
 
-      await(repo.drop)
+      await(repo.collection.drop())
     }
   }
 

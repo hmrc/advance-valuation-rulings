@@ -19,22 +19,18 @@ package uk.gov.hmrc.bindingtariffclassification.repository
 import cats.data.NonEmptySeq
 import cats.syntax.all._
 import org.mockito.BDDMockito.given
+import org.mongodb.scala.MongoWriteException
+import org.mongodb.scala.bson.conversions.Bson
+import org.mongodb.scala.bson.{BsonDocument, BsonInt32}
+import org.mongodb.scala.model.Indexes.ascending
+import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-import play.api.libs.json.{JsObject, Json}
-import play.api.test.Helpers. _
-import reactivemongo.api.indexes.Index
-import reactivemongo.api.indexes.IndexType.Ascending
-import reactivemongo.api.{Cursor, DB, ReadConcern}
-import reactivemongo.bson._
-import reactivemongo.core.errors.DatabaseException
-import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
-import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatCase
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.model.reporting._
 import uk.gov.hmrc.bindingtariffclassification.sort.{CaseSortField, SortDirection}
-import uk.gov.hmrc.mongo.MongoSpecSupport
+import uk.gov.hmrc.mongo.test.MongoSupport
 import util.CaseData._
 import util.Cases._
 
@@ -46,21 +42,17 @@ class CaseRepositorySpec
     extends BaseMongoIndexSpec
     with BeforeAndAfterAll
     with BeforeAndAfterEach
-    with MongoSpecSupport
+    with MongoSupport
     with Eventually {
   self =>
 
   private val conflict = 11000
 
-  private val mongoDbProvider: MongoDbProvider = new MongoDbProvider {
-    override val mongo: () => DB = self.mongo
-  }
-
   private val config     = mock[AppConfig]
   private val repository = newMongoRepository
 
   private def newMongoRepository: CaseMongoRepository =
-    new CaseMongoRepository(config, mongoDbProvider, new SearchMapper(config), new UpdateMapper)
+    new CaseMongoRepository(config, mongoComponent, new SearchMapper(config), new UpdateMapper)
 
   private val case1: Case     = createCase()
   private val case2: Case     = createCase()
@@ -68,20 +60,21 @@ class CaseRepositorySpec
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    await(repository.drop)
-    await(repository.ensureIndexes)
+    given(config.clock) willReturn Clock.fixed(Instant.parse("2021-02-01T09:00:00.00Z"), ZoneOffset.UTC)
+    await(repository.deleteAll())
   }
 
-  override def afterAll(): Unit = {
+  override def afterAll(): Unit =
     super.afterAll()
-    await(repository.drop)
-  }
+//    await(repository.deleteAll())
 
   private def collectionSize: Int =
     await(
       repository.collection
-        .count(selector = None, limit = Some(0), skip = 0, hint = None, readConcern = ReadConcern.Local)
-    ).toInt
+        .countDocuments()
+        .toFuture()
+        .map(_.toInt)
+    )
 
   "deleteAll" should {
 
@@ -111,8 +104,8 @@ class CaseRepositorySpec
       await(repository.delete("REF_1")) shouldBe ((): Unit)
       collectionSize                    shouldBe 1 + size
 
-      await(repository.collection.find(selectorByReference(c1)).one[Case]) shouldBe None
-      await(repository.collection.find(selectorByReference(c2)).one[Case]) shouldBe Some(c2)
+      await(repository.collection.find(selectorByReference(c1)).headOption()) shouldBe None
+      await(repository.collection.find(selectorByReference(c2)).headOption()) shouldBe Some(c2)
     }
 
   }
@@ -122,19 +115,19 @@ class CaseRepositorySpec
     "insert a new document in the collection" in {
       val size = collectionSize
 
-      await(repository.insert(case1))                                         shouldBe case1
-      collectionSize                                                          shouldBe 1 + size
-      await(repository.collection.find(selectorByReference(case1)).one[Case]) shouldBe Some(case1)
+      await(repository.insert(case1))                                            shouldBe case1
+      collectionSize                                                             shouldBe 1 + size
+      await(repository.collection.find(selectorByReference(case1)).headOption()) shouldBe Some(case1)
     }
 
     "fail to insert an existing document in the collection" in {
       await(repository.insert(case1)) shouldBe case1
       val size = collectionSize
 
-      val caught = intercept[DatabaseException] {
+      val caught = intercept[MongoWriteException] {
         await(repository.insert(case1))
       }
-      caught.code shouldBe Some(conflict)
+      caught.getError.getCode shouldBe conflict
 
       collectionSize shouldBe size
     }
@@ -151,7 +144,7 @@ class CaseRepositorySpec
       await(repository.update(updated, upsert = false)) shouldBe Some(updated)
       collectionSize shouldBe size
 
-      await(repository.collection.find(selectorByReference(updated)).one[Case]) shouldBe Some(updated)
+      await(repository.collection.find(selectorByReference(updated)).headOption()) shouldBe Some(updated)
     }
 
     "do nothing when trying to update an unknown document" in {
@@ -185,7 +178,7 @@ class CaseRepositorySpec
       await(repository.update(case1.reference, atarCaseUpdate)) shouldBe Some(updated)
       collectionSize                                            shouldBe size
 
-      await(repository.collection.find(selectorByReference(updated)).one[Case]) shouldBe Some(updated)
+      await(repository.collection.find(selectorByReference(updated)).headOption()) shouldBe Some(updated)
     }
 
     "modify a liability case in the collection" in {
@@ -199,7 +192,7 @@ class CaseRepositorySpec
       await(repository.update(liabCase1.reference, liabCaseUpdate)) shouldBe Some(updated)
       collectionSize                                                shouldBe size
 
-      await(repository.collection.find(selectorByReference(updated)).one[Case]) shouldBe Some(updated)
+      await(repository.collection.find(selectorByReference(updated)).headOption()) shouldBe Some(updated)
     }
 
     "do nothing when trying to update an unknown document" in {
@@ -404,22 +397,22 @@ class CaseRepositorySpec
   }
 
   "get by pseudo status" should {
-    val now = LocalDateTime.of(2019, 1, 1, 0, 0).toInstant(ZoneOffset.UTC)
+    val effectiveEndDateTime = LocalDateTime.of(2019, 1, 1, 0, 0).toInstant(ZoneOffset.UTC)
 
+    val expiredCase = createCase(
+      r        = "expired",
+      status   = CaseStatus.COMPLETED,
+      decision = Some(createDecision(effectiveEndDate = Some(effectiveEndDateTime.minusSeconds(1))))
+    )
     val newCase = createCase(r = "new", status = CaseStatus.NEW)
     val liveCase = createCase(
       r        = "live",
       status   = CaseStatus.COMPLETED,
-      decision = Some(createDecision(effectiveEndDate = Some(now.plusSeconds(1))))
-    )
-    val expiredCase = createCase(
-      r        = "expired",
-      status   = CaseStatus.COMPLETED,
-      decision = Some(createDecision(effectiveEndDate = Some(now.minusSeconds(1))))
+      decision = Some(createDecision(effectiveEndDate = Some(effectiveEndDateTime.plusSeconds(1))))
     )
 
     "return an empty sequence when there are no matches" in {
-      given(config.clock) willReturn Clock.fixed(now, ZoneOffset.UTC)
+      given(config.clock) willReturn Clock.fixed(effectiveEndDateTime, ZoneOffset.UTC)
 
       store(newCase)
       val search = CaseSearch(CaseFilter(statuses = Some(Set(PseudoCaseStatus.LIVE))))
@@ -427,7 +420,7 @@ class CaseRepositorySpec
     }
 
     "return the expected document when there is one match" in {
-      given(config.clock) willReturn Clock.fixed(now, ZoneOffset.UTC)
+      given(config.clock) willReturn Clock.fixed(effectiveEndDateTime, ZoneOffset.UTC)
 
       store(newCase, liveCase, expiredCase)
       val search = CaseSearch(CaseFilter(statuses = Some(Set(PseudoCaseStatus.LIVE))))
@@ -435,11 +428,11 @@ class CaseRepositorySpec
     }
 
     "return the expected documents when there are multiple matches" in {
-      given(config.clock) willReturn Clock.fixed(now, ZoneOffset.UTC)
+      given(config.clock) willReturn Clock.fixed(effectiveEndDateTime, ZoneOffset.UTC)
 
       store(newCase, liveCase, expiredCase)
       val search = CaseSearch(CaseFilter(statuses = Some(Set(PseudoCaseStatus.LIVE, PseudoCaseStatus.EXPIRED))))
-      await(repository.get(search, Pagination())).results shouldBe Seq(expiredCase, liveCase)
+      await(repository.get(search, Pagination())).results shouldBe Seq(liveCase, expiredCase)
     }
 
   }
@@ -1041,14 +1034,14 @@ class CaseRepositorySpec
       withReference("18"),
       withQueue("3"),
       withActiveDaysElapsed(7),
-      withReferredDaysElapsed(6),
+      withReferredDaysElapsed(6)
     )
 
     val c19 = aCase(createCase(createCorrespondenceApplication))(
       withReference("19"),
       withQueue("4"),
       withActiveDaysElapsed(12),
-      withReferredDaysElapsed(0),
+      withReferredDaysElapsed(0)
     )
     val corresMiscCases = List(c18, c19)
 
@@ -1504,13 +1497,13 @@ class CaseRepositorySpec
           count     = 1,
           groupKey  = NonEmptySeq.one(ReportField.CaseSource.withValue(None)),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(12))),
-          cases = List(c19)
+          cases     = List(c19)
         ),
         CaseResultGroup(
           count     = 1,
           groupKey  = NonEmptySeq.one(ReportField.CaseSource.withValue(Some("Harmonised systems"))),
           maxFields = List(ReportField.ElapsedDays.withValue(Some(7))),
-          cases = List(c18)
+          cases     = List(c18)
         )
       )
     }
@@ -1743,7 +1736,7 @@ class CaseRepositorySpec
       )
     }
 
-    "filter by teams" in {
+    "filter by teams 2 and 3" in {
       await(cases.traverse(repository.insert))
       await(gatewayCases.traverse(repository.insert))
       collectionSize shouldBe 8
@@ -1775,6 +1768,14 @@ class CaseRepositorySpec
         )
       )
 
+    }
+
+    "filter by team 1" in {
+      await(cases.traverse(repository.insert))
+      await(gatewayCases.traverse(repository.insert))
+
+      collectionSize shouldBe 8
+
       val gatewayReport = SummaryReport(
         groupBy   = NonEmptySeq.one(ReportField.CaseType),
         sortBy    = ReportField.CaseType,
@@ -1793,7 +1794,7 @@ class CaseRepositorySpec
       )
     }
 
-    "filter by date range" in {
+    "filter by date range from MIN Date" in {
       await(cases.traverse(repository.insert))
       collectionSize shouldBe 6
 
@@ -1813,6 +1814,11 @@ class CaseRepositorySpec
           maxFields = List(ReportField.ElapsedDays.withValue(Some(4)))
         )
       )
+    }
+
+    "filter by date range to MAX Date" in {
+      await(cases.traverse(repository.insert))
+      collectionSize shouldBe 6
 
       val minDateReport = SummaryReport(
         groupBy   = NonEmptySeq.one(ReportField.Status),
@@ -1830,6 +1836,11 @@ class CaseRepositorySpec
           maxFields = List(ReportField.ElapsedDays.withValue(Some(5)))
         )
       )
+    }
+
+    "filter by date ranges" in {
+      await(cases.traverse(repository.insert))
+      collectionSize shouldBe 6
 
       val minMaxDateReport = SummaryReport(
         groupBy   = NonEmptySeq.one(ReportField.Status),
@@ -1848,6 +1859,7 @@ class CaseRepositorySpec
         )
       )
     }
+
   }
 
   "CaseReport" should {
@@ -2092,6 +2104,47 @@ class CaseRepositorySpec
         )
       )
     }
+
+    "filter by coalesceField" in {
+      await(cases.traverse(repository.insert))
+      collectionSize shouldBe 6
+
+      val report = CaseReport(
+        sortBy    = ReportField.CaseSource,
+        sortOrder = SortDirection.DESCENDING,
+        fields    = NonEmptySeq.of(ReportField.Reference, ReportField.Chapter, ReportField.User, ReportField.TotalDays),
+        teams     = Set("2", "3")
+      )
+
+      val paged = await(repository.caseReport(report, Pagination()))
+
+      paged.results shouldBe Seq(
+        Map(
+          "reference"     -> ReportField.Reference.withValue(Some("5")),
+          "chapter"       -> ReportField.Chapter.withValue(Some("95")),
+          "assigned_user" -> ReportField.User.withValue(Some("2")),
+          "total_days"    -> ReportField.TotalDays.withValue(Some(31))
+        ),
+        Map(
+          "reference"     -> ReportField.Reference.withValue(Some("4")),
+          "chapter"       -> ReportField.Chapter.withValue(None),
+          "assigned_user" -> ReportField.User.withValue(Some("2")),
+          "total_days"    -> ReportField.TotalDays.withValue(Some(32))
+        ),
+        Map(
+          "reference"     -> ReportField.Reference.withValue(Some("3")),
+          "chapter"       -> ReportField.Chapter.withValue(Some("85")),
+          "assigned_user" -> ReportField.User.withValue(Some("1")),
+          "total_days"    -> ReportField.TotalDays.withValue(Some(32))
+        ),
+        Map(
+          "reference"     -> ReportField.Reference.withValue(Some("2")),
+          "chapter"       -> ReportField.Chapter.withValue(Some("95")),
+          "assigned_user" -> ReportField.User.withValue(Some("1")),
+          "total_days"    -> ReportField.TotalDays.withValue(Some(397))
+        )
+      )
+    }
   }
 
   "QueueReport" should {
@@ -2279,11 +2332,11 @@ class CaseRepositorySpec
       await(repository.insert(case1))
       val size = collectionSize
 
-      val caught = intercept[DatabaseException] {
+      val caught = intercept[MongoWriteException] {
 
         await(repository.insert(case1.copy(status = CaseStatus.REFERRED)))
       }
-      caught.code shouldBe Some(conflict)
+      caught.getError.getCode shouldBe conflict
 
       collectionSize shouldBe size
     }
@@ -2295,7 +2348,8 @@ class CaseRepositorySpec
       await(repository.insert(oldCase))
       await(repository.insert(newCase))
 
-      def selectAllWithSort(dir: Int): Future[Seq[Case]] = getMany(Json.obj(), Json.obj("createdDate" -> dir))
+      def selectAllWithSort(dir: Int): Future[Seq[Case]] =
+        getMany(Filters.empty(), new BsonDocument("createdDate", BsonInt32(dir)))
 
       await(selectAllWithSort(1))  shouldBe Seq(oldCase, newCase)
       await(selectAllWithSort(-1)) shouldBe Seq(newCase, oldCase)
@@ -2306,33 +2360,29 @@ class CaseRepositorySpec
       import scala.concurrent.duration._
 
       val expectedIndexes = List(
-        Index(key = Seq("_id"       -> Ascending), name = Some("_id_")),
-        Index(key = Seq("reference" -> Ascending), name = Some("reference_Index"), unique = true),
-        Index(key = Seq("queueId"   -> Ascending), name = Some("queueId_Index"), unique = false),
-        Index(
-          key    = Seq("application.holder.eori" -> Ascending),
-          name   = Some("application.holder.eori_Index"),
-          unique = false
+        IndexModel(ascending("_id"), IndexOptions().name("_id_")),
+        IndexModel(ascending("reference"), IndexOptions().name("reference_Index").unique(true)),
+        IndexModel(ascending("queueId"), IndexOptions().name("queueId_Index").unique(false)),
+        IndexModel(
+          ascending("application.holder.eori"),
+          IndexOptions().name("application.holder.eori_Index").unique(false)
         ),
-        Index(
-          key    = Seq("application.agent.eoriDetails.eori" -> Ascending),
-          name   = Some("application.agent.eoriDetails.eori_Index"),
-          unique = false
+        IndexModel(
+          ascending("application.agent.eoriDetails.eori"),
+          IndexOptions().name("application.agent.eoriDetails.eori_Index").unique(false)
         ),
-        Index(key = Seq("daysElapsed" -> Ascending), name = Some("daysElapsed_Index"), unique = false),
-        Index(key = Seq("assignee.id" -> Ascending), name = Some("assignee.id_Index"), unique = false),
-        Index(
-          key    = Seq("decision.effectiveEndDate" -> Ascending),
-          name   = Some("decision.effectiveEndDate_Index"),
-          unique = false
+        IndexModel(ascending("daysElapsed"), IndexOptions().name("daysElapsed_Index").unique(false)),
+        IndexModel(ascending("assignee.id"), IndexOptions().name("assignee.id_Index").unique(false)),
+        IndexModel(
+          ascending("decision.effectiveEndDate"),
+          IndexOptions().name("decision.effectiveEndDate_Index").unique(false)
         ),
-        Index(
-          key    = Seq("decision.bindingCommodityCode" -> Ascending),
-          name   = Some("decision.bindingCommodityCode_Index"),
-          unique = false
+        IndexModel(
+          ascending("decision.bindingCommodityCode"),
+          IndexOptions().name("decision.bindingCommodityCode_Index").unique(false)
         ),
-        Index(key = Seq("status"   -> Ascending), name = Some("status_Index"), unique   = false),
-        Index(key = Seq("keywords" -> Ascending), name = Some("keywords_Index"), unique = false)
+        IndexModel(ascending("status"), IndexOptions().name("status_Index").unique(false)),
+        IndexModel(ascending("keywords"), IndexOptions().name("keywords_Index").unique(false))
       )
 
       val repo = newMongoRepository
@@ -2342,19 +2392,18 @@ class CaseRepositorySpec
         assertIndexes(expectedIndexes.sorted, getIndexes(repo.collection).sorted)
       }
 
-      await(repo.drop)
+      await(repo.deleteAll())
     }
   }
 
-  protected def getMany(filterBy: JsObject, sortBy: JsObject): Future[Seq[Case]] =
+  protected def getMany(filterBy: Bson, sortBy: Bson): Future[Seq[Case]] =
     repository.collection
-      .find[JsObject, Case](filterBy)
+      .find[Case](filterBy)
       .sort(sortBy)
-      .cursor[Case]()
-      .collect[Seq](Int.MaxValue, Cursor.FailOnError[Seq[Case]]())
+      .toFuture()
 
   private def selectorByReference(c: Case) =
-    BSONDocument("reference" -> c.reference)
+    Filters.equal("reference", c.reference)
 
   private def store(cases: Case*): Unit =
     cases.foreach { c: Case => await(repository.insert(c)) }

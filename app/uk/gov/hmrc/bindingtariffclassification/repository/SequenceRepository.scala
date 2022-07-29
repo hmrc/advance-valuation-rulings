@@ -17,16 +17,19 @@
 package uk.gov.hmrc.bindingtariffclassification.repository
 
 import com.google.inject.ImplementedBy
-import javax.inject.{Inject, Singleton}
-import play.api.libs.json.Json
-import reactivemongo.bson.BSONObjectID
-import reactivemongo.play.json.collection.JSONCollection
-import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatSequence
-import uk.gov.hmrc.bindingtariffclassification.model.{MongoFormatters, Sequence}
-import uk.gov.hmrc.mongo.ReactiveRepository
+import org.bson.conversions.Bson
+import org.mongodb.scala.model.Filters.equal
+import org.mongodb.scala.model.Indexes.ascending
+import org.mongodb.scala.model._
+import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters._
+import uk.gov.hmrc.bindingtariffclassification.model.Sequence
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.concurrent.Future.successful
 
 @ImplementedBy(classOf[SequenceMongoRepository])
 trait SequenceRepository {
@@ -41,44 +44,41 @@ trait SequenceRepository {
 }
 
 @Singleton
-class SequenceMongoRepository @Inject() (mongoDbProvider: MongoDbProvider)
-    extends ReactiveRepository[Sequence, BSONObjectID](
+class SequenceMongoRepository @Inject() (mongoComponent: MongoComponent)
+    extends PlayMongoRepository[Sequence](
       collectionName = "sequences",
-      mongo          = mongoDbProvider.mongo,
-      domainFormat   = MongoFormatters.formatSequence
+      mongoComponent = mongoComponent,
+      domainFormat   = formatSequence,
+      indexes = Seq(
+        IndexModel(ascending("name"), IndexOptions().unique(true).name("name_Index"))
+      )
     )
     with SequenceRepository
-    with MongoCrudHelper[Sequence] {
-
-  override val mongoCollection: JSONCollection = collection
-
-  override def indexes = Seq(
-    createSingleFieldAscendingIndex(indexFieldKey = "name", isUnique = true)
-  )
+    with BaseMongoOperations[Sequence] {
 
   override def getByName(name: String): Future[Sequence] =
-    getOne(byName(name)).flatMap(valueOrStartSequence(name))
+    collection.find(byName(name)).headOption().flatMap(valueOrStartSequence(name))
 
   override def incrementAndGetByName(name: String): Future[Sequence] =
-    update(
-      selector = byName(name),
-      update   = Json.obj("$inc" -> Json.obj("value" -> 1)),
-      fetchNew = true
-    ).flatMap(valueOrStartSequence(name))
+    collection
+      .findOneAndUpdate(
+        filter  = byName(name),
+        update  = Updates.inc("value", 1),
+        options = FindOneAndUpdateOptions().upsert(true).returnDocument(ReturnDocument.AFTER)
+      )
+      .headOption()
+      .flatMap(valueOrStartSequence(name))
 
-  override def insert(e: Sequence): Future[Sequence] =
-    createOne(e)
+  override def insert(e: Sequence): Future[Sequence] = createOne(e)
 
   override def deleteSequenceByName(name: String): Future[Unit] =
-    remove(("name", Json.obj("$eq" -> name)))
-      .map(_ => ())
+    collection.deleteOne(byName(name)).toFuture().map(_ => ())
 
   private def valueOrStartSequence(name: String): Option[Sequence] => Future[Sequence] = {
-    case Some(s: Sequence) => Future.successful(s)
+    case Some(s: Sequence) => successful(s)
     case _                 => insert(Sequence(name, 1))
   }
 
-  private def byName(name: String) =
-    Json.obj("name" -> name)
+  private def byName(name: String): Bson = equal("name", name)
 
 }

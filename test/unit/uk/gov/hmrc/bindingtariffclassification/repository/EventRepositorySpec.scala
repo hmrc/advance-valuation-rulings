@@ -16,19 +16,14 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
+import org.mongodb.scala.MongoWriteException
+import org.mongodb.scala.model.Indexes.ascending
+import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-import play.api.test.Helpers. _
-import reactivemongo.api.indexes.Index
-import reactivemongo.api.indexes.IndexType.Ascending
-import reactivemongo.api.{DB, ReadConcern}
-import reactivemongo.bson._
-import reactivemongo.core.errors.DatabaseException
-import reactivemongo.play.json.ImplicitBSONHandlers._
-import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatEvent
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.utils.RandomGenerator
-import uk.gov.hmrc.mongo.MongoSpecSupport
+import uk.gov.hmrc.mongo.test.MongoSupport
 import util.EventData._
 
 import java.time.{Instant, LocalDate, ZoneOffset}
@@ -39,38 +34,33 @@ class EventRepositorySpec
     extends BaseMongoIndexSpec
     with BeforeAndAfterAll
     with BeforeAndAfterEach
-    with MongoSpecSupport
+    with MongoSupport
     with Eventually {
   self =>
   private val mongoErrorCode = 11000
 
-  private val mongoDbProvider: MongoDbProvider = new MongoDbProvider {
-    override val mongo: () => DB = self.mongo
-  }
-
   private val repository = createMongoRepo
 
   private def createMongoRepo =
-    new EventMongoRepository(mongoDbProvider)
+    new EventMongoRepository(mongoComponent)
 
   private val e: Event = createNoteEvent("")
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    await(repository.drop)
+    await(repository.deleteAll())
     await(repository.ensureIndexes)
   }
 
   override def afterAll(): Unit = {
     super.afterAll()
-    await(repository.drop)
+    await(repository.deleteAll())
   }
 
   private def collectionSize: Int =
     await(
-      repository.collection
-        .count(selector = None, limit = Some(0), skip = 0, hint = None, readConcern = ReadConcern.Local)
-    ).toInt
+      repository.collection.countDocuments().toFuture().map(_.toInt)
+    )
 
   "deleteAll()" should {
 
@@ -98,10 +88,10 @@ class EventRepositorySpec
       collectionSize shouldBe 3
 
       await(repository.delete(EventSearch(caseReference = Some(Set("REF_1")))))
-      collectionSize                                                 shouldBe 1
-      await(repository.collection.find(selectorById(e1)).one[Event]) shouldBe None
-      await(repository.collection.find(selectorById(e2)).one[Event]) shouldBe None
-      await(repository.collection.find(selectorById(e3)).one[Event]) shouldBe Some(e3)
+      collectionSize                                                   shouldBe 1
+      await(repository.collection.find(selectorById(e1)).headOption()) shouldBe None
+      await(repository.collection.find(selectorById(e2)).headOption()) shouldBe None
+      await(repository.collection.find(selectorById(e3)).headOption()) shouldBe Some(e3)
     }
 
     "clear events by event type" in {
@@ -113,8 +103,8 @@ class EventRepositorySpec
       collectionSize shouldBe 2
 
       await(repository.delete(EventSearch(`type` = Some(Set(EventType.NOTE)))))
-      collectionSize                                                 shouldBe 1
-      await(repository.collection.find(selectorById(e2)).one[Event]) shouldBe Some(e2)
+      collectionSize                                                   shouldBe 1
+      await(repository.collection.find(selectorById(e2)).headOption()) shouldBe Some(e2)
     }
   }
 
@@ -126,7 +116,7 @@ class EventRepositorySpec
       await(repository.insert(e)) shouldBe e
       collectionSize              shouldBe 1
 
-      await(repository.collection.find(selectorById(e)).one[Event]) shouldBe Some(e)
+      await(repository.collection.find(selectorById(e)).headOption()) shouldBe Some(e)
     }
 
     "fail to insert an existing document in the collection" in {
@@ -135,17 +125,17 @@ class EventRepositorySpec
       await(repository.insert(e)) shouldBe e
       collectionSize              shouldBe 1
 
-      await(repository.collection.find(selectorById(e)).one[Event]) shouldBe Some(e)
+      await(repository.collection.find(selectorById(e)).headOption()) shouldBe Some(e)
 
       val updated: Event = e.copy(operator = Operator("user_A", Some("user name")))
 
-      val caught = intercept[DatabaseException] {
+      val caught = intercept[MongoWriteException] {
         await(repository.insert(updated))
       }
-      caught.code shouldBe Some(mongoErrorCode)
+      caught.getError.getCode shouldBe mongoErrorCode
 
-      collectionSize                                                      shouldBe 1
-      await(repository.collection.find(selectorById(updated)).one[Event]) shouldBe Some(e)
+      collectionSize                                                        shouldBe 1
+      await(repository.collection.find(selectorById(updated)).headOption()) shouldBe Some(e)
     }
   }
 
@@ -278,12 +268,12 @@ class EventRepositorySpec
       await(repository.insert(e1))
       collectionSize shouldBe 1
 
-      val caught = intercept[DatabaseException] {
+      val caught = intercept[MongoWriteException] {
         val e2 = e1.copy(caseReference = "DEF", operator = Operator("user_123", Some("user name")))
         await(repository.insert(e2))
       }
 
-      caught.code shouldBe Some(mongoErrorCode)
+      caught.getError.getCode shouldBe mongoErrorCode
 
       collectionSize shouldBe 1
     }
@@ -293,10 +283,10 @@ class EventRepositorySpec
       import scala.concurrent.duration._
 
       val expectedIndexes = List(
-        Index(key = Seq("id"            -> Ascending), name = Some("id_Index"), unique = true),
-        Index(key = Seq("caseReference" -> Ascending), name = Some("caseReference_Index"), unique = false),
-        Index(key = Seq("type"          -> Ascending), name = Some("type_Index"), unique = false),
-        Index(key = Seq("_id"           -> Ascending), name = Some("_id_"))
+        IndexModel(ascending("id"), IndexOptions().name("id_Index").unique(true)),
+        IndexModel(ascending("caseReference"), IndexOptions().name("caseReference_Index").unique(false)),
+        IndexModel(ascending("type"), IndexOptions().name("type_Index").unique(false)),
+        IndexModel(ascending("_id"), IndexOptions().name("_id_"))
       )
 
       val repo = createMongoRepo
@@ -306,12 +296,11 @@ class EventRepositorySpec
         assertIndexes(expectedIndexes.sorted, getIndexes(repo.collection).sorted)
       }
 
-      await(repo.drop)
+      await(repo.collection.drop())
     }
 
   }
 
-  private def selectorById(e: Event) =
-    BSONDocument("id" -> e.id)
+  private def selectorById(e: Event) = Filters.equal("id", e.id)
 
 }

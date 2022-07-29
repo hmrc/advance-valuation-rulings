@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.bindingtariffclassification.repository
+package util
 
-import com.google.inject.ImplementedBy
-import javax.inject.{Inject, Singleton}
-import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.api.DB
+import com.mongodb.WriteError
+import org.mongodb.scala.MongoWriteException
+import org.bson.BsonDocument
 
-@ImplementedBy(classOf[MongoDb])
-trait MongoDbProvider {
-  def mongo: () => DB
-}
+object DatabaseException {
 
-@Singleton
-class MongoDb @Inject() (component: ReactiveMongoComponent) extends MongoDbProvider {
-  override val mongo: () => DB = component.mongoConnector.db
+  def exception(code: Int, message: String, bsonDocument: Option[BsonDocument] = None) = new MongoWriteException (new WriteError(code, message, bsonDocument.getOrElse(new BsonDocument())), null)
+
 }
