@@ -22,16 +22,14 @@ import org.mockito.BDDMockito.given
 import org.mockito.Mockito._
 import org.quartz.CronExpression
 import org.scalatest.BeforeAndAfterEach
-import play.api.test.Helpers. _
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.{AppConfig, JobConfig}
 import uk.gov.hmrc.bindingtariffclassification.connector.FileStoreConnector
 import uk.gov.hmrc.bindingtariffclassification.model.filestore.{FileMetadata, FileSearch}
 import uk.gov.hmrc.bindingtariffclassification.model.{Paged, Pagination}
-import uk.gov.hmrc.bindingtariffclassification.repository.LockRepoProvider
 import uk.gov.hmrc.bindingtariffclassification.service.CaseService
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.lock.LockRepository
+import uk.gov.hmrc.mongo.lock.LockRepository
 
 import java.time._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -46,9 +44,6 @@ class FileStoreCleanupJobTest extends BaseSpec with BeforeAndAfterEach {
   private val caseService        = mock[CaseService]
   private val fileStoreConnector = mock[FileStoreConnector]
   private val lockRepo           = mock[LockRepository]
-  private val lockRepoProvider = new LockRepoProvider {
-    override def repo: () => LockRepository = () => lockRepo
-  }
 
   private val cronExpr  = new CronExpression("0 0 14 ? * 7")
   private val jobConfig = JobConfig("FileStoreCleanup", enabled = true, schedule = cronExpr)
@@ -68,7 +63,8 @@ class FileStoreCleanupJobTest extends BaseSpec with BeforeAndAfterEach {
     given(appConfig.fileStoreCleanup).willReturn(jobConfig)
     given(caseService.refreshAttachments()).willReturn(successful(()))
     given(caseService.attachmentExists(any[String])).willReturn(successful(false))
-    given(lockRepo.lock(any[String], any[String], any[org.joda.time.Duration])).willReturn(successful(true))
+    given(lockRepo.takeLock(any[String], any[String], any[scala.concurrent.duration.Duration]))
+      .willReturn(successful(true))
   }
 
   "Scheduled Job" should {
@@ -137,7 +133,7 @@ class FileStoreCleanupJobTest extends BaseSpec with BeforeAndAfterEach {
   }
 
   private def newJob: FileStoreCleanupJob =
-    new FileStoreCleanupJob(caseService, fileStoreConnector, lockRepoProvider, appConfig)
+    new FileStoreCleanupJob(caseService, fileStoreConnector, lockRepo, appConfig)
 
   private def givenNoUploadedFiles(): Unit =
     given(fileStoreConnector.find(refEq(fileSearch), refEq(Pagination()))(any[HeaderCarrier]))

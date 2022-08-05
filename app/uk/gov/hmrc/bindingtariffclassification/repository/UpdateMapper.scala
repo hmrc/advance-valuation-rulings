@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
-import javax.inject.{Inject, Singleton}
-import uk.gov.hmrc.bindingtariffclassification.model.{ApplicationUpdate, CaseUpdate}
-import play.api.libs.json._
+import org.bson.conversions.Bson
 import play.api.libs.json.Json.JsValueWrapper
-import uk.gov.hmrc.bindingtariffclassification.model.{BTIUpdate, LiabilityUpdate}
 import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters._
+import uk.gov.hmrc.bindingtariffclassification.model.{ApplicationUpdate, BTIUpdate, CaseUpdate, LiabilityUpdate}
+
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class UpdateMapper @Inject() () extends Mapper {
@@ -33,7 +33,7 @@ class UpdateMapper @Inject() () extends Mapper {
         traderName.map(name => field("application.traderName", name)).getOrElse(Seq.empty)
     }
 
-  def updateCase(update: CaseUpdate): JsObject = {
+  def updateCase(update: CaseUpdate): Bson = {
     val applicationFields = update.application
       .map(updateApplication)
       .getOrElse(Seq.empty)

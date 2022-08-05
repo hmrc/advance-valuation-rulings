@@ -23,14 +23,12 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.libs.json.Json.toJson
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import reactivemongo.bson.BSONDocument
-import reactivemongo.core.errors.DatabaseException
 import uk.gov.hmrc.bindingtariffclassification.base.BaseSpec
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.RESTFormatters._
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.service.UsersService
-import util.CaseData
+import util.{CaseData, DatabaseException}
 
 import scala.concurrent.Future._
 
@@ -40,10 +38,10 @@ class UsersControllerSpec extends BaseSpec with BeforeAndAfterEach {
     Mockito.reset(usersService)
 
   private val newUser: NewUserRequest = CaseData.createNewUser()
-  private val user1: Operator = CaseData.createUser()
-  private val user2: Operator = CaseData.createUser()
+  private val user1: Operator         = CaseData.createUser()
+  private val user2: Operator         = CaseData.createUser()
 
-  private val appConfig = mock[AppConfig]
+  private val appConfig    = mock[AppConfig]
   private val usersService = mock[UsersService]
 
   private val fakeRequest = FakeRequest()
@@ -58,7 +56,7 @@ class UsersControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.fetchUserDetails(user1.id)(fakeRequest)
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsJson(result) shouldBe toJson(user1)
     }
 
@@ -92,12 +90,12 @@ class UsersControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.createUser()(fakeRequest.withBody(toJson(newUser)))
 
-      status(result) shouldBe CREATED
+      status(result)        shouldBe CREATED
       contentAsJson(result) shouldBe toJson(user1)
     }
 
     "return 400 when the JSON request payload is not a User" in {
-      val body = """{"a":"b"}"""
+      val body   = """{"a":"b"}"""
       val result = controller.createUser()(fakeRequest.withBody(toJson(body)))
 
       status(result) shouldBe BAD_REQUEST
@@ -105,11 +103,8 @@ class UsersControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
     "return 500 when an error occurred" in {
       val errorCode: Int = 11000
-      val error = new DatabaseException {
-        override def originalDocument: Option[BSONDocument] = None
-        override def code: Option[Int] = Some(errorCode)
-        override def message: String = "duplicate value for db index"
-      }
+      val error          = DatabaseException.exception(errorCode, "duplicate value for db index")
+
       when(usersService.insertUser(any[Operator])).thenReturn(failed(error))
 
       val result = controller.createUser()(fakeRequest.withBody(toJson(newUser)))
@@ -127,10 +122,9 @@ class UsersControllerSpec extends BaseSpec with BeforeAndAfterEach {
       when(usersService.updateUser(user1, upsert = false))
         .thenReturn(successful(Some(user1)))
 
-      val result = controller.updateUser(user1.id)(fakeRequest.withBody(toJson(user1))
-      )
+      val result = controller.updateUser(user1.id)(fakeRequest.withBody(toJson(user1)))
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsJson(result) shouldBe toJson(user1)
     }
 
@@ -140,18 +134,18 @@ class UsersControllerSpec extends BaseSpec with BeforeAndAfterEach {
         .thenReturn(successful(Some(user1)))
 
       val result =
-         controller.updateUser(user1.id)(
-            fakeRequest
-              .withBody(toJson(user1))
-              .withHeaders("User-Agent" -> "agent")
+        controller.updateUser(user1.id)(
+          fakeRequest
+            .withBody(toJson(user1))
+            .withHeaders("User-Agent" -> "agent")
         )
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsJson(result) shouldBe toJson(user1)
     }
 
     "return 400 when the JSON request payload is not a user" in {
-      val body = """{"a":"b"}"""
+      val body   = """{"a":"b"}"""
       val result = controller.updateUser("")(fakeRequest.withBody(toJson(body))).futureValue
 
       result.header.status shouldBe BAD_REQUEST
@@ -169,8 +163,7 @@ class UsersControllerSpec extends BaseSpec with BeforeAndAfterEach {
       when(usersService.updateUser(user1, upsert = false))
         .thenReturn(successful(None))
 
-      val result = controller.updateUser(user1.id)(fakeRequest.withBody(toJson(user1))
-      )
+      val result = controller.updateUser(user1.id)(fakeRequest.withBody(toJson(user1)))
 
       status(result) shouldBe NOT_FOUND
       contentAsJson(result)
@@ -183,8 +176,7 @@ class UsersControllerSpec extends BaseSpec with BeforeAndAfterEach {
       when(usersService.updateUser(user1, upsert = false))
         .thenReturn(failed(error))
 
-      val result = controller.updateUser(user1.id)(fakeRequest.withBody(toJson(user1))
-      )
+      val result = controller.updateUser(user1.id)(fakeRequest.withBody(toJson(user1)))
 
       status(result) shouldBe INTERNAL_SERVER_ERROR
       contentAsJson(result)
@@ -201,10 +193,9 @@ class UsersControllerSpec extends BaseSpec with BeforeAndAfterEach {
       when(usersService.updateUser(userDeleted, upsert = false))
         .thenReturn(successful(Some(userDeleted)))
 
-      val result = controller.markDeleted(user1.id)(fakeRequest.withBody(toJson(user1))
-      )
+      val result = controller.markDeleted(user1.id)(fakeRequest.withBody(toJson(user1)))
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsJson(result) shouldBe toJson(userDeleted)
     }
 
@@ -215,25 +206,25 @@ class UsersControllerSpec extends BaseSpec with BeforeAndAfterEach {
         .thenReturn(successful(Some(userDeleted)))
 
       val result =
-          controller.markDeleted(user1.id)(
-            fakeRequest
-              .withBody(toJson(user1))
-              .withHeaders("User-Agent" -> "agent")
+        controller.markDeleted(user1.id)(
+          fakeRequest
+            .withBody(toJson(user1))
+            .withHeaders("User-Agent" -> "agent")
         )
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsJson(result) shouldBe toJson(userDeleted)
     }
 
     "return 400 when the JSON request payload is not a user" in {
-      val body = """{"a":"b"}"""
+      val body   = """{"a":"b"}"""
       val result = controller.markDeleted("")(fakeRequest.withBody(toJson(body))).futureValue
 
       result.header.status shouldBe BAD_REQUEST
     }
 
     "return 400 when the user id path parameter does not match the JSON request payload" in {
-      val result =  controller.markDeleted("ABC")(fakeRequest.withBody(toJson(user1)))
+      val result = controller.markDeleted("ABC")(fakeRequest.withBody(toJson(user1)))
 
       status(result) shouldBe BAD_REQUEST
       contentAsJson(result)
@@ -244,8 +235,7 @@ class UsersControllerSpec extends BaseSpec with BeforeAndAfterEach {
       when(usersService.updateUser(userDeleted, upsert = false))
         .thenReturn(successful(None))
 
-      val result = controller.markDeleted(user1.id)(fakeRequest.withBody(toJson(user1))
-      )
+      val result = controller.markDeleted(user1.id)(fakeRequest.withBody(toJson(user1)))
 
       status(result) shouldBe NOT_FOUND
       contentAsJson(result)
@@ -258,8 +248,7 @@ class UsersControllerSpec extends BaseSpec with BeforeAndAfterEach {
       when(usersService.updateUser(userDeleted, upsert = false))
         .thenReturn(failed(error))
 
-      val result = controller.markDeleted(user1.id)(fakeRequest.withBody(toJson(user1))
-      )
+      val result = controller.markDeleted(user1.id)(fakeRequest.withBody(toJson(user1)))
 
       status(result) shouldBe INTERNAL_SERVER_ERROR
       contentAsJson(result)
@@ -272,7 +261,7 @@ class UsersControllerSpec extends BaseSpec with BeforeAndAfterEach {
     val role = Some(Set(Role.CLASSIFICATION_OFFICER))
     val team = Some("ACT")
 
-    val search = UserSearch(role = role, team = team)
+    val search     = UserSearch(role = role, team = team)
     val pagination = Pagination()
 
     "return 200 with the expected users" in {
@@ -281,7 +270,7 @@ class UsersControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.allUsers(search, pagination)(fakeRequest)
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsJson(result) shouldBe toJson(Paged(Seq(user1, user2)))
     }
 
@@ -291,14 +280,14 @@ class UsersControllerSpec extends BaseSpec with BeforeAndAfterEach {
 
       val result = controller.allUsers(search, pagination)(fakeRequest)
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsJson(result) shouldBe toJson(Paged.empty[Operator])
     }
 
     "return 500 when an error occurred" in {
 
       val search = UserSearch(None, None)
-      val error = new RuntimeException
+      val error  = new RuntimeException
 
       when(usersService.search(refEq(search), refEq(pagination)))
         .thenReturn(failed(error))

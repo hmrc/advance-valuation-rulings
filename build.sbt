@@ -22,9 +22,9 @@ lazy val microservice = (project in file("."))
     targetJvm := "jvm-1.8",
     PlayKeys.playDefaultPort := 9580,
     libraryDependencies ++= (AppDependencies.compile ++ AppDependencies.test),
-    evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
-    parallelExecution in Test := false,
-    fork in Test := true,
+    update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
+    Test / parallelExecution := false,
+    Test / fork := true,
     retrieveManaged := true,
     // Use the silencer plugin to suppress warnings from unused imports in compiled twirl templates
     scalacOptions += "-P:silencer:pathFilters=views;routes",
@@ -43,9 +43,9 @@ lazy val microservice = (project in file("."))
   )
   .settings(inConfig(TemplateTest)(Defaults.testSettings): _*)
   .settings(
-    unmanagedSourceDirectories in Test := Seq(
-      (baseDirectory in Test).value / "test/unit",
-      (baseDirectory in Test).value / "test/util"
+    Test / unmanagedSourceDirectories := Seq(
+      (Test / baseDirectory).value / "test/unit",
+      (Test / baseDirectory).value / "test/util"
     ),
     addTestReportOption(Test, "test-reports")
   )
@@ -53,13 +53,13 @@ lazy val microservice = (project in file("."))
   .settings(inConfig(IntegrationTest)(ScalafmtPlugin.scalafmtConfigSettings))
   .settings(inConfig(TemplateItTest)(Defaults.itSettings): _*)
   .settings(
-    Keys.fork in IntegrationTest := true,
-    unmanagedSourceDirectories in IntegrationTest := Seq(
-      (baseDirectory in IntegrationTest).value / "test/it",
-      (baseDirectory in Test).value / "test/util"
+    IntegrationTest / Keys.fork := true,
+    IntegrationTest / unmanagedSourceDirectories := Seq(
+      (IntegrationTest / baseDirectory).value / "test/it",
+      (Test / baseDirectory).value / "test/util"
     ),
     addTestReportOption(IntegrationTest, "int-test-reports"),
-    parallelExecution in IntegrationTest := false
+    IntegrationTest / parallelExecution := false
   )
   .settings(resolvers += Resolver.jcenterRepo)
 

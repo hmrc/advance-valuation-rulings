@@ -17,24 +17,31 @@
 package uk.gov.hmrc.bindingtariffclassification.repository
 
 import cats.data.NonEmptySeq
-
-import java.time.Instant
-import javax.inject.{Inject, Singleton}
 import cats.syntax.all._
-import play.api.libs.json._
+import org.mongodb.scala.bson.conversions.Bson
+import org.mongodb.scala.bson.{BsonDocument, BsonNull, BsonValue}
+import org.mongodb.scala.model.Accumulators.{max, sum}
+import org.mongodb.scala.model.Aggregates._
+import org.mongodb.scala.model.Filters._
+import org.mongodb.scala.model.Indexes.{ascending => asc}
+import org.mongodb.scala.model.Sorts.{ascending, descending, orderBy}
+import org.mongodb.scala.model._
+import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.Json.JsValueWrapper
-import reactivemongo.api.indexes.Index
-import reactivemongo.bson.BSONObjectID
-import reactivemongo.play.json.ImplicitBSONHandlers._
-import reactivemongo.play.json.collection.JSONCollection
+import play.api.libs.json._
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.crypto.Crypto
 import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters._
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.model.reporting._
+import uk.gov.hmrc.bindingtariffclassification.repository.BaseMongoOperations.pagedResults
 import uk.gov.hmrc.bindingtariffclassification.sort.SortDirection
-import uk.gov.hmrc.mongo.ReactiveRepository
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.Codecs.toBson
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
+import java.time.Instant
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -84,9 +91,8 @@ class EncryptedCaseMongoRepository @Inject() (repository: CaseMongoRepository, c
   override def get(search: CaseSearch, pagination: Pagination): Future[Paged[Case]] =
     repository.get(enryptSearch(search), pagination).map(_.map(decrypt))
 
-  override def getAllByEori(eori: String): Future[List[Case]] = {
+  override def getAllByEori(eori: String): Future[List[Case]] =
     repository.getAllByEori(crypto.encryptString.apply(eori)).map(_.map(decrypt))
-  }
 
   override def deleteAll(): Future[Unit] = repository.deleteAll()
 
@@ -116,82 +122,83 @@ class EncryptedCaseMongoRepository @Inject() (repository: CaseMongoRepository, c
 @Singleton
 class CaseMongoRepository @Inject() (
   appConfig: AppConfig,
-  mongoDbProvider: MongoDbProvider,
+  mongoComponent: MongoComponent,
   mapper: SearchMapper,
   updateMapper: UpdateMapper
-) extends ReactiveRepository[Case, BSONObjectID](
+) extends PlayMongoRepository[Case](
       collectionName = "cases",
-      mongo          = mongoDbProvider.mongo,
-      domainFormat   = MongoFormatters.formatCase
+      mongoComponent = mongoComponent,
+      domainFormat   = MongoFormatters.formatCase,
+      // TODO: We need to add relevant indexes for each possible search
+      // TODO: We should add compound indexes for searches involving multiple fields
+      indexes = Seq(
+        IndexModel(asc("reference"), IndexOptions().unique(true).name("reference_Index")),
+        IndexModel(asc("assignee.id"), IndexOptions().unique(false).name("assignee.id_Index")),
+        IndexModel(asc("queueId"), IndexOptions().unique(false).name("queueId_Index")),
+        IndexModel(asc("status"), IndexOptions().unique(false).name("status_Index")),
+        IndexModel(
+          asc("application.holder.eori"),
+          IndexOptions().unique(false).name("application.holder.eori_Index")
+        ),
+        IndexModel(
+          asc("application.agent.eoriDetails.eori"),
+          IndexOptions().unique(false).name("application.agent.eoriDetails.eori_Index")
+        ),
+        IndexModel(
+          asc("decision.effectiveEndDate"),
+          IndexOptions().unique(false).name("decision.effectiveEndDate_Index")
+        ),
+        IndexModel(
+          asc("decision.bindingCommodityCode"),
+          IndexOptions().unique(false).name("decision.bindingCommodityCode_Index")
+        ),
+        IndexModel(asc("daysElapsed"), IndexOptions().unique(false).name("daysElapsed_Index")),
+        IndexModel(asc("keywords"), IndexOptions().unique(false).name("keywords_Index"))
+      )
     )
     with CaseRepository
-    with MongoCrudHelper[Case] {
+    with BaseMongoOperations[Case] {
 
-  override val mongoCollection: JSONCollection = collection
+  protected[this] val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  lazy private val uniqueSingleFieldIndexes = Seq("reference")
-  lazy private val nonUniqueSingleFieldIndexes = Seq(
-    "assignee.id",
-    "queueId",
-    "status",
-    "application.holder.eori",
-    "application.agent.eoriDetails.eori",
-    "decision.effectiveEndDate",
-    "decision.bindingCommodityCode",
-    "daysElapsed",
-    "keywords"
-  )
-
-  override def indexes: Seq[Index] =
-    // TODO: We need to add relevant indexes for each possible search
-    // TODO: We should add compound indexes for searches involving multiple fields
-    uniqueSingleFieldIndexes.map(createSingleFieldAscendingIndex(_, isUnique      = true)) ++
-      nonUniqueSingleFieldIndexes.map(createSingleFieldAscendingIndex(_, isUnique = false))
-
-  override def insert(c: Case): Future[Case] =
-    createOne(c)
+  override def insert(c: Case): Future[Case] = createOne(c)
 
   override def update(c: Case, upsert: Boolean): Future[Option[Case]] =
-    updateDocument(
-      selector = mapper.reference(c.reference),
-      update   = c,
-      upsert   = upsert
-    )
+    collection
+      .replaceOne(filter = mapper.reference(c.reference), replacement = c, ReplaceOptions().upsert(upsert))
+      .toFuture()
+      .flatMap(_ => collection.find(mapper.reference(c.reference)).first().toFutureOption())
 
   override def update(reference: String, caseUpdate: CaseUpdate): Future[Option[Case]] =
     collection
-      .findAndUpdate(
-        selector       = mapper.reference(reference),
-        update         = updateMapper.updateCase(caseUpdate),
-        fetchNewObject = true
+      .findOneAndUpdate(
+        filter  = mapper.reference(reference),
+        update  = updateMapper.updateCase(caseUpdate),
+        options = FindOneAndUpdateOptions().returnDocument(ReturnDocument.AFTER)
       )
-      .map(_.value.map(_.as[Case]))
+      .toFutureOption()
 
   override def getByReference(reference: String): Future[Option[Case]] =
-    getOne(selector = mapper.reference(reference))
+    collection.find(mapper.reference(reference)).limit(1).headOption()
 
   override def get(search: CaseSearch, pagination: Pagination): Future[Paged[Case]] =
-    getMany(
-      filterBy = mapper.filterBy(search.filter),
-      sortBy   = search.sort.map(mapper.sortBy).getOrElse(Json.obj()),
+    countMany(
+      toBson(mapper.filterBy(search.filter)).asDocument(),
+      search.sort.map(cs => toBson(mapper.sortBy(cs)).asDocument()).getOrElse(defaultSortBy),
       pagination
     )
 
-  override def getAllByEori(eori: String): Future[List[Case]] = {
-    getAll(Json.obj("application.holder.eori" -> eori))
-  }
+  override def getAllByEori(eori: String): Future[List[Case]] =
+    collection.find(equal("application.holder.eori", eori)).toFuture().map(seq => seq.toList)
 
   override def deleteAll(): Future[Unit] =
-    removeAll().map(_ => ())
+    collection.deleteMany(empty()).toFuture().map(_ => ())
 
   override def delete(reference: String): Future[Unit] =
-    remove("reference" -> reference).map(_ => ())
+    collection.deleteOne(equal("reference", reference)).toFuture.map(_ => ())
 
   private def greaterThan(json: JsValueWrapper): JsObject =
     Json.obj("$gte" -> json)
-
-  private def lessThan(json: JsValueWrapper): JsObject =
-    Json.obj("$lte" -> json)
 
   private def trunc(json: JsValueWrapper): JsObject =
     Json.obj("$trunc" -> json)
@@ -205,23 +212,14 @@ class CaseMongoRepository @Inject() (
   private def substrBytes(operand: JsValueWrapper, offset: JsValueWrapper, length: JsValueWrapper): JsObject =
     Json.obj("$substrBytes" -> Json.arr(operand, offset, length))
 
-  private def and(operands: JsValueWrapper*): JsObject =
+  private def andQ(operands: JsValueWrapper*): JsObject =
     Json.obj("$and" -> Json.arr(operands: _*))
 
-  private def eq(lExpr: JsValueWrapper, rExpr: JsValueWrapper): JsObject =
+  private def eqQ(lExpr: JsValueWrapper, rExpr: JsValueWrapper): JsObject =
     Json.obj("$eq" -> Json.arr(lExpr, rExpr))
 
-  private def in(expr: JsValueWrapper, arrayExpr: JsValueWrapper): JsObject =
+  private def inQ(expr: JsValueWrapper, arrayExpr: JsValueWrapper): JsObject =
     Json.obj("$in" -> Json.arr(expr, arrayExpr))
-
-  private def in(arrayExpr: JsValueWrapper): JsObject =
-    Json.obj("$in" -> arrayExpr)
-
-  private def not(operand: JsValueWrapper): JsObject =
-    Json.obj("$not" -> operand)
-
-  private def elemMatch(conditions: JsValueWrapper): JsObject =
-    Json.obj("$elemMatch" -> conditions)
 
   private def notEmpty(operand: JsValueWrapper): JsObject =
     Json.obj("$gt" -> Json.arr(Json.obj("$size" -> operand), 0))
@@ -229,13 +227,15 @@ class CaseMongoRepository @Inject() (
   private def filter(input: JsValueWrapper, cond: JsValueWrapper): JsObject =
     Json.obj("$filter" -> Json.obj("input" -> input, "cond" -> cond))
 
-  private def daysSince(operand: JsValueWrapper): JsValue =
+  private def daysSince(operand: JsValueWrapper): JsValue = {
+    val milliSecondsInOneDay = 86400000
     trunc(
       divide(
         subtract(Json.toJson(appConfig.clock.instant()), operand),
-        86400000
+        milliSecondsInOneDay
       )
     )
+  }
 
   private def notNull(operandExpr: JsValueWrapper): JsValue =
     Json.obj("$gt" -> Json.arr(operandExpr, JsNull))
@@ -253,30 +253,30 @@ class CaseMongoRepository @Inject() (
     val time        = Json.toJson(appConfig.clock.instant())
     val statusField = s"$$${ReportField.Status.underlyingField}"
 
-    val isAppeal = and(
-      eq(s"$$${ReportField.Status.underlyingField}", CaseStatus.COMPLETED.toString),
+    val isAppeal = andQ(
+      eqQ(s"$$${ReportField.Status.underlyingField}", CaseStatus.COMPLETED.toString),
       notNull("$decision.appeal"),
       notEmpty(
         filter(
           input = "$decision.appeal",
-          cond  = in("$$this.type", AppealType.appealTypes.map(Json.toJson(_)))
+          cond  = inQ("$$this.type", AppealType.appealTypes.map(Json.toJson(_)))
         )
       )
     )
 
-    val isReview = and(
-      eq(s"$$${ReportField.Status.underlyingField}", CaseStatus.COMPLETED.toString),
+    val isReview = andQ(
+      eqQ(s"$$${ReportField.Status.underlyingField}", CaseStatus.COMPLETED.toString),
       notNull("$decision.appeal"),
       notEmpty(
         filter(
           input = "$decision.appeal",
-          cond  = in("$$this.type", AppealType.reviewTypes.map(Json.toJson(_)))
+          cond  = inQ("$$this.type", AppealType.reviewTypes.map(Json.toJson(_)))
         )
       )
     )
 
-    val isExpired = and(
-      eq(s"$$${ReportField.Status.underlyingField}", CaseStatus.COMPLETED.toString),
+    val isExpired = andQ(
+      eqQ(s"$$${ReportField.Status.underlyingField}", CaseStatus.COMPLETED.toString),
       notNull(s"$$${ReportField.DateExpired.underlyingField}"),
       greaterThan(Json.arr(time, s"$$${ReportField.DateExpired.underlyingField}"))
     )
@@ -301,123 +301,105 @@ class CaseMongoRepository @Inject() (
       case (field, expr) => Json.obj("$ifNull" -> Json.arr("$" + field, expr))
     }
 
-  private def matchStage(framework: collection.AggregationFramework, report: Report) = {
-    import framework._
+  private def matchStage(report: Report): Bson = {
 
     val GatewayTeamId = "1"
 
     val caseTypeFilter =
-      if (report.caseTypes.isEmpty)
-        Json.obj()
-      else
-        Json.obj(ReportField.CaseType.underlyingField -> Json.obj("$in" -> report.caseTypes.map(Json.toJson(_))))
+      if (report.caseTypes.isEmpty) {
+        empty()
+      } else {
+        in(ReportField.CaseType.underlyingField, report.caseTypes.map(_.toString).toSeq: _*)
+      }
 
     val statusFilter =
-      if (report.statuses.isEmpty)
-        Json.obj()
-      else {
+      if (report.statuses.isEmpty) {
+        empty()
+      } else {
         val (concreteStatuses, pseudoStatuses) = report.statuses.partition(p => CaseStatus.fromPseudoStatus(p).nonEmpty)
 
-        val concreteFilter = Json.arr(
-          Json.obj(ReportField.Status.underlyingField -> Json.obj("$in" -> concreteStatuses.map(Json.toJson(_))))
-        )
+        val concreteFilter =
+          in(ReportField.Status.underlyingField, concreteStatuses.map(_.toString).toSeq: _*)
 
-        val pseudoFilters = Json.arr(
+        val pseudoFilters =
           pseudoStatuses.collect {
             case PseudoCaseStatus.EXPIRED =>
-              Json.obj(
-                ReportField.Status.underlyingField      -> Json.toJson(PseudoCaseStatus.COMPLETED),
-                ReportField.DateExpired.underlyingField -> lessThan(appConfig.clock.instant()),
-                "decision.appeal"                       -> Json.obj("$size" -> 0)
-              ): JsValueWrapper
+              and(
+                equal(ReportField.Status.underlyingField, PseudoCaseStatus.COMPLETED.toString),
+                lte(ReportField.DateExpired.underlyingField, appConfig.clock.instant()),
+                size("decision.appeal", 0)
+              )
             case PseudoCaseStatus.UNDER_APPEAL =>
-              Json.obj(
-                ReportField.Status.underlyingField -> Json.toJson(PseudoCaseStatus.COMPLETED),
-                "decision.appeal" -> elemMatch(
-                  Json.obj("type" -> in(AppealType.appealTypes.map(Json.toJson(_))))
-                )
-              ): JsValueWrapper
+              and(
+                equal(ReportField.Status.underlyingField, PseudoCaseStatus.COMPLETED.toString),
+                elemMatch("decision.appeal", in("type", AppealType.appealTypes.map(_.toString).toSeq: _*))
+              )
             case PseudoCaseStatus.UNDER_REVIEW =>
-              Json.obj(ReportField.Status.underlyingField -> Json.toJson(PseudoCaseStatus.COMPLETED)) ++ and(
-                Json.obj(
-                  "decision.appeal" -> not(
-                    elemMatch(
-                      Json.obj("type" -> in(AppealType.appealTypes.map(Json.toJson(_))))
-                    )
-                  )
-                ),
-                Json.obj(
-                  "decision.appeal" -> elemMatch(
-                    Json.obj(
-                      "type" -> in(AppealType.reviewTypes.map(Json.toJson(_)))
-                    )
-                  )
+              and(
+                equal(ReportField.Status.underlyingField, PseudoCaseStatus.COMPLETED.toString),
+                and(
+                  not(elemMatch("decision.appeal", in("type", AppealType.appealTypes.map(_.toString).toSeq: _*))),
+                  elemMatch("decision.appeal", in("type", AppealType.reviewTypes.map(_.toString).toSeq: _*))
                 )
-              ): JsValueWrapper
-          }.toSeq: _*
-        )
-
-        Json.obj("$or" -> (concreteFilter ++ pseudoFilters))
+              )
+          }
+        or((Seq(concreteFilter) ++ pseudoFilters.toSeq): _*)
       }
 
     val liabilityStatusesFilter =
-      if (report.liabilityStatuses.isEmpty)
-        Json.obj()
-      else {
-        Json.obj(
-          ReportField.LiabilityStatus.underlyingField -> Json.obj("$in" -> report.liabilityStatuses.map(Json.toJson(_)))
-        )
+      if (report.liabilityStatuses.isEmpty) {
+        empty()
+      } else {
+        in(ReportField.LiabilityStatus.underlyingField, report.liabilityStatuses.map(_.toString).toSeq: _*)
       }
 
     val teamFilter =
-      if (report.teams.isEmpty)
-        Json.obj()
-      else if (report.teams.exists(_ == GatewayTeamId))
-        Json.obj(
-          ReportField.Team.underlyingField -> Json
-            .obj("$in" -> JsArray(JsNull :: report.teams.toList.filterNot(_ == GatewayTeamId).map(Json.toJson(_))))
+      if (report.teams.isEmpty) {
+        empty()
+      } else {
+        in(
+          ReportField.Team.underlyingField,
+          report.teams
+            .map(teamId => if (teamId == GatewayTeamId) null else teamId)
+            .toSeq: _*
         )
-      else
-        Json.obj(ReportField.Team.underlyingField -> Json.obj("$in" -> report.teams))
+      }
 
-    val minDateFilter =
-      if (report.dateRange.min == Instant.MIN)
-        Json.obj()
-      else
-        Json.obj("$gte" -> Json.toJson(report.dateRange.min))
+    val minDateFilter = if (report.dateRange.min != Instant.MIN) {
+      gte(ReportField.DateCreated.underlyingField, report.dateRange.min)
+    } else {
+      empty()
+    }
 
-    val maxDateFilter =
-      if (report.dateRange.max == Instant.MAX)
-        Json.obj()
-      else
-        Json.obj("$lte" -> Json.toJson(report.dateRange.max))
+    val maxDateFilter = if (report.dateRange.max != Instant.MAX) {
+      lte(ReportField.DateCreated.underlyingField, report.dateRange.max)
+    } else {
+      empty()
+    }
 
     val dateFilter =
-      if (report.dateRange == InstantRange.allTime)
-        Json.obj()
-      else
-        Json.obj(ReportField.DateCreated.underlyingField -> (minDateFilter ++ maxDateFilter))
+      if (report.dateRange == InstantRange.allTime) {
+        empty()
+      } else {
+        and(minDateFilter, maxDateFilter)
+      }
 
     val assigneeFilter = report match {
       case _: CaseReport =>
-        Json.obj()
+        empty()
       case _: SummaryReport =>
-        Json.obj()
+        empty()
       case queue: QueueReport =>
-        queue.assignee.map(assignee => Json.obj(ReportField.User.underlyingField -> assignee)).getOrElse {
-          Json.obj(ReportField.User.underlyingField -> JsNull)
+        queue.assignee.map(assignee => equal(ReportField.User.underlyingField, assignee)).getOrElse {
+          equal(ReportField.User.underlyingField, null)
         }
     }
 
-    Match(caseTypeFilter ++ statusFilter ++ teamFilter ++ dateFilter ++ assigneeFilter ++ liabilityStatusesFilter)
+    val bson = and(caseTypeFilter, statusFilter, teamFilter, dateFilter, assigneeFilter, liabilityStatusesFilter)
+    `match`(bson)
   }
 
-  private def summarySortStage(
-    framework: collection.AggregationFramework,
-    report: SummaryReport
-  ) = {
-    import framework._
-
+  private def summarySortStage(report: SummaryReport) = {
     val sortField = report match {
       case summary: SummaryReport if summary.groupBy.toSeq.contains(report.sortBy) =>
         s"groupKey.${report.sortBy.fieldName}"
@@ -427,48 +409,48 @@ class CaseMongoRepository @Inject() (
 
     report.sortOrder match {
       case SortDirection.ASCENDING =>
-        Sort(Ascending(sortField))
+        sort(ascending(sortField))
       case SortDirection.DESCENDING =>
-        Sort(Descending(sortField))
+        sort(descending(sortField))
     }
   }
 
   private def sortStage(
-    framework: collection.AggregationFramework,
     sortBy: ReportField[_],
     sortOrder: SortDirection.Value
-  ) = {
-    import framework._
-
+  ) =
     // If not sorting by reference, add it as a secondary sort field to ensure stable sorting
     (sortOrder, sortBy) match {
       case (SortDirection.ASCENDING, ReportField.Reference) =>
-        Sort(Ascending(sortBy.underlyingField))
+        sort(ascending(sortBy.underlyingField))
       case (SortDirection.DESCENDING, ReportField.Reference) =>
-        Sort(Descending(sortBy.underlyingField))
+        sort(descending(sortBy.underlyingField))
       case (SortDirection.ASCENDING, _) =>
-        Sort(Ascending(sortBy.underlyingField), Ascending(ReportField.Reference.underlyingField))
+        sort(
+          orderBy(ascending(sortBy.underlyingField), ascending(ReportField.Reference.underlyingField))
+        )
       case (SortDirection.DESCENDING, _) =>
-        Sort(Descending(sortBy.underlyingField), Descending(ReportField.Reference.underlyingField))
+        sort(
+          orderBy(descending(sortBy.underlyingField), descending(ReportField.Reference.underlyingField))
+        )
     }
-  }
 
-  private def groupStage(framework: collection.AggregationFramework, report: SummaryReport) = {
-    import framework._
+  private def groupStage(report: SummaryReport) = {
 
-    val countField = Seq(ReportField.Count.fieldName -> SumAll)
-
-    val casesField = if (report.includeCases) Seq("cases" -> PushField("$ROOT")) else Seq.empty
+    val casesField = if (report.includeCases) Seq(Accumulators.push("cases", "$$ROOT")) else Seq.empty
 
     val maxFields =
       report.maxFields.toList.map {
         case DaysSinceField(fieldName, underlyingField) =>
-          fieldName -> Max(daysSince(s"$$$underlyingField"))
+          Accumulators.max(
+            fieldName,
+            toBson(daysSince(s"$$$underlyingField"))
+          )
         case field =>
-          field.fieldName -> MaxField(field.underlyingField)
+          max(field.fieldName, s"$$${field.underlyingField}")
       }
 
-    val groupFields = countField ++ maxFields ++ casesField
+    val countField = sum(ReportField.Count.fieldName, 1)
 
     val groupBy = Json.obj(report.groupBy.map {
       case ChapterField(fieldName, underlyingField) =>
@@ -483,7 +465,7 @@ class CaseMongoRepository @Inject() (
         field.fieldName -> (JsString(s"$$${field.underlyingField}"): JsValueWrapper)
     }.toSeq: _*)
 
-    Group(groupBy)(groupFields: _*)
+    group(toBson(groupBy), (Seq(countField) ++ maxFields ++ casesField): _*)
   }
 
   private def getFieldValue(field: ReportField[_], json: Option[JsValue]): ReportResultField[_] = field match {
@@ -506,46 +488,34 @@ class CaseMongoRepository @Inject() (
   override def summaryReport(report: SummaryReport, pagination: Pagination): Future[Paged[ResultGroup]] = {
     logger.info(s"Running report: $report with pagination $pagination")
 
-    val countField = "resultCount"
+    val rest = Seq(groupStage(report), count(countField))
 
-    val runCount = collection
-      .aggregateWith[JsObject](allowDiskUse = true) { framework =>
-        import framework._
-
-        val first = matchStage(framework, report)
-
-        val rest = List(
-          groupStage(framework, report),
-          Count(countField)
-        )
-
-        (first, rest)
-
-      }
-      .headOption
+    val futureCount = collection
+      .aggregate[BsonDocument](
+        Seq(matchStage(report)) ++ rest
+      )
+      .allowDiskUse(true)
+      .headOption()
 
     val runAggregation = collection
-      .aggregateWith[JsObject](allowDiskUse = true) { framework =>
-        import framework._
-
-        val first = matchStage(framework, report)
-
-        val rest = List(
-          sortStage(framework, ReportField.Reference, SortDirection.ASCENDING),
-          groupStage(framework, report),
-          AddFields(Json.obj("groupKey" -> "$_id")),
-          Project(Json.obj("_id"        -> 0)),
-          summarySortStage(framework, report),
-          Skip((pagination.page - 1) * pagination.pageSize),
-          Limit(pagination.pageSize)
-        )
-
-        (first, rest)
-
-      }
-      .fold[Seq[ResultGroup]](Seq.empty, pagination.pageSize) {
-        case (rows, json) =>
-          rows ++ Seq(
+      .aggregate[BsonDocument](
+        Seq(matchStage(report)) ++
+          Seq(
+            sortStage(ReportField.Reference, SortDirection.ASCENDING),
+            groupStage(report),
+            addFields(Field("groupKey", "$_id")),
+            project(equal("_id", 0)),
+            summarySortStage(report),
+            skip((pagination.page - 1) * pagination.pageSize),
+            limit(pagination.pageSize)
+          )
+      )
+      .allowDiskUse(true)
+      .toFuture()
+      .map(bsonDocSeq =>
+        bsonDocSeq
+          .map(bsonDocument => Json.parse(bsonDocument.toJson).as[JsObject])
+          .map { json =>
             if (report.includeCases)
               CaseResultGroup(
                 count = json(ReportField.Count.fieldName).as[Long],
@@ -563,13 +533,10 @@ class CaseMongoRepository @Inject() (
                 maxFields =
                   report.maxFields.map(field => getNumberFieldValue(field, json.value.get(field.fieldName))).toList
               )
-          )
-      }
+          }
+      )
 
-    (runCount, runAggregation).mapN {
-      case (count, results) =>
-        Paged(results, pagination, count.map(_(countField).as[Int]).getOrElse(0))
-    }
+    pagedResults(futureCount, runAggregation, pagination)
   }
 
   override def caseReport(
@@ -578,81 +545,65 @@ class CaseMongoRepository @Inject() (
   ): Future[Paged[Map[String, ReportResultField[_]]]] = {
     logger.info(s"Running report: $report with pagination $pagination")
 
-    val countField = "resultCount"
-
-    val runCount = collection
-      .aggregateWith[JsObject](allowDiskUse = true) { framework =>
-        import framework._
-
-        val first = matchStage(framework, report)
-
-        val rest = List(Count(countField))
-
-        (first, rest)
-
+    val futureCount = collection
+      .aggregate[BsonDocument] {
+        Seq(matchStage(report)) :+ count(countField)
       }
-      .headOption
+      .allowDiskUse(true)
+      .headOption()
+
+    val fields =
+      report.fields.toList.map {
+        case ChapterField(fieldName, underlyingField) =>
+          Field(fieldName, toBson(substrBytes(s"$$$underlyingField", 0, 2)))
+        case DaysSinceField(fieldName, underlyingField) =>
+          Field(fieldName, toBson(daysSince(s"$$$underlyingField")))
+        case StatusField(fieldName, underlyingField) =>
+          Field(fieldName, toBson(pseudoStatus()))
+        case CoalesceField(fieldName, fieldChoices) =>
+          Field(fieldName, toBson(coalesce(fieldChoices)))
+        case field =>
+          Field(field.fieldName, toBson(s"$$${field.underlyingField}"))
+      }
 
     val runAggregation = collection
-      .aggregateWith[JsObject](allowDiskUse = true) { framework =>
-        import framework._
-
-        val fields = Json.obj(
-          report.fields.toList.map {
-            case ChapterField(fieldName, underlyingField) =>
-              fieldName -> (substrBytes(s"$$$underlyingField", 0, 2): JsValueWrapper)
-            case DaysSinceField(fieldName, underlyingField) =>
-              fieldName -> (daysSince(s"$$$underlyingField"): JsValueWrapper)
-            case StatusField(fieldName, _) =>
-              fieldName -> (pseudoStatus(): JsValueWrapper)
-            case CoalesceField(fieldName, fieldChoices) =>
-              fieldName -> (coalesce(fieldChoices): JsValueWrapper)
-            case field =>
-              field.fieldName -> (s"$$${field.underlyingField}": JsValueWrapper)
-          }: _*
-        )
-
-        val first = matchStage(framework, report)
-
-        val rest = List(
-          sortStage(framework, report.sortBy, report.sortOrder),
-          AddFields(fields),
-          Project(Json.obj("_id" -> JsNumber(0))),
-          Skip((pagination.page - 1) * pagination.pageSize),
-          Limit(pagination.pageSize)
-        )
-
-        (first, rest)
-
-      }
-      .fold[Seq[Map[String, ReportResultField[_]]]](Seq.empty, pagination.pageSize) {
-        case (rows, json) =>
-          rows ++ Seq(
+      .aggregate[BsonDocument](
+        Seq(matchStage(report)) ++
+          Seq(
+            sortStage(report.sortBy, report.sortOrder),
+            addFields(fields: _*),
+            project(equal("_id", 0)),
+            skip((pagination.page - 1) * pagination.pageSize),
+            limit(pagination.pageSize)
+          )
+      )
+      .allowDiskUse(true)
+      .toFuture()
+      .map(bsonDocSeq =>
+        bsonDocSeq
+          .map(bsonDocument => Json.parse(bsonDocument.toJson).as[JsObject])
+          .map { json =>
             report.fields.toSeq
               .map(field => field.fieldName -> getFieldValue(field, json.value.get(field.fieldName)))
               .toMap[String, ReportResultField[_]]
-          )
-      }
+          }
+      )
 
-    (runCount, runAggregation).mapN {
-      case (count, results) =>
-        Paged(results, pagination, count.map(_(countField).as[Int]).getOrElse(0))
-    }
+    pagedResults(futureCount, runAggregation, pagination)
   }
 
-  private def queueGroupStage(framework: collection.AggregationFramework, report: QueueReport) = {
-    import framework._
-    GroupMulti(
-      ReportField.Team.fieldName     -> ReportField.Team.underlyingField,
-      ReportField.CaseType.fieldName -> ReportField.CaseType.underlyingField
-    )(ReportField.Count.fieldName -> SumAll)
+  private def queueGroupStage = {
+    val fields = Json.obj(
+      ReportField.Team.fieldName     -> s"$$${ReportField.Team.underlyingField}",
+      ReportField.CaseType.fieldName -> s"$$${ReportField.CaseType.underlyingField}"
+    )
+    group(toBson(fields), Accumulators.sum(ReportField.Count.fieldName, 1))
   }
 
-  private def queueSortStage(framework: collection.AggregationFramework, report: QueueReport) = {
-    import framework._
+  private def queueSortStage(report: QueueReport) = {
 
     val sortDirection = (field: String) =>
-      if (report.sortOrder == SortDirection.ASCENDING) Ascending(field) else Descending(field)
+      if (report.sortOrder == SortDirection.ASCENDING) ascending(field) else descending(field)
 
     def teamThenCaseType =
       Seq(sortDirection(s"_id.${ReportField.Team.fieldName}"), sortDirection(s"_id.${ReportField.CaseType.fieldName}"))
@@ -665,9 +616,9 @@ class CaseMongoRepository @Inject() (
 
     // Ideally we want to sort by both parts of the grouping key to improve sort stability
     report.sortBy match {
-      case ReportField.Count    => Sort(countThenTeamThenCaseType: _*)
-      case ReportField.CaseType => Sort(caseTypeThenTeam: _*)
-      case ReportField.Team     => Sort(teamThenCaseType: _*)
+      case ReportField.Count    => sort(orderBy(countThenTeamThenCaseType: _*))
+      case ReportField.CaseType => sort(orderBy(caseTypeThenTeam: _*))
+      case ReportField.Team     => sort(orderBy(teamThenCaseType: _*))
     }
   }
 
@@ -677,54 +628,40 @@ class CaseMongoRepository @Inject() (
   ): Future[Paged[QueueResultGroup]] = {
     logger.info(s"Running report: $report with pagination $pagination")
 
-    val countField = "resultCount"
-
-    val runCount = collection
-      .aggregateWith[JsObject](allowDiskUse = true) { framework =>
-        import framework._
-
-        val first = matchStage(framework, report)
-
-        val rest = List(
-          queueGroupStage(framework, report),
-          Count(countField)
-        )
-
-        (first, rest)
-
+    val rest = Seq(queueGroupStage, count(countField))
+    val futureCount = collection
+      .aggregate[BsonDocument] {
+        Seq(matchStage(report)) ++ rest
       }
-      .headOption
+      .allowDiskUse(true)
+      .headOption()
 
     val runAggregation = collection
-      .aggregateWith[JsObject](allowDiskUse = true) { framework =>
-        import framework._
-
-        val first = matchStage(framework, report)
-
-        val rest = List(
-          queueGroupStage(framework, report),
-          queueSortStage(framework, report),
-          Skip((pagination.page - 1) * pagination.pageSize),
-          Limit(pagination.pageSize)
-        )
-
-        (first, rest)
-
-      }
-      .fold[Seq[QueueResultGroup]](Seq.empty, pagination.pageSize) {
-        case (rows, json) =>
-          rows ++ Seq(
-            QueueResultGroup(
-              count    = json(ReportField.Count.fieldName).as[Int],
-              team     = json("_id").as[JsObject].value.get(ReportField.Team.fieldName).flatMap(_.asOpt[String]),
-              caseType = json("_id").as[JsObject].apply(ReportField.CaseType.fieldName).as[ApplicationType.Value]
-            )
+      .aggregate[BsonDocument](
+        Seq(matchStage(report)) ++
+          Seq(
+            queueGroupStage,
+            queueSortStage(report),
+            skip((pagination.page - 1) * pagination.pageSize),
+            limit(pagination.pageSize)
           )
-      }
+      )
+      .allowDiskUse(true)
+      .toFuture()
+      .map(bsonDocSeq =>
+        bsonDocSeq
+          .map { bsonDocument =>
+            def wrapAsOptionOfString(field: BsonValue): Option[String] =
+              if (field.isNull) None else Some(field.asString().getValue)
+            QueueResultGroup(
+              count = bsonDocument.getInt32(ReportField.Count.fieldName).getValue,
+              team  = wrapAsOptionOfString(bsonDocument.getDocument("_id").get(ReportField.Team.fieldName, BsonNull())),
+              caseType = ApplicationType
+                .withName(bsonDocument.getDocument("_id").getString(ReportField.CaseType.fieldName).getValue)
+            )
+          }
+      )
 
-    (runCount, runAggregation).mapN {
-      case (count, results) =>
-        Paged(results, pagination, count.map(_(countField).as[Int]).getOrElse(0))
-    }
+    pagedResults(futureCount, runAggregation, pagination)
   }
 }

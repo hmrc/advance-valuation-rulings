@@ -16,16 +16,12 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
+import org.mongodb.scala.MongoWriteException
+import org.mongodb.scala.model.Filters
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-import play.api.test.Helpers. _
-import reactivemongo.api.{DB, ReadConcern}
-import reactivemongo.bson.{BSONDocument, _}
-import reactivemongo.core.errors.DatabaseException
-import reactivemongo.play.json.ImplicitBSONHandlers._
-import uk.gov.hmrc.bindingtariffclassification.model.RESTFormatters._
 import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.mongo.MongoSpecSupport
+import uk.gov.hmrc.mongo.test.MongoSupport
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -33,49 +29,41 @@ class KeywordRepositorySpec
     extends BaseMongoIndexSpec
     with BeforeAndAfterAll
     with BeforeAndAfterEach
-    with MongoSpecSupport
+    with MongoSupport
     with Eventually {
   self =>
   private val mongoErrorCode = 11000
 
   private def selectorByName(name: String) =
-    BSONDocument("name" -> name)
+    Filters.equal("name", name)
 
   private val keyword  = Keyword("keyword name", approved = true)
   private val keyword2 = Keyword(name                     = "lentil", approved = true)
 
-  private val mongoDbProvider: MongoDbProvider = new MongoDbProvider {
-    override val mongo: () => DB = self.mongo
-  }
-
   private val repository = createMongoRepo
 
   private def createMongoRepo =
-    new KeywordsMongoRepository(mongoDbProvider)
+    new KeywordsMongoRepository(mongoComponent)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    await(repository.drop)
+    await(repository.collection.deleteMany(Filters.empty()).toFuture())
     await(repository.ensureIndexes)
     collectionSize shouldBe 0
   }
 
   override def afterAll(): Unit = {
     super.afterAll()
-    await(repository.drop)
+    await(repository.collection.deleteMany(Filters.empty()).toFuture())
   }
 
   private def collectionSize: Int =
     await(
       repository.collection
-        .count(
-          selector    = None,
-          limit       = Some(0),
-          skip        = 0,
-          hint        = None,
-          readConcern = ReadConcern.Local
-        )
-    ).toInt
+        .countDocuments()
+        .toFuture()
+        .map(_.toInt)
+    )
 
   "insert" should {
     "insert a new document in the collection" in {
@@ -84,7 +72,7 @@ class KeywordRepositorySpec
       await(repository.insert(keyword)) shouldBe keyword
       collectionSize                    shouldBe 1 + size
       await(
-        repository.collection.find(selectorByName(keyword.name)).one[Keyword]
+        repository.collection.find(selectorByName(keyword.name)).headOption()
       ) shouldBe Some(keyword)
     }
 
@@ -92,12 +80,12 @@ class KeywordRepositorySpec
       await(repository.insert(keyword)) shouldBe keyword
       val size = collectionSize
 
-      val caught = intercept[DatabaseException] {
+      val caught = intercept[MongoWriteException] {
         await(repository.insert(keyword))
       }
 
-      caught.code    shouldBe Some(mongoErrorCode)
-      collectionSize shouldBe size
+      caught.getError.getCode shouldBe mongoErrorCode
+      collectionSize          shouldBe size
     }
   }
 
@@ -115,7 +103,7 @@ class KeywordRepositorySpec
       await(repository.delete("potatoes"))
       collectionSize shouldBe 1
       await(
-        repository.collection.find(selectorByName(keyword2.name)).one[Keyword]
+        repository.collection.find(selectorByName(keyword2.name)).headOption()
       ) shouldBe Some(keyword2)
 
     }
@@ -138,7 +126,7 @@ class KeywordRepositorySpec
       await(
         repository.collection
           .find(selectorByName(updatedKeyword.name))
-          .one[Keyword]
+          .headOption()
       ) shouldBe Some(updatedKeyword)
     }
 

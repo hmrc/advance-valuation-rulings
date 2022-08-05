@@ -16,13 +16,12 @@
 
 package uk.gov.hmrc.bindingtariffclassification.model
 
-import java.time.Instant
 import play.api.libs.json._
 import uk.gov.hmrc.bindingtariffclassification.utils.JsonUtil
 import uk.gov.hmrc.play.json.Union
 
-import java.time.ZonedDateTime
-import java.time.ZoneOffset
+import java.time.{Instant, LocalDateTime, ZoneOffset, ZonedDateTime}
+import scala.util.{Success, Try}
 
 object MongoFormatters {
   implicit val formatInstant: OFormat[Instant] = new OFormat[Instant] {
@@ -34,7 +33,23 @@ object MongoFormatters {
         case JsObject(map) if map.contains("$date") =>
           map("$date") match {
             case JsNumber(v) => JsSuccess(Instant.ofEpochMilli(v.toLong))
-            case _           => JsError("Unexpected Instant Format")
+            case JsObject(stringObject) =>
+              if (stringObject.contains("$numberLong")) {
+                JsSuccess(Instant.ofEpochMilli(BigDecimal(stringObject("$numberLong").as[JsString].value).toLong))
+              } else {
+                JsError("Unexpected Instant Format")
+              }
+            case JsString(dateValue) =>
+              val parseDateTime = if (dateValue.contains("Z")) { (dateAsString: String) =>
+                ZonedDateTime.parse(dateAsString)
+              } else { (dateAsString: String) => LocalDateTime.parse(dateAsString) }
+              ZonedDateTime.parse(dateValue)
+              Try(parseDateTime(dateValue)) match {
+                case Success(value: LocalDateTime) => JsSuccess(value.toInstant(ZoneOffset.UTC))
+                case Success(value: ZonedDateTime) => JsSuccess(value.toInstant)
+                case _                             => JsError("Unexpected Instant Format")
+              }
+            case _ => JsError("Unexpected Instant Format")
           }
         case _ => JsError("Unexpected Instant Format")
       }
@@ -104,7 +119,7 @@ object MongoFormatters {
   implicit val formatCancellationCaseStatusChange: OFormat[CancellationCaseStatusChange] =
     Json.format[CancellationCaseStatusChange]
   implicit val formatReferralCaseStatusChange: OFormat[ReferralCaseStatusChange] = Json.format[ReferralCaseStatusChange]
-  implicit val formatRejectCaseStatusChange: OFormat[RejectCaseStatusChange] = Json.format[RejectCaseStatusChange]
+  implicit val formatRejectCaseStatusChange: OFormat[RejectCaseStatusChange]     = Json.format[RejectCaseStatusChange]
   implicit val formatCompletedCaseStatusChange: OFormat[CompletedCaseStatusChange] =
     Json.format[CompletedCaseStatusChange]
   implicit val formatAppealStatusChange: OFormat[AppealStatusChange]           = Json.format[AppealStatusChange]

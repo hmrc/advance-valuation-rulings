@@ -17,16 +17,19 @@
 package uk.gov.hmrc.bindingtariffclassification.repository
 
 import com.google.inject.ImplementedBy
-import javax.inject.{Inject, Singleton}
-import play.api.libs.json._
-import reactivemongo.bson.BSONObjectID
-import reactivemongo.play.json.collection.JSONCollection
+import org.bson.conversions.Bson
+import org.mongodb.scala.model.Filters.{empty, equal}
+import org.mongodb.scala.model.Indexes._
+import org.mongodb.scala.model.{IndexModel, IndexOptions, ReplaceOptions}
 import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters._
-import uk.gov.hmrc.bindingtariffclassification.model.{Keyword, MongoFormatters, Paged, Pagination}
-import uk.gov.hmrc.mongo.ReactiveRepository
+import uk.gov.hmrc.bindingtariffclassification.model.{Keyword, Paged, Pagination}
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+
 @ImplementedBy(classOf[KeywordsMongoRepository])
 trait KeywordsRepository {
 
@@ -41,33 +44,36 @@ trait KeywordsRepository {
 }
 
 @Singleton
-class KeywordsMongoRepository @Inject() (mongoDbProvider: MongoDbProvider)
-    extends ReactiveRepository[Keyword, BSONObjectID](
-      collectionName = "keywords",
-      mongo          = mongoDbProvider.mongo,
-      domainFormat   = MongoFormatters.formatKeywords
+class KeywordsMongoRepository @Inject()(mongoComponent: MongoComponent)
+  extends PlayMongoRepository[Keyword](
+    collectionName = "keywords",
+    mongoComponent = mongoComponent,
+    domainFormat = formatKeywords,
+    indexes = Seq(
+      IndexModel(ascending("name"), IndexOptions().unique(true).name("name_Index"))
     )
-    with KeywordsRepository
-    with MongoCrudHelper[Keyword] {
-
-  override protected val mongoCollection: JSONCollection = collection
-
-  override def indexes = Seq(
-    createSingleFieldAscendingIndex(indexFieldKey = "name", isUnique = true)
   )
+    with KeywordsRepository
+    with BaseMongoOperations[Keyword] {
 
   override def insert(keyword: Keyword): Future[Keyword] = createOne(keyword)
 
   override def update(keyword: Keyword, upsert: Boolean): Future[Option[Keyword]] =
-    updateDocument(selector = byName(keyword.name), update = keyword, upsert = upsert)
+    collection
+      .replaceOne(filter = byName(keyword.name), replacement = keyword, ReplaceOptions().upsert(upsert))
+      .toFuture()
+      .flatMap(_ => collection.find(byName(keyword.name)).first().toFutureOption())
 
   override def findAll(pagination: Pagination): Future[Paged[Keyword]] =
-    getMany(Json.obj(), Json.obj(), pagination)
+    countMany(
+      empty(),
+      defaultSortBy,
+      pagination
+    )
 
-  private def byName(name: String): JsObject =
-    Json.obj("name" -> name)
+  private def byName(name: String): Bson = equal("name", name)
 
   override def delete(name: String): Future[Unit] =
-    remove("name" -> name).map(_ => ())
+    collection.deleteOne(equal("name", name)).map(_ => ()).head()
 
 }

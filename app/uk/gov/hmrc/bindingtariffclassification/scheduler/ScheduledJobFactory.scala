@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.bindingtariffclassification.scheduler
 
-import javax.inject.Inject
-import play.api.inject.Injector
 import org.quartz
 import org.quartz.Job
 import org.quartz.spi.{JobFactory, TriggerFiredBundle}
+import play.api.inject.Injector
 
-class ScheduledJobFactory @Inject() (injector: Injector) extends JobFactory {
+import javax.inject.Inject
+
+class ScheduledJobFactory @Inject()(injector: Injector) extends JobFactory {
   override def newJob(bundle: TriggerFiredBundle, scheduler: quartz.Scheduler): Job =
     injector.instanceOf(bundle.getJobDetail.getJobClass)
 }

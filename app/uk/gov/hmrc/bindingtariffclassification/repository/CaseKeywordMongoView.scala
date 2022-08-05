@@ -16,62 +16,69 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
-import com.google.inject.ImplementedBy
-import play.api.libs.json.OFormat.oFormatFromReadsAndOWrites
-import play.api.libs.json.{JsObject, JsString, Json}
-import reactivemongo.bson.BSONObjectID
-import reactivemongo.play.json.commands.JSONAggregationFramework
-import reactivemongo.play.json.commands.JSONAggregationFramework._
-import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters._
-import uk.gov.hmrc.bindingtariffclassification.model.{CaseKeyword, Paged, Pagination}
+import org.mongodb.scala.MongoCollection
+import org.mongodb.scala.bson.BsonDocument
+import org.mongodb.scala.bson.conversions.Bson
+import org.mongodb.scala.model.Accumulators.push
+import org.mongodb.scala.model.Aggregates._
+import org.mongodb.scala.model.Projections.include
+import org.mongodb.scala.model.{Aggregates, Field, Projections}
+import play.api.libs.json.Json
+import uk.gov.hmrc.bindingtariffclassification.model.{CaseKeyword, MongoCodecs, Paged, Pagination}
+import uk.gov.hmrc.bindingtariffclassification.repository.BaseMongoOperations.{countField, pagedResults}
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.Codecs
 
 import javax.inject.{Inject, Singleton}
-import scala.collection.immutable.Nil
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-
-@ImplementedBy(classOf[CaseKeywordMongoView])
-trait CaseKeywordView {
-  def fetchKeywordsFromCases(pagination: Pagination): Future[Paged[CaseKeyword]]
-}
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, Future}
 
 @Singleton
-class CaseKeywordMongoView @Inject() (
-  mongoDbProvider: MongoDbProvider
-) extends ReactiveView[CaseKeyword, BSONObjectID](
-      viewName       = "caseKeywords",
-      collectionName = "cases",
-      mongo          = mongoDbProvider.mongo
-    )
-    with CaseKeywordView {
+class CaseKeywordMongoView @Inject()(mongoComponent: MongoComponent) {
 
-  override protected val pipeline: Seq[JSONAggregationFramework.PipelineOperator] = {
-    val addHeaderFields = AddFields(
-      Json.obj(
-        "team"            -> "$queueId",
-        "goodsName"       -> "$application.goodName",
-        "caseType"        -> "$application.type",
-        "liabilityStatus" -> "$application.status"
+  lazy val view: MongoCollection[CaseKeyword] = Await.result(awaitable = initView, atMost = 30.seconds)
+
+  private def initView: Future[MongoCollection[CaseKeyword]] = {
+    def getView: MongoCollection[CaseKeyword] = mongoComponent.database.getCollection[CaseKeyword]("caseKeywords")
+      .withCodecRegistry(MongoCodecs.caseKeyword)
+
+    getView
+      .drop()
+      .flatMap(_ => mongoComponent.database.createView("caseKeywords", "cases", pipeline))
+      .toFuture()
+      .map(_ => getView)
+  }
+
+  private val projectCaseHeader = Aggregates.project(
+    Projections.fields(
+      include(
+        "reference",
+        "status",
+        "assignee",
+        "team",
+        "goodsName",
+        "caseType",
+        "keywords",
+        "daysElapsed",
+        "liabilityStatus"
       )
     )
-    val projectCaseHeader = Project(
-      Json.obj(
-        "reference"       -> 1,
-        "status"          -> 1,
-        "assignee"        -> 1,
-        "team"            -> 1,
-        "goodsName"       -> 1,
-        "caseType"        -> 1,
-        "keywords"        -> 1,
-        "daysElapsed"     -> 1,
-        "liabilityStatus" -> 1
-      )
-    )
-    val unwindKeywords  = UnwindField("keywords")
-    val group           = Group(JsString("$keywords"))("cases" -> PushField("$ROOT"))
-    val addKeywordField = AddFields(Json.obj("keyword.name" -> "$_id"))
-    val project         = Project(Json.obj("_id" -> 0))
+  )
 
+  private val addHeaderFields = addFields(
+    Field("team", "$queueId"),
+    Field("goodsName", "$application.goodName"),
+    Field("caseType", "$application.type"),
+    Field("liabilityStatus", "$application.status")
+  )
+
+  private val unwindKeywords = unwind("$keywords")
+  private val group = Aggregates.group("$keywords", push("cases", "$$ROOT"))
+  private val addKeywordField = addFields(Field("keyword.name", "$_id"))
+  private val project = Aggregates.project(Codecs.toBson(Json.obj("_id" -> 0)).asDocument()) // todo fix this
+
+  protected val pipeline: Seq[Bson] = {
     Seq(
       addHeaderFields,
       projectCaseHeader,
@@ -82,23 +89,25 @@ class CaseKeywordMongoView @Inject() (
     )
   }
 
-  override def fetchKeywordsFromCases(pagination: Pagination): Future[Paged[CaseKeyword]] = {
+  def fetchKeywordsFromCases(pagination: Pagination): Future[Paged[CaseKeyword]] = {
     val runAggregation = view
-      .aggregateWith[CaseKeyword](allowDiskUse = true)(_ =>
-        (
-          Project(Json.obj("_id" -> 0)),
-          List(Skip((pagination.page - 1) * pagination.pageSize), Limit(pagination.pageSize))
+      .aggregate[CaseKeyword] {
+        Seq(
+          Aggregates.project(Codecs.toBson(Json.obj("_id" -> 0)).asDocument()),
+          skip((pagination.page - 1) * pagination.pageSize),
+          limit(pagination.pageSize)
         )
-      )
-      .collect[List](Int.MaxValue, reactivemongo.api.Cursor.FailOnError[List[CaseKeyword]]())
+      }
+      .allowDiskUse(true)
+      .toFuture()
 
-    val runCount = view
-      .aggregateWith[JsObject](allowDiskUse = true)(_ => (Count("resultCount"), Nil))
-      .headOption
+    val futureCount = view
+      .aggregate[BsonDocument] {
+        Seq(count(countField))
+      }
+      .allowDiskUse(true)
+      .headOption()
 
-    for {
-      results <- runAggregation
-      count   <- runCount
-    } yield Paged(results, pagination, count.map(_("resultCount").as[Int]).getOrElse(0))
+    pagedResults(futureCount, runAggregation, pagination)
   }
 }

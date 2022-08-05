@@ -16,28 +16,21 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
-import javax.inject.{Inject, Singleton}
-
 import akka.stream.Materializer
-import akka.stream.scaladsl.Sink
-import play.api.libs.json.{JsNull, JsObject, Json}
-import reactivemongo.play.json.ImplicitBSONHandlers._
-import reactivemongo.play.json.collection.JSONCollection
-import reactivemongo.play.json.commands.JSONAggregationFramework
-import reactivemongo.play.json.commands.JSONAggregationFramework._
-import uk.gov.hmrc.bindingtariffclassification.model.Attachment
-import uk.gov.hmrc.bindingtariffclassification.model.MongoFormatters.formatAttachment
+import org.mongodb.scala.bson.conversions.Bson
+import org.mongodb.scala.model.Aggregates.{`match`, replaceRoot, unwind}
+import org.mongodb.scala.model.Filters.notEqual
+import org.mongodb.scala.model.{Aggregates, Filters, Projections, UnwindOptions}
+import play.api.libs.json.Json
+import uk.gov.hmrc.bindingtariffclassification.model.{Attachment, MongoCodecs}
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.Codecs
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CaseAttachmentAggregation @Inject() (
-  mongoDbProvider: MongoDbProvider
-)(implicit mat: Materializer)
-    extends ReactiveAggregation[Attachment](
-      collectionName = "cases",
-      mongo          = mongoDbProvider.mongo
-    ) {
+class CaseAttachmentAggregation @Inject()(mongoComponent: MongoComponent)(implicit mat: Materializer) {
 
   implicit val ec: ExecutionContext = mat.executionContext
 
@@ -53,19 +46,23 @@ class CaseAttachmentAggregation @Inject() (
 
   private val allAttachmentFields: Set[String] = attachmentArrayFields ++ attachmentFields
 
-  override protected val pipeline: List[JSONAggregationFramework.PipelineOperator] = {
-    val unwindNestedAttachmentArrays = attachmentArrayFields.toList.map(name => Unwind(name, None, Some(true)))
-
-    val projectAttachments = Project(
-      Json.obj(
-        "attachment" -> allAttachmentFields.map(name => "$" + name)
-      )
+  private val unwindNestedAttachmentArrays = attachmentArrayFields.toList.map(name =>
+    unwind("$" + name, UnwindOptions().includeArrayIndex(null)
+      .preserveNullAndEmptyArrays(true))
+  )
+  private val projectAttachments = Aggregates.project(
+    Projections.fields(
+      Projections.computed("attachment", allAttachmentFields.map(name => "$" + name).toSeq)
     )
-    val unwindAttachments = Unwind("attachment", None, Some(false))
-    val filterNotNull     = Match(Json.obj("attachment" -> Json.obj("$ne" -> JsNull)))
-    val toRoot            = ReplaceRoot(Json.obj("$mergeObjects" -> List("$attachment")))
-    val out               = Out("attachments")
+  )
+  private val unwindAttachments =
+    unwind("$attachment", UnwindOptions().includeArrayIndex(null)
+      .preserveNullAndEmptyArrays(false))
+  private val filterNotNull = `match`(notEqual("attachment", null))
+  private val toRoot = replaceRoot(Codecs.toBson(Json.obj("$mergeObjects" -> List("$attachment"))))
+  private val out = Aggregates.out("attachments")
 
+  protected val pipeline: List[Bson] = {
     unwindNestedAttachmentArrays ++ List(
       projectAttachments,
       unwindAttachments,
@@ -76,12 +73,18 @@ class CaseAttachmentAggregation @Inject() (
   }
 
   def refresh(): Future[Unit] =
-    runAggregation.runWith(Sink.ignore).map(_ => ())
+    mongoComponent.database
+      .getCollection[Attachment]("cases")
+      .withCodecRegistry(MongoCodecs.attachment)
+      .aggregate(pipeline)
+      .toFuture()
+      .map(_ => Future.unit)
 
   def find(attachmentId: String): Future[Option[Attachment]] =
-    mongoDbProvider
-      .mongo()
-      .collection[JSONCollection]("attachments")
-      .find[JsObject, Attachment](selector = Json.obj("id" -> attachmentId), projection = None)
-      .one[Attachment]
+    mongoComponent.database
+      .getCollection[Attachment]("attachments")
+      .withCodecRegistry(MongoCodecs.attachment)
+      .find(Filters.equal("id", attachmentId))
+      .first()
+      .toFutureOption()
 }
