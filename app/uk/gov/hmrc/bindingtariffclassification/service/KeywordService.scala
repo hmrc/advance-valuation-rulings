@@ -16,19 +16,16 @@
 
 package uk.gov.hmrc.bindingtariffclassification.service
 
-import akka.stream.Materializer
-import javax.inject._
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.repository._
 
+import javax.inject._
 import scala.concurrent.Future
 
 @Singleton
 class KeywordService @Inject() (
   keywordRepository: KeywordsRepository,
   caseKeywordAggregation: CaseKeywordMongoView
-)(
-  implicit mat: Materializer
 ) {
 
   def addKeyword(keyword: Keyword): Future[Keyword] =

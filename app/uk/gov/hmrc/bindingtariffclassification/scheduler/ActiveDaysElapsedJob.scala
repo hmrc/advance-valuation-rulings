@@ -24,7 +24,7 @@ import uk.gov.hmrc.bindingtariffclassification.service.{CaseService, EventServic
 import uk.gov.hmrc.bindingtariffclassification.sort.CaseSortField
 import uk.gov.hmrc.bindingtariffclassification.utils.DateUtil._
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.mongo.lock.{LockRepository, MongoLockRepository}
+import uk.gov.hmrc.mongo.lock.LockRepository
 
 import java.time._
 import java.time.temporal.ChronoUnit

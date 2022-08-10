@@ -22,7 +22,6 @@ lazy val microservice = (project in file("."))
     targetJvm := "jvm-1.8",
     PlayKeys.playDefaultPort := 9580,
     libraryDependencies ++= (AppDependencies.compile ++ AppDependencies.test),
-    update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
     Test / parallelExecution := false,
     Test / fork := true,
     retrieveManaged := true,

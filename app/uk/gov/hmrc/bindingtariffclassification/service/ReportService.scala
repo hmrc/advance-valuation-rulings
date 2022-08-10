@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.bindingtariffclassification.service
 
-import javax.inject.Inject
 import uk.gov.hmrc.bindingtariffclassification.model._
 import uk.gov.hmrc.bindingtariffclassification.model.reporting._
-import uk.gov.hmrc.bindingtariffclassification.repository.{CaseRepository, EventRepository}
+import uk.gov.hmrc.bindingtariffclassification.repository.CaseRepository
 
+import javax.inject.Inject
 import scala.concurrent.Future
 
-class ReportService @Inject() (caseRepository: CaseRepository, eventRepository: EventRepository) {
+class ReportService @Inject() (caseRepository: CaseRepository) {
 
   def summaryReport(report: SummaryReport, pagination: Pagination): Future[Paged[ResultGroup]] =
     caseRepository.summaryReport(report, pagination)
