@@ -17,6 +17,7 @@
 package uk.gov.hmrc.bindingtariffclassification.repository
 
 import org.scalatest.concurrent.Eventually
+import org.scalatest.matchers.must.Matchers._
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.Role.CLASSIFICATION_OFFICER
@@ -117,9 +118,40 @@ class CaseKeywordMongoViewSpec
 
   private val pagination = Pagination()
 
-  "fetchKeywordsFromCases" should {
+  "CaseKeywordMongoView" should {
 
-    "return keywords from the Cases" in {
+    "dropView will drop the view" in {
+      val result = view.dropView(view.caseKeywordsViewName)
+
+      val futureCollectionNames = await(result).flatMap(_ => mongoComponent.database.listCollectionNames().toFuture())
+
+      await(futureCollectionNames) mustBe (Seq("system.views", "cases"))
+    }
+
+    "createView will create the view" in {
+      val result =
+        view.dropView(view.caseKeywordsViewName).map(_ => view.createView(view.caseKeywordsViewName, "cases"))
+
+      val futureCollectionNames = await(result).flatMap(_ => mongoComponent.database.listCollectionNames().toFuture())
+
+      await(futureCollectionNames) mustBe (Seq("system.views", "cases", "caseKeywords"))
+    }
+
+    "getView will get the view" in {
+      val result = view
+        .dropView(view.caseKeywordsViewName)
+        .map(_ => view.initView)
+        .map(_ =>
+          view
+            .createView(view.caseKeywordsViewName, "cases")
+            .flatMap(_ => view.getView(view.caseKeywordsViewName).countDocuments().head())
+        )
+
+      val futureViewCount = await(result)
+      await(futureViewCount) mustBe 0
+    }
+
+    "fetchKeywordsFromCases should return keywords from the Cases" in {
       await(repository.insert(caseWithKeywordsBTI))
       await(repository.insert(caseWithKeywordsLiability))
       collectionSize shouldBe 2
@@ -127,5 +159,6 @@ class CaseKeywordMongoViewSpec
 
       await(view.fetchKeywordsFromCases(pagination)).results contains expected
     }
+
   }
 }

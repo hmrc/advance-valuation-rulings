@@ -35,20 +35,29 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 
 @Singleton
-class CaseKeywordMongoView @Inject()(mongoComponent: MongoComponent) {
+class CaseKeywordMongoView @Inject() (mongoComponent: MongoComponent) {
+
+  private[repository] val caseKeywordsViewName = "caseKeywords"
 
   lazy val view: MongoCollection[CaseKeyword] = Await.result(awaitable = initView, atMost = 30.seconds)
 
-  private def initView: Future[MongoCollection[CaseKeyword]] = {
-    def getView: MongoCollection[CaseKeyword] = mongoComponent.database.getCollection[CaseKeyword]("caseKeywords")
+  private[repository] def createView(viewName: String, viewOn: String): Future[_] =
+    mongoComponent.database.createView(viewName, viewOn, pipeline).toFuture()
+
+  private[repository] def dropView(viewName: String): Future[Void] =
+    getView(viewName)
+      .drop()
+      .toFuture()
+
+  private[repository] def getView(viewName: String): MongoCollection[CaseKeyword] =
+    mongoComponent.database
+      .getCollection[CaseKeyword](viewName)
       .withCodecRegistry(MongoCodecs.caseKeyword)
 
-    getView
-      .drop()
-      .flatMap(_ => mongoComponent.database.createView("caseKeywords", "cases", pipeline))
-      .toFuture()
-      .map(_ => getView)
-  }
+  private[repository] def initView: Future[MongoCollection[CaseKeyword]] =
+    dropView(caseKeywordsViewName)
+      .map(_ => createView(caseKeywordsViewName, "cases"))
+      .map(_ => getView(caseKeywordsViewName))
 
   private val projectCaseHeader = Aggregates.project(
     Projections.fields(
@@ -73,10 +82,10 @@ class CaseKeywordMongoView @Inject()(mongoComponent: MongoComponent) {
     Field("liabilityStatus", "$application.status")
   )
 
-  private val unwindKeywords = unwind("$keywords")
-  private val group = Aggregates.group("$keywords", push("cases", "$$ROOT"))
+  private val unwindKeywords  = unwind("$keywords")
+  private val group           = Aggregates.group("$keywords", push("cases", "$$ROOT"))
   private val addKeywordField = addFields(Field("keyword.name", "$_id"))
-  private val project = Aggregates.project(Codecs.toBson(Json.obj("_id" -> 0)).asDocument()) // todo fix this
+  private val project         = Aggregates.project(Codecs.toBson(Json.obj("_id" -> 0)).asDocument()) // todo fix this
 
   protected val pipeline: Seq[Bson] = {
     Seq(
