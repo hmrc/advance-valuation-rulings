@@ -31,12 +31,11 @@ import scala.concurrent.Future
 class ReportServiceTest extends BaseSpec with BeforeAndAfterEach {
 
   private val caseRepository  = mock[CaseRepository]
-  private val eventRepository = mock[EventRepository]
-  private val service         = new ReportService(caseRepository, eventRepository)
+  private val service         = new ReportService(caseRepository)
 
   override def afterEach(): Unit = {
     super.afterEach()
-    reset(caseRepository, eventRepository)
+    reset(caseRepository)
   }
 
   "ReportService.caseReport" should {

@@ -61,7 +61,7 @@ class FileStoreConnector @Inject()(appConfig: AppConfig, http: DefaultHttpClient
           .runFold(Seq.empty[FileMetadata]) {
             case (acc, next) => acc ++ next.results
           }
-          .map(results => Paged(results = results, pagination = Pagination.max, resultCount = results.size))
+          .map(results => Paged(results = results, pagination = Pagination.max, resultCount = results.size.toLong))
       } else {
         http.GET[Paged[FileMetadata]](findQueryUri(search, pagination), headers = addHeaders)
       }

@@ -70,6 +70,6 @@ object BaseMongoOperations {
     (futureCount, runAggregation).mapN {
       case (count, results) =>
         val totalCount = count.map(field => field.getInt32(countField).getValue).getOrElse(0)
-        Paged(results, pagination, totalCount)
+        Paged(results, pagination, totalCount.toLong)
     }
 }

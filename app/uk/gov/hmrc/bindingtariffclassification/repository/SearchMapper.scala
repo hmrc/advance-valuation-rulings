@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.bindingtariffclassification.repository
 
-import org.mongodb.scala.bson.conversions.Bson
-
 import java.time.Instant
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json.JsValueWrapper

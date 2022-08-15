@@ -558,7 +558,7 @@ class CaseMongoRepository @Inject() (
           Field(fieldName, toBson(substrBytes(s"$$$underlyingField", 0, 2)))
         case DaysSinceField(fieldName, underlyingField) =>
           Field(fieldName, toBson(daysSince(s"$$$underlyingField")))
-        case StatusField(fieldName, underlyingField) =>
+        case StatusField(fieldName, _) =>
           Field(fieldName, toBson(pseudoStatus()))
         case CoalesceField(fieldName, fieldChoices) =>
           Field(fieldName, toBson(coalesce(fieldChoices)))

@@ -102,7 +102,7 @@ class ReferredDaysElapsedJob @Inject()(
       .filterNot(weekend)
       .length
 
-    referredDaysElapsed
+    referredDaysElapsed.toLong
   }
 
   private def refreshReferredDaysElapsed(c: Case)(implicit bankHolidays: Set[LocalDate]): Future[Unit] =

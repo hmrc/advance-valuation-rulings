@@ -17,6 +17,7 @@
 package uk.gov.hmrc.bindingtariffclassification.repository
 
 import org.scalatest.concurrent.Eventually
+import org.scalatest.matchers.must.Matchers._
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import uk.gov.hmrc.bindingtariffclassification.config.AppConfig
 import uk.gov.hmrc.bindingtariffclassification.model.Role.CLASSIFICATION_OFFICER
@@ -33,7 +34,6 @@ class CaseKeywordMongoViewSpec
     with BeforeAndAfterEach
     with MongoSupport
     with Eventually {
-  self =>
 
   private val config     = mock[AppConfig]
   private val repository = newMongoRepository
@@ -46,31 +46,6 @@ class CaseKeywordMongoViewSpec
     new CaseKeywordMongoView(mongoComponent)
 
   private val secondsInAYear = 3600 * 24 * 365
-
-  private val caseWithKeywordsBTI: Case =
-    Case(
-      reference   = "0000001",
-      status      = CaseStatus.OPEN,
-      createdDate = Instant.now.minusSeconds(1 * secondsInAYear),
-      queueId     = Some("3"),
-      assignee    = Some(Operator("001")),
-      application = createBasicBTIApplication,
-      decision    = Some(createDecision()),
-      attachments = Seq.empty,
-      keywords    = Set("bike")
-    )
-  private val caseWithKeywordsLiability: Case =
-    Case(
-      reference   = "0000002",
-      status      = CaseStatus.OPEN,
-      createdDate = Instant.now.minusSeconds(1 * secondsInAYear),
-      queueId     = Some("3"),
-      assignee    = Some(Operator("002")),
-      application = createLiabilityOrder,
-      decision    = Some(createDecision()),
-      attachments = Seq.empty,
-      keywords    = Set("bike", "tool")
-    )
 
   private val btiCaseHeader = CaseHeader(
     reference = "0000001",
@@ -96,6 +71,46 @@ class CaseKeywordMongoViewSpec
 
   private val caseKeywordBike = CaseKeyword(Keyword("bike"), List(btiCaseHeader, liabilityCaseHeader))
   private val caseKeywordTool = CaseKeyword(Keyword("tool"), List(liabilityCaseHeader))
+  private val caseKeywordCar = CaseKeyword(Keyword("car"), List(liabilityCaseHeader))
+
+  private val caseWithKeywordsBTI: Case =
+    Case(
+      reference   = "0000001",
+      status      = CaseStatus.OPEN,
+      createdDate = Instant.now.minusSeconds(1 * secondsInAYear),
+      queueId     = Some("3"),
+      assignee    = Some(Operator("001")),
+      application = createBasicBTIApplication,
+      decision    = Some(createDecision()),
+      attachments = Seq.empty,
+      keywords    = Set(caseKeywordBike.keyword.name)
+    )
+
+  private val caseWithKeywordsLiability: Case =
+    Case(
+      reference   = "0000002",
+      status      = CaseStatus.OPEN,
+      createdDate = Instant.now.minusSeconds(1 * secondsInAYear),
+      queueId     = Some("3"),
+      assignee    = Some(Operator("002")),
+      application = createLiabilityOrder,
+      decision    = Some(createDecision()),
+      attachments = Seq.empty,
+      keywords    = Set(caseKeywordBike.keyword.name, caseKeywordTool.keyword.name)
+    )
+
+  private val caseWithKeywordsLiability2: Case =
+    Case(
+      reference   = "0000003",
+      status      = CaseStatus.OPEN,
+      createdDate = Instant.now.minusSeconds(1 * secondsInAYear),
+      queueId     = Some("3"),
+      assignee    = Some(Operator("003")),
+      application = createLiabilityOrder,
+      decision    = Some(createDecision()),
+      attachments = Seq.empty,
+      keywords    = Set(caseKeywordTool.keyword.name, caseKeywordCar.keyword.name)
+    )
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -117,9 +132,40 @@ class CaseKeywordMongoViewSpec
 
   private val pagination = Pagination()
 
-  "fetchKeywordsFromCases" should {
+  "CaseKeywordMongoView" should {
 
-    "return keywords from the Cases" in {
+    "dropView will drop the view" in {
+      val result = view.dropView(view.caseKeywordsViewName)
+
+      val futureCollectionNames = await(result).flatMap(_ => mongoComponent.database.listCollectionNames().toFuture())
+
+      await(futureCollectionNames) mustNot contain (view.caseKeywordsViewName)
+    }
+
+    "createView will create the view" in {
+      val result =
+        view.dropView(view.caseKeywordsViewName).map(_ => view.createView(view.caseKeywordsViewName, "cases"))
+
+      val futureCollectionNames = await(result).flatMap(_ => mongoComponent.database.listCollectionNames().toFuture())
+
+      await(futureCollectionNames).sorted mustBe (Seq("system.views", "cases", "caseKeywords").sorted)
+    }
+
+    "getView will get the view" in {
+      val result = view
+        .dropView(view.caseKeywordsViewName)
+        .map(_ => view.initView)
+        .map(_ =>
+          view
+            .createView(view.caseKeywordsViewName, "cases")
+            .flatMap(_ => view.getView(view.caseKeywordsViewName).countDocuments().head())
+        )
+
+      val futureViewCount = await(result)
+      await(futureViewCount) mustBe 0
+    }
+
+    "fetchKeywordsFromCases should return keywords from the Cases" in {
       await(repository.insert(caseWithKeywordsBTI))
       await(repository.insert(caseWithKeywordsLiability))
       collectionSize shouldBe 2
@@ -127,5 +173,21 @@ class CaseKeywordMongoViewSpec
 
       await(view.fetchKeywordsFromCases(pagination)).results contains expected
     }
+
+    "fetchKeywordsFromCases should return keywords from the Cases and then insert one more" in {
+      await(repository.insert(caseWithKeywordsBTI))
+      await(repository.insert(caseWithKeywordsLiability))
+      collectionSize shouldBe 2
+      val expected = Seq(caseKeywordBike, caseKeywordTool)
+
+      await(view.fetchKeywordsFromCases(pagination)).results contains expected
+
+      await(repository.insert(caseWithKeywordsLiability2))
+      collectionSize shouldBe 3
+      val expected2 = Seq(caseKeywordBike, caseKeywordTool, caseKeywordCar)
+
+      await(view.fetchKeywordsFromCases(pagination)).results contains expected2
+    }
+
   }
 }
