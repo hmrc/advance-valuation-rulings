@@ -30,7 +30,6 @@ import uk.gov.hmrc.bindingtariffclassification.http.ProxyHttpClient
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.HttpAuditing
 import util.TestMetrics
-import play.api.test.Helpers._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -77,7 +76,7 @@ class BankHolidaysConnectorTest extends BaseSpec with WiremockTestServer with Be
           )
       )
 
-      await(connector.get()).size shouldBe 73
+      await(connector.get()).size shouldBe 67
     }
 
     "Fallback to resources on 5xx" in {
@@ -88,7 +87,7 @@ class BankHolidaysConnectorTest extends BaseSpec with WiremockTestServer with Be
           )
       )
 
-      await(connector.get()).size shouldBe 73
+      await(connector.get()).size shouldBe 67
     }
   }
 
