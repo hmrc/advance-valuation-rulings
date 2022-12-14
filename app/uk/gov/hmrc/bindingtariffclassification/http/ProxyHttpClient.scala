@@ -31,6 +31,6 @@ class ProxyHttpClient @Inject() (conf: Configuration, httpAuditing: HttpAuditing
     with WSProxy {
 
   override def wsProxyServer: Option[WSProxyServer] =
-    WSProxyConfiguration(configPrefix = "proxy", configuration = conf)
+    WSProxyConfiguration.buildWsProxyServer(configuration = conf)
 
 }

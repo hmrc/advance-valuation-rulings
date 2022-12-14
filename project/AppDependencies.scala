@@ -14,7 +14,6 @@ object AppDependencies {
 
   lazy val compile: Seq[ModuleID] = Seq(
     "uk.gov.hmrc"                  %% "bootstrap-backend-play-28"   % "7.2.0",
-    "uk.gov.hmrc"                  %% "crypto"                      % "7.1.0",
     "uk.gov.hmrc"                  %% "play-json-union-formatter"   % "1.15.0-play-28",
     "uk.gov.hmrc.mongo"            %% "hmrc-mongo-play-28"          % mongoHmrcVersion,
     "com.lightbend.akka"           %% "akka-stream-alpakka-mongodb" % "3.0.4",
