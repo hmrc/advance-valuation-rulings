@@ -19,10 +19,10 @@ package uk.gov.hmrc.advancevaluationrulings.models.errors
 import java.time.LocalDateTime
 
 final case class ErrorDetail(
-    timestamp:         LocalDateTime,
-    correlationId:     String,
-    errorCode:         String,
-    source:            String,
-    errorMessage:      Option[String] = None,
-    sourceFaultDetail: Option[SourceFaultDetail] = None
+  timestamp: LocalDateTime,
+  correlationId: String,
+  errorCode: String,
+  source: String,
+  errorMessage: Option[String] = None,
+  sourceFaultDetail: Option[SourceFaultDetail] = None
 )

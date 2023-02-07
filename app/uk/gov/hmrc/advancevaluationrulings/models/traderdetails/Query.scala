@@ -17,8 +17,8 @@
 package uk.gov.hmrc.advancevaluationrulings.models.traderdetails
 
 final case class Query(
-    regime:                   Regime,
-    acknowledgementReference: String,
-    taxPayerID:               Option[String] = None,
-    EORI:                     Option[String] = None
+  regime: Regime,
+  acknowledgementReference: String,
+  taxPayerID: Option[String] = None,
+  EORI: Option[String] = None
 )

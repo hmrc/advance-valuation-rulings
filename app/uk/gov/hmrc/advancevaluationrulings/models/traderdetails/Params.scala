@@ -18,4 +18,4 @@ package uk.gov.hmrc.advancevaluationrulings.models.traderdetails
 
 import java.time.LocalDateTime
 
-final case class Params(date:  LocalDateTime, query: Query)
+final case class Params(date: LocalDateTime, query: Query)

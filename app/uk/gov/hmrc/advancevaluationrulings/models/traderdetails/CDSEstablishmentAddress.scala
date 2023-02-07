@@ -17,8 +17,8 @@
 package uk.gov.hmrc.advancevaluationrulings.models.traderdetails
 
 final case class CDSEstablishmentAddress(
-    streetAndNumber: String,
-    city:            String,
-    countryCode:     String,
-    postalCode:      Option[String] = None
+  streetAndNumber: String,
+  city: String,
+  countryCode: String,
+  postalCode: Option[String] = None
 )

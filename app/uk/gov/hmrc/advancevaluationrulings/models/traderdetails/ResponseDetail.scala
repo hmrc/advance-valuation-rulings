@@ -17,7 +17,7 @@
 package uk.gov.hmrc.advancevaluationrulings.models.traderdetails
 
 final case class ResponseDetail(
-    EORINo:                  String,
-    CDSFullName:             String,
-    CDSEstablishmentAddress: CDSEstablishmentAddress
+  EORINo: String,
+  CDSFullName: String,
+  CDSEstablishmentAddress: CDSEstablishmentAddress
 )
