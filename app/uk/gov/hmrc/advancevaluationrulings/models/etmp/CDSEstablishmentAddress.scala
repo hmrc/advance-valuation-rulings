@@ -14,11 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.models.traderdetails
+package uk.gov.hmrc.advancevaluationrulings.models.etmp
 
-final case class Query(
-  regime: Regime,
-  acknowledgementReference: String,
-  taxPayerID: Option[String] = None,
-  EORI: Option[String] = None
+import play.api.libs.json.{Json, OFormat}
+
+final case class CDSEstablishmentAddress(
+  streetAndNumber: String,
+  city: String,
+  countryCode: String,
+  postalCode: Option[String] = None
 )
+
+object CDSEstablishmentAddress {
+  implicit val format: OFormat[CDSEstablishmentAddress] = Json.format[CDSEstablishmentAddress]
+}

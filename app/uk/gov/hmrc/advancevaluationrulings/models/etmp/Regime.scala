@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.controllers
+package uk.gov.hmrc.advancevaluationrulings.models.etmp
 
-import javax.inject.{Inject, Singleton}
+import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
 
-import scala.concurrent.Future
+sealed abstract class Regime(override val entryName: String) extends EnumEntry
 
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+object Regime extends Enum[Regime] with PlayJsonEnum[Regime] {
+  val values: IndexedSeq[Regime] = findValues
 
-@Singleton()
-class MicroserviceHelloWorldController @Inject() (cc: ControllerComponents)
-    extends BackendController(cc) {
-
-  def hello(): Action[AnyContent] = Action.async {
-    implicit request => Future.successful(Ok("Hello world"))
-  }
+  case object CDS extends Regime("CDS")
 }

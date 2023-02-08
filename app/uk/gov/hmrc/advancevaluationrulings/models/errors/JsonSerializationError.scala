@@ -14,20 +14,9 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.controllers
+package uk.gov.hmrc.advancevaluationrulings.models.errors
 
-import javax.inject.{Inject, Singleton}
-
-import scala.concurrent.Future
-
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-
-@Singleton()
-class MicroserviceHelloWorldController @Inject() (cc: ControllerComponents)
-    extends BackendController(cc) {
-
-  def hello(): Action[AnyContent] = Action.async {
-    implicit request => Future.successful(Ok("Hello world"))
-  }
-}
+final case class JsonSerializationError(exception: Throwable)
+    extends ReaderError(
+      description = s"Failed to convert response to json. Error: ${exception.getMessage}"
+    )

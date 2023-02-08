@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.controllers
+package uk.gov.hmrc.advancevaluationrulings.models.etmp
 
-import javax.inject.{Inject, Singleton}
+import java.time.LocalDateTime
 
-import scala.concurrent.Future
+import play.api.libs.json.{Json, OFormat}
 
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+final case class Params(date: LocalDateTime, query: Query)
 
-@Singleton()
-class MicroserviceHelloWorldController @Inject() (cc: ControllerComponents)
-    extends BackendController(cc) {
-
-  def hello(): Action[AnyContent] = Action.async {
-    implicit request => Future.successful(Ok("Hello world"))
-  }
+object Params {
+  implicit val format: OFormat[Params] = Json.format[Params]
 }

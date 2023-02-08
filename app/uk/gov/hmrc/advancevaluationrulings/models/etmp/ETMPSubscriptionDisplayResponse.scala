@@ -16,6 +16,13 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.etmp
 
-import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.SubscriptionDisplayResponse
+import play.api.libs.json.{Json, OFormat}
 
-final case class TraderDetailsResponse(subscriptionDisplayResponse: SubscriptionDisplayResponse)
+final case class ETMPSubscriptionDisplayResponse(
+  subscriptionDisplayResponse: SubscriptionDisplayResponse
+)
+
+object ETMPSubscriptionDisplayResponse {
+  implicit val format: OFormat[ETMPSubscriptionDisplayResponse] =
+    Json.format[ETMPSubscriptionDisplayResponse]
+}

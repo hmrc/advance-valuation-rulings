@@ -18,6 +18,8 @@ package uk.gov.hmrc.advancevaluationrulings.models.errors
 
 import java.time.LocalDateTime
 
+import play.api.libs.json.{Json, OFormat}
+
 final case class ErrorDetail(
   timestamp: LocalDateTime,
   correlationId: String,
@@ -26,3 +28,7 @@ final case class ErrorDetail(
   errorMessage: Option[String] = None,
   sourceFaultDetail: Option[SourceFaultDetail] = None
 )
+
+object ErrorDetail {
+  implicit val format: OFormat[ErrorDetail] = Json.format[ErrorDetail]
+}

@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.models.traderdetails
+package uk.gov.hmrc.advancevaluationrulings.models.errors
 
-import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
+import play.api.libs.json.{Json, OFormat}
 
-sealed abstract class Regime(override val entryName: String) extends EnumEntry
+final case class ConnectorError(description: String)
+    extends BaseError(statusCode = 500, description)
 
-object Regime extends Enum[Regime] with PlayJsonEnum[Regime] {
-  val values: IndexedSeq[Regime] = findValues
-
-  case object CDS extends Regime("CDS")
+object ConnectorError {
+  implicit val format: OFormat[ConnectorError] = Json.format[ConnectorError]
 }

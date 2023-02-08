@@ -16,4 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.errors
 
+import play.api.libs.json.{Json, OFormat}
+
 final case class SourceFaultDetail(detail: List[String])
+
+object SourceFaultDetail {
+  implicit val format: OFormat[SourceFaultDetail] = Json.format[SourceFaultDetail]
+}
