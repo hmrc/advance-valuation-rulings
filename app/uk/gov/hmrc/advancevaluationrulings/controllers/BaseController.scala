@@ -13,7 +13,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
 
 trait BaseController {
-  def inHttpResponse[T](successStatusCode: Int)(result: => Envelope[T])(
+  def createResponse[T](successStatusCode: Int)(result: => Envelope[T])(
       implicit ec: ExecutionContext,
       hc:          HeaderCarrier,
       format:      Format[T]

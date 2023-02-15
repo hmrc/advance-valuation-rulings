@@ -24,7 +24,7 @@ class ARSController @Inject() (
 
     Action.async(parse.json) { implicit request =>
       withCustomJsonBody[TraderDetailsRequest] { traderDetailsRequest =>
-        inHttpResponse[TraderDetailsResponse](200) {
+        createResponse[TraderDetailsResponse](200) {
           import traderDetailsRequest._
           traderDetailsService.getTraderDetails(regime, acknowledgementReference, taxPayerID, EORI)
         }
