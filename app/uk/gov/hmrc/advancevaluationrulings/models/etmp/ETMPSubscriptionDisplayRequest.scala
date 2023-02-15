@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.controllers
+package uk.gov.hmrc.advancevaluationrulings.models.etmp
 
-import javax.inject.{Inject, Singleton}
+import play.api.libs.json.{Json, OFormat}
 
-import scala.concurrent.Future
+final case class ETMPSubscriptionDisplayRequest(params: Params)
 
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-
-@Singleton()
-class MicroserviceHelloWorldController @Inject() (cc: ControllerComponents)
-    extends BackendController(cc) {
-
-  def hello(): Action[AnyContent] = Action.async {
-    implicit request => Future.successful(Ok("Hello world"))
-  }
+object ETMPSubscriptionDisplayRequest {
+  implicit val format: OFormat[ETMPSubscriptionDisplayRequest] =
+    Json.format[ETMPSubscriptionDisplayRequest]
 }

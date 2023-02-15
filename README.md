@@ -22,14 +22,15 @@ Using service manager (sm or sm2)
 Use the ARS_ALL profile to bring up all services using the latest tagged releases
 ``sm2 --start ARS_ALL``
 
-run `sm2 -s` to check what services are running
-###Launching the service locally
+Run `sm2 -s` to check what services are running.
+
+## Launching the service locally
 To bring up the service on the configured port 12600, use
-``sbt run``
+``sbt run``.
+
 ## Testing the service
 This service uses sbt-scoverage to provide test coverage reports.
 
 ## Scalafmt
 To prevent formatting failures in a GitHub pull request,
-run the below command before pushing to the remote repository.
-`sbt scalafmtAll`
+run the command ``sbt scalafmtAll`` before pushing to the remote repository.

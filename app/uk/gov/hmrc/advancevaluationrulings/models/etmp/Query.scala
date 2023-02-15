@@ -14,6 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.models.traderdetails
+package uk.gov.hmrc.advancevaluationrulings.models.etmp
 
-final case class SubscriptionDisplayResponse(responseDetail: ResponseDetail)
+import play.api.libs.json.{Json, OFormat}
+
+final case class Query(
+  regime: Regime,
+  acknowledgementReference: String,
+  taxPayerID: Option[String] = None,
+  EORI: Option[String] = None
+)
+
+object Query {
+  implicit val format: OFormat[Query] = Json.format[Query]
+}

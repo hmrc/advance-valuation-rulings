@@ -14,10 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.models.traderdetails
+package uk.gov.hmrc.advancevaluationrulings.models.common
 
-final case class ResponseDetail(
-  EORINo: String,
-  CDSFullName: String,
-  CDSEstablishmentAddress: CDSEstablishmentAddress
-)
+import scala.concurrent.Future
+
+import uk.gov.hmrc.advancevaluationrulings.models.errors.BaseError
+
+import cats.data.EitherT
+
+object Envelope {
+
+  type Envelope[T] = EitherT[Future, BaseError, T]
+
+}

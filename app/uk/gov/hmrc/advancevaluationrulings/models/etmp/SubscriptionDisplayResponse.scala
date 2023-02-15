@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.models.traderdetails
+package uk.gov.hmrc.advancevaluationrulings.models.etmp
 
-import java.time.LocalDateTime
+import play.api.libs.json.{Json, OFormat}
 
-final case class Params(date: LocalDateTime, query: Query)
+final case class SubscriptionDisplayResponse(responseDetail: ResponseDetail)
+
+object SubscriptionDisplayResponse {
+  implicit val format: OFormat[SubscriptionDisplayResponse] =
+    Json.format[SubscriptionDisplayResponse]
+}

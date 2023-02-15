@@ -16,6 +16,14 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.etmp
 
-import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.Params
+import play.api.libs.json.{Json, OFormat}
 
-final case class TraderDetailsRequest(params: Params)
+final case class ResponseDetail(
+  EORINo: String,
+  CDSFullName: String,
+  CDSEstablishmentAddress: CDSEstablishmentAddress
+)
+
+object ResponseDetail {
+  implicit val format: OFormat[ResponseDetail] = Json.format[ResponseDetail]
+}

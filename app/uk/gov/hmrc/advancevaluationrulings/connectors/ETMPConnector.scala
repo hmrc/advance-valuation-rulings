@@ -14,11 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.models.traderdetails
+package uk.gov.hmrc.advancevaluationrulings.connectors
 
-final case class CDSEstablishmentAddress(
-  streetAndNumber: String,
-  city: String,
-  countryCode: String,
-  postalCode: Option[String] = None
-)
+import scala.concurrent.ExecutionContext
+
+import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope.Envelope
+import uk.gov.hmrc.advancevaluationrulings.models.etmp.{ETMPSubscriptionDisplayRequest, ETMPSubscriptionDisplayResponse}
+import uk.gov.hmrc.http.HeaderCarrier
+
+trait ETMPConnector {
+
+  def getSubscriptionDetails(request: ETMPSubscriptionDisplayRequest)(implicit
+    headerCarrier: HeaderCarrier,
+    ec: ExecutionContext
+  ): Envelope[ETMPSubscriptionDisplayResponse]
+
+}
