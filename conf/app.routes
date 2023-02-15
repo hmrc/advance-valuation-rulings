@@ -1,3 +1,3 @@
 # microservice specific routes
 
-POST        /trader-details             uk.gov.hmrc.advancevaluationrulings.controllers.ARSController.getTraderDetails
+POST        /trader-details             uk.gov.hmrc.advancevaluationrulings.controllers.ARSController.retrieveTraderDetails
