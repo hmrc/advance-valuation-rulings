@@ -43,6 +43,7 @@ trait BaseIntegrationSpec
   implicit lazy val headerCarrier: HeaderCarrier = HeaderCarrier()
 
   val baseUrl = s"http://localhost:$port"
+  val traderDetailsEndpoint = s"$baseUrl/advance-valuation-rulings/trader-details"
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
@@ -55,5 +56,10 @@ trait BaseIntegrationSpec
   lazy val wsClient: WSClient            = fakeApplication().injector.instanceOf[WSClient]
   lazy val httpClient: DefaultHttpClient = fakeApplication().injector.instanceOf[DefaultHttpClient]
   lazy val appConfig: AppConfig          = fakeApplication().injector.instanceOf[AppConfig]
+  lazy val ETMPEndpoint: String          = appConfig.etmpSubscriptionDisplayEndpoint
 
+  val requestHeaders: Set[(String, String)] = Set(
+    ("environment", appConfig.integrationFrameworkEnv),
+    ("Authorization", s"Bearer ${appConfig.integrationFrameworkToken}")
+  )
 }
