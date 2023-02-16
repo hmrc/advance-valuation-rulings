@@ -18,15 +18,18 @@ package uk.gov.hmrc.advancevaluationrulings.controllers
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
+
 import play.api.libs.json._
 import play.api.mvc.{Request, Result, Results}
 import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope.Envelope
-import uk.gov.hmrc.advancevaluationrulings.models.errors.{ValidationError, ValidationErrors}
+import uk.gov.hmrc.advancevaluationrulings.models.errors.{ErrorResponse, ValidationError, ValidationErrors}
 import uk.gov.hmrc.http.HeaderCarrier
 
 trait BaseController {
 
-  def extractFromJson[T](func: T => Future[Result])(implicit request: Request[JsValue], reads: Reads[T]): Future[Result] =
+  def extractFromJson[T](
+    func: T => Future[Result]
+  )(implicit request: Request[JsValue], reads: Reads[T]): Future[Result] =
     Try(request.body.validate[T]) match {
       case Success(JsSuccess(payload, _)) => func(payload)
       case Success(JsError(errors))       =>
@@ -53,7 +56,7 @@ trait BaseController {
   private def toBadRequest(errorMessage: String) =
     Future.successful(
       Results.BadRequest(
-        Json.toJson(ValidationErrors(Seq(ValidationError(errorMessage))))
+        Json.toJson(ErrorResponse(400, ValidationErrors(Seq(ValidationError(errorMessage)))))
       )
     )
 }

@@ -21,11 +21,6 @@ abstract class BaseError(statusCode: Int, description: String) extends Product w
 object BaseError {
   implicit class BaseErrorExt(error: BaseError) {
     def toErrorResponse: ErrorResponse =
-      error match {
-        case ConnectorError(description) =>
-          ErrorResponse(statusCode = 500, ValidationErrors(Seq(ValidationError(description))))
-        case e =>
-          ErrorResponse(statusCode = 500, ValidationErrors(Seq(ValidationError(e.toString))))
-      }
+      ErrorResponse(statusCode = 500, ValidationErrors(Seq(ValidationError(error.toString))))
   }
 }

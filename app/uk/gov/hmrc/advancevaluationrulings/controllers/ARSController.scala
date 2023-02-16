@@ -16,32 +16,40 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
+import javax.inject.{Inject, Singleton}
+
+import scala.concurrent.{ExecutionContext, Future}
+
 import play.api.libs.json.JsValue
 import play.api.mvc.{Action, ControllerComponents, Result}
 import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.{TraderDetailsRequest, TraderDetailsResponse}
 import uk.gov.hmrc.advancevaluationrulings.services.TraderDetailsService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
-
 @Singleton()
 class ARSController @Inject() (
   cc: ControllerComponents,
   traderDetailsService: TraderDetailsService
-) extends BackendController(cc) with BaseController {
+) extends BackendController(cc)
+    with BaseController {
 
   implicit val ec: ExecutionContext = cc.executionContext
 
-  def retrieveTraderDetails(): Action[JsValue] = {
-    Action.async(parse.json) { implicit request =>
-      extractFromJson[TraderDetailsRequest] { traderDetailsRequest =>
-        createResponse[TraderDetailsResponse](200) {
-          import traderDetailsRequest._
-          traderDetailsService.getTraderDetails(date, acknowledgementReference, taxPayerID, EORI)
+  def retrieveTraderDetails(): Action[JsValue] =
+    Action.async(parse.json) {
+      implicit request =>
+        extractFromJson[TraderDetailsRequest] {
+          traderDetailsRequest =>
+            createResponse[TraderDetailsResponse](200) {
+              import traderDetailsRequest._
+              traderDetailsService.getTraderDetails(
+                date,
+                acknowledgementReference,
+                taxPayerID,
+                EORI
+              )
+            }
         }
-      }
     }
-  }
 
 }

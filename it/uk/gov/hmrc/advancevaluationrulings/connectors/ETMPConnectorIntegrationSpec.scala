@@ -38,7 +38,13 @@ class ETMPConnectorIntegrationSpec extends ETMPConnectorIntegrationSpecSupport {
       ) {
         (request, successResponse) =>
           val expectedResponse = Json.stringify(Json.toJson(successResponse))
-          stubPost(ETMPEndpoint, Json.toJson(request), statusCode = 200, expectedResponse, requestHeaders)
+          stubPost(
+            ETMPEndpoint,
+            Json.toJson(request),
+            statusCode = 200,
+            expectedResponse,
+            requestHeaders
+          )
 
           val response = testETMPConnector.getSubscriptionDetails(request).value.futureValue
 
@@ -50,7 +56,13 @@ class ETMPConnectorIntegrationSpec extends ETMPConnectorIntegrationSpecSupport {
       ScalaCheckPropertyChecks.forAll(ETMPSubscriptionDisplayRequestGen, ETMPErrorGen) {
         (request, errorResponse) =>
           val expectedResponse = Json.stringify(Json.toJson(errorResponse))
-          stubPost(ETMPEndpoint, Json.toJson(request), statusCode = 500, expectedResponse, requestHeaders)
+          stubPost(
+            ETMPEndpoint,
+            Json.toJson(request),
+            statusCode = 500,
+            expectedResponse,
+            requestHeaders
+          )
 
           val response = testETMPConnector.getSubscriptionDetails(request).value.futureValue
 
@@ -63,7 +75,13 @@ class ETMPConnectorIntegrationSpec extends ETMPConnectorIntegrationSpecSupport {
         s"return a ParseError when unable to parse ETMP response with statusCode $statusCode" in {
           ScalaCheckPropertyChecks.forAll(ETMPSubscriptionDisplayRequestGen) {
             request =>
-              stubPost(ETMPEndpoint, Json.toJson(request), statusCode, responseBody = "{}", requestHeaders)
+              stubPost(
+                ETMPEndpoint,
+                Json.toJson(request),
+                statusCode,
+                responseBody = "{}",
+                requestHeaders
+              )
 
               val response = testETMPConnector.getSubscriptionDetails(request).value.futureValue
 
@@ -74,7 +92,13 @@ class ETMPConnectorIntegrationSpec extends ETMPConnectorIntegrationSpecSupport {
         s"return a JsonSerializationError when ETMP returns an invalid json with statusCode $statusCode" in {
           ScalaCheckPropertyChecks.forAll(ETMPSubscriptionDisplayRequestGen) {
             request =>
-              stubPost(ETMPEndpoint, Json.toJson(request), statusCode, responseBody = "invalid json response", requestHeaders)
+              stubPost(
+                ETMPEndpoint,
+                Json.toJson(request),
+                statusCode,
+                responseBody = "invalid json response",
+                requestHeaders
+              )
 
               val response = testETMPConnector.getSubscriptionDetails(request).value.futureValue
 
@@ -91,7 +115,7 @@ trait ETMPConnectorIntegrationSpecSupport
     with ModelGenerators
     with TableDrivenPropertyChecks {
 
-  val testETMPConnector    = new DefaultETMPConnector(httpClient, appConfig)
+  val testETMPConnector = new DefaultETMPConnector(httpClient, appConfig)
 
   val statusCodes: TableFor1[Int] = Table(
     "statusCodes",

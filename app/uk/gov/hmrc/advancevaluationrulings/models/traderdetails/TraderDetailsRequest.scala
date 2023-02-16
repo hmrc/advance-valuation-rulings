@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.traderdetails
 
-import play.api.libs.json.{Json, OFormat}
-
 import java.time.LocalDateTime
+
+import play.api.libs.json.{Json, OFormat}
 
 final case class TraderDetailsRequest(
   date: LocalDateTime,
@@ -26,7 +26,6 @@ final case class TraderDetailsRequest(
   taxPayerID: Option[String] = None,
   EORI: Option[String] = None
 )
-
 
 object TraderDetailsRequest {
   implicit val format: OFormat[TraderDetailsRequest] = Json.format[TraderDetailsRequest]

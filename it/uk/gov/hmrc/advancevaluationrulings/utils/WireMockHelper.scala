@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.advancevaluationrulings.utils
 import java.net.ServerSocket
+
 import scala.jdk.CollectionConverters._
 import scala.util.Using
 

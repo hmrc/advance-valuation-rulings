@@ -42,7 +42,7 @@ trait BaseIntegrationSpec
   implicit val system: ActorSystem               = ActorSystem()
   implicit lazy val headerCarrier: HeaderCarrier = HeaderCarrier()
 
-  val baseUrl = s"http://localhost:$port"
+  val baseUrl               = s"http://localhost:$port"
   val traderDetailsEndpoint = s"$baseUrl/advance-valuation-rulings/trader-details"
 
   override def fakeApplication(): Application =
