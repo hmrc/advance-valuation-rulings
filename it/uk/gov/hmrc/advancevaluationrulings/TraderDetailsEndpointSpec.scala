@@ -1,11 +1,10 @@
 package uk.gov.hmrc.advancevaluationrulings
 
+import generators.ModelGenerators
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.libs.json.Json
 import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.{TraderDetailsRequest, TraderDetailsResponse}
 import uk.gov.hmrc.advancevaluationrulings.utils.{BaseIntegrationSpec, WireMockHelper}
-
-import generators.ModelGenerators
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 class TraderDetailsEndpointSpec
     extends BaseIntegrationSpec
@@ -24,7 +23,6 @@ class TraderDetailsEndpointSpec
         (etmpRequest, etmpResponse) =>
           val traderDetailsRequest = TraderDetailsRequest(
             etmpRequest.params.date,
-            etmpRequest.params.query.regime,
             etmpRequest.params.query.acknowledgementReference,
             etmpRequest.params.query.taxPayerID,
             etmpRequest.params.query.EORI

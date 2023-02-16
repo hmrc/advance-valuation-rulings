@@ -16,16 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.errors
 
-abstract class BaseError(statusCode: Int, description: String) extends Product with Serializable
+import play.api.libs.json.{Json, OFormat}
 
-object BaseError {
-  implicit class BaseErrorExt(error: BaseError) {
-    def toErrorResponse: ErrorResponse =
-      error match {
-        case ConnectorError(description) =>
-          ErrorResponse(statusCode = 500, ValidationErrors(Seq(ValidationError(description))))
-        case e =>
-          ErrorResponse(statusCode = 500, ValidationErrors(Seq(ValidationError(e.toString))))
-      }
-  }
+final case class ValidationErrors(failures: Seq[ValidationError])
+
+object ValidationErrors {
+  implicit val format: OFormat[ValidationErrors] = Json.format[ValidationErrors]
 }
