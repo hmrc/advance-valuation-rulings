@@ -79,7 +79,7 @@ class TraderDetailsEndpointSpec
               ValidationErrors(
                 Seq(
                   ValidationError(
-                    "ParseError(List((/subscriptionDisplayResponse,List(JsonValidationError(List(error.path.missing),ArraySeq())))))"
+                    "Failed to parse json response. Error: /subscriptionDisplayResponse: error.path.missing"
                   )
                 )
               )
@@ -116,7 +116,9 @@ class TraderDetailsEndpointSpec
               ValidationErrors(
                 Seq(
                   ValidationError(
-                    "JsonSerializationError(com.fasterxml.jackson.core.JsonParseException: Unrecognized token 'invalid': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')\n at [Source: (String)\"invalid json\"; line: 1, column: 8])"
+                    "Failed to convert response to json. Error: Unrecognized token 'invalid': " +
+                      "was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')\n " +
+                      "at [Source: (String)\"invalid json\"; line: 1, column: 8]"
                   )
                 )
               )

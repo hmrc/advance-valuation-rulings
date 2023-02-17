@@ -16,11 +16,13 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.errors
 
-abstract class BaseError(statusCode: Int, description: String) extends Product with Serializable
+abstract class BaseError(statusCode: Int, description: String) extends Product with Serializable {
+  def message: String = description
+}
 
 object BaseError {
   implicit class BaseErrorExt(error: BaseError) {
     def toErrorResponse: ErrorResponse =
-      ErrorResponse(statusCode = 500, ValidationErrors(Seq(ValidationError(error.toString))))
+      ErrorResponse(statusCode = 500, ValidationErrors(Seq(ValidationError(error.message))))
   }
 }
