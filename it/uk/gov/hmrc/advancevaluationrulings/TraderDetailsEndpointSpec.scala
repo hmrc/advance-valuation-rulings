@@ -1,12 +1,11 @@
 package uk.gov.hmrc.advancevaluationrulings
 
-import play.api.libs.json.Json
-import uk.gov.hmrc.advancevaluationrulings.models.errors.{ErrorResponse, ParseError, ValidationError, ValidationErrors}
-import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.{TraderDetailsRequest, TraderDetailsResponse}
-import uk.gov.hmrc.advancevaluationrulings.utils.{BaseIntegrationSpec, WireMockHelper}
-
 import generators.ModelGenerators
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import play.api.libs.json.Json
+import uk.gov.hmrc.advancevaluationrulings.models.errors.{ErrorResponse, ValidationError, ValidationErrors}
+import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.{TraderDetailsRequest, TraderDetailsResponse}
+import uk.gov.hmrc.advancevaluationrulings.utils.{BaseIntegrationSpec, WireMockHelper}
 
 class TraderDetailsEndpointSpec
     extends BaseIntegrationSpec
@@ -52,10 +51,8 @@ class TraderDetailsEndpointSpec
       }
     }
 
-    "ETMP error response" in {
-      ScalaCheckPropertyChecks.forAll(
-        ETMPSubscriptionDisplayRequestGen
-      ) {
+    "return 500 status when ETMP returns an invalid schema response" in {
+      ScalaCheckPropertyChecks.forAll(ETMPSubscriptionDisplayRequestGen) {
         etmpRequest =>
           val traderDetailsRequest = TraderDetailsRequest(
             etmpRequest.params.date,
@@ -91,10 +88,8 @@ class TraderDetailsEndpointSpec
       }
     }
 
-    "ETMP returns invalid json" in {
-      ScalaCheckPropertyChecks.forAll(
-        ETMPSubscriptionDisplayRequestGen
-      ) {
+    "return 500 status when ETMP returns an invalid json response" in {
+      ScalaCheckPropertyChecks.forAll(ETMPSubscriptionDisplayRequestGen) {
         etmpRequest =>
           val traderDetailsRequest = TraderDetailsRequest(
             etmpRequest.params.date,
@@ -130,7 +125,7 @@ class TraderDetailsEndpointSpec
       }
     }
 
-    "Controller handle invalid trader details request" in {
+    "return 400 when given an invalid trader details request" in {
       ScalaCheckPropertyChecks.forAll(
         ETMPSubscriptionDisplayRequestGen,
         ETMPSubscriptionDisplayResponseGen
@@ -144,8 +139,7 @@ class TraderDetailsEndpointSpec
             requestHeaders = requestHeaders
           )
 
-          val response =
-            wsClient.url(traderDetailsEndpoint).post(Json.toJson("{}")).futureValue
+          val response = wsClient.url(traderDetailsEndpoint).post(Json.toJson("{}")).futureValue
 
           response.status mustBe 400
           response.json mustBe Json.toJson(
