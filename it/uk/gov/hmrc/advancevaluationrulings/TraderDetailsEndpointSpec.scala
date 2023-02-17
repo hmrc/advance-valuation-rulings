@@ -1,11 +1,12 @@
 package uk.gov.hmrc.advancevaluationrulings
 
-import generators.ModelGenerators
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.libs.json.Json
 import uk.gov.hmrc.advancevaluationrulings.models.errors.{ErrorResponse, ValidationError, ValidationErrors}
 import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.{TraderDetailsRequest, TraderDetailsResponse}
 import uk.gov.hmrc.advancevaluationrulings.utils.{BaseIntegrationSpec, WireMockHelper}
+
+import generators.ModelGenerators
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 class TraderDetailsEndpointSpec
     extends BaseIntegrationSpec
@@ -51,9 +52,9 @@ class TraderDetailsEndpointSpec
       }
     }
 
-    "return 500 status when ETMP returns an invalid schema response" in {
-      ScalaCheckPropertyChecks.forAll(ETMPSubscriptionDisplayRequestGen) {
-        etmpRequest =>
+    "respond with 500 status when ETMP returns an error" in {
+      ScalaCheckPropertyChecks.forAll(ETMPSubscriptionDisplayRequestGen, ETMPErrorGen) {
+        (etmpRequest, etmpErrorResponse) =>
           val traderDetailsRequest = TraderDetailsRequest(
             etmpRequest.params.date,
             etmpRequest.params.query.acknowledgementReference,
@@ -61,11 +62,14 @@ class TraderDetailsEndpointSpec
             etmpRequest.params.query.EORI
           )
 
+          val errorCode    = etmpErrorResponse.errorDetail.errorCode
+          val errorMessage = etmpErrorResponse.errorDetail.errorMessage
+
           stubPost(
             url = ETMPEndpoint,
             requestBody = Json.toJson(etmpRequest),
-            statusCode = 200,
-            responseBody = "{}",
+            statusCode = 500,
+            responseBody = Json.stringify(Json.toJson(etmpErrorResponse)),
             requestHeaders = requestHeaders
           )
 
@@ -79,7 +83,7 @@ class TraderDetailsEndpointSpec
               ValidationErrors(
                 Seq(
                   ValidationError(
-                    "Failed to parse json response. Error: /subscriptionDisplayResponse: error.path.missing"
+                    s"Error code: [$errorCode] with detail [${errorMessage.getOrElse("N/A")}]"
                   )
                 )
               )
@@ -88,43 +92,54 @@ class TraderDetailsEndpointSpec
       }
     }
 
-    "return 500 status when ETMP returns an invalid json response" in {
-      ScalaCheckPropertyChecks.forAll(ETMPSubscriptionDisplayRequestGen) {
-        etmpRequest =>
-          val traderDetailsRequest = TraderDetailsRequest(
-            etmpRequest.params.date,
-            etmpRequest.params.query.acknowledgementReference,
-            etmpRequest.params.query.taxPayerID,
-            etmpRequest.params.query.EORI
-          )
+    val invalidETMPResponseScenarios = Table(
+      ("testDescription", "etmpResponse", "expectedError"),
+      (
+        "invalid schema",
+        "{}",
+        "Failed to parse json response. Error: /subscriptionDisplayResponse: error.path.missing"
+      ),
+      (
+        "invalid json",
+        "invalid json",
+        "Failed to convert response to json. Error: Unrecognized token 'invalid': " +
+          "was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')\n " +
+          "at [Source: (String)\"invalid json\"; line: 1, column: 8]"
+      )
+    )
 
-          stubPost(
-            url = ETMPEndpoint,
-            requestBody = Json.toJson(etmpRequest),
-            statusCode = 200,
-            responseBody = "invalid json",
-            requestHeaders = requestHeaders
-          )
-
-          val response =
-            wsClient.url(traderDetailsEndpoint).post(Json.toJson(traderDetailsRequest)).futureValue
-
-          response.status mustBe 500
-          response.json mustBe Json.toJson(
-            ErrorResponse(
-              500,
-              ValidationErrors(
-                Seq(
-                  ValidationError(
-                    "Failed to convert response to json. Error: Unrecognized token 'invalid': " +
-                      "was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')\n " +
-                      "at [Source: (String)\"invalid json\"; line: 1, column: 8]"
-                  )
-                )
+    forAll(invalidETMPResponseScenarios) {
+      (testDescription, etmpResponse, expectedError) =>
+        s"return 500 status when ETMP returns an $testDescription response" in {
+          ScalaCheckPropertyChecks.forAll(ETMPSubscriptionDisplayRequestGen) {
+            etmpRequest =>
+              val traderDetailsRequest = TraderDetailsRequest(
+                etmpRequest.params.date,
+                etmpRequest.params.query.acknowledgementReference,
+                etmpRequest.params.query.taxPayerID,
+                etmpRequest.params.query.EORI
               )
-            )
-          )
-      }
+
+              stubPost(
+                url = ETMPEndpoint,
+                requestBody = Json.toJson(etmpRequest),
+                statusCode = 200,
+                responseBody = etmpResponse,
+                requestHeaders = requestHeaders
+              )
+
+              val response =
+                wsClient
+                  .url(traderDetailsEndpoint)
+                  .post(Json.toJson(traderDetailsRequest))
+                  .futureValue
+
+              response.status mustBe 500
+              response.json mustBe Json.toJson(
+                ErrorResponse(500, ValidationErrors(Seq(ValidationError(expectedError))))
+              )
+          }
+        }
     }
 
     "return 400 when given an invalid trader details request" in {

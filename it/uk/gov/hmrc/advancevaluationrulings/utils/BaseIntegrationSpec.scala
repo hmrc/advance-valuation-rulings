@@ -17,17 +17,16 @@
 package uk.gov.hmrc.advancevaluationrulings.utils
 
 import scala.concurrent.ExecutionContext
-
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
-
 import akka.actor.ActorSystem
 import org.scalatest.{BeforeAndAfterAll, EitherValues}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 
@@ -37,7 +36,8 @@ trait BaseIntegrationSpec
     with IntegrationPatience
     with EitherValues
     with GuiceOneServerPerSuite
-    with BeforeAndAfterAll {
+    with BeforeAndAfterAll
+    with TableDrivenPropertyChecks {
 
   implicit val system: ActorSystem               = ActorSystem()
   implicit lazy val headerCarrier: HeaderCarrier = HeaderCarrier()
