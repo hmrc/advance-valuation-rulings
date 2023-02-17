@@ -156,7 +156,8 @@ class TraderDetailsEndpointSpec
             requestHeaders = requestHeaders
           )
 
-          val response = wsClient.url(traderDetailsEndpoint).post(Json.toJson("{}")).futureValue
+          val invalidTraderDetailsRequest = Json.toJson("{}")
+          val response = wsClient.url(traderDetailsEndpoint).post(invalidTraderDetailsRequest).futureValue
 
           response.status mustBe 400
           response.json mustBe Json.toJson(
