@@ -40,6 +40,9 @@ trait WireMockHelper {
   def stopWireMock(): Unit =
     wireMockServer.stop()
 
+  def resetWireMock(): Unit =
+    wireMockServer.resetAll()
+
   def stubPost(
     url: String,
     requestBody: JsValue,

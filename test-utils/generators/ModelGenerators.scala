@@ -31,9 +31,8 @@ trait ModelGenerators extends Generators {
   def queryGen: Gen[Query] = for {
     regime                   <- regimeGen
     acknowledgementReference <- stringsWithMaxLength(32)
-    taxPayerID               <- Gen.option(stringsWithMaxLength(255))
     eori                     <- Gen.option(EORIGen)
-  } yield Query(regime, acknowledgementReference, taxPayerID, eori)
+  } yield Query(regime, acknowledgementReference, taxPayerID = None, EORI = eori)
 
   def paramsGen: Gen[Params] = for {
     localDateTime <- localDateTimeGen

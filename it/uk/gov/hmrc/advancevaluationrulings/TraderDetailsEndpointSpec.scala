@@ -14,7 +14,13 @@ class TraderDetailsEndpointSpec
     with ModelGenerators {
 
   override def beforeAll(): Unit = startWireMock()
-  override def afterAll(): Unit  = stopWireMock()
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    resetWireMock()
+  }
+
+  override def afterAll(): Unit = stopWireMock()
 
   "Trader details endpoint" should {
     "respond with 200 status" in {
@@ -157,7 +163,8 @@ class TraderDetailsEndpointSpec
           )
 
           val invalidTraderDetailsRequest = Json.toJson("{}")
-          val response = wsClient.url(traderDetailsEndpoint).post(invalidTraderDetailsRequest).futureValue
+          val response                    =
+            wsClient.url(traderDetailsEndpoint).post(invalidTraderDetailsRequest).futureValue
 
           response.status mustBe 400
           response.json mustBe Json.toJson(

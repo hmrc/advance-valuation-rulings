@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.controllers
+package uk.gov.hmrc.advancevaluationrulings
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
 import play.api.libs.json._
 import play.api.mvc.{Request, Result, Results}
-import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope.Envelope
 import uk.gov.hmrc.advancevaluationrulings.models.errors.{ErrorResponse, ValidationError, ValidationErrors}
-import uk.gov.hmrc.http.HeaderCarrier
 
-trait BaseController {
+package object controllers {
 
   def extractFromJson[T](
     func: T => Future[Result]
@@ -40,18 +38,6 @@ trait BaseController {
       case Failure(e)                     =>
         toBadRequest(e.getMessage)
     }
-
-  def createResponse[T](successStatusCode: Int)(result: => Envelope[T])(implicit
-    ec: ExecutionContext,
-    hc: HeaderCarrier,
-    format: Format[T]
-  ): Future[Result] =
-    result
-      .leftMap(_.toErrorResponse)
-      .fold(
-        error => Results.Status(error.statusCode)(Json.toJson(error)),
-        success => Results.Status(successStatusCode)(Json.toJson(success))
-      )
 
   private def toBadRequest(errorMessage: String) =
     Future.successful(

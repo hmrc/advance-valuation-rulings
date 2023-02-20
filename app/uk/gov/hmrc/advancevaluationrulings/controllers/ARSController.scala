@@ -22,7 +22,8 @@ import scala.concurrent.ExecutionContext
 
 import play.api.libs.json.JsValue
 import play.api.mvc.{Action, ControllerComponents}
-import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.{TraderDetailsRequest, TraderDetailsResponse}
+import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope._
+import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsRequest
 import uk.gov.hmrc.advancevaluationrulings.services.TraderDetailsService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -30,8 +31,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 class ARSController @Inject() (
   cc: ControllerComponents,
   traderDetailsService: TraderDetailsService
-) extends BackendController(cc)
-    with BaseController {
+) extends BackendController(cc) {
 
   implicit val ec: ExecutionContext = cc.executionContext
 
@@ -40,16 +40,10 @@ class ARSController @Inject() (
       implicit request =>
         extractFromJson[TraderDetailsRequest] {
           traderDetailsRequest =>
-            createResponse[TraderDetailsResponse](200) {
-              import traderDetailsRequest._
-              traderDetailsService.getTraderDetails(
-                date,
-                acknowledgementReference,
-                taxPayerID,
-                EORI
-              )
-            }
+            import traderDetailsRequest._
+            traderDetailsService
+              .getTraderDetails(date, acknowledgementReference, EORI = EORI)
+              .toResult
         }
     }
-
 }
