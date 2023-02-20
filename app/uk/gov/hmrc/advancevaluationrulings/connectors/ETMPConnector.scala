@@ -19,12 +19,12 @@ package uk.gov.hmrc.advancevaluationrulings.connectors
 import scala.concurrent.ExecutionContext
 
 import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope.Envelope
-import uk.gov.hmrc.advancevaluationrulings.models.etmp.{ETMPSubscriptionDisplayRequest, ETMPSubscriptionDisplayResponse}
+import uk.gov.hmrc.advancevaluationrulings.models.etmp.{ETMPSubscriptionDisplayResponse, Query}
 import uk.gov.hmrc.http.HeaderCarrier
 
 trait ETMPConnector {
 
-  def getSubscriptionDetails(request: ETMPSubscriptionDisplayRequest)(implicit
+  def getSubscriptionDetails(etmpQuery: Query)(implicit
     headerCarrier: HeaderCarrier,
     ec: ExecutionContext
   ): Envelope[ETMPSubscriptionDisplayResponse]

@@ -16,19 +16,25 @@
 
 package uk.gov.hmrc.advancevaluationrulings.utils
 
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+
 import scala.concurrent.ExecutionContext
 
 import play.api.Application
+import play.api.http.Status
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
+import uk.gov.hmrc.advancevaluationrulings.models.etmp.Query
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 
 import akka.actor.ActorSystem
+import generators.ModelGenerators
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, EitherValues}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.prop.TableDrivenPropertyChecks
+import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor1}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 
@@ -40,7 +46,8 @@ trait BaseIntegrationSpec
     with GuiceOneServerPerSuite
     with BeforeAndAfterAll
     with TableDrivenPropertyChecks
-    with BeforeAndAfterEach {
+    with BeforeAndAfterEach
+    with ModelGenerators {
 
   implicit val system: ActorSystem               = ActorSystem()
   implicit lazy val headerCarrier: HeaderCarrier = HeaderCarrier()
@@ -64,5 +71,24 @@ trait BaseIntegrationSpec
   val requestHeaders: Set[(String, String)] = Set(
     ("environment", appConfig.integrationFrameworkEnv),
     ("Authorization", s"Bearer ${appConfig.integrationFrameworkToken}")
+  )
+
+  def etmpQueryUrl(query: Query): String =
+    s"$ETMPEndpoint?" +
+      s"regime=${URLEncoder.encode(query.regime.entryName, StandardCharsets.UTF_8)}" +
+      s"&acknowledgementReference=${URLEncoder.encode(query.acknowledgementReference, StandardCharsets.UTF_8)}" +
+      s"&EORI=${URLEncoder.encode(query.EORI.value, StandardCharsets.UTF_8)}"
+
+  val statusCodes: TableFor1[Int] = Table(
+    "statusCodes",
+    Status.OK,
+    Status.INTERNAL_SERVER_ERROR,
+    Status.SERVICE_UNAVAILABLE,
+    Status.BAD_GATEWAY,
+    Status.GATEWAY_TIMEOUT,
+    Status.BAD_REQUEST,
+    Status.UNAUTHORIZED,
+    Status.FORBIDDEN,
+    Status.NOT_FOUND
   )
 }

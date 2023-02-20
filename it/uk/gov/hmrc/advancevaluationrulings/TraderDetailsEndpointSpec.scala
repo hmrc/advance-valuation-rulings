@@ -13,32 +13,36 @@ class TraderDetailsEndpointSpec
     with WireMockHelper
     with ModelGenerators {
 
-  override def beforeAll(): Unit = startWireMock()
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    startWireMock()
+  }
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     resetWireMock()
   }
 
-  override def afterAll(): Unit = stopWireMock()
+  override def afterAll(): Unit = {
+    stopWireMock()
+    super.afterAll()
+  }
 
   "Trader details endpoint" should {
     "respond with 200 status" in {
       ScalaCheckPropertyChecks.forAll(
-        ETMPSubscriptionDisplayRequestGen,
+        queryGen,
         ETMPSubscriptionDisplayResponseGen
       ) {
-        (etmpRequest, etmpResponse) =>
+        (etmpQuery, etmpResponse) =>
           val traderDetailsRequest = TraderDetailsRequest(
-            etmpRequest.params.date,
-            etmpRequest.params.query.acknowledgementReference,
-            etmpRequest.params.query.taxPayerID,
-            etmpRequest.params.query.EORI
+            etmpQuery.acknowledgementReference,
+            etmpQuery.taxPayerID,
+            etmpQuery.EORI
           )
 
-          stubPost(
-            url = ETMPEndpoint,
-            requestBody = Json.toJson(etmpRequest),
+          stubGet(
+            url = etmpQueryUrl(etmpQuery),
             statusCode = 200,
             responseBody = Json.stringify(Json.toJson(etmpResponse)),
             requestHeaders = requestHeaders
@@ -59,21 +63,19 @@ class TraderDetailsEndpointSpec
     }
 
     "respond with 500 status when ETMP returns an error" in {
-      ScalaCheckPropertyChecks.forAll(ETMPSubscriptionDisplayRequestGen, ETMPErrorGen) {
-        (etmpRequest, etmpErrorResponse) =>
+      ScalaCheckPropertyChecks.forAll(queryGen, ETMPErrorGen) {
+        (etmpQuery, etmpErrorResponse) =>
           val traderDetailsRequest = TraderDetailsRequest(
-            etmpRequest.params.date,
-            etmpRequest.params.query.acknowledgementReference,
-            etmpRequest.params.query.taxPayerID,
-            etmpRequest.params.query.EORI
+            etmpQuery.acknowledgementReference,
+            etmpQuery.taxPayerID,
+            etmpQuery.EORI
           )
 
           val errorCode    = etmpErrorResponse.errorDetail.errorCode
           val errorMessage = etmpErrorResponse.errorDetail.errorMessage
 
-          stubPost(
-            url = ETMPEndpoint,
-            requestBody = Json.toJson(etmpRequest),
+          stubGet(
+            url = etmpQueryUrl(etmpQuery),
             statusCode = 500,
             responseBody = Json.stringify(Json.toJson(etmpErrorResponse)),
             requestHeaders = requestHeaders
@@ -117,18 +119,16 @@ class TraderDetailsEndpointSpec
     forAll(invalidETMPResponseScenarios) {
       (testDescription, etmpResponse, expectedError) =>
         s"return 500 status when ETMP returns an $testDescription response" in {
-          ScalaCheckPropertyChecks.forAll(ETMPSubscriptionDisplayRequestGen) {
-            etmpRequest =>
+          ScalaCheckPropertyChecks.forAll(queryGen) {
+            etmpQuery =>
               val traderDetailsRequest = TraderDetailsRequest(
-                etmpRequest.params.date,
-                etmpRequest.params.query.acknowledgementReference,
-                etmpRequest.params.query.taxPayerID,
-                etmpRequest.params.query.EORI
+                etmpQuery.acknowledgementReference,
+                etmpQuery.taxPayerID,
+                etmpQuery.EORI
               )
 
-              stubPost(
-                url = ETMPEndpoint,
-                requestBody = Json.toJson(etmpRequest),
+              stubGet(
+                url = etmpQueryUrl(etmpQuery),
                 statusCode = 200,
                 responseBody = etmpResponse,
                 requestHeaders = requestHeaders
@@ -150,13 +150,12 @@ class TraderDetailsEndpointSpec
 
     "return 400 when given an invalid trader details request" in {
       ScalaCheckPropertyChecks.forAll(
-        ETMPSubscriptionDisplayRequestGen,
+        queryGen,
         ETMPSubscriptionDisplayResponseGen
       ) {
-        (etmpRequest, etmpResponse) =>
-          stubPost(
-            url = ETMPEndpoint,
-            requestBody = Json.toJson(etmpRequest),
+        (etmpQuery, etmpResponse) =>
+          stubGet(
+            url = etmpQueryUrl(etmpQuery),
             statusCode = 200,
             responseBody = Json.stringify(Json.toJson(etmpResponse)),
             requestHeaders = requestHeaders

@@ -31,13 +31,8 @@ trait ModelGenerators extends Generators {
   def queryGen: Gen[Query] = for {
     regime                   <- regimeGen
     acknowledgementReference <- stringsWithMaxLength(32)
-    eori                     <- Gen.option(EORIGen)
-  } yield Query(regime, acknowledgementReference, taxPayerID = None, EORI = eori)
-
-  def paramsGen: Gen[Params] = for {
-    localDateTime <- localDateTimeGen
-    query         <- queryGen
-  } yield Params(localDateTime, query)
+    eori                     <- EORIGen
+  } yield Query(regime, acknowledgementReference, taxPayerID = None, EORI = Option(eori))
 
   def sourceFaultDetail: Gen[SourceFaultDetail] =
     Gen.listOf(stringsWithMaxLength(10)).map(SourceFaultDetail(_))
@@ -73,9 +68,6 @@ trait ModelGenerators extends Generators {
 
   def subscriptionDisplayResponseGen: Gen[SubscriptionDisplayResponse] =
     responseDetailGen.map(SubscriptionDisplayResponse(_))
-
-  def ETMPSubscriptionDisplayRequestGen: Gen[ETMPSubscriptionDisplayRequest] =
-    paramsGen.map(ETMPSubscriptionDisplayRequest(_))
 
   def ETMPErrorGen: Gen[ETMPError] = errorDetailGen.map(ETMPError(_))
 

@@ -16,15 +16,16 @@
 
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
+import java.time.{Clock, LocalDateTime}
+import java.time.format.DateTimeFormatter
 import javax.inject.{Inject, Singleton}
 
 import scala.concurrent.ExecutionContext
 
-import play.api.libs.json.Writes
 import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
 import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope.Envelope
 import uk.gov.hmrc.advancevaluationrulings.models.errors.{ConnectorError, ETMPError}
-import uk.gov.hmrc.advancevaluationrulings.models.etmp.{ETMPSubscriptionDisplayRequest, ETMPSubscriptionDisplayResponse}
+import uk.gov.hmrc.advancevaluationrulings.models.etmp.{ETMPSubscriptionDisplayResponse, Query}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, UpstreamErrorResponse}
 
 import cats.data.EitherT
@@ -35,9 +36,9 @@ class DefaultETMPConnector @Inject() (httpClient: HttpClient, appConfig: AppConf
     extends ETMPConnector
     with HttpReaderWrapper[ETMPSubscriptionDisplayResponse, ETMPError] {
 
-  def getSubscriptionDetails(
-    request: ETMPSubscriptionDisplayRequest
-  )(implicit
+  val dateFormat: DateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME
+
+  def getSubscriptionDetails(etmpQuery: Query)(implicit
     headerCarrier: HeaderCarrier,
     ec: ExecutionContext
   ): Envelope[ETMPSubscriptionDisplayResponse] = {
@@ -47,16 +48,15 @@ class DefaultETMPConnector @Inject() (httpClient: HttpClient, appConfig: AppConf
     val url                    = s"$baseUrl$path"
     val headerCarrierWithToken = headerCarrier.withExtraHeaders(
       "environment"   -> appConfig.integrationFrameworkEnv,
-      "Authorization" -> s"Bearer ${appConfig.integrationFrameworkToken}"
+      "Authorization" -> s"Bearer ${appConfig.integrationFrameworkToken}",
+      "Date"          -> LocalDateTime.now(Clock.systemUTC()).format(dateFormat)
     )
 
     withHttpReader {
       implicit reader =>
-        implicit val httpWriter: Writes[ETMPSubscriptionDisplayRequest] =
-          ETMPSubscriptionDisplayRequest.format
         EitherT {
           httpClient
-            .POST(url, request)(httpWriter, reader, headerCarrierWithToken, ec)
+            .GET(url, etmpQuery.toQueryParameters)(reader, headerCarrierWithToken, ec)
             .recover {
               case ex: HttpException         =>
                 ConnectorError(ex.getMessage).asLeft[ETMPSubscriptionDisplayResponse]

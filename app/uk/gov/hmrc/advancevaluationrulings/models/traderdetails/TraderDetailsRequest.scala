@@ -16,12 +16,9 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.traderdetails
 
-import java.time.LocalDateTime
-
 import play.api.libs.json.{Json, OFormat}
 
 final case class TraderDetailsRequest(
-  date: LocalDateTime,
   acknowledgementReference: String,
   taxPayerID: Option[String] = None,
   EORI: Option[String] = None
