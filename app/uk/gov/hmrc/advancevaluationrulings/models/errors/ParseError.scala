@@ -36,7 +36,7 @@ object ParseError {
         .map {
           error =>
             val (jsPath, validationErrors) = error
-            s"[$jsPath: ${validationErrors.mkString(", ")}"
+            s"$jsPath: ${validationErrors.map(_.message).mkString(", ")}"
         }
         .mkString(", ")
   }

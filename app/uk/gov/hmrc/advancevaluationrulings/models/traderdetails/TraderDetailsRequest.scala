@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.models.errors
+package uk.gov.hmrc.advancevaluationrulings.models.traderdetails
 
-abstract class BaseError(statusCode: Int, description: String) extends Product with Serializable {
-  def message: String = description
-}
+import java.time.LocalDateTime
 
-object BaseError {
-  implicit class BaseErrorExt(error: BaseError) {
-    def toErrorResponse: ErrorResponse =
-      ErrorResponse(statusCode = 500, ValidationErrors(Seq(ValidationError(error.message))))
-  }
+import play.api.libs.json.{Json, OFormat}
+
+final case class TraderDetailsRequest(
+  date: LocalDateTime,
+  acknowledgementReference: String,
+  taxPayerID: Option[String] = None,
+  EORI: Option[String] = None
+)
+
+object TraderDetailsRequest {
+  implicit val format: OFormat[TraderDetailsRequest] = Json.format[TraderDetailsRequest]
 }

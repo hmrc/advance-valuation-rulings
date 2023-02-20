@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.controllers
+package uk.gov.hmrc.advancevaluationrulings.models.traderdetails
 
-import javax.inject.{Inject, Singleton}
+import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.advancevaluationrulings.models.etmp.CDSEstablishmentAddress
 
-import scala.concurrent.Future
+final case class TraderDetailsResponse(
+  EORINo: String,
+  CDSFullName: String,
+  CDSEstablishmentAddress: CDSEstablishmentAddress
+)
 
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-
-@Singleton()
-class MicroserviceHelloWorldController @Inject() (cc: ControllerComponents)
-    extends BackendController(cc) {
-
-  def hello(): Action[AnyContent] = Action.async {
-    implicit request => Future.successful(Ok("Hello world"))
-  }
+object TraderDetailsResponse {
+  implicit val format: OFormat[TraderDetailsResponse] = Json.format[TraderDetailsResponse]
 }

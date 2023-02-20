@@ -19,7 +19,6 @@ package uk.gov.hmrc.advancevaluationrulings.connectors
 import play.api.http.Status
 import play.api.libs.json.Json
 import uk.gov.hmrc.advancevaluationrulings.models.errors.{JsonSerializationError, ParseError}
-import uk.gov.hmrc.advancevaluationrulings.models.etmp._
 import uk.gov.hmrc.advancevaluationrulings.utils.{BaseIntegrationSpec, WireMockHelper}
 
 import generators.ModelGenerators
@@ -39,7 +38,13 @@ class ETMPConnectorIntegrationSpec extends ETMPConnectorIntegrationSpecSupport {
       ) {
         (request, successResponse) =>
           val expectedResponse = Json.stringify(Json.toJson(successResponse))
-          stubETMPResponse(request, statusCode = 200, expectedResponse)
+          stubPost(
+            ETMPEndpoint,
+            Json.toJson(request),
+            statusCode = 200,
+            expectedResponse,
+            requestHeaders
+          )
 
           val response = testETMPConnector.getSubscriptionDetails(request).value.futureValue
 
@@ -51,7 +56,13 @@ class ETMPConnectorIntegrationSpec extends ETMPConnectorIntegrationSpecSupport {
       ScalaCheckPropertyChecks.forAll(ETMPSubscriptionDisplayRequestGen, ETMPErrorGen) {
         (request, errorResponse) =>
           val expectedResponse = Json.stringify(Json.toJson(errorResponse))
-          stubETMPResponse(request, statusCode = 500, expectedResponse)
+          stubPost(
+            ETMPEndpoint,
+            Json.toJson(request),
+            statusCode = 500,
+            expectedResponse,
+            requestHeaders
+          )
 
           val response = testETMPConnector.getSubscriptionDetails(request).value.futureValue
 
@@ -64,7 +75,13 @@ class ETMPConnectorIntegrationSpec extends ETMPConnectorIntegrationSpecSupport {
         s"return a ParseError when unable to parse ETMP response with statusCode $statusCode" in {
           ScalaCheckPropertyChecks.forAll(ETMPSubscriptionDisplayRequestGen) {
             request =>
-              stubETMPResponse(request, statusCode, expectedResponse = "{}")
+              stubPost(
+                ETMPEndpoint,
+                Json.toJson(request),
+                statusCode,
+                responseBody = "{}",
+                requestHeaders
+              )
 
               val response = testETMPConnector.getSubscriptionDetails(request).value.futureValue
 
@@ -75,7 +92,13 @@ class ETMPConnectorIntegrationSpec extends ETMPConnectorIntegrationSpecSupport {
         s"return a JsonSerializationError when ETMP returns an invalid json with statusCode $statusCode" in {
           ScalaCheckPropertyChecks.forAll(ETMPSubscriptionDisplayRequestGen) {
             request =>
-              stubETMPResponse(request, statusCode, expectedResponse = "invalid json response")
+              stubPost(
+                ETMPEndpoint,
+                Json.toJson(request),
+                statusCode,
+                responseBody = "invalid json response",
+                requestHeaders
+              )
 
               val response = testETMPConnector.getSubscriptionDetails(request).value.futureValue
 
@@ -92,13 +115,7 @@ trait ETMPConnectorIntegrationSpecSupport
     with ModelGenerators
     with TableDrivenPropertyChecks {
 
-  val testETMPConnector    = new DefaultETMPConnector(httpClient, appConfig)
-  val ETMPEndpoint: String = appConfig.etmpSubscriptionDisplayEndpoint
-
-  val requestHeaders: Set[(String, String)] = Set(
-    ("environment", appConfig.integrationFrameworkEnv),
-    ("Authorization", s"Bearer ${appConfig.integrationFrameworkToken}")
-  )
+  val testETMPConnector = new DefaultETMPConnector(httpClient, appConfig)
 
   val statusCodes: TableFor1[Int] = Table(
     "statusCodes",
@@ -112,18 +129,4 @@ trait ETMPConnectorIntegrationSpecSupport
     Status.FORBIDDEN,
     Status.NOT_FOUND
   )
-
-  def stubETMPResponse(
-    request: ETMPSubscriptionDisplayRequest,
-    statusCode: Int,
-    expectedResponse: String,
-    requestHeaders: Set[(String, String)] = requestHeaders
-  ): Unit =
-    stubPost(
-      url = ETMPEndpoint,
-      requestBody = Json.toJson(request),
-      statusCode = statusCode,
-      responseBody = expectedResponse,
-      requestHeaders = requestHeaders
-    )
 }
