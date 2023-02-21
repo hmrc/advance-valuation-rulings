@@ -20,7 +20,6 @@ import java.net.ServerSocket
 import scala.jdk.CollectionConverters._
 import scala.util.Using
 
-import play.api.libs.json.{Json, JsValue}
 import uk.gov.hmrc.advancevaluationrulings.utils.WireMockHelper.{wireMockPort, MappingBuilderExt, ResponseDefinitionBuilderExt}
 
 import com.github.tomakehurst.wiremock.{client, WireMockServer}
@@ -43,17 +42,15 @@ trait WireMockHelper {
   def resetWireMock(): Unit =
     wireMockServer.resetAll()
 
-  def stubPost(
+  def stubGet(
     url: String,
-    requestBody: JsValue,
     statusCode: Int,
     responseBody: String,
     requestHeaders: Set[(String, String)] = Set.empty,
     responseHeaders: Set[(String, String)] = Set.empty
   ): Unit =
     stubFor(
-      post(urlEqualTo(url))
-        .withRequestBody(equalTo(Json.stringify(requestBody)))
+      get(urlEqualTo(url))
         .withRequestHeaders(requestHeaders)
         .willReturn(
           aResponse()

@@ -42,7 +42,7 @@ class ARSController @Inject() (
           traderDetailsRequest =>
             import traderDetailsRequest._
             traderDetailsService
-              .getTraderDetails(date, acknowledgementReference, EORI = EORI)
+              .getTraderDetails(acknowledgementReference, EORI = EORI)
               .toResult
         }
     }

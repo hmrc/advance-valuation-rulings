@@ -27,4 +27,12 @@ final case class Query(
 
 object Query {
   implicit val format: OFormat[Query] = Json.format[Query]
+
+  implicit class QueryExt(query: Query) {
+    def toQueryParameters: Seq[(String, String)] =
+      Seq(
+        ("regime", query.regime.entryName),
+        ("acknowledgementReference", query.acknowledgementReference)
+      ) ++ query.EORI.map(("EORI", _)).toList
+  }
 }
