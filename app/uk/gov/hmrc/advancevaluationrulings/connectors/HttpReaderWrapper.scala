@@ -20,6 +20,7 @@ import scala.util.{Failure, Success, Try}
 
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Reads}
+import uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger
 import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope.Envelope
 import uk.gov.hmrc.advancevaluationrulings.models.errors.{BaseError, JsonSerializationError, ParseError}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
@@ -27,6 +28,8 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
 import cats.implicits._
 
 trait HttpReaderWrapper[T, E <: BaseError] {
+
+  protected lazy val logger: RequestAwareLogger = new RequestAwareLogger(this.getClass)
 
   def withHttpReader(
     func: HttpReads[Either[BaseError, T]] => Envelope[T]
@@ -52,10 +55,12 @@ trait HttpReaderWrapper[T, E <: BaseError] {
 
   private def readResponse(
     response: HttpResponse
-  )(successHandler: JsValue => Either[BaseError, T]) =
+  )(successHandler: JsValue => Either[BaseError, T])(implicit headerCarrier: HeaderCarrier) =
     Try(response.json) match {
       case Success(validJson) => successHandler(validJson)
-      case Failure(exception) => JsonSerializationError(exception).asLeft[T]
+      case Failure(exception) =>
+        logger.error(s"Failed to serialize upstream json response: ${exception.getMessage}")
+        JsonSerializationError(exception).asLeft[T]
     }
 
 }

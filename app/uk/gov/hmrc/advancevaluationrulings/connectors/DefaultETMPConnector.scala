@@ -23,10 +23,11 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
+import uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger
 import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope.Envelope
 import uk.gov.hmrc.advancevaluationrulings.models.errors.{ConnectorError, ETMPError}
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.{ETMPSubscriptionDisplayResponse, Query}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
 import cats.data.EitherT
 import cats.implicits.catsSyntaxEitherId
@@ -35,6 +36,8 @@ import cats.implicits.catsSyntaxEitherId
 class DefaultETMPConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)
     extends ETMPConnector
     with HttpReaderWrapper[ETMPSubscriptionDisplayResponse, ETMPError] {
+
+  override protected lazy val logger: RequestAwareLogger = new RequestAwareLogger(this.getClass)
 
   val dateFormat: DateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME
 
@@ -58,12 +61,9 @@ class DefaultETMPConnector @Inject() (httpClient: HttpClient, appConfig: AppConf
           httpClient
             .GET(url, etmpQuery.toQueryParameters)(reader, headerCarrierWithToken, ec)
             .recover {
-              case ex: HttpException         =>
+              case ex =>
+                logger.error(s"Failed to get subscription details from ETMP: ${ex.getMessage}")
                 ConnectorError(ex.getMessage).asLeft[ETMPSubscriptionDisplayResponse]
-              case ex: UpstreamErrorResponse =>
-                ConnectorError(ex.getMessage).asLeft[ETMPSubscriptionDisplayResponse]
-              case otherException            =>
-                ConnectorError(otherException.getMessage).asLeft[ETMPSubscriptionDisplayResponse]
             }
         }
     }
