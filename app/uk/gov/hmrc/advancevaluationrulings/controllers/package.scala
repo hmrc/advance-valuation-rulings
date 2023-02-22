@@ -16,18 +16,23 @@
 
 package uk.gov.hmrc.advancevaluationrulings
 
+import play.api.libs.json._
+import play.api.mvc.{Request, Result, Results}
+import uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger
+import uk.gov.hmrc.advancevaluationrulings.models.errors.{ErrorResponse, ValidationError, ValidationErrors}
+import uk.gov.hmrc.http.HeaderCarrier
+
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
-import play.api.libs.json._
-import play.api.mvc.{Request, Result, Results}
-import uk.gov.hmrc.advancevaluationrulings.models.errors.{ErrorResponse, ValidationError, ValidationErrors}
-
 package object controllers {
+
+  protected lazy val logger: RequestAwareLogger = new RequestAwareLogger(this.getClass)
 
   def extractFromJson[T](
     func: T => Future[Result]
-  )(implicit request: Request[JsValue], reads: Reads[T]): Future[Result] =
+  )(implicit request: Request[JsValue], reads: Reads[T], hc: HeaderCarrier): Future[Result] = {
+    logger.debug(s"Received json request: ${Json.prettyPrint(request.body)}")
     Try(request.body.validate[T]) match {
       case Success(JsSuccess(payload, _)) => func(payload)
       case Success(JsError(errors))       =>
@@ -38,11 +43,14 @@ package object controllers {
       case Failure(e)                     =>
         toBadRequest(e.getMessage)
     }
+  }
 
-  private def toBadRequest(errorMessage: String) =
+  private def toBadRequest(errorMessage: String)(implicit hc: HeaderCarrier) = {
+    logger.warn(s"Failed to extract case class from Json: $errorMessage")
     Future.successful(
       Results.BadRequest(
         Json.toJson(ErrorResponse(400, ValidationErrors(Seq(ValidationError(errorMessage)))))
       )
     )
+  }
 }

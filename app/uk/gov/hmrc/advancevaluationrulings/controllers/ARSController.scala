@@ -17,11 +17,10 @@
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
 import javax.inject.{Inject, Singleton}
-
 import scala.concurrent.ExecutionContext
-
 import play.api.libs.json.JsValue
 import play.api.mvc.{Action, ControllerComponents}
+import uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger
 import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope._
 import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsRequest
 import uk.gov.hmrc.advancevaluationrulings.services.TraderDetailsService
@@ -32,6 +31,8 @@ class ARSController @Inject() (
   cc: ControllerComponents,
   traderDetailsService: TraderDetailsService
 ) extends BackendController(cc) {
+
+  protected lazy val logger: RequestAwareLogger = new RequestAwareLogger(this.getClass)
 
   implicit val ec: ExecutionContext = cc.executionContext
 
