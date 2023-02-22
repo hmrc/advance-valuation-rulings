@@ -17,14 +17,12 @@
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
 import scala.util.{Failure, Success, Try}
-
 import play.api.http.Status
-import play.api.libs.json.{JsValue, Reads}
+import play.api.libs.json.{JsValue, Json, Reads}
 import uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger
 import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope.Envelope
 import uk.gov.hmrc.advancevaluationrulings.models.errors.{BaseError, JsonSerializationError, ParseError}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
-
 import cats.implicits._
 
 trait HttpReaderWrapper[T, E <: BaseError] {
@@ -40,6 +38,7 @@ trait HttpReaderWrapper[T, E <: BaseError] {
   ): Envelope[T] =
     func {
       (_, _, response) =>
+        logger.debug(s"Got response status code: ${response.status}")
         if (Status.isSuccessful(response.status)) {
           readResponse(response)(
             responseJson =>
@@ -57,7 +56,9 @@ trait HttpReaderWrapper[T, E <: BaseError] {
     response: HttpResponse
   )(successHandler: JsValue => Either[BaseError, T])(implicit headerCarrier: HeaderCarrier) =
     Try(response.json) match {
-      case Success(validJson) => successHandler(validJson)
+      case Success(validJson) =>
+        logger.debug(s"Got response: ${Json.prettyPrint(validJson)}")
+        successHandler(validJson)
       case Failure(exception) =>
         logger.error(s"Failed to serialize upstream json response: ${exception.getMessage}")
         JsonSerializationError(exception).asLeft[T]
