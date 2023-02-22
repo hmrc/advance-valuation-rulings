@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
-import java.time.{Clock, LocalDateTime}
+import java.time.{LocalDateTime, ZoneOffset}
 import java.time.format.DateTimeFormatter
 import javax.inject.{Inject, Singleton}
 
@@ -39,7 +39,7 @@ class DefaultETMPConnector @Inject() (httpClient: HttpClient, appConfig: AppConf
 
   override protected lazy val logger: RequestAwareLogger = new RequestAwareLogger(this.getClass)
 
-  val dateFormat: DateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME
+  val dateFormat: DateTimeFormatter = DateTimeFormatter.ISO_ZONED_DATE_TIME
 
   def getSubscriptionDetails(etmpQuery: Query)(implicit
     headerCarrier: HeaderCarrier,
@@ -52,7 +52,7 @@ class DefaultETMPConnector @Inject() (httpClient: HttpClient, appConfig: AppConf
     val headerCarrierWithToken = headerCarrier.withExtraHeaders(
       "environment"   -> appConfig.integrationFrameworkEnv,
       "Authorization" -> s"Bearer ${appConfig.integrationFrameworkToken}",
-      "Date"          -> LocalDateTime.now(Clock.systemUTC()).format(dateFormat)
+      "Date"          -> LocalDateTime.now().atOffset(ZoneOffset.UTC).format(dateFormat)
     )
 
     withHttpReader {
