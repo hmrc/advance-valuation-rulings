@@ -71,8 +71,8 @@ class TraderDetailsEndpointSpec
             etmpQuery.EORI
           )
 
-          val errorCode    = etmpErrorResponse.errorDetail.errorCode
-          val errorMessage = etmpErrorResponse.errorDetail.errorMessage
+          val errorCode    = etmpErrorResponse.errorDetail.value.errorCode
+          val errorMessage = etmpErrorResponse.errorDetail.value.errorMessage
 
           stubGet(
             url = etmpQueryUrl(etmpQuery),
