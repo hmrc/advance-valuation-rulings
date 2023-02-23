@@ -50,7 +50,7 @@ class DefaultETMPConnector @Inject() (httpClient: HttpClient, appConfig: AppConf
     val path                   = appConfig.etmpSubscriptionDisplayEndpoint
     val url                    = s"$baseUrl$path"
     val headerCarrierWithToken = headerCarrier.withExtraHeaders(
-      "environment"   -> appConfig.integrationFrameworkEnv,
+      "Environment"   -> appConfig.integrationFrameworkEnv,
       "Authorization" -> s"Bearer ${appConfig.integrationFrameworkToken}",
       "Date"          -> LocalDateTime.now().atOffset(ZoneOffset.UTC).format(dateFormat)
     )
