@@ -17,12 +17,12 @@
 package uk.gov.hmrc.advancevaluationrulings.models.errors
 
 abstract class BaseError(statusCode: Int, description: String) extends Product with Serializable {
-  def message: String = description
+  def message: Option[String] = Option(description)
 }
 
 object BaseError {
   implicit class BaseErrorExt(error: BaseError) {
     def toErrorResponse: ErrorResponse =
-      ErrorResponse(statusCode = 500, ValidationErrors(Seq(ValidationError(error.message))))
+      ErrorResponse(statusCode = 500, ValidationErrors(Seq(ValidationError(error.message.getOrElse("N/A")))))
   }
 }
