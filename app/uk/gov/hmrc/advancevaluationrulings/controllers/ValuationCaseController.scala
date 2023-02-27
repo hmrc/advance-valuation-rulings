@@ -38,7 +38,7 @@ class ValuationCaseController @Inject() (
     } yield Ok(Json.toJson(cases))
   }
 
-  def allOpenCase: Action[AnyContent] = Action.async{ request =>
+  def allOpenCases: Action[AnyContent] = Action.async{ request =>
     for{
       cases <- valuationCaseService.allOpenCases
     } yield Ok(Json.toJson(cases))

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
-import org.bson.BsonString
+import org.bson.{BsonObjectId, BsonString}
 import uk.gov.hmrc.advancevaluationrulings.models.ValuationCase
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
@@ -33,8 +33,8 @@ class ValuationCaseRepository @Inject()(mongo: MongoComponent)(implicit ec: Exec
   indexes        = Seq(/* IndexModel() instances, see Migrate index definitions below  */),
   replaceIndexes = false
 ){
-  def create(valuation: ValuationCase): Future[BsonString] = collection.insertOne(valuation).toFuture().map{ result =>
-    if(result.wasAcknowledged()) result.getInsertedId.asString() else throw new Exception("Failed to insert record")
+  def create(valuation: ValuationCase): Future[BsonObjectId] = collection.insertOne(valuation).toFuture().map{ result =>
+    if(result.wasAcknowledged()) result.getInsertedId.asObjectId() else throw new Exception("Failed to insert record")
   }
 
   def allOpenCases(): Future[List[ValuationCase]] = collection.find().toFuture().map(_.toList)
