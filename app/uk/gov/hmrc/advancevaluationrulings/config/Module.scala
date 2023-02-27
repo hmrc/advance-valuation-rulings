@@ -17,9 +17,12 @@
 package uk.gov.hmrc.advancevaluationrulings.config
 
 import com.google.inject.AbstractModule
+import uk.gov.hmrc.advancevaluationrulings.services.{MongoValuationCaseService, ValuationCaseService}
 
 class Module extends AbstractModule {
 
-  override def configure(): Unit =
+  override def configure(): Unit = {
     bind(classOf[AppConfig]).asEagerSingleton()
+    bind(classOf[ValuationCaseService]).to(classOf[MongoValuationCaseService]).asEagerSingleton()
+  }
 }
