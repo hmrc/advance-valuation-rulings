@@ -26,7 +26,10 @@ Run `sm2 -s` to check what services are running.
 
 ## Launching the service locally
 To bring up the service on the configured port 12600, use
-``sbt run``.
+
+```
+sbt "run 12601"
+```
 
 ## Testing the service
 This service uses sbt-scoverage to provide test coverage reports.
