@@ -16,9 +16,7 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models
 
-import uk.gov.hmrc.advancevaluationrulings.formats.JsonFormatInstances.instantFormat
 import play.api.libs.json.{Format, Json, OFormat}
-import uk.gov.hmrc.advancevaluationrulings.models
 
 import java.time.Instant
 
