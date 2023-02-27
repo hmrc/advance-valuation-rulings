@@ -18,8 +18,9 @@ package uk.gov.hmrc.advancevaluationrulings.models
 
 import uk.gov.hmrc.advancevaluationrulings.formats.JsonFormatInstances.instantFormat
 import play.api.libs.json.{Format, Json, OFormat}
+import uk.gov.hmrc.advancevaluationrulings.models
 
-import java.time.{Instant}
+import java.time.Instant
 
 object CancelReason extends Enumeration {
   type CancelReason = Value
@@ -61,6 +62,10 @@ case class Cancellation(
                          applicationForExtendedUse: Boolean = false
                        )
 
+object Cancellation{
+  implicit val format: OFormat[Cancellation] = Json.format[Cancellation]
+}
+
 object AppealType extends Enumeration {
   def format(value: AppealType): String = value match {
     case ADR              => "Alternative Dispute Resolution (ADR)"
@@ -82,6 +87,8 @@ object AppealType extends Enumeration {
    */
   type AppealType = Value
   val ADR, REVIEW, APPEAL_TIER_1, APPEAL_TIER_2, COURT_OF_APPEALS, SUPREME_COURT = Value
+
+  implicit val format: Format[AppealType.Value] = Json.formatEnum(this)
 }
 
 object AppealStatus extends Enumeration {
@@ -118,6 +125,8 @@ object AppealStatus extends Enumeration {
     case _                 => Seq(AppealStatus.IN_PROGRESS, AppealStatus.ALLOWED, AppealStatus.DISMISSED)
   }
 
+  implicit val format: Format[AppealStatus] = Json.formatEnum(this)
+
 }
 
 case class Appeal(
@@ -137,6 +146,8 @@ object Appeal {
       None
     }
   }
+
+  implicit val fmt: OFormat[Appeal] = Json.format[Appeal]
 }
 
 case class Decision(
@@ -154,6 +165,9 @@ case class Decision(
                      decisionPdf: Option[Attachment]              = None,
                      letterPdf: Option[Attachment]                = None
                    )
+object Decision{
+  implicit val fmt: OFormat[Decision] = Json.format[Decision]
+}
 
 object CaseStatus extends Enumeration {
   type CaseStatus = Value
@@ -189,7 +203,7 @@ object Role extends Enumeration {
       case READ_ONLY              => "Unknown"
 
     }
-  implicit val format: OFormat[Role] = Json.format[Role]
+  implicit val format: Format[Role] = Json.formatEnum(this)
 }
 
 case class Operator(
@@ -271,15 +285,15 @@ case class ValuationCase(
                  status: CaseStatus.Value,
                  createdDate: Instant,
                  daysElapsed: Long,
-                 caseBoardsFileNumber: Option[String],
-                 assignee: Option[Operator],
                  application: ValuationApplication,
-                 decision: Option[Decision],
-                 attachments: Seq[Attachment],
+                 referredDaysElapsed: Long,
+                 caseBoardsFileNumber: Option[String] = None,
+                 assignee: Option[Operator] = None,
+                 decision: Option[Decision] = None,
+                 attachments: Seq[Attachment] = Seq.empty,
                  keywords: Set[String]             = Set.empty,
                  dateOfExtract: Option[Instant]    = None,
-                 migratedDaysElapsed: Option[Long] = None,
-                 referredDaysElapsed: Long
+                 migratedDaysElapsed: Option[Long] = None
                )
 
 object ValuationCase {
