@@ -69,7 +69,7 @@ trait ModelGenerators extends Generators {
   def subscriptionDisplayResponseGen: Gen[SubscriptionDisplayResponse] =
     responseDetailGen.map(SubscriptionDisplayResponse(_))
 
-  def ETMPErrorGen: Gen[ETMPError] = errorDetailGen.map(errorDetail => ETMPError(errorDetail))
+  def ETMPErrorGen: Gen[ETMPError] = errorDetailGen.map(ETMPError(_))
 
   def ETMPSubscriptionDisplayResponseGen: Gen[ETMPSubscriptionDisplayResponse] =
     subscriptionDisplayResponseGen.map(ETMPSubscriptionDisplayResponse(_))

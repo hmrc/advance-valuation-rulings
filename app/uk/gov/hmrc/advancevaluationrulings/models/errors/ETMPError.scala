@@ -22,7 +22,7 @@ final case class ETMPError(errorDetail: ErrorDetail)
     extends BaseError(
       statusCode = 500,
       description =
-        s"Error code: [${errorDetail.errorCode}] with detail [${errorDetail.errorMessage}]"
+        s"Error code: [${errorDetail.errorCode}] with detail [${errorDetail.errorMessage.getOrElse("N/A")}]"
     )
 
 object ETMPError {
