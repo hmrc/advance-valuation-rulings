@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models
 
+import uk.gov.hmrc.advancevaluationrulings.formats.JsonFormatInstances.instantFormat
+import play.api.libs.json.{Format, Json, OFormat}
 
-import java.time.{Clock, Instant}
+import java.time.{Instant}
 
 object CancelReason extends Enumeration {
   type CancelReason = Value
@@ -50,6 +52,8 @@ object CancelReason extends Enumeration {
       case OTHER                            => None
       case unknown: CancelReason            => throw new IllegalArgumentException(s"Unexpected reason: $unknown")
     }
+
+  implicit val format: Format[CancelReason] = Json.formatEnum(this)
 }
 
 case class Cancellation(
@@ -170,6 +174,8 @@ object CaseStatus extends Enumeration {
     case _ =>
       cse.status.toString
   }
+
+  implicit val format: Format[CaseStatus] = Json.formatEnum(this)
 }
 
 object Role extends Enumeration {
@@ -183,6 +189,7 @@ object Role extends Enumeration {
       case READ_ONLY              => "Unknown"
 
     }
+  implicit val format: OFormat[Role] = Json.format[Role]
 }
 
 case class Operator(
@@ -191,6 +198,9 @@ case class Operator(
                      email: Option[String]        = None,
                      role: Role.Role              = Role.CLASSIFICATION_OFFICER,
                    )
+object Operator{
+  implicit val format: OFormat[Operator] = Json.format[Operator]
+}
 
 case class Attachment(
                        id: String,
@@ -201,10 +211,18 @@ case class Attachment(
                        shouldPublishToRulings: Boolean = false
                      )
 
+object Attachment{
+  implicit val format: OFormat[Attachment] = Json.format[Attachment]
+}
+
 case class AgentDetails(
                          eoriDetails: EORIDetails,
                          letterOfAuthorisation: Option[Attachment]
                        )
+
+object AgentDetails{
+  implicit val format: OFormat[AgentDetails] = Json.format[AgentDetails]
+}
 
 case class EORIDetails(
                         eori: String,
@@ -216,11 +234,19 @@ case class EORIDetails(
                         country: String
                       )
 
+object EORIDetails{
+  implicit val format: OFormat[EORIDetails] = Json.format[EORIDetails]
+}
+
 case class Contact(
                     name: String,
                     email: String,
                     phone: Option[String] = None
                   )
+
+object Contact{
+  implicit val format: OFormat[Contact] = Json.format[Contact]
+}
 
 case class ValuationApplication(
                            holder: EORIDetails,
@@ -234,6 +260,10 @@ case class ValuationApplication(
                            envisagedCommodityCode: Option[String] = None,
                            applicationPdf: Option[Attachment] = None
                          )
+
+object ValuationApplication{
+  implicit val format: OFormat[ValuationApplication] = Json.format[ValuationApplication]
+}
 
 
 case class ValuationCase(
@@ -250,6 +280,8 @@ case class ValuationCase(
                  dateOfExtract: Option[Instant]    = None,
                  migratedDaysElapsed: Option[Long] = None,
                  referredDaysElapsed: Long
-               ){
+               )
 
+object ValuationCase {
+  implicit val fmt: OFormat[ValuationCase] = Json.format[ValuationCase]
 }
