@@ -18,11 +18,11 @@ package uk.gov.hmrc.advancevaluationrulings.models.errors
 
 import play.api.libs.json.{Json, OFormat}
 
-final case class ETMPError(errorDetail: Option[ErrorDetail], override val message: Option[String] = None)
+final case class ETMPError(errorDetail: ErrorDetail)
     extends BaseError(
       statusCode = 500,
       description =
-        s"Error code: [${errorDetail.map(_.errorCode).getOrElse("N/A")}] with detail [${errorDetail.flatMap(_.errorMessage).getOrElse("N/A")}]"
+        s"Error code: [${errorDetail.errorCode}] with detail [${errorDetail.errorMessage}]"
     )
 
 object ETMPError {
