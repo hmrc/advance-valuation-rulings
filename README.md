@@ -1,7 +1,7 @@
 
 # Advance Valuation Ruling Backend
 
-This service provides the backend for the Advance Valuation Ruling Frontend.
+This service provides the backend for the Advance Valuation Rulings Frontend.
 
 ## Frontend
 
@@ -20,7 +20,9 @@ The service also depends on mongodb.
 ## Running the service
 Using service manager (sm or sm2)
 Use the ARS_ALL profile to bring up all services using the latest tagged releases
-``sm2 --start ARS_ALL``
+```
+sm2 --start ARS_ALL
+```
 
 Run `sm2 -s` to check what services are running.
 
