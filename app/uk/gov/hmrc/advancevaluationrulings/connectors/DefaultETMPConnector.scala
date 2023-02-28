@@ -49,7 +49,6 @@ class DefaultETMPConnector @Inject() (httpClient: HttpClient, appConfig: AppConf
     val path                   = appConfig.etmpSubscriptionDisplayEndpoint
     val url                    = s"$baseUrl$path"
     val headerCarrierWithToken = headerCarrier.withExtraHeaders(
-      HeaderNames.Env           -> appConfig.integrationFrameworkEnv,
       HeaderNames.Authorization -> s"Bearer ${appConfig.integrationFrameworkToken}",
       HeaderNames.ForwardedHost -> "MDTP",
       HeaderNames.Accept        -> MimeTypes.JSON,
