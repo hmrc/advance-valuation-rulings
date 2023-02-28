@@ -69,7 +69,7 @@ trait BaseIntegrationSpec
   lazy val ETMPEndpoint: String          = appConfig.etmpSubscriptionDisplayEndpoint
 
   val requestHeaders: Set[(String, String)] = Set(
-    ("environment", appConfig.integrationFrameworkEnv)
+    ("Authorization", s"Bearer ${appConfig.integrationFrameworkToken}")
   )
 
   def etmpQueryUrl(query: Query): String =
