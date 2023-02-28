@@ -33,7 +33,7 @@ class MongoValuationCaseService @Inject() (repository: ValuationCaseRepository)(
   def allOpenCases: Future[List[ValuationCase]] = repository.allOpenCases()
 
   override def create(reference: String, valuation: ValuationApplication): Future[String] = {
-    val valuationCase = ValuationCase(reference,CaseStatus.OPEN,Instant.now(),0, valuation,0)
+    val valuationCase = ValuationCase(reference,CaseStatus.NEW,Instant.now(),0, valuation,0)
     repository.create(valuationCase).map(_.toString)
   }
 }
