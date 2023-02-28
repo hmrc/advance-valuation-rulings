@@ -19,18 +19,17 @@ package uk.gov.hmrc.advancevaluationrulings.connectors
 import java.time.{LocalDateTime, ZoneOffset}
 import java.time.format.DateTimeFormatter
 import javax.inject.{Inject, Singleton}
-
 import scala.concurrent.ExecutionContext
-
 import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
 import uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger
 import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope.Envelope
+import uk.gov.hmrc.advancevaluationrulings.models.common.HeaderNames
 import uk.gov.hmrc.advancevaluationrulings.models.errors.{ConnectorError, ETMPError}
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.{ETMPSubscriptionDisplayResponse, Query}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
-
 import cats.data.EitherT
 import cats.implicits.catsSyntaxEitherId
+import play.api.http.MimeTypes
 
 @Singleton
 class DefaultETMPConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)
@@ -50,9 +49,11 @@ class DefaultETMPConnector @Inject() (httpClient: HttpClient, appConfig: AppConf
     val path                   = appConfig.etmpSubscriptionDisplayEndpoint
     val url                    = s"$baseUrl$path"
     val headerCarrierWithToken = headerCarrier.withExtraHeaders(
-      "Environment"   -> appConfig.integrationFrameworkEnv,
-      "Authorization" -> s"Bearer ${appConfig.integrationFrameworkToken}",
-      "Date"          -> LocalDateTime.now().atOffset(ZoneOffset.UTC).format(dateFormat)
+      HeaderNames.Env           -> appConfig.integrationFrameworkEnv,
+      HeaderNames.Authorization -> s"Bearer ${appConfig.integrationFrameworkToken}",
+      HeaderNames.ForwardedHost -> "MDTP",
+      HeaderNames.Accept        -> MimeTypes.JSON,
+      HeaderNames.Date          -> LocalDateTime.now().atOffset(ZoneOffset.UTC).format(dateFormat)
     )
 
     withHttpReader {
