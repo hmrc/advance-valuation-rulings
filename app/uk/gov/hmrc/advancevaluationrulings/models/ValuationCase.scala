@@ -204,20 +204,20 @@ object Role extends Enumeration {
   implicit val format: Format[Role] = Json.formatEnum(this)
 }
 
-case class Operator(
+case class CaseWorker(
                      id: String,
                      name: Option[String]         = None,
                      email: Option[String]        = None,
-                     role: Role.Role              = Role.CLASSIFICATION_OFFICER,
+                     role: Role.Role              = Role.CLASSIFICATION_OFFICER
                    )
-object Operator{
-  implicit val format: OFormat[Operator] = Json.format[Operator]
+object CaseWorker{
+  implicit val format: OFormat[CaseWorker] = Json.format[CaseWorker]
 }
 
 case class Attachment(
                        id: String,
                        public: Boolean = false,
-                       operator: Option[Operator],
+                       operator: Option[CaseWorker],
                        timestamp: Instant              = Instant.now(),
                        description: Option[String]     = None,
                        shouldPublishToRulings: Boolean = false
@@ -279,19 +279,19 @@ object ValuationApplication{
 
 
 case class ValuationCase(
-                 reference: String,
-                 status: CaseStatus.Value,
-                 createdDate: Instant,
-                 daysElapsed: Long,
-                 application: ValuationApplication,
-                 referredDaysElapsed: Long,
-                 caseBoardsFileNumber: Option[String] = None,
-                 assignee: Option[Operator] = None,
-                 decision: Option[Decision] = None,
-                 attachments: Seq[Attachment] = Seq.empty,
-                 keywords: Set[String]             = Set.empty,
-                 dateOfExtract: Option[Instant]    = None,
-                 migratedDaysElapsed: Option[Long] = None
+                          reference: String,
+                          status: CaseStatus.Value,
+                          createdDate: Instant,
+                          daysElapsed: Long,
+                          application: ValuationApplication,
+                          referredDaysElapsed: Long,
+                          caseBoardsFileNumber: Option[String] = None,
+                          assignee: Option[CaseWorker] = None,
+                          decision: Option[Decision] = None,
+                          attachments: Seq[Attachment] = Seq.empty,
+                          keywords: Set[String]             = Set.empty,
+                          dateOfExtract: Option[Instant]    = None,
+                          migratedDaysElapsed: Option[Long] = None
                )
 
 object ValuationCase {
