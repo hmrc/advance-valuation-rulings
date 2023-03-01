@@ -41,4 +41,7 @@ class ValuationCaseRepository @Inject()(mongo: MongoComponent)(implicit ec: Exec
   def allOpenCases(): Future[List[ValuationCase]] =
               collection.find[ValuationCase](Filters.equal("status","OPEN")).toFuture().map(_.toList)
 
+  def findByReference(reference: String): Future[Seq[ValuationCase]] =
+             collection.find[ValuationCase](Filters.equal("reference", reference)).toFuture()
+
 }
