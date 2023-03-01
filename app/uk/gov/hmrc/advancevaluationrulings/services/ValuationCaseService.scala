@@ -24,6 +24,8 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 trait ValuationCaseService {
+  def findByReference(reference: String): Future[Option[ValuationCase]]
+
   def create(reference: String, valuation: ValuationApplication): Future[String]
 
   def allOpenCases: Future[List[ValuationCase]]
@@ -36,4 +38,9 @@ class MongoValuationCaseService @Inject() (repository: ValuationCaseRepository)(
     val valuationCase = ValuationCase(reference,CaseStatus.NEW,Instant.now(),0, valuation,0)
     repository.create(valuationCase).map(_.toString)
   }
+
+  override def findByReference(reference: String): Future[Option[ValuationCase]] =
+    for{
+      l <- repository.findByReference(reference)
+    } yield l.headOption
 }

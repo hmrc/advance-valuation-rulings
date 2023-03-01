@@ -19,12 +19,12 @@ package uk.gov.hmrc.advancevaluationrulings.controllers
 import play.api.libs.json.{Json, OFormat}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.CreateValuationRequest
-import uk.gov.hmrc.advancevaluationrulings.models.{ValuationApplication}
+import uk.gov.hmrc.advancevaluationrulings.models.ValuationApplication
 import uk.gov.hmrc.advancevaluationrulings.services.ValuationCaseService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
 class ValuationCaseController @Inject() (
@@ -42,6 +42,12 @@ class ValuationCaseController @Inject() (
     for{
       cases <- valuationCaseService.allOpenCases
     } yield Ok(Json.toJson(cases))
+  }
+
+  def findByReference(reference: String): Action[AnyContent] = Action.async{ request =>
+    for {
+      c <- valuationCaseService.findByReference(reference)
+    } yield Ok(Json.toJson(c))
   }
 }
 

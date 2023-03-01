@@ -5,3 +5,5 @@ POST        /trader-details             uk.gov.hmrc.advancevaluationrulings.cont
 POST       /valuation                  uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.create()
 
 GET       /valuation                   uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.allOpenCases()
+
+GET       /valuation/:reference        uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.findByReference(reference)
