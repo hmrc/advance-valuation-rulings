@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
-import org.bson.{BsonObjectId, BsonString}
+import org.bson.{BsonObjectId}
 import org.mongodb.scala.model.{Filters, Updates}
-import uk.gov.hmrc.advancevaluationrulings.models.{CaseWorker, ValuationCase}
+import uk.gov.hmrc.advancevaluationrulings.models.{CaseStatus, CaseWorker, ValuationCase}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
@@ -36,7 +36,8 @@ class ValuationCaseRepository @Inject()(mongo: MongoComponent)(implicit ec: Exec
 ){
   def assignCase(reference: String, caseWorker: CaseWorker): Future[Long] =
     for{
-      result <- collection.updateOne(Filters.equal("reference", reference), Updates.set("assignee", Codecs.toBson(caseWorker))).toFuture()
+      result <- collection.updateOne(Filters.equal("reference", reference),
+        Updates.combine(Updates.set("status", CaseStatus.REFERRED.toString),Updates.set("assignee", Codecs.toBson(caseWorker)))).toFuture()
     } yield {
       if(result.wasAcknowledged()) result.getModifiedCount  else throw new Exception("failed to assign case")
     }
