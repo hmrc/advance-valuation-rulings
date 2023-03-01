@@ -60,7 +60,7 @@ trait HttpReaderWrapper[T, E <: BaseError] {
         logger.debug(s"Got response: ${Json.prettyPrint(validJson)}")
         successHandler(validJson)
       case Failure(exception) =>
-        logger.error(s"Failed to serialize upstream json response: ${exception.getMessage}")
+        logger.error(s"Failed to serialize upstream json response: ${response.body}\n ${exception.getMessage}")
         JsonSerializationError(exception).asLeft[T]
     }
 
