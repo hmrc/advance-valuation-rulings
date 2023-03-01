@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
-import org.bson.{BsonObjectId}
-import org.mongodb.scala.model.Filters
-import uk.gov.hmrc.advancevaluationrulings.models.ValuationCase
+import org.bson.{BsonObjectId, BsonString}
+import org.mongodb.scala.model.{Filters, Updates}
+import uk.gov.hmrc.advancevaluationrulings.models.{CaseWorker, ValuationCase}
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -34,6 +34,13 @@ class ValuationCaseRepository @Inject()(mongo: MongoComponent)(implicit ec: Exec
   indexes        = Seq(/* IndexModel() instances, see Migrate index definitions below  */),
   replaceIndexes = false
 ){
+  def assignCase(reference: String, caseWorker: CaseWorker): Future[Long] =
+    for{
+      result <- collection.updateOne(Filters.equal("reference", reference), Updates.set("assignee", Codecs.toBson(caseWorker))).toFuture()
+    } yield {
+      if(result.wasAcknowledged()) result.getModifiedCount  else throw new Exception("failed to assign case")
+    }
+
   def create(valuation: ValuationCase): Future[BsonObjectId] = collection.insertOne(valuation).toFuture().map{ result =>
     if(result.wasAcknowledged()) result.getInsertedId.asObjectId() else throw new Exception("Failed to insert record")
   }

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import uk.gov.hmrc.advancevaluationrulings.models.{CaseStatus, ValuationApplication, ValuationCase}
+import uk.gov.hmrc.advancevaluationrulings.models.{CaseStatus, CaseWorker, ValuationApplication, ValuationCase}
 import uk.gov.hmrc.advancevaluationrulings.repositories.ValuationCaseRepository
 
 import java.time.Instant
@@ -24,6 +24,8 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 trait ValuationCaseService {
+  def assignCase(reference: String, caseWorker: CaseWorker): Future[Long]
+
   def findByReference(reference: String): Future[Option[ValuationCase]]
 
   def create(reference: String, valuation: ValuationApplication): Future[String]
@@ -43,4 +45,6 @@ class MongoValuationCaseService @Inject() (repository: ValuationCaseRepository)(
     for{
       l <- repository.findByReference(reference)
     } yield l.headOption
+
+  override def assignCase(reference: String, caseWorker: CaseWorker): Future[Long] = repository.assignCase(reference, caseWorker)
 }
