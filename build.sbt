@@ -16,7 +16,8 @@ lazy val microservice = Project("advance-valuation-rulings", file("."))
       "-Ywarn-unused:params",    // Warn if a value parameter is unused.
       "-Ywarn-unused:patvars",   // Warn if a variable bound in a pattern is unused.
       "-Ywarn-unused:privates"   // Warn if a private member is unused.
-    )
+    ),
+    PlayKeys.playDefaultPort := 12601
   )
   .settings(publishingSettings: _*)
   .settings(inConfig(Test)(testSettings): _*)
