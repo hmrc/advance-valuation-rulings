@@ -19,7 +19,10 @@ package uk.gov.hmrc.advancevaluationrulings.connectors
 import java.time.{LocalDateTime, ZoneOffset}
 import java.time.format.DateTimeFormatter
 import javax.inject.{Inject, Singleton}
+
 import scala.concurrent.ExecutionContext
+
+import play.api.http.MimeTypes
 import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
 import uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger
 import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope.Envelope
@@ -27,9 +30,9 @@ import uk.gov.hmrc.advancevaluationrulings.models.common.HeaderNames
 import uk.gov.hmrc.advancevaluationrulings.models.errors.{ConnectorError, ETMPError}
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.{ETMPSubscriptionDisplayResponse, Query}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+
 import cats.data.EitherT
 import cats.implicits.catsSyntaxEitherId
-import play.api.http.MimeTypes
 
 @Singleton
 class DefaultETMPConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)
@@ -45,10 +48,10 @@ class DefaultETMPConnector @Inject() (httpClient: HttpClient, appConfig: AppConf
     ec: ExecutionContext
   ): Envelope[ETMPSubscriptionDisplayResponse] = {
 
-    val baseUrl                = appConfig.integrationFrameworkBaseUrl
-    val path                   = appConfig.etmpSubscriptionDisplayEndpoint
-    val url                    = s"$baseUrl$path"
-    val headerCarrierWithToken = headerCarrier.withExtraHeaders(
+    val baseUrl = appConfig.integrationFrameworkBaseUrl
+    val path    = appConfig.etmpSubscriptionDisplayEndpoint
+    val url     = s"$baseUrl$path"
+    val headers = Seq(
       HeaderNames.Authorization -> s"Bearer ${appConfig.integrationFrameworkToken}",
       HeaderNames.ForwardedHost -> "MDTP",
       HeaderNames.Accept        -> MimeTypes.JSON,
@@ -59,7 +62,7 @@ class DefaultETMPConnector @Inject() (httpClient: HttpClient, appConfig: AppConf
       implicit reader =>
         EitherT {
           httpClient
-            .GET(url, etmpQuery.toQueryParameters)(reader, headerCarrierWithToken, ec)
+            .GET(url, etmpQuery.toQueryParameters, headers)
             .recover {
               case ex =>
                 logger.error(s"Failed to get subscription details from ETMP: ${ex.getMessage}")
