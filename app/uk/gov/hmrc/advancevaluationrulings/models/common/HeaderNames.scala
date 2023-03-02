@@ -18,12 +18,13 @@ package uk.gov.hmrc.advancevaluationrulings.models.common
 
 object HeaderNames {
 
-  val RequestIdKey     = "x-request-id"
-  val CorrelationIdKey = "X-Correlation-ID"
-  val ForwardedHost    = "X-Forwarded-Host"
-  val Authorization    = "Authorization"
-  val Env              = "Environment"
-  val Date             = "Date"
-  val Accept           = "Accept"
+  val RequestIdKey  = "x-request-id"
+  val CorrelationId = "X-Correlation-ID"
+  val ForwardedHost = "X-Forwarded-Host"
+  val SourceSystem  = "X-Source-System"
+  val Authorization = "Authorization"
+  val Env           = "Environment"
+  val Date          = "Date"
+  val Accept        = "Accept"
 
 }
