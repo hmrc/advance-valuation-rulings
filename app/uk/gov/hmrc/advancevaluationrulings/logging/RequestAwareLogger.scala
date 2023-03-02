@@ -18,7 +18,7 @@ package uk.gov.hmrc.advancevaluationrulings.logging
 
 import org.slf4j.MDC
 import play.api.Logger
-import uk.gov.hmrc.advancevaluationrulings.models.common.HeaderNames.{CorrelationIdKey, RequestIdKey}
+import uk.gov.hmrc.advancevaluationrulings.models.common.HeaderNames.{CorrelationId, RequestIdKey}
 import uk.gov.hmrc.http.{HeaderCarrier, RequestId}
 
 class RequestAwareLogger(clazz: Class[_]) {
@@ -34,13 +34,13 @@ class RequestAwareLogger(clazz: Class[_]) {
   private def withRequestIDsInMDC(f: => Unit)(implicit hc: HeaderCarrier): Unit = {
     val requestId = hc.requestId.getOrElse(RequestId("Undefined"))
     val correlationId = hc.otherHeaders
-      .collectFirst { case (key, value) if key.equalsIgnoreCase(CorrelationIdKey) => value }
+      .collectFirst { case (key, value) if key.equalsIgnoreCase(CorrelationId) => value }
 
     MDC.put(RequestIdKey, requestId.value)
-    correlationId.foreach(MDC.put(CorrelationIdKey, _))
+    correlationId.foreach(MDC.put(CorrelationId, _))
     f
     MDC.remove(RequestIdKey)
-    correlationId.foreach(_ => MDC.remove(CorrelationIdKey))
+    correlationId.foreach(_ => MDC.remove(CorrelationId))
   }
 
 }
