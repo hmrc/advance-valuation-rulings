@@ -17,7 +17,9 @@
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
 import javax.inject.{Inject, Singleton}
+
 import scala.concurrent.ExecutionContext
+
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger
 import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope._
@@ -34,11 +36,14 @@ class ARSController @Inject() (
 
   implicit val ec: ExecutionContext = cc.executionContext
 
-  def retrieveTraderDetails(acknowledgementReference: String, eoriNumber: String): Action[AnyContent] =
+  def retrieveTraderDetails(
+    acknowledgementReference: String,
+    eoriNumber: String
+  ): Action[AnyContent] =
     Action.async {
       implicit request =>
         traderDetailsService
           .getTraderDetails(acknowledgementReference, EORI = eoriNumber)
           .toResult
-      }
+    }
 }

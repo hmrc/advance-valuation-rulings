@@ -122,7 +122,12 @@ class TraderDetailsEndpointSpec
 
               val response =
                 wsClient
-                  .url(traderDetailsRequestUrl(etmpQuery.acknowledgementReference, etmpQuery.EORI.value))
+                  .url(
+                    traderDetailsRequestUrl(
+                      etmpQuery.acknowledgementReference,
+                      etmpQuery.EORI.value
+                    )
+                  )
                   .get()
                   .futureValue
 
