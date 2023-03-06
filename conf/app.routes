@@ -1,6 +1,6 @@
 # microservice specific routes
 
-POST        /trader-details                  uk.gov.hmrc.advancevaluationrulings.controllers.ARSController.retrieveTraderDetails
+GET        /trader-details/:acknowledgementReference/:eoriNumber             uk.gov.hmrc.advancevaluationrulings.controllers.ARSController.retrieveTraderDetails(acknowledgementReference: String, eoriNumber: String)
 
 POST       /valuation                        uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.create()
 

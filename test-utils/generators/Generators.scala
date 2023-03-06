@@ -32,7 +32,7 @@ trait Generators {
   def stringsWithMaxLength(maxLength: Int): Gen[String] =
     for {
       length <- choose(1, maxLength)
-      chars  <- listOfN(length, Gen.asciiChar)
+      chars  <- listOfN(length, Gen.alphaNumChar)
     } yield chars.mkString
 
   def localDateTimeGen: Gen[LocalDateTime] = {

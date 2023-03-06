@@ -2,7 +2,7 @@ package uk.gov.hmrc.advancevaluationrulings
 
 import play.api.libs.json.Json
 import uk.gov.hmrc.advancevaluationrulings.models.errors.{ErrorResponse, ValidationError, ValidationErrors}
-import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.{TraderDetailsRequest, TraderDetailsResponse}
+import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
 import uk.gov.hmrc.advancevaluationrulings.utils.{BaseIntegrationSpec, WireMockHelper}
 
 import generators.ModelGenerators
@@ -35,12 +35,6 @@ class TraderDetailsEndpointSpec
         ETMPSubscriptionDisplayResponseGen
       ) {
         (etmpQuery, etmpResponse) =>
-          val traderDetailsRequest = TraderDetailsRequest(
-            etmpQuery.acknowledgementReference,
-            etmpQuery.taxPayerID,
-            etmpQuery.EORI
-          )
-
           stubGet(
             url = etmpQueryUrl(etmpQuery),
             statusCode = 200,
@@ -48,8 +42,10 @@ class TraderDetailsEndpointSpec
             requestHeaders = requestHeaders
           )
 
-          val response =
-            wsClient.url(traderDetailsEndpoint).post(Json.toJson(traderDetailsRequest)).futureValue
+          val response = wsClient
+            .url(traderDetailsRequestUrl(etmpQuery.acknowledgementReference, etmpQuery.EORI.value))
+            .get()
+            .futureValue
 
           response.status mustBe 200
           response.json mustBe Json.toJson(
@@ -65,12 +61,6 @@ class TraderDetailsEndpointSpec
     "respond with 500 status when ETMP returns an error" in {
       ScalaCheckPropertyChecks.forAll(queryGen, ETMPErrorGen) {
         (etmpQuery, etmpErrorResponse) =>
-          val traderDetailsRequest = TraderDetailsRequest(
-            etmpQuery.acknowledgementReference,
-            etmpQuery.taxPayerID,
-            etmpQuery.EORI
-          )
-
           val errorCode    = etmpErrorResponse.errorDetail.errorCode
           val errorMessage = etmpErrorResponse.errorDetail.errorMessage
 
@@ -81,8 +71,10 @@ class TraderDetailsEndpointSpec
             requestHeaders = requestHeaders
           )
 
-          val response =
-            wsClient.url(traderDetailsEndpoint).post(Json.toJson(traderDetailsRequest)).futureValue
+          val response = wsClient
+            .url(traderDetailsRequestUrl(etmpQuery.acknowledgementReference, etmpQuery.EORI.value))
+            .get()
+            .futureValue
 
           response.status mustBe 500
           response.json mustBe Json.toJson(
@@ -121,12 +113,6 @@ class TraderDetailsEndpointSpec
         s"return 500 status when ETMP returns an $testDescription response" in {
           ScalaCheckPropertyChecks.forAll(queryGen) {
             etmpQuery =>
-              val traderDetailsRequest = TraderDetailsRequest(
-                etmpQuery.acknowledgementReference,
-                etmpQuery.taxPayerID,
-                etmpQuery.EORI
-              )
-
               stubGet(
                 url = etmpQueryUrl(etmpQuery),
                 statusCode = 200,
@@ -136,8 +122,8 @@ class TraderDetailsEndpointSpec
 
               val response =
                 wsClient
-                  .url(traderDetailsEndpoint)
-                  .post(Json.toJson(traderDetailsRequest))
+                  .url(traderDetailsRequestUrl(etmpQuery.acknowledgementReference, etmpQuery.EORI.value))
+                  .get()
                   .futureValue
 
               response.status mustBe 500
@@ -146,33 +132,6 @@ class TraderDetailsEndpointSpec
               )
           }
         }
-    }
-
-    "return 400 when given an invalid trader details request" in {
-      ScalaCheckPropertyChecks.forAll(
-        queryGen,
-        ETMPSubscriptionDisplayResponseGen
-      ) {
-        (etmpQuery, etmpResponse) =>
-          stubGet(
-            url = etmpQueryUrl(etmpQuery),
-            statusCode = 200,
-            responseBody = Json.stringify(Json.toJson(etmpResponse)),
-            requestHeaders = requestHeaders
-          )
-
-          val invalidTraderDetailsRequest = Json.toJson("{}")
-          val response                    =
-            wsClient.url(traderDetailsEndpoint).post(invalidTraderDetailsRequest).futureValue
-
-          response.status mustBe 400
-          response.json mustBe Json.toJson(
-            ErrorResponse(
-              400,
-              ValidationErrors(Seq(ValidationError("field at path: [] missing or invalid")))
-            )
-          )
-      }
     }
   }
 }

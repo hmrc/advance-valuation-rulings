@@ -31,14 +31,14 @@ class TraderDetailsService @Inject() (connector: DefaultETMPConnector) {
 
   def getTraderDetails(
     acknowledgementReference: String,
-    taxPayerID: Option[String] = None,
-    EORI: Option[String] = None
+    EORI: String,
+    taxPayerID: Option[String] = None
   )(implicit
     ec: ExecutionContext,
     hc: HeaderCarrier
   ): Envelope[TraderDetailsResponse] =
     connector
-      .getSubscriptionDetails(Query(Regime.CDS, acknowledgementReference, taxPayerID, EORI))
+      .getSubscriptionDetails(Query(Regime.CDS, acknowledgementReference, taxPayerID, Option(EORI)))
       .map {
         response =>
           val responseDetail = response.subscriptionDisplayResponse.responseDetail
