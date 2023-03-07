@@ -30,7 +30,7 @@ Run `sm2 -s` to check what services are running.
 To bring up the service on the configured port 12600, use
 
 ```
-sbt "run 12601"
+sbt run
 ```
 
 ## Testing the service

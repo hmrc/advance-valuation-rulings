@@ -26,12 +26,12 @@ trait ModelGenerators extends Generators {
 
   def regimeGen: Gen[Regime] = Gen.oneOf(Regime.values)
 
-  def EORIGen: Gen[String] = RegexpGen.from("[1-9]\\d?(,\\d{3})+")
+  def eoriNumberGen: Gen[String] = RegexpGen.from("^[A-Z]{2}[0-9A-Z]+$")
 
   def queryGen: Gen[Query] = for {
     regime                   <- regimeGen
     acknowledgementReference <- stringsWithMaxLength(32)
-    eori                     <- EORIGen
+    eori                     <- eoriNumberGen
   } yield Query(regime, acknowledgementReference, taxPayerID = None, EORI = Option(eori))
 
   def sourceFaultDetail: Gen[SourceFaultDetail] =
@@ -61,7 +61,7 @@ trait ModelGenerators extends Generators {
   } yield CDSEstablishmentAddress(streetAndNumber, city, countryCode, postalCode)
 
   def responseDetailGen: Gen[ResponseDetail] = for {
-    eoriNo                     <- RegexpGen.from("^[A-Z]{2}[0-9A-Z]+$")
+    eoriNo                     <- eoriNumberGen
     cdsFullName                <- stringsWithMaxLength(512)
     cdsEstablishmentAddressGen <- CDSEstablishmentAddressGen
   } yield ResponseDetail(eoriNo, cdsFullName, cdsEstablishmentAddressGen)
