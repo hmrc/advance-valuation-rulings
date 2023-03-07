@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.models.traderdetails
+package uk.gov.hmrc.advancevaluationrulings.models.common
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Format, Json}
 
-final case class TraderDetailsRequest(
-  acknowledgementReference: String,
-  taxPayerID: Option[String] = None,
-  EORI: Option[String] = None
-)
+final case class EoriNumber(value: String) extends AnyVal
 
-object TraderDetailsRequest {
-  implicit val format: OFormat[TraderDetailsRequest] = Json.format[TraderDetailsRequest]
+object EoriNumber {
+  implicit val format: Format[EoriNumber] = Json.valueFormat[EoriNumber]
 }

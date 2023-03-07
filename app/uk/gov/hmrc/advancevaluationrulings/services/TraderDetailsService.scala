@@ -21,6 +21,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 import uk.gov.hmrc.advancevaluationrulings.connectors.DefaultETMPConnector
+import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
 import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope.Envelope
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.{Query, Regime}
 import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
@@ -30,15 +31,16 @@ import uk.gov.hmrc.http.HeaderCarrier
 class TraderDetailsService @Inject() (connector: DefaultETMPConnector) {
 
   def getTraderDetails(
-    acknowledgementReference: String,
-    taxPayerID: Option[String] = None,
-    EORI: Option[String] = None
+    acknowledgementReference: AcknowledgementReference,
+    eoriNumber: EoriNumber
   )(implicit
     ec: ExecutionContext,
     hc: HeaderCarrier
   ): Envelope[TraderDetailsResponse] =
     connector
-      .getSubscriptionDetails(Query(Regime.CDS, acknowledgementReference, taxPayerID, EORI))
+      .getSubscriptionDetails(
+        Query(Regime.CDS, acknowledgementReference.value, EORI = Option(eoriNumber.value))
+      )
       .map {
         response =>
           val responseDetail = response.subscriptionDisplayResponse.responseDetail

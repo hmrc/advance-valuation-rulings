@@ -18,11 +18,10 @@ package uk.gov.hmrc.advancevaluationrulings.controllers
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
-import play.api.libs.json.JsValue
-import play.api.mvc.{Action, ControllerComponents}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger
 import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope._
-import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsRequest
+import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
 import uk.gov.hmrc.advancevaluationrulings.services.TraderDetailsService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -36,15 +35,14 @@ class ARSController @Inject() (
 
   implicit val ec: ExecutionContext = cc.executionContext
 
-  def retrieveTraderDetails(): Action[JsValue] =
-    Action.async(parse.json) {
+  def retrieveTraderDetails(
+    acknowledgementReference: String,
+    eoriNumber: String
+  ): Action[AnyContent] =
+    Action.async {
       implicit request =>
-        extractFromJson[TraderDetailsRequest] {
-          traderDetailsRequest =>
-            import traderDetailsRequest._
-            traderDetailsService
-              .getTraderDetails(acknowledgementReference, EORI = EORI)
-              .toResult
-        }
+        traderDetailsService
+          .getTraderDetails(AcknowledgementReference(acknowledgementReference), eoriNumber = EoriNumber(eoriNumber))
+          .toResult
     }
 }

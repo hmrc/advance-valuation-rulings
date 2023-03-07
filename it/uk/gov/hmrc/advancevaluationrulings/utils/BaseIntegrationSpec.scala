@@ -90,4 +90,8 @@ trait BaseIntegrationSpec
     Status.FORBIDDEN,
     Status.NOT_FOUND
   )
+
+  def traderDetailsRequestUrl(acknowledgementReference: String, eoriNumber: String): String =
+    s"$traderDetailsEndpoint/${URLEncoder.encode(acknowledgementReference, StandardCharsets.UTF_8)}/${URLEncoder
+        .encode(eoriNumber, StandardCharsets.UTF_8)}"
 }
