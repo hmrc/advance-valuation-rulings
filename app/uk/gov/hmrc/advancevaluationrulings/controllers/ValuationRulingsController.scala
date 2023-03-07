@@ -17,16 +17,18 @@
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
 import javax.inject.{Inject, Singleton}
+
 import scala.concurrent.ExecutionContext
+
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger
-import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope._
 import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
+import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope._
 import uk.gov.hmrc.advancevaluationrulings.services.TraderDetailsService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 @Singleton()
-class ARSController @Inject() (
+class ValuationRulingsController @Inject() (
   cc: ControllerComponents,
   traderDetailsService: TraderDetailsService
 ) extends BackendController(cc) {
@@ -42,7 +44,10 @@ class ARSController @Inject() (
     Action.async {
       implicit request =>
         traderDetailsService
-          .getTraderDetails(AcknowledgementReference(acknowledgementReference), eoriNumber = EoriNumber(eoriNumber))
+          .getTraderDetails(
+            AcknowledgementReference(acknowledgementReference),
+            eoriNumber = EoriNumber(eoriNumber)
+          )
           .toResult
     }
 }
