@@ -50,6 +50,12 @@ class ValuationCaseController @Inject() (
     } yield Ok(Json.toJson(c))
   }
 
+  def findByAssignee(assignee: String): Action[AnyContent] = Action.async{ request =>
+    for {
+      cases <- valuationCaseService.findByAssignee(assignee)
+    } yield Ok(Json.toJson(cases))
+  }
+
   def assignCase: Action[AssignCaseRequest] = Action.async(parse.json[AssignCaseRequest]) { request =>
     for {
       c <- valuationCaseService.assignCase(request.body.reference, request.body.caseWorker)

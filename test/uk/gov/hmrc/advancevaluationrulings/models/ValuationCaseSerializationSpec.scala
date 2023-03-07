@@ -19,6 +19,7 @@ package uk.gov.hmrc.advancevaluationrulings.models
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsResult, Json}
+import uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.CreateValuationRequest
 
 import java.time.Instant
 
@@ -35,6 +36,10 @@ class ValuationCaseSerializationSpec extends AnyWordSpec with Matchers {
          val valuationCase = ValuationCase("reference", CaseStatus.NEW,Instant.now(), 0, application, 0)
          val formatted = Json.toJson(valuationCase)
          val result = Json.fromJson[ValuationCase](formatted)
+
+       val valuationReq = CreateValuationRequest("reference", application)
+       println(Json.prettyPrint(Json.toJson(valuationReq)))
+
          result.get shouldBe valuationCase
      }
   }
