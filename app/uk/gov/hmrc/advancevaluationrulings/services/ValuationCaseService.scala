@@ -31,6 +31,8 @@ trait ValuationCaseService {
   def create(reference: String, valuation: ValuationApplication): Future[String]
 
   def allOpenCases: Future[List[ValuationCase]]
+
+  def findByAssignee(assignee: String): Future[List[ValuationCase]]
 }
 
 class MongoValuationCaseService @Inject() (repository: ValuationCaseRepository)(implicit ec: ExecutionContext) extends ValuationCaseService {
@@ -45,6 +47,11 @@ class MongoValuationCaseService @Inject() (repository: ValuationCaseRepository)(
     for{
       l <- repository.findByReference(reference)
     } yield l.headOption
+
+  override def findByAssignee(assignee: String): Future[List[ValuationCase]] =
+    for{
+      l <- repository.findByAssignee(assignee)
+    } yield l
 
   override def assignCase(reference: String, caseWorker: CaseWorker): Future[Long] = repository.assignCase(reference, caseWorker)
 }
