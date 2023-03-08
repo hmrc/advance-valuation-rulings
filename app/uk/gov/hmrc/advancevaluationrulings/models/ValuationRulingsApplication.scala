@@ -17,41 +17,43 @@
 package uk.gov.hmrc.advancevaluationrulings.models
 
 import java.time.Instant
+
 import play.api.libs.json._
+import uk.gov.hmrc.advancevaluationrulings.models.common.UserAnswers
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
-final case class UserAnswers(
+final case class ValuationRulingsApplication(
   id: String,
-  data: JsObject,
+  data: UserAnswers,
   applicationNumber: String,
   lastUpdated: Instant
 )
 
-object UserAnswers {
+object ValuationRulingsApplication {
 
-  val reads: Reads[UserAnswers] = {
+  val reads: Reads[ValuationRulingsApplication] = {
 
     import play.api.libs.functional.syntax._
 
     (
       (__ \ "_id").read[String] and
-        (__ \ "data").read[JsObject] and
+        (__ \ "data").read[UserAnswers] and
         (__ \ "applicationNumber").read[String] and
         (__ \ "lastUpdated").read(MongoJavatimeFormats.instantFormat)
-      )(UserAnswers.apply _)
+    )(ValuationRulingsApplication.apply _)
   }
 
-  val writes: OWrites[UserAnswers] = {
+  val writes: OWrites[ValuationRulingsApplication] = {
 
     import play.api.libs.functional.syntax._
 
     (
       (__ \ "_id").write[String] and
-        (__ \ "data").write[JsObject] and
+        (__ \ "data").write[UserAnswers] and
         (__ \ "applicationNumber").write[String] and
         (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)
-      )(unlift(UserAnswers.unapply))
+    )(unlift(ValuationRulingsApplication.unapply))
   }
 
-  implicit val format: OFormat[UserAnswers] = OFormat(reads, writes)
+  implicit val format: OFormat[ValuationRulingsApplication] = OFormat(reads, writes)
 }

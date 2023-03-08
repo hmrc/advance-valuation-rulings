@@ -22,7 +22,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Results}
 import uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger
-import uk.gov.hmrc.advancevaluationrulings.models.UserAnswers
+import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
 import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
 import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope._
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.CDSEstablishmentAddress
@@ -67,7 +67,7 @@ class ValuationRulingsController @Inject() (
   def submitAnswers(): Action[JsValue] =
     Action.async(parse.json) {
       implicit request =>
-        extractFromJson[UserAnswers] {
+        extractFromJson[ValuationRulingsApplication] {
           userAnswers =>
             logger.warn(s"User answers: ${Json.prettyPrint(Json.toJson(userAnswers))}")
             Future.successful(Results.Status(200))
