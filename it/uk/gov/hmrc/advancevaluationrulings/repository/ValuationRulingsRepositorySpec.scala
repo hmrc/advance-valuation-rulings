@@ -7,6 +7,7 @@ import uk.gov.hmrc.advancevaluationrulings.utils.BaseIntegrationSpec
 import uk.gov.hmrc.mongo.test.PlayMongoRepositorySupport
 
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 class ValuationRulingsRepositorySpec
     extends BaseIntegrationSpec
@@ -52,14 +53,16 @@ class ValuationRulingsRepositorySpec
       doYouWantToUploadDocuments = true
     ),
     applicationNumber = "some-app-number",
-    lastUpdated = Instant.now()
+    lastUpdated = Instant.now().truncatedTo(ChronoUnit.MILLIS)
   )
 
   "ValuationRulingsRepository" should {
-    "insert an application" in {
+    "insert and retrieve application" in {
       repository.insert(testApplication).futureValue
 
       repository.collection.countDocuments().toFuture().futureValue mustBe 1
+
+      repository.getItem(testApplication.id).futureValue.value mustBe testApplication
     }
   }
 

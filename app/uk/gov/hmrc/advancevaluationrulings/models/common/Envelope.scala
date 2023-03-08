@@ -31,6 +31,10 @@ object Envelope {
 
   type Envelope[T] = EitherT[Future, BaseError, T]
 
+  def apply[T](future: Future[Either[BaseError, T]]): EitherT[Future, BaseError, T] = {
+    EitherT.apply(future)
+  }
+
   implicit class EnvelopeExt[T](envelope: EitherT[Future, BaseError, T]) {
     def toResult(implicit
       ec: ExecutionContext,
