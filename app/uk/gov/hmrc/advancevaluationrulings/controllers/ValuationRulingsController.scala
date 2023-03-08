@@ -16,14 +16,17 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
+import play.api.libs.json.{JsValue, Json}
+
 import javax.inject.{Inject, Singleton}
-
-import scala.concurrent.ExecutionContext
-
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import scala.concurrent.{ExecutionContext, Future}
+import play.api.mvc.{Action, AnyContent, ControllerComponents, Results}
 import uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger
+import uk.gov.hmrc.advancevaluationrulings.models.UserAnswers
 import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
 import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope._
+import uk.gov.hmrc.advancevaluationrulings.models.etmp.CDSEstablishmentAddress
+import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
 import uk.gov.hmrc.advancevaluationrulings.services.TraderDetailsService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -43,11 +46,31 @@ class ValuationRulingsController @Inject() (
   ): Action[AnyContent] =
     Action.async {
       implicit request =>
-        traderDetailsService
-          .getTraderDetails(
-            AcknowledgementReference(acknowledgementReference),
-            eoriNumber = EoriNumber(eoriNumber)
+//        traderDetailsService
+//          .getTraderDetails(AcknowledgementReference(acknowledgementReference), eoriNumber = EoriNumber(eoriNumber))
+//          .toResult
+
+        val resp = TraderDetailsResponse(
+          EORINo = eoriNumber,
+          CDSFullName = "John Doe",
+          CDSEstablishmentAddress = CDSEstablishmentAddress(
+            streetAndNumber = "1 Test Street",
+            city = "Cardiff",
+            countryCode = "GB",
+            postalCode = Option("CD11 123")
           )
-          .toResult
+        )
+
+        Future.successful(Results.Status(200)(Json.toJson(resp)))
+    }
+
+  def submitAnswers(): Action[JsValue] =
+    Action.async(parse.json) {
+      implicit request =>
+        extractFromJson[UserAnswers] {
+          userAnswers =>
+            logger.warn(s"User answers: ${Json.prettyPrint(Json.toJson(userAnswers))}")
+            Future.successful(Results.Status(200))
+        }
     }
 }
