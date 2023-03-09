@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.models.errors
+package uk.gov.hmrc.advancevaluationrulings.models.common
 
-abstract class ReaderError(status: String, description: String)
-    extends BaseError(status, description)
+import play.api.libs.json.{Json, OFormat}
+
+final case class SubmissionSuccess(
+  acknowledged: Boolean,
+  status: String = Statuses.ApplicationSubmitted
+)
+
+object SubmissionSuccess {
+  implicit val format: OFormat[SubmissionSuccess] = Json.format[SubmissionSuccess]
+}

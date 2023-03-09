@@ -4,9 +4,9 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.advancevaluationrulings.models.errors.{ErrorResponse, ValidationError, ValidationErrors}
 import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
 import uk.gov.hmrc.advancevaluationrulings.utils.{BaseIntegrationSpec, WireMockHelper}
-
 import generators.ModelGenerators
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import uk.gov.hmrc.advancevaluationrulings.models.common.Statuses
 
 class TraderDetailsEndpointSpec
     extends BaseIntegrationSpec
@@ -79,7 +79,7 @@ class TraderDetailsEndpointSpec
           response.status mustBe 500
           response.json mustBe Json.toJson(
             ErrorResponse(
-              500,
+              Statuses.UpstreamServiceError,
               ValidationErrors(
                 Seq(
                   ValidationError(
@@ -93,15 +93,17 @@ class TraderDetailsEndpointSpec
     }
 
     val invalidETMPResponseScenarios = Table(
-      ("testDescription", "etmpResponse", "expectedError"),
+      ("testDescription", "etmpResponse", "status", "expectedError"),
       (
         "invalid schema",
         "{}",
+        Statuses.ParseError,
         "Failed to parse json response. Error: /subscriptionDisplayResponse: error.path.missing"
       ),
       (
         "invalid json",
         "invalid json",
+        Statuses.SerializationError,
         "Failed to convert response to json. Error: Unrecognized token 'invalid': " +
           "was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')\n " +
           "at [Source: (String)\"invalid json\"; line: 1, column: 8]"
@@ -109,7 +111,7 @@ class TraderDetailsEndpointSpec
     )
 
     forAll(invalidETMPResponseScenarios) {
-      (testDescription, etmpResponse, expectedError) =>
+      (testDescription, etmpResponse, status, expectedError) =>
         s"return 500 status when ETMP returns an $testDescription response" in {
           ScalaCheckPropertyChecks.forAll(queryGen) {
             etmpQuery =>
@@ -133,7 +135,7 @@ class TraderDetailsEndpointSpec
 
               response.status mustBe 500
               response.json mustBe Json.toJson(
-                ErrorResponse(500, ValidationErrors(Seq(ValidationError(expectedError))))
+                ErrorResponse(status, ValidationErrors(Seq(ValidationError(expectedError))))
               )
           }
         }

@@ -17,17 +17,14 @@
 package uk.gov.hmrc.advancevaluationrulings.services
 
 import javax.inject.{Inject, Singleton}
-
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
-
 import uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger
 import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
-import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope
-import uk.gov.hmrc.advancevaluationrulings.models.errors.{BaseError, RepositoryError}
+import uk.gov.hmrc.advancevaluationrulings.models.common.{Envelope, SubmissionSuccess}
+import uk.gov.hmrc.advancevaluationrulings.models.errors.{BaseError, SubmissionError}
 import uk.gov.hmrc.advancevaluationrulings.repositories.ValuationRulingsRepository
 import uk.gov.hmrc.http.HeaderCarrier
-
 import cats.data.EitherT
 import cats.implicits._
 
@@ -38,17 +35,17 @@ class ValuationRulingsService @Inject() (repository: ValuationRulingsRepository)
 
   def submitApplication(
     application: ValuationRulingsApplication
-  )(implicit ec: ExecutionContext, hc: HeaderCarrier): EitherT[Future, BaseError, Unit] =
+  )(implicit ec: ExecutionContext, hc: HeaderCarrier): EitherT[Future, BaseError, SubmissionSuccess] =
     Envelope.apply {
       repository
         .insert(application)
-        .map(_.asRight)
+        .map(acknowledged => SubmissionSuccess(acknowledged).asRight)
         .recover {
           case NonFatal(ex) =>
             logger.error(
               s"Failed to insert application with id: ${application.id}: ${ex.getMessage}"
             )
-            Left(RepositoryError(s"Failed to insert application with id: ${application.id}"))
+            SubmissionError(s"Failed to insert application with id: ${application.id}").asLeft
         }
     }
 }

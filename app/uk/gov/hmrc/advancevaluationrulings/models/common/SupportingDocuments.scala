@@ -14,6 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.models.errors
+package uk.gov.hmrc.advancevaluationrulings.models.common
 
-final case class RepositoryError (description: String) extends BaseError(statusCode = 500, description)
+import play.api.libs.json.{Json, OFormat}
+
+final case class SupportingDocuments(
+  files: Map[String, SupportingDocument]
+)
+
+object SupportingDocuments {
+  implicit val format: OFormat[SupportingDocuments] = Json.format[SupportingDocuments]
+}

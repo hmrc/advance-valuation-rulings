@@ -18,16 +18,14 @@ package uk.gov.hmrc.advancevaluationrulings.controllers
 
 import javax.inject.{Inject, Singleton}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
-import play.api.http.{Status => HttpStatus}
 import play.api.libs.json.{Json, JsValue}
-import play.api.mvc.{Action, AnyContent, ControllerComponents, Results}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger
 import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
+import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
 import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope._
-import uk.gov.hmrc.advancevaluationrulings.models.etmp.CDSEstablishmentAddress
-import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
 import uk.gov.hmrc.advancevaluationrulings.services.{TraderDetailsService, ValuationRulingsService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -48,22 +46,12 @@ class ValuationRulingsController @Inject() (
   ): Action[AnyContent] =
     Action.async {
       implicit request =>
-//        traderDetailsService
-//          .getTraderDetails(AcknowledgementReference(acknowledgementReference), eoriNumber = EoriNumber(eoriNumber))
-//          .toResult
-
-        val resp = TraderDetailsResponse(
-          EORINo = eoriNumber,
-          CDSFullName = "John Doe",
-          CDSEstablishmentAddress = CDSEstablishmentAddress(
-            streetAndNumber = "1 Test Street",
-            city = "Cardiff",
-            countryCode = "GB",
-            postalCode = Option("CD11 123")
+        traderDetailsService
+          .getTraderDetails(
+            AcknowledgementReference(acknowledgementReference),
+            eoriNumber = EoriNumber(eoriNumber)
           )
-        )
-
-        Future.successful(Results.Status(200)(Json.toJson(resp)))
+          .toResult
     }
 
   def submitAnswers(): Action[JsValue] =
@@ -74,7 +62,6 @@ class ValuationRulingsController @Inject() (
             logger.warn(s"User answers: ${Json.prettyPrint(Json.toJson(rulingsApplication))}")
             valuationRulingsService
               .submitApplication(rulingsApplication)
-              .map(_ => HttpStatus.OK)
               .toResult
         }
     }

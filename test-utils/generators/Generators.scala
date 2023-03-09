@@ -27,7 +27,7 @@ trait Generators {
   implicit val noShrink: Shrink[String] = Shrink.shrinkAny
 
   def intsBelowValue(value: Int): Gen[Int] =
-    arbitrary[Int] suchThat (_ < value)
+    arbitrary[Int] suchThat (int => int < value && int >= 0)
 
   def stringsWithMaxLength(maxLength: Int): Gen[String] =
     for {
@@ -36,10 +36,9 @@ trait Generators {
     } yield chars.mkString
 
   def localDateTimeGen: Gen[LocalDateTime] = {
-    val rangeStart = LocalDateTime.MIN.toEpochSecond(ZoneOffset.UTC)
     val rangeEnd   = LocalDateTime.now(Clock.systemUTC()).toEpochSecond(ZoneOffset.UTC)
     Gen
-      .choose(rangeStart, rangeEnd)
+      .choose(0, rangeEnd)
       .map(second => LocalDateTime.ofEpochSecond(second, 0, ZoneOffset.UTC))
   }
 }

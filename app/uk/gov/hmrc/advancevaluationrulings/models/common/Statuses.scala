@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.models.errors
+package uk.gov.hmrc.advancevaluationrulings.models.common
 
-abstract class ReaderError(status: String, description: String)
-    extends BaseError(status, description)
+object Statuses {
+
+  val ApplicationSubmitted = "ApplicationSubmitted"
+  val SubmissionFailed     = "SubmissionFailed"
+  val ConnectorError       = "ConnectorError"
+  val UpstreamServiceError = "UpstreamServiceError"
+  val SerializationError   = "SerializationError"
+  val ParseError           = "ParseError"
+  val ValidationFailed     = "ValidationFailed"
+
+}

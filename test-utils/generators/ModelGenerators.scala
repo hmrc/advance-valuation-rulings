@@ -16,10 +16,16 @@
 
 package generators
 
+import java.time.ZoneOffset
+import java.time.temporal.ChronoUnit
+import java.util.UUID
+
+import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
+import uk.gov.hmrc.advancevaluationrulings.models.common.{ApplicationContactDetails, RegisteredDetailsCheck, SupportingDocument, UserAnswers, ValuationMethod}
 import uk.gov.hmrc.advancevaluationrulings.models.errors.{ErrorDetail, ETMPError, SourceFaultDetail}
 import uk.gov.hmrc.advancevaluationrulings.models.etmp._
 
-import org.scalacheck.Gen
+import org.scalacheck.{Arbitrary, Gen}
 import wolfendale.scalacheck.regexp.RegexpGen
 
 trait ModelGenerators extends Generators {
@@ -73,4 +79,86 @@ trait ModelGenerators extends Generators {
 
   def ETMPSubscriptionDisplayResponseGen: Gen[ETMPSubscriptionDisplayResponse] =
     subscriptionDisplayResponseGen.map(ETMPSubscriptionDisplayResponse(_))
+
+  def applicationContactsDetailsGen: Gen[ApplicationContactDetails] = for {
+    name  <- stringsWithMaxLength(512)
+    email <- RegexpGen.from("^\\w+@[a-zA-Z_]+?\\.[a-zA-Z]{2,3}$")
+    phone <- RegexpGen.from("^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$")
+  } yield ApplicationContactDetails(
+    name = name,
+    email = email,
+    phone = phone
+  )
+
+  def supportingDocumentsGen: Gen[Map[String, SupportingDocument]] = for {
+    fileName       <- stringsWithMaxLength(512)
+    downloadUrl    <- stringsWithMaxLength(512)
+    isConfidential <- Arbitrary.arbitrary[Boolean]
+    id              = UUID.randomUUID.toString
+  } yield Map(id -> SupportingDocument(fileName, downloadUrl, isConfidential))
+
+  def registeredDetailsCheckGen: Gen[RegisteredDetailsCheck] = for {
+    registeredDetailsAreCorrect <- Arbitrary.arbitrary[Boolean]
+    registeredDetails           <- ETMPSubscriptionDisplayResponseGen
+  } yield {
+    val responseDetail = registeredDetails.subscriptionDisplayResponse.responseDetail
+    RegisteredDetailsCheck(
+      value = registeredDetailsAreCorrect,
+      eori = responseDetail.EORINo,
+      name = responseDetail.CDSFullName,
+      streetAndNumber = responseDetail.CDSEstablishmentAddress.streetAndNumber,
+      city = responseDetail.CDSEstablishmentAddress.city,
+      country = responseDetail.CDSEstablishmentAddress.countryCode,
+      postalCode = responseDetail.CDSEstablishmentAddress.postalCode
+    )
+  }
+
+  def userAnswersGen: Gen[UserAnswers] =
+    for {
+      importGoods                              <- Arbitrary.arbitrary[Boolean]
+      registeredDetailsCheck                   <- registeredDetailsCheckGen
+      applicationContactsDetails               <- applicationContactsDetailsGen
+      valuationMethod                          <- Gen.oneOf(ValuationMethod.values)
+      isThereASaleInvolved                     <- Gen.option(Arbitrary.arbitrary[Boolean])
+      isSaleBetweenRelatedParties              <- Gen.option(Arbitrary.arbitrary[Boolean])
+      areThereRestrictionsOnTheGoods           <- Gen.option(Arbitrary.arbitrary[Boolean])
+      isTheSaleSubjectToConditions             <- Gen.option(Arbitrary.arbitrary[Boolean])
+      descriptionOfGoods                       <- stringsWithMaxLength(512)
+      hasCommodityCode                         <- Arbitrary.arbitrary[Boolean]
+      commodityCode                            <- Gen.option(intsBelowValue(99999))
+      haveTheGoodsBeenSubjectToLegalChallenges <- Arbitrary.arbitrary[Boolean]
+      hasConfidentialInformation               <- Arbitrary.arbitrary[Boolean]
+      doYouWantToUploadDocuments               <- Arbitrary.arbitrary[Boolean]
+      supportingDocuments                      <- supportingDocumentsGen
+    } yield UserAnswers(
+      importGoods = importGoods,
+      checkRegisteredDetails = registeredDetailsCheck,
+      applicationContactDetails = applicationContactsDetails,
+      valuationMethod = valuationMethod,
+      isThereASaleInvolved = isThereASaleInvolved,
+      isSaleBetweenRelatedParties = isSaleBetweenRelatedParties,
+      areThereRestrictionsOnTheGoods = areThereRestrictionsOnTheGoods,
+      isTheSaleSubjectToConditions = isTheSaleSubjectToConditions,
+      descriptionOfGoods = descriptionOfGoods,
+      hasCommodityCode = hasCommodityCode,
+      commodityCode = commodityCode.map(_.toString),
+      haveTheGoodsBeenSubjectToLegalChallenges = haveTheGoodsBeenSubjectToLegalChallenges,
+      hasConfidentialInformation = hasConfidentialInformation,
+      doYouWantToUploadDocuments = doYouWantToUploadDocuments,
+      uploadSupportingDocument = supportingDocuments
+    )
+
+  def valuationRulingsApplicationGen: Gen[ValuationRulingsApplication] =
+    for {
+      id                <- stringsWithMaxLength(32)
+      userAnswers       <- userAnswersGen
+      applicationNumber <- stringsWithMaxLength(32)
+      localDateTime     <- localDateTimeGen
+    } yield ValuationRulingsApplication(
+      id = id,
+      data = userAnswers,
+      applicationNumber = applicationNumber,
+      lastUpdated = localDateTime.toInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.MILLIS)
+    )
+
 }

@@ -16,49 +16,14 @@
 
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
-import javax.inject.{Inject, Singleton}
-
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
-import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import com.google.inject.ImplementedBy
-import org.mongodb.scala.model.{Filters, Indexes, IndexModel, IndexOptions}
 
 @ImplementedBy(classOf[ValuationRulingsRepositoryImpl])
 trait ValuationRulingsRepository {
-  def insert(application: ValuationRulingsApplication): Future[Unit]
+  def insert(application: ValuationRulingsApplication): Future[Boolean]
   def getItem(id: String): Future[Option[ValuationRulingsApplication]]
-}
-
-@Singleton
-class ValuationRulingsRepositoryImpl @Inject() (
-  val mongoComponent: MongoComponent
-)(implicit ec: ExecutionContext)
-    extends PlayMongoRepository[ValuationRulingsApplication](
-      mongoComponent,
-      collectionName = "valuation-rulings-application",
-      domainFormat = ValuationRulingsApplication.format,
-      indexes = Seq(
-        IndexModel(
-          Indexes.descending("lastUpdated"),
-          IndexOptions().name("lastUpdatedIdx")
-        )
-      )
-    )
-    with ValuationRulingsRepository {
-
-  override def insert(application: ValuationRulingsApplication): Future[Unit] =
-    collection
-      .insertOne(application)
-      .toFuture()
-      .map(_ => ())
-
-  override def getItem(id: String): Future[Option[ValuationRulingsApplication]] =
-    collection
-      .find(Filters.equal("_id", id))
-      .headOption()
-
 }

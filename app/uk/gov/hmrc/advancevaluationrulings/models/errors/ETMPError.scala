@@ -17,10 +17,11 @@
 package uk.gov.hmrc.advancevaluationrulings.models.errors
 
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.advancevaluationrulings.models.common.Statuses
 
 final case class ETMPError(errorDetail: ErrorDetail)
     extends BaseError(
-      statusCode = 500,
+      Statuses.UpstreamServiceError,
       description =
         s"Error code: [${errorDetail.errorCode}] with detail [${errorDetail.errorMessage.getOrElse("N/A")}]"
     )

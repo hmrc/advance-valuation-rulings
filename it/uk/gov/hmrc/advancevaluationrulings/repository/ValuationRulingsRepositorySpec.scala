@@ -1,13 +1,11 @@
 package uk.gov.hmrc.advancevaluationrulings.repository
 
 import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
-import uk.gov.hmrc.advancevaluationrulings.models.common._
 import uk.gov.hmrc.advancevaluationrulings.repositories.ValuationRulingsRepositoryImpl
 import uk.gov.hmrc.advancevaluationrulings.utils.BaseIntegrationSpec
 import uk.gov.hmrc.mongo.test.PlayMongoRepositorySupport
 
-import java.time.Instant
-import java.time.temporal.ChronoUnit
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 class ValuationRulingsRepositorySpec
     extends BaseIntegrationSpec
@@ -22,47 +20,26 @@ class ValuationRulingsRepositorySpec
     prepareDatabase()
   }
 
-  private val testApplication = ValuationRulingsApplication(
-    id = "testId",
-    data = UserAnswers(
-      importGoods = true,
-      checkRegisteredDetails = RegisteredDetailsCheck(
-        value = true,
-        eori = "testEori",
-        name = "test name",
-        streetAndNumber = "test street and num",
-        city = "test city",
-        country = "United Kingdom",
-        postalCode = "N123 ACS"
-      ),
-      applicationContactDetails = ApplicationContactDetails(
-        name = "test contact name",
-        email = "some@email.com",
-        phone = "12346444"
-      ),
-      valuationMethod = ValuationMethod.Method1,
-      isThereASaleInvolved = true,
-      isSaleBetweenRelatedParties = true,
-      areThereRestrictionsOnTheGoods = true,
-      isTheSaleSubjectToConditions = true,
-      descriptionOfGoods = "socks",
-      hasCommodityCode = true,
-      commodityCode = "12344",
-      haveTheGoodsBeenSubjectToLegalChallenges = true,
-      hasConfidentialInformation = true,
-      doYouWantToUploadDocuments = true
-    ),
-    applicationNumber = "some-app-number",
-    lastUpdated = Instant.now().truncatedTo(ChronoUnit.MILLIS)
-  )
-
   "ValuationRulingsRepository" should {
     "insert and retrieve application" in {
-      repository.insert(testApplication).futureValue
+      ScalaCheckPropertyChecks.forAll(valuationRulingsApplicationGen) {
+        application =>
+          repository.insert(application).futureValue mustBe true
 
-      repository.collection.countDocuments().toFuture().futureValue mustBe 1
+          repository.getItem(application.id).futureValue.value mustBe application
+      }
+    }
 
-      repository.getItem(testApplication.id).futureValue.value mustBe testApplication
+    "not allow an application to be inserted more than once" in {
+      ScalaCheckPropertyChecks.forAll(valuationRulingsApplicationGen) {
+        application =>
+          repository.insert(application).futureValue mustBe true
+
+          repository.getItem(application.id).futureValue.value mustBe application
+
+          val ex = the[Exception] thrownBy repository.insert(application).futureValue
+          ex.getMessage must include("duplicate key error")
+      }
     }
   }
 

@@ -23,16 +23,17 @@ final case class UserAnswers(
   checkRegisteredDetails: RegisteredDetailsCheck,
   applicationContactDetails: ApplicationContactDetails,
   valuationMethod: ValuationMethod,
-  isThereASaleInvolved: Boolean,
-  isSaleBetweenRelatedParties: Boolean,
-  areThereRestrictionsOnTheGoods: Boolean,
-  isTheSaleSubjectToConditions: Boolean,
+  isThereASaleInvolved: Option[Boolean],
+  isSaleBetweenRelatedParties: Option[Boolean],
+  areThereRestrictionsOnTheGoods: Option[Boolean],
+  isTheSaleSubjectToConditions: Option[Boolean],
   descriptionOfGoods: String,
   hasCommodityCode: Boolean,
-  commodityCode: String,
+  commodityCode: Option[String],
   haveTheGoodsBeenSubjectToLegalChallenges: Boolean,
   hasConfidentialInformation: Boolean,
-  doYouWantToUploadDocuments: Boolean
+  doYouWantToUploadDocuments: Boolean,
+  uploadSupportingDocument: SupportingDocuments
 )
 
 object UserAnswers {
