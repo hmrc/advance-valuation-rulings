@@ -19,12 +19,10 @@ package generators
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.UUID
-
 import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
-import uk.gov.hmrc.advancevaluationrulings.models.common.{ApplicationContactDetails, RegisteredDetailsCheck, SupportingDocument, UserAnswers, ValuationMethod}
-import uk.gov.hmrc.advancevaluationrulings.models.errors.{ErrorDetail, ETMPError, SourceFaultDetail}
+import uk.gov.hmrc.advancevaluationrulings.models.common._
+import uk.gov.hmrc.advancevaluationrulings.models.errors.{ETMPError, ErrorDetail, SourceFaultDetail}
 import uk.gov.hmrc.advancevaluationrulings.models.etmp._
-
 import org.scalacheck.{Arbitrary, Gen}
 import wolfendale.scalacheck.regexp.RegexpGen
 
@@ -90,12 +88,14 @@ trait ModelGenerators extends Generators {
     phone = phone
   )
 
-  def supportingDocumentsGen: Gen[Map[String, SupportingDocument]] = for {
+  def supportingDocumentsGen: Gen[SupportingDocuments] = for {
     fileName       <- stringsWithMaxLength(512)
     downloadUrl    <- stringsWithMaxLength(512)
     isConfidential <- Arbitrary.arbitrary[Boolean]
     id              = UUID.randomUUID.toString
-  } yield Map(id -> SupportingDocument(fileName, downloadUrl, isConfidential))
+  } yield SupportingDocuments(
+    files = Map(id -> SupportingDocument(fileName, downloadUrl, isConfidential))
+  )
 
   def registeredDetailsCheckGen: Gen[RegisteredDetailsCheck] = for {
     registeredDetailsAreCorrect <- Arbitrary.arbitrary[Boolean]
