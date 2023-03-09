@@ -30,7 +30,7 @@ trait ModelGenerators extends Generators {
 
   def regimeGen: Gen[Regime] = Gen.oneOf(Regime.values)
 
-  def eoriNumberGen: Gen[String] = RegexpGen.from("^[A-Z]{2}[0-9A-Z]+$")
+  def eoriNumberGen: Gen[String] = RegexpGen.from("^[A-Z]{2}[0-9A-Z]{12}$")
 
   def queryGen: Gen[Query] = for {
     regime                   <- regimeGen

@@ -26,8 +26,7 @@ trait Generators {
 
   implicit val noShrink: Shrink[String] = Shrink.shrinkAny
 
-  def intsBelowValue(value: Int): Gen[Int] =
-    arbitrary[Int] suchThat (int => int < value && int >= 0)
+  def intsBelowValue(value: Int): Gen[Int] = Gen.chooseNum(0, value)
 
   def stringsWithMaxLength(maxLength: Int): Gen[String] =
     for {
