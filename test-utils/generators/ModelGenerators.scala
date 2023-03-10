@@ -129,7 +129,7 @@ trait ModelGenerators extends Generators {
       haveTheGoodsBeenSubjectToLegalChallenges <- Arbitrary.arbitrary[Boolean]
       hasConfidentialInformation               <- Arbitrary.arbitrary[Boolean]
       doYouWantToUploadDocuments               <- Arbitrary.arbitrary[Boolean]
-      supportingDocuments                      <- supportingDocumentsGen
+      supportingDocuments                      <- Gen.option(supportingDocumentsGen)
     } yield UserAnswers(
       importGoods = importGoods,
       checkRegisteredDetails = registeredDetailsCheck,

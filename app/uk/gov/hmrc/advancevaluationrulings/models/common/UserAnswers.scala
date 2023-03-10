@@ -33,7 +33,7 @@ final case class UserAnswers(
   haveTheGoodsBeenSubjectToLegalChallenges: Boolean,
   hasConfidentialInformation: Boolean,
   doYouWantToUploadDocuments: Boolean,
-  uploadSupportingDocument: SupportingDocuments
+  uploadSupportingDocument: Option[SupportingDocuments]
 )
 
 object UserAnswers {
