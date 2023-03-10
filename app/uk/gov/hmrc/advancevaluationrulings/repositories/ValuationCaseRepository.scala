@@ -18,6 +18,7 @@ package uk.gov.hmrc.advancevaluationrulings.repositories
 
 import org.bson.BsonObjectId
 import org.mongodb.scala.model.{Filters, Updates}
+import org.mongodb.scala.result.UpdateResult
 import play.api.Logger
 import uk.gov.hmrc.advancevaluationrulings.models.{CaseStatus, CaseWorker, ValuationCase}
 import uk.gov.hmrc.mongo.MongoComponent
@@ -57,5 +58,10 @@ class ValuationCaseRepository @Inject()(mongo: MongoComponent)(implicit ec: Exec
   def findByAssignee(assignee: String): Future[List[ValuationCase]] = {
     collection.find[ValuationCase](Filters.equal("assignee.id", assignee)).toFuture().map(_.toList)
   }
+
+  def replaceItem(valuationCase: ValuationCase): Future[Long] =
+    collection.replaceOne(Filters.equal("reference", valuationCase.reference),valuationCase).toFuture().map { result =>
+      if (result.wasAcknowledged()) result.getModifiedCount else throw new Exception("Failed to insert record")
+    }
 
 }

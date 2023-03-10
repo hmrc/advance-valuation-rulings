@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import uk.gov.hmrc.advancevaluationrulings.models.{CaseStatus, CaseWorker, ValuationApplication, ValuationCase}
+import cats.data.OptionT
+import uk.gov.hmrc.advancevaluationrulings.models.{Attachment, CaseStatus, CaseWorker, RejectReason, ValuationApplication, ValuationCase}
 import uk.gov.hmrc.advancevaluationrulings.repositories.ValuationCaseRepository
 
 import java.time.Instant
@@ -33,6 +34,8 @@ trait ValuationCaseService {
   def allOpenCases: Future[List[ValuationCase]]
 
   def findByAssignee(assignee: String): Future[List[ValuationCase]]
+
+  def rejectCase(reference: String, reason: RejectReason.Value, attachment: Attachment, note: String): Future[Long]
 }
 
 class MongoValuationCaseService @Inject() (repository: ValuationCaseRepository)(implicit ec: ExecutionContext) extends ValuationCaseService {
@@ -54,4 +57,14 @@ class MongoValuationCaseService @Inject() (repository: ValuationCaseRepository)(
     } yield l
 
   override def assignCase(reference: String, caseWorker: CaseWorker): Future[Long] = repository.assignCase(reference, caseWorker)
+
+  override def rejectCase(reference: String, reason: RejectReason.Value, attachment: Attachment, note: String): Future[Long] = {
+     def updateItem(item: ValuationCase) = item.copy(status = CaseStatus.REJECTED, attachments = item.attachments :+ attachment)
+     val outcome = for{
+       item <- OptionT(findByReference((reference)))
+       count    <- OptionT.liftF(repository.replaceItem(updateItem(item)))
+     } yield count
+
+    outcome.getOrElse(throw new Exception("failed to update state to rejected"))
+  }
 }
