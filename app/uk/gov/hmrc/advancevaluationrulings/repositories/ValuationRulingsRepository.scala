@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.models.errors
+package uk.gov.hmrc.advancevaluationrulings.repositories
 
-abstract class ReaderError(status: String, description: String)
-    extends BaseError(status, description)
+import scala.concurrent.Future
+
+import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
+
+import com.google.inject.ImplementedBy
+
+@ImplementedBy(classOf[ValuationRulingsRepositoryImpl])
+trait ValuationRulingsRepository {
+  def insert(application: ValuationRulingsApplication): Future[Boolean]
+  def getItem(id: String): Future[Option[ValuationRulingsApplication]]
+}

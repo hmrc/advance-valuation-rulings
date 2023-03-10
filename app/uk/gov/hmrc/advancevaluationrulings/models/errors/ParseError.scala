@@ -19,13 +19,17 @@ package uk.gov.hmrc.advancevaluationrulings.models.errors
 import scala.collection.Seq
 
 import play.api.libs.json.{JsonValidationError, JsPath}
+import uk.gov.hmrc.advancevaluationrulings.models.common.Statuses
 import uk.gov.hmrc.advancevaluationrulings.models.errors.ParseError._
 
 import cats.Show
 import cats.implicits._
 
 case class ParseError(errors: ParseErrors)
-    extends ReaderError(description = s"Failed to parse json response. Error: ${errors.show}")
+    extends ReaderError(
+      Statuses.ParseError,
+      description = s"Failed to parse json response. Error: ${errors.show}"
+    )
 
 object ParseError {
   type ParseErrors = Seq[(JsPath, Seq[JsonValidationError])]

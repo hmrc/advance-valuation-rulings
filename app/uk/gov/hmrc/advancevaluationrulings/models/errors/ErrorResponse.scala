@@ -18,7 +18,7 @@ package uk.gov.hmrc.advancevaluationrulings.models.errors
 
 import play.api.libs.json.{Json, OFormat}
 
-final case class ErrorResponse(statusCode: Int, errors: ValidationErrors)
+final case class ErrorResponse(status: String, errors: ValidationErrors)
 
 object ErrorResponse {
   implicit val format: OFormat[ErrorResponse] = Json.format[ErrorResponse]

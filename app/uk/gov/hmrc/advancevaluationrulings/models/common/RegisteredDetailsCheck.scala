@@ -14,7 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.models.errors
+package uk.gov.hmrc.advancevaluationrulings.models.common
 
-abstract class ReaderError(status: String, description: String)
-    extends BaseError(status, description)
+import play.api.libs.json.{Json, OFormat}
+
+final case class RegisteredDetailsCheck(
+  value: Boolean,
+  eori: String,
+  name: String,
+  streetAndNumber: String,
+  city: String,
+  country: String,
+  postalCode: Option[String]
+)
+
+object RegisteredDetailsCheck {
+  implicit val format: OFormat[RegisteredDetailsCheck] = Json.format[RegisteredDetailsCheck]
+}

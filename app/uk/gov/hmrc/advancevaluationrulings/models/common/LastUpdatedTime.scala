@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.models.errors
+package uk.gov.hmrc.advancevaluationrulings.models.common
 
-abstract class ReaderError(status: String, description: String)
-    extends BaseError(status, description)
+import play.api.libs.json.Format
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
+
+import java.time.Instant
+
+final case class LastUpdatedTime(value: Instant)
+
+object LastUpdatedTime {
+  implicit val format: Format[Instant] = MongoJavatimeFormats.instantFormat
+}

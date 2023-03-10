@@ -17,9 +17,10 @@
 package uk.gov.hmrc.advancevaluationrulings.models.errors
 
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.advancevaluationrulings.models.common.Statuses
 
 final case class ConnectorError(description: String)
-    extends BaseError(statusCode = 500, description)
+    extends BaseError(Statuses.ConnectorError, description)
 
 object ConnectorError {
   implicit val format: OFormat[ConnectorError] = Json.format[ConnectorError]

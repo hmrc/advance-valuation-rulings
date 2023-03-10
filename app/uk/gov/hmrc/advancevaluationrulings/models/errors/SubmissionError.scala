@@ -16,5 +16,7 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.errors
 
-abstract class ReaderError(status: String, description: String)
-    extends BaseError(status, description)
+import uk.gov.hmrc.advancevaluationrulings.models.common.Statuses
+
+final case class SubmissionError(description: String)
+    extends BaseError(Statuses.SubmissionFailed, description)
