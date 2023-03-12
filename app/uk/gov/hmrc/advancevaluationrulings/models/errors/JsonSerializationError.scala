@@ -16,7 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.errors
 
+import uk.gov.hmrc.advancevaluationrulings.models.common.Statuses
+
 final case class JsonSerializationError(exception: Throwable)
     extends ReaderError(
+      Statuses.SerializationError,
       description = s"Failed to convert response to json. Error: ${exception.getMessage}"
     )

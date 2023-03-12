@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.models.errors
+package uk.gov.hmrc.advancevaluationrulings.models.common
 
-abstract class ReaderError(status: String, description: String)
-    extends BaseError(status, description)
+import play.api.libs.json.{Json, OFormat}
+
+final case class SupportingDocuments(
+  files: Map[String, SupportingDocument]
+)
+
+object SupportingDocuments {
+  implicit val format: OFormat[SupportingDocuments] = Json.format[SupportingDocuments]
+}

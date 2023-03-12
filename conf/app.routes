@@ -2,6 +2,8 @@
 
 GET        /trader-details/:acknowledgementReference/:eoriNumber             uk.gov.hmrc.advancevaluationrulings.controllers.ValuationRulingsController.retrieveTraderDetails(acknowledgementReference: String, eoriNumber: String)
 
+POST       /submit-answers                   uk.gov.hmrc.advancevaluationrulings.controllers.ValuationRulingsController.submitAnswers()
+
 POST       /valuation                        uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.create()
 
 GET       /valuation                          uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.allOpenCases()
