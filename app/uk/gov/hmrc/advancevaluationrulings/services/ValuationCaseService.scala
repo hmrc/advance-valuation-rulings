@@ -25,6 +25,7 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 trait ValuationCaseService {
+
   def assignCase(reference: String, caseWorker: CaseWorker): Future[Long]
 
   def unAssignCase(reference: String, caseWorker: CaseWorker): Future[Long]
@@ -35,6 +36,8 @@ trait ValuationCaseService {
 
   def allOpenCases: Future[List[ValuationCase]]
 
+  def allNewCases: Future[List[ValuationCase]]
+
   def findByAssignee(assignee: String): Future[List[ValuationCase]]
 
   def rejectCase(reference: String, reason: RejectReason.Value, attachment: Attachment, note: String): Future[Long]
@@ -42,6 +45,7 @@ trait ValuationCaseService {
 
 class MongoValuationCaseService @Inject() (repository: ValuationCaseRepository)(implicit ec: ExecutionContext) extends ValuationCaseService {
   def allOpenCases: Future[List[ValuationCase]] = repository.allOpenCases()
+  def allNewCases: Future[List[ValuationCase]] = repository.allNewCases()
 
   override def create(reference: String, valuation: ValuationApplication): Future[String] = {
     val valuationCase = ValuationCase(reference,CaseStatus.NEW,Instant.now(),0, valuation,0)

@@ -44,6 +44,12 @@ class ValuationCaseController @Inject() (
     } yield Ok(Json.toJson(cases))
   }
 
+  def allNewCases: Action[AnyContent] = Action.async { request =>
+    for {
+      cases <- valuationCaseService.allNewCases
+    } yield Ok(Json.toJson(cases))
+  }
+
   def findByReference(reference: String): Action[AnyContent] = Action.async{ request =>
     for {
       c <- valuationCaseService.findByReference(reference)
