@@ -25,6 +25,7 @@ lazy val microservice = Project("advance-valuation-rulings", file("."))
   .settings(inConfig(IntegrationTest)(itSettings): _*)
   .settings(resolvers += Resolver.jcenterRepo)
   .settings(CodeCoverageSettings.settings: _*)
+  .settings(scoverageSettings)
 
 lazy val testSettings: Seq[Def.Setting[_]] = Seq(
   fork := true,
@@ -42,3 +43,13 @@ lazy val itSettings = Defaults.itSettings ++ Seq(
   parallelExecution := false,
   fork := true
 )
+
+lazy val scoverageSettings = {
+  Seq(
+    coverageExcludedPackages := """;uk\.gov\.hmrc\.BuildInfo;.*\.Routes;.*\.RoutesPrefix;.*\.Reverse[^.]*;testonly""",
+    coverageExcludedFiles := "<empty>;.*javascript.*;.*Routes.*;.*testonly.*",
+    coverageFailOnMinimum := true,
+    coverageHighlighting := true,
+    coverageMinimumStmtTotal := 80
+  )
+}
