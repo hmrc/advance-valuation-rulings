@@ -26,6 +26,8 @@ import scala.concurrent.{ExecutionContext, Future}
 trait ValuationCaseService {
   def assignCase(reference: String, caseWorker: CaseWorker): Future[Long]
 
+  def unAssignCase(reference: String, caseWorker: CaseWorker): Future[Long]
+
   def findByReference(reference: String): Future[Option[ValuationCase]]
 
   def create(reference: String, valuation: ValuationApplication): Future[String]
@@ -54,4 +56,6 @@ class MongoValuationCaseService @Inject() (repository: ValuationCaseRepository)(
     } yield l
 
   override def assignCase(reference: String, caseWorker: CaseWorker): Future[Long] = repository.assignCase(reference, caseWorker)
+
+  override def unAssignCase(reference: String, caseWorker: CaseWorker): Future[Long] = repository.unAssignCase(reference, caseWorker)
 }

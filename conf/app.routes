@@ -12,4 +12,6 @@ GET       /valuations/:assignee               uk.gov.hmrc.advancevaluationruling
 
 GET       /valuation/:reference               uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.findByReference(reference)
 
-POST       /valuation/assign                 uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.assignCase()
+POST       /valuation/assign                  uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.assignCase()
+
+POST       /valuation/unassign                uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.unAssignCase()
