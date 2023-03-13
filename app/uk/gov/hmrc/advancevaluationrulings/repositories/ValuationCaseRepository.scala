@@ -42,7 +42,15 @@ class ValuationCaseRepository @Inject()(mongo: MongoComponent)(implicit ec: Exec
       result <- collection.updateOne(Filters.equal("reference", reference),
         Updates.combine(Updates.set("status", CaseStatus.REFERRED.toString),Updates.set("assignee", Codecs.toBson(caseWorker)))).toFuture()
     } yield {
-      if(result.wasAcknowledged()) result.getModifiedCount  else throw new Exception("failed to assign case")
+      if(result.wasAcknowledged()) result.getModifiedCount else throw new Exception("failed to assign case")
+    }
+
+  def unAssignCase(reference: String, caseWorker: CaseWorker): Future[Long] =
+    for{
+      result <- collection.updateOne(Filters.equal("reference", reference),
+        Updates.combine(Updates.set("status", CaseStatus.OPEN.toString), Updates.unset("assignee"))).toFuture()
+    } yield {
+      if(result.wasAcknowledged()) result.getModifiedCount else throw new Exception("failed to unassign case")
     }
 
   def create(valuation: ValuationCase): Future[BsonObjectId] = collection.insertOne(valuation).toFuture().map{ result =>

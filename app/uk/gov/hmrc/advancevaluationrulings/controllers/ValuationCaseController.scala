@@ -69,6 +69,12 @@ class ValuationCaseController @Inject() (
     } yield Ok(Json.toJson(c))
   }
 
+  def unAssignCase: Action[AssignCaseRequest] = Action.async(parse.json[AssignCaseRequest]) { request =>
+    for {
+      c <- valuationCaseService.unAssignCase(request.body.reference, request.body.caseWorker)
+    } yield Ok(Json.toJson(c))
+  }
+
 }
 
 object ValuationCaseController {

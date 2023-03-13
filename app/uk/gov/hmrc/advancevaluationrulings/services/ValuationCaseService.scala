@@ -27,6 +27,8 @@ import scala.concurrent.{ExecutionContext, Future}
 trait ValuationCaseService {
   def assignCase(reference: String, caseWorker: CaseWorker): Future[Long]
 
+  def unAssignCase(reference: String, caseWorker: CaseWorker): Future[Long]
+
   def findByReference(reference: String): Future[Option[ValuationCase]]
 
   def create(reference: String, valuation: ValuationApplication): Future[String]
@@ -67,4 +69,7 @@ class MongoValuationCaseService @Inject() (repository: ValuationCaseRepository)(
 
     outcome.getOrElse(throw new Exception("failed to update state to rejected"))
   }
+
+  override def unAssignCase(reference: String, caseWorker: CaseWorker): Future[Long] = repository.unAssignCase(reference, caseWorker)
+
 }
