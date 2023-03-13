@@ -18,7 +18,7 @@ package uk.gov.hmrc.advancevaluationrulings.controllers
 
 import play.api.libs.json.{Json, OFormat}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.{AssignCaseRequest, CreateValuationRequest, RejectCaseRequest}
+import uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.{AssignCaseRequest, AssignNewCaseRequest, CreateValuationRequest, RejectCaseRequest}
 import uk.gov.hmrc.advancevaluationrulings.models.{Attachment, CaseWorker, RejectReason, ValuationApplication}
 import uk.gov.hmrc.advancevaluationrulings.services.ValuationCaseService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -68,6 +68,12 @@ class ValuationCaseController @Inject() (
     } yield Ok(Json.toJson(c))
   }
 
+  def assignNewCase: Action[AssignNewCaseRequest] = Action.async(parse.json[AssignNewCaseRequest]) { request =>
+    for {
+      c <- valuationCaseService.assignNewCase(request.body.reference, request.body.caseWorker)
+    } yield Ok(Json.toJson(c))
+  }
+
   def rejectCase: Action[RejectCaseRequest] = Action.async(parse.json[RejectCaseRequest]) { request =>
     val rejection = request.body
     for {
@@ -95,6 +101,12 @@ object ValuationCaseController {
 
   object AssignCaseRequest {
     implicit val fmt: OFormat[AssignCaseRequest] = Json.format[AssignCaseRequest]
+  }
+
+  case class AssignNewCaseRequest(reference: String, caseWorker: CaseWorker)
+
+  object AssignNewCaseRequest {
+    implicit val fmt: OFormat[AssignNewCaseRequest] = Json.format[AssignNewCaseRequest]
   }
 
   case class RejectCaseRequest(reference: String, reason: RejectReason.Value, attachment: Attachment, note: String)

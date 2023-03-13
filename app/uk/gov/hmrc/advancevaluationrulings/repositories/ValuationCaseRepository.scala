@@ -45,6 +45,14 @@ class ValuationCaseRepository @Inject()(mongo: MongoComponent)(implicit ec: Exec
       if(result.wasAcknowledged()) result.getModifiedCount else throw new Exception("failed to assign case")
     }
 
+  def assignNewCase(reference: String, caseWorker: CaseWorker): Future[Long] =
+    for {
+      result <- collection.updateOne(Filters.equal("reference", reference),
+        Updates.combine(Updates.set("status", CaseStatus.OPEN.toString), Updates.set("assignee", Codecs.toBson(caseWorker)))).toFuture()
+    } yield {
+      if (result.wasAcknowledged()) result.getModifiedCount else throw new Exception("failed to assign new case")
+    }
+
   def unAssignCase(reference: String, caseWorker: CaseWorker): Future[Long] =
     for{
       result <- collection.updateOne(Filters.equal("reference", reference),
