@@ -8,6 +8,8 @@ POST       /valuation                        uk.gov.hmrc.advancevaluationrulings
 
 GET       /valuation                          uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.allOpenCases()
 
+GET       /valuation/new                      uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.allNewCases()
+
 GET       /valuations/:assignee               uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.findByAssignee(assignee)
 
 GET       /valuation/:reference               uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.findByReference(reference)
