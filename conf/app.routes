@@ -21,3 +21,5 @@ POST       /valuation/reject                 uk.gov.hmrc.advancevaluationrulings
 
 POST       /valuation/unassign                uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.unAssignCase()
 
+POST /valuation/assign-new uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.assignNewCase()
+

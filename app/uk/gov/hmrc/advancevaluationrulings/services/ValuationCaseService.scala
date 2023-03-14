@@ -41,6 +41,8 @@ trait ValuationCaseService {
   def findByAssignee(assignee: String): Future[List[ValuationCase]]
 
   def rejectCase(reference: String, reason: RejectReason.Value, attachment: Attachment, note: String): Future[Long]
+
+  def assignNewCase(reference: String, caseWorker: CaseWorker): Future[Long]
 }
 
 class MongoValuationCaseService @Inject() (repository: ValuationCaseRepository)(implicit ec: ExecutionContext) extends ValuationCaseService {
@@ -75,5 +77,8 @@ class MongoValuationCaseService @Inject() (repository: ValuationCaseRepository)(
   }
 
   override def unAssignCase(reference: String, caseWorker: CaseWorker): Future[Long] = repository.unAssignCase(reference, caseWorker)
+
+  override def assignNewCase(reference: String, caseWorker: CaseWorker): Future[Long] = repository.assignNewCase(reference, caseWorker)
+}
 
 }
