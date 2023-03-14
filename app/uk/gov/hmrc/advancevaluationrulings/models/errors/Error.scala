@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.errors
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Format, Json}
 
-final case class ValidationErrors(failures: Seq[ValidationError])
+final case class Error(value: String)
 
-object ValidationErrors {
-  implicit val format: OFormat[ValidationErrors] = Json.format[ValidationErrors]
+object Error {
+  implicit val format: Format[Error] = Json.valueFormat[Error]
 }

@@ -59,7 +59,7 @@ class ValuationRulingsController @Inject() (
       implicit request =>
         extractFromJson[ValuationRulingsApplication] {
           rulingsApplication =>
-            logger.warn(s"User answers: ${Json.prettyPrint(Json.toJson(rulingsApplication))}")
+            logger.debug(s"User answers: ${Json.prettyPrint(Json.toJson(rulingsApplication))}")
             valuationRulingsService
               .submitApplication(rulingsApplication)
               .toResult
