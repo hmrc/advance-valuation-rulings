@@ -19,7 +19,7 @@ package generators
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.UUID
-import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
+import uk.gov.hmrc.advancevaluationrulings.models.{Contact, EORIDetails, ValuationApplication, ValuationRulingsApplication}
 import uk.gov.hmrc.advancevaluationrulings.models.common._
 import uk.gov.hmrc.advancevaluationrulings.models.errors.{ETMPError, ErrorDetail, SourceFaultDetail}
 import uk.gov.hmrc.advancevaluationrulings.models.etmp._
@@ -160,5 +160,49 @@ trait ModelGenerators extends Generators {
       applicationNumber = applicationNumber,
       lastUpdated = localDateTime.toInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.MILLIS)
     )
+
+  def eoriDetailsGen: Gen[EORIDetails] = {
+    for {
+      eori <- eoriNumberGen
+      randomStr <- stringsWithMaxLength(32)
+    } yield EORIDetails(
+      eori = eori,
+      businessName = randomStr,
+      addressLine1 = randomStr,
+      addressLine2 = randomStr,
+      addressLine3 = randomStr,
+      postcode  = randomStr,
+      country = randomStr,
+    )
+  }
+
+  def contactGen: Gen[Contact] = {
+    for {
+      randomStr <- stringsWithMaxLength(32)
+    } yield Contact(
+      name = randomStr,
+      email = randomStr,
+      phone = None
+    )
+  }
+
+  def valuationApplicationGen: Gen[ValuationApplication] = {
+    for {
+      eoriDetails                <- eoriDetailsGen
+      contact       <- contactGen
+      randomString <- stringsWithMaxLength(32)
+    } yield ValuationApplication(
+      holder = eoriDetails,
+      contact = contact,
+      goodName = randomString,
+      goodDescription = randomString,
+      agent = None,
+      confidentialInformation = None,
+      otherInformation = None,
+      knownLegalProceedings = None,
+      envisagedCommodityCode = None,
+      applicationPdf = None
+    )
+  }
 
 }

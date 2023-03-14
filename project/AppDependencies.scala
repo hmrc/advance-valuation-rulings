@@ -21,6 +21,8 @@ object AppDependencies {
     "wolfendale"          %% "scalacheck-gen-regexp"   % "0.1.2"          % AllTestScope,
     "org.scalatestplus"   %% "scalacheck-1-17"         % "3.2.15.0"       % AllTestScope,
     "uk.gov.hmrc.mongo"   %% "hmrc-mongo-test-play-28" % hmrcMongoVersion % AllTestScope,
+    "org.scalatestplus"    %% "mockito-4-6"            % "3.2.15.0"       % AllTestScope,
+    "org.scalatest"        %% "scalatest"              % "3.2.15"         % AllTestScope,
     "org.scalamock"       %% "scalamock"               % "5.1.0"          % Test
   )
 }
