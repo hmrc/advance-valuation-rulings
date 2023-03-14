@@ -79,6 +79,6 @@ class MongoValuationCaseService @Inject() (repository: ValuationCaseRepository)(
   override def unAssignCase(reference: String, caseWorker: CaseWorker): Future[Long] = repository.unAssignCase(reference, caseWorker)
 
   override def assignNewCase(reference: String, caseWorker: CaseWorker): Future[Long] = repository.assignNewCase(reference, caseWorker)
-}
+
 
 }
