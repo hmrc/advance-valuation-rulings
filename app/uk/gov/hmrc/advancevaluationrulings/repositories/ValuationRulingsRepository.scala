@@ -17,13 +17,11 @@
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
 import scala.concurrent.Future
-
 import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
-
 import com.google.inject.ImplementedBy
 
 @ImplementedBy(classOf[ValuationRulingsRepositoryImpl])
 trait ValuationRulingsRepository {
   def insert(application: ValuationRulingsApplication): Future[Boolean]
-  def getItem(id: String): Future[Option[ValuationRulingsApplication]]
+  def getItems(eoriNumber: String): Future[Seq[ValuationRulingsApplication]]
 }

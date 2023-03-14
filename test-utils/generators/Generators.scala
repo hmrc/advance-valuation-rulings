@@ -19,7 +19,6 @@ package generators
 import java.time._
 
 import org.scalacheck.{Gen, Shrink}
-import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen._
 
 trait Generators {

@@ -23,7 +23,6 @@ import uk.gov.hmrc.advancevaluationrulings.models.common.UserAnswers
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 final case class ValuationRulingsApplication(
-  id: String,
   data: UserAnswers,
   applicationNumber: String,
   lastUpdated: Instant
@@ -36,8 +35,7 @@ object ValuationRulingsApplication {
     import play.api.libs.functional.syntax._
 
     (
-      (__ \ "_id").read[String] and
-        (__ \ "data").read[UserAnswers] and
+      (__ \ "data").read[UserAnswers] and
         (__ \ "applicationNumber").read[String] and
         (__ \ "lastUpdated").read(MongoJavatimeFormats.instantFormat)
     )(ValuationRulingsApplication.apply _)
@@ -48,8 +46,7 @@ object ValuationRulingsApplication {
     import play.api.libs.functional.syntax._
 
     (
-      (__ \ "_id").write[String] and
-        (__ \ "data").write[UserAnswers] and
+      (__ \ "data").write[UserAnswers] and
         (__ \ "applicationNumber").write[String] and
         (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)
     )(unlift(ValuationRulingsApplication.unapply))
