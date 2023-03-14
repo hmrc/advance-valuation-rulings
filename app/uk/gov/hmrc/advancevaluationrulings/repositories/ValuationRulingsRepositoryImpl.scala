@@ -44,8 +44,7 @@ class ValuationRulingsRepositoryImpl @Inject() (
           Indexes.ascending("data.checkRegisteredDetails.eori"),
           IndexOptions().name("eoriNumberIdx")
         )
-      ),
-      replaceIndexes = true
+      )
     )
     with ValuationRulingsRepository {
 
