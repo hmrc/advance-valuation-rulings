@@ -150,12 +150,10 @@ trait ModelGenerators extends Generators {
 
   def valuationRulingsApplicationGen: Gen[ValuationRulingsApplication] =
     for {
-      id                <- stringsWithMaxLength(32)
       userAnswers       <- userAnswersGen
       applicationNumber <- stringsWithMaxLength(32)
       localDateTime     <- localDateTimeGen
     } yield ValuationRulingsApplication(
-      id = id,
       data = userAnswers,
       applicationNumber = applicationNumber,
       lastUpdated = localDateTime.toInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.MILLIS)

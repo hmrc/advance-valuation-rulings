@@ -54,6 +54,7 @@ trait BaseIntegrationSpec
 
   val baseUrl               = s"http://localhost:$port"
   val traderDetailsEndpoint = s"$baseUrl/advance-valuation-rulings/trader-details"
+  val submitAnswersEndpoint = s"$baseUrl/advance-valuation-rulings/submit-answers"
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
