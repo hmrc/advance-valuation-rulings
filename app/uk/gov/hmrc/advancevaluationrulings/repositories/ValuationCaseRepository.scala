@@ -17,7 +17,7 @@
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
 import org.bson.BsonObjectId
-import org.mongodb.scala.model.{Filters, Updates}
+import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes, Updates}
 import org.mongodb.scala.result.UpdateResult
 import play.api.Logger
 import uk.gov.hmrc.advancevaluationrulings.models.{CaseStatus, CaseWorker, ValuationCase}
@@ -34,19 +34,26 @@ class ValuationCaseRepository @Inject()(mongo: MongoComponent)(implicit ec: Exec
   mongoComponent = mongo,
   collectionName = "mycollection",
   domainFormat   = ValuationCase.fmt,
-  indexes        = Seq(/* IndexModel() instances, see Migrate index definitions below  */),
+  indexes        = Seq(
+    IndexModel(
+      Indexes.ascending("reference"),
+      IndexOptions()
+        .name("referenceIdx")
+        .unique(true)
+    )
+  ),
   replaceIndexes = false
 ){
   def assignCase(reference: String, caseWorker: CaseWorker): Future[Long] =
     for{
       result <- collection.updateOne(Filters.equal("reference", reference),
-        Updates.combine(Updates.set("status", CaseStatus.REFERRED.toString),Updates.set("assignee", Codecs.toBson(caseWorker)))).toFuture()
+        Updates.combine(Updates.set("status", CaseStatus.OPEN.toString),Updates.set("assignee", Codecs.toBson(caseWorker)))).toFuture()
     } yield {
       if(result.wasAcknowledged()) result.getModifiedCount else throw new Exception("failed to assign case")
     }
 
   def unAssignCase(reference: String, caseWorker: CaseWorker): Future[Long] =
-    for{
+    for {
       result <- collection.updateOne(Filters.equal("reference", reference),
         Updates.combine(Updates.set("status", CaseStatus.OPEN.toString), Updates.unset("assignee"))).toFuture()
     } yield {
