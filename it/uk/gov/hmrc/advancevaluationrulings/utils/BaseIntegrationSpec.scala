@@ -49,7 +49,6 @@ trait BaseIntegrationSpec
     with BeforeAndAfterEach
     with ModelGenerators {
 
-  implicit val system: ActorSystem               = ActorSystem()
   implicit lazy val headerCarrier: HeaderCarrier = HeaderCarrier()
 
   val baseUrl               = s"http://localhost:$port"
