@@ -16,21 +16,16 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models
 
-import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.advancevaluationrulings.models
+import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
 
-object RejectReason extends Enumeration {
-  type RejectReason = Value
-  val APPLICATION_WITHDRAWN, ATAR_RULING_ALREADY_EXISTS, DUPLICATE_APPLICATION, NO_INFO_FROM_TRADER, OTHER = Value
+sealed abstract class RejectReason(override val entryName: String) extends EnumEntry
 
-  def format(reason: RejectReason): String =
-    reason match {
-      case APPLICATION_WITHDRAWN      => "Application withdrawn"
-      case ATAR_RULING_ALREADY_EXISTS => "ATaR ruling already exists"
-      case DUPLICATE_APPLICATION      => "Duplicate application"
-      case NO_INFO_FROM_TRADER        => "No information from trader"
-      case OTHER                      => "Other"
-    }
+object RejectReason extends Enum[RejectReason] with PlayJsonEnum[RejectReason] {
+  val values: IndexedSeq[RejectReason] = findValues
 
-  implicit val fmt: Format[models.RejectReason.Value] = Json.formatEnum(this)
+  case object APPLICATION_WITHDRAWN extends RejectReason("Application withdrawn")
+  case object ATAR_RULING_ALREADY_EXISTS extends RejectReason("ATaR ruling already exists")
+  case object DUPLICATE_APPLICATION extends RejectReason("Duplicate application")
+  case object NO_INFO_FROM_TRADER extends RejectReason("No information from trader")
+  case object OTHER extends RejectReason("Other")
 }
