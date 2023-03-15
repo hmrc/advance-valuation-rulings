@@ -23,7 +23,6 @@ abstract class BaseError(status: String, description: String) extends Product wi
 
 object BaseError {
   implicit class BaseErrorExt(error: BaseError) {
-    def toErrorResponse: ErrorResponse =
-      ErrorResponse(error.statusCode, ValidationErrors(Seq(ValidationError(error.message))))
+    def toErrorResponse: ErrorResponse = ErrorResponse(error.statusCode, Error(error.message))
   }
 }

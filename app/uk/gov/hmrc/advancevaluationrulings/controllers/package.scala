@@ -23,7 +23,7 @@ import play.api.libs.json._
 import play.api.mvc.{Request, Result, Results}
 import uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger
 import uk.gov.hmrc.advancevaluationrulings.models.common.Statuses
-import uk.gov.hmrc.advancevaluationrulings.models.errors.{ErrorResponse, ValidationError, ValidationErrors}
+import uk.gov.hmrc.advancevaluationrulings.models.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.http.HeaderCarrier
 
 package object controllers {
@@ -33,7 +33,7 @@ package object controllers {
   def extractFromJson[T](
     func: T => Future[Result]
   )(implicit request: Request[JsValue], reads: Reads[T], hc: HeaderCarrier): Future[Result] = {
-    logger.warn(s"Received json request: ${Json.prettyPrint(request.body)}")
+    logger.debug(s"Received json request: ${Json.prettyPrint(request.body)}")
     Try(request.body.validate[T]) match {
       case Success(JsSuccess(payload, _)) => func(payload)
       case Success(JsError(errors))       =>
@@ -53,7 +53,7 @@ package object controllers {
         Json.toJson(
           ErrorResponse(
             Statuses.ValidationFailed,
-            ValidationErrors(Seq(ValidationError(errorMessage)))
+            Error(errorMessage)
           )
         )
       )

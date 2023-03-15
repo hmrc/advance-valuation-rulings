@@ -1,12 +1,13 @@
 package uk.gov.hmrc.advancevaluationrulings
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.advancevaluationrulings.models.errors.{ErrorResponse, ValidationError, ValidationErrors}
+import uk.gov.hmrc.advancevaluationrulings.models.common.Statuses
+import uk.gov.hmrc.advancevaluationrulings.models.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
 import uk.gov.hmrc.advancevaluationrulings.utils.{BaseIntegrationSpec, WireMockHelper}
+
 import generators.ModelGenerators
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import uk.gov.hmrc.advancevaluationrulings.models.common.Statuses
 
 class TraderDetailsEndpointSpec
     extends BaseIntegrationSpec
@@ -80,13 +81,7 @@ class TraderDetailsEndpointSpec
           response.json mustBe Json.toJson(
             ErrorResponse(
               Statuses.UpstreamServiceError,
-              ValidationErrors(
-                Seq(
-                  ValidationError(
-                    s"Error code: [$errorCode] with detail [${errorMessage.getOrElse("N/A")}]"
-                  )
-                )
-              )
+              Error(s"Error code: [$errorCode] with detail [${errorMessage.getOrElse("N/A")}]")
             )
           )
       }
@@ -135,7 +130,7 @@ class TraderDetailsEndpointSpec
 
               response.status mustBe 500
               response.json mustBe Json.toJson(
-                ErrorResponse(status, ValidationErrors(Seq(ValidationError(expectedError))))
+                ErrorResponse(status, Error(expectedError))
               )
           }
         }
