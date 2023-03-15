@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.advancevaluationrulings.config
 
-import com.google.inject.AbstractModule
 import uk.gov.hmrc.advancevaluationrulings.services.{MongoValuationCaseService, ValuationCaseService}
+
+import com.google.inject.AbstractModule
 
 class Module extends AbstractModule {
 

@@ -16,32 +16,34 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import play.api.libs.json.{JsResult, Json}
+import java.time.Instant
+
+import play.api.libs.json.{Json, JsResult}
 import uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.CreateValuationRequest
 
-import java.time.Instant
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 class ValuationCaseSerializationSpec extends AnyWordSpec with Matchers {
 
   "json serialization" should {
-     "return the same object after serialisation and deserialisation" in {
-         val application: ValuationApplication = ValuationApplication(
-           EORIDetails("an eori","ACME","10","High St","Cheltenham","KK1234LL","UK"),
-           Contact("Jones","jones@orange.com"),
-           "phone case",
-           "a phone case"
-         )
-         val valuationCase = ValuationCase("reference", CaseStatus.NEW,Instant.now(), 0, application, 0)
-         val formatted = Json.toJson(valuationCase)
-         val result = Json.fromJson[ValuationCase](formatted)
+    "return the same object after serialisation and deserialisation" in {
+      val application: ValuationApplication = ValuationApplication(
+        EORIDetails("an eori", "ACME", "10", "High St", "Cheltenham", "KK1234LL", "UK"),
+        Contact("Jones", "jones@orange.com"),
+        "phone case",
+        "a phone case"
+      )
+      val valuationCase                     =
+        ValuationCase("reference", CaseStatus.NEW, Instant.now(), 0, application, 0)
+      val formatted                         = Json.toJson(valuationCase)
+      val result                            = Json.fromJson[ValuationCase](formatted)
 
-       val valuationReq = CreateValuationRequest("reference", application)
-       println(Json.prettyPrint(Json.toJson(valuationReq)))
+      val valuationReq = CreateValuationRequest("reference", application)
+      println(Json.prettyPrint(Json.toJson(valuationReq)))
 
-         result.get shouldBe valuationCase
-     }
+      result.get shouldBe valuationCase
+    }
   }
 
 }

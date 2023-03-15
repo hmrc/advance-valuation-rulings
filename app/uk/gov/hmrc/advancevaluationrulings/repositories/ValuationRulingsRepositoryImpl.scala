@@ -17,11 +17,14 @@
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
 import javax.inject.{Inject, Singleton}
+
 import scala.concurrent.{ExecutionContext, Future}
+
 import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes}
+
+import org.mongodb.scala.model.{Filters, Indexes, IndexModel, IndexOptions}
 
 @Singleton
 class ValuationRulingsRepositoryImpl @Inject() (

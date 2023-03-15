@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.common
 
+import java.time.Instant
+
 import play.api.libs.json.Format
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
-
-import java.time.Instant
 
 final case class LastUpdatedTime(value: Instant)
 

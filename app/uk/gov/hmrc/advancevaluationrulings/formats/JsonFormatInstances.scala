@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.advancevaluationrulings.formats
 
-import play.api.libs.json.{EnvReads, EnvWrites, Format}
-
 import java.time.Instant
 
-object JsonFormatInstances extends EnvWrites with EnvReads{
+import play.api.libs.json.{EnvReads, EnvWrites, Format}
+
+object JsonFormatInstances extends EnvWrites with EnvReads {
 
   implicit val instantFormat = Format(DefaultInstantReads, DefaultInstantWrites)
 

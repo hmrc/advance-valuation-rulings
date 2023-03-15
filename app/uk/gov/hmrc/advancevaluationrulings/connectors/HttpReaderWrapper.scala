@@ -17,12 +17,14 @@
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
 import scala.util.{Failure, Success, Try}
+
 import play.api.http.Status
-import play.api.libs.json.{JsValue, Json, Reads}
+import play.api.libs.json.{Json, JsValue, Reads}
 import uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger
 import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope.Envelope
 import uk.gov.hmrc.advancevaluationrulings.models.errors.{BaseError, JsonSerializationError, ParseError}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
+
 import cats.implicits._
 
 trait HttpReaderWrapper[T, E <: BaseError] {
@@ -60,7 +62,9 @@ trait HttpReaderWrapper[T, E <: BaseError] {
         logger.debug(s"Got response: ${Json.prettyPrint(validJson)}")
         successHandler(validJson)
       case Failure(exception) =>
-        logger.error(s"Failed to serialize upstream json response: ${response.body}\n ${exception.getMessage}")
+        logger.error(
+          s"Failed to serialize upstream json response: ${response.body}\n ${exception.getMessage}"
+        )
         JsonSerializationError(exception).asLeft[T]
     }
 

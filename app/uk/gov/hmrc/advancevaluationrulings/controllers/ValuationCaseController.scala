@@ -16,6 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
+import javax.inject.{Inject, Singleton}
+
+import scala.concurrent.{ExecutionContext, Future}
+
 import play.api.libs.json.{Json, OFormat}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.{AssignCaseRequest, CreateValuationRequest, RejectCaseRequest}
@@ -23,62 +27,73 @@ import uk.gov.hmrc.advancevaluationrulings.models.{Attachment, CaseWorker, Rejec
 import uk.gov.hmrc.advancevaluationrulings.services.ValuationCaseService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
-
 @Singleton()
 class ValuationCaseController @Inject() (
-                                          cc: ControllerComponents,
-                                          valuationCaseService: ValuationCaseService
-                                        )(implicit ec: ExecutionContext) extends BackendController(cc) {
+  cc: ControllerComponents,
+  valuationCaseService: ValuationCaseService
+)(implicit ec: ExecutionContext)
+    extends BackendController(cc) {
 
-  def create(): Action[CreateValuationRequest] = Action.async(parse.json[CreateValuationRequest]){ request =>
-    for {
-      cases <- valuationCaseService.create(request.body.reference, request.body.valuation)
-    } yield Ok(Json.toJson(cases))
+  def create(): Action[CreateValuationRequest] = Action.async(parse.json[CreateValuationRequest]) {
+    request =>
+      for {
+        cases <- valuationCaseService.create(request.body.reference, request.body.valuation)
+      } yield Ok(Json.toJson(cases))
   }
 
-  def allOpenCases: Action[AnyContent] = Action.async{ request =>
-    for{
-      cases <- valuationCaseService.allOpenCases
-    } yield Ok(Json.toJson(cases))
+  def allOpenCases: Action[AnyContent] = Action.async {
+    request =>
+      for {
+        cases <- valuationCaseService.allOpenCases
+      } yield Ok(Json.toJson(cases))
   }
 
-  def allNewCases: Action[AnyContent] = Action.async { request =>
-    for {
-      cases <- valuationCaseService.allNewCases
-    } yield Ok(Json.toJson(cases))
+  def allNewCases: Action[AnyContent] = Action.async {
+    request =>
+      for {
+        cases <- valuationCaseService.allNewCases
+      } yield Ok(Json.toJson(cases))
   }
 
-  def findByReference(reference: String): Action[AnyContent] = Action.async{ request =>
-    for {
-      c <- valuationCaseService.findByReference(reference)
-    } yield Ok(Json.toJson(c))
+  def findByReference(reference: String): Action[AnyContent] = Action.async {
+    request =>
+      for {
+        c <- valuationCaseService.findByReference(reference)
+      } yield Ok(Json.toJson(c))
   }
 
-  def findByAssignee(assignee: String): Action[AnyContent] = Action.async{ request =>
-    for {
-      cases <- valuationCaseService.findByAssignee(assignee)
-    } yield Ok(Json.toJson(cases))
+  def findByAssignee(assignee: String): Action[AnyContent] = Action.async {
+    request =>
+      for {
+        cases <- valuationCaseService.findByAssignee(assignee)
+      } yield Ok(Json.toJson(cases))
   }
 
-  def assignCase: Action[AssignCaseRequest] = Action.async(parse.json[AssignCaseRequest]) { request =>
-    for {
-      c <- valuationCaseService.assignCase(request.body.reference, request.body.caseWorker)
-    } yield Ok(Json.toJson(c))
+  def assignCase: Action[AssignCaseRequest] = Action.async(parse.json[AssignCaseRequest]) {
+    request =>
+      for {
+        c <- valuationCaseService.assignCase(request.body.reference, request.body.caseWorker)
+      } yield Ok(Json.toJson(c))
   }
 
-  def rejectCase: Action[RejectCaseRequest] = Action.async(parse.json[RejectCaseRequest]) { request =>
-    val rejection = request.body
-    for {
-      c <- valuationCaseService.rejectCase(rejection.reference, rejection.reason, rejection.attachment,rejection.note)
-    } yield Ok(Json.toJson(c))
+  def rejectCase: Action[RejectCaseRequest] = Action.async(parse.json[RejectCaseRequest]) {
+    request =>
+      val rejection = request.body
+      for {
+        c <- valuationCaseService.rejectCase(
+               rejection.reference,
+               rejection.reason,
+               rejection.attachment,
+               rejection.note
+             )
+      } yield Ok(Json.toJson(c))
   }
 
-  def unAssignCase: Action[AssignCaseRequest] = Action.async(parse.json[AssignCaseRequest]) { request =>
-    for {
-      c <- valuationCaseService.unAssignCase(request.body.reference, request.body.caseWorker)
-    } yield Ok(Json.toJson(c))
+  def unAssignCase: Action[AssignCaseRequest] = Action.async(parse.json[AssignCaseRequest]) {
+    request =>
+      for {
+        c <- valuationCaseService.unAssignCase(request.body.reference, request.body.caseWorker)
+      } yield Ok(Json.toJson(c))
   }
 
 }
@@ -87,7 +102,7 @@ object ValuationCaseController {
 
   case class CreateValuationRequest(reference: String, valuation: ValuationApplication)
 
-  object CreateValuationRequest{
+  object CreateValuationRequest {
     implicit val fmt: OFormat[CreateValuationRequest] = Json.format[CreateValuationRequest]
   }
 
@@ -97,10 +112,14 @@ object ValuationCaseController {
     implicit val fmt: OFormat[AssignCaseRequest] = Json.format[AssignCaseRequest]
   }
 
-  case class RejectCaseRequest(reference: String, reason: RejectReason.Value, attachment: Attachment, note: String)
+  case class RejectCaseRequest(
+    reference: String,
+    reason: RejectReason.Value,
+    attachment: Attachment,
+    note: String
+  )
 
   object RejectCaseRequest {
     implicit val fmt: OFormat[RejectCaseRequest] = Json.format[RejectCaseRequest]
   }
 }
-

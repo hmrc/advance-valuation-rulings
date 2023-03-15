@@ -1,12 +1,13 @@
 package uk.gov.hmrc.advancevaluationrulings
 
 import play.api.libs.json.Json
+import uk.gov.hmrc.advancevaluationrulings.models.common.Statuses
 import uk.gov.hmrc.advancevaluationrulings.models.errors.{ErrorResponse, ValidationError, ValidationErrors}
 import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
 import uk.gov.hmrc.advancevaluationrulings.utils.{BaseIntegrationSpec, WireMockHelper}
+
 import generators.ModelGenerators
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import uk.gov.hmrc.advancevaluationrulings.models.common.Statuses
 
 class TraderDetailsEndpointSpec
     extends BaseIntegrationSpec

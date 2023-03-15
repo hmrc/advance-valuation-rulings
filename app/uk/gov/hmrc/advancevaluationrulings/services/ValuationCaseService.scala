@@ -16,13 +16,15 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import cats.data.OptionT
+import java.time.Instant
+import javax.inject.Inject
+
+import scala.concurrent.{ExecutionContext, Future}
+
 import uk.gov.hmrc.advancevaluationrulings.models.{Attachment, CaseStatus, CaseWorker, RejectReason, ValuationApplication, ValuationCase}
 import uk.gov.hmrc.advancevaluationrulings.repositories.ValuationCaseRepository
 
-import java.time.Instant
-import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import cats.data.OptionT
 
 trait ValuationCaseService {
 
@@ -40,40 +42,55 @@ trait ValuationCaseService {
 
   def findByAssignee(assignee: String): Future[List[ValuationCase]]
 
-  def rejectCase(reference: String, reason: RejectReason.Value, attachment: Attachment, note: String): Future[Long]
+  def rejectCase(
+    reference: String,
+    reason: RejectReason.Value,
+    attachment: Attachment,
+    note: String
+  ): Future[Long]
 }
 
-class MongoValuationCaseService @Inject() (repository: ValuationCaseRepository)(implicit ec: ExecutionContext) extends ValuationCaseService {
+class MongoValuationCaseService @Inject() (repository: ValuationCaseRepository)(implicit
+  ec: ExecutionContext
+) extends ValuationCaseService {
   def allOpenCases: Future[List[ValuationCase]] = repository.allOpenCases()
-  def allNewCases: Future[List[ValuationCase]] = repository.allNewCases()
+  def allNewCases: Future[List[ValuationCase]]  = repository.allNewCases()
 
   override def create(reference: String, valuation: ValuationApplication): Future[String] = {
-    val valuationCase = ValuationCase(reference,CaseStatus.NEW,Instant.now(),0, valuation,0)
+    val valuationCase = ValuationCase(reference, CaseStatus.NEW, Instant.now(), 0, valuation, 0)
     repository.create(valuationCase).map(_.toString)
   }
 
   override def findByReference(reference: String): Future[Option[ValuationCase]] =
-    for{
+    for {
       l <- repository.findByReference(reference)
     } yield l.headOption
 
   override def findByAssignee(assignee: String): Future[List[ValuationCase]] =
-    for{
+    for {
       l <- repository.findByAssignee(assignee)
     } yield l
 
-  override def assignCase(reference: String, caseWorker: CaseWorker): Future[Long] = repository.assignCase(reference, caseWorker)
+  override def assignCase(reference: String, caseWorker: CaseWorker): Future[Long] =
+    repository.assignCase(reference, caseWorker)
 
-  override def rejectCase(reference: String, reason: RejectReason.Value, attachment: Attachment, note: String): Future[Long] = {
-     def updateItem(item: ValuationCase) = item.copy(status = CaseStatus.REJECTED, attachments = item.attachments :+ attachment)
-     val outcome = for{
-       item <- OptionT(findByReference((reference)))
-       count    <- OptionT.liftF(repository.replaceItem(updateItem(item)))
-     } yield count
+  override def rejectCase(
+    reference: String,
+    reason: RejectReason.Value,
+    attachment: Attachment,
+    note: String
+  ): Future[Long] = {
+    def updateItem(item: ValuationCase) =
+      item.copy(status = CaseStatus.REJECTED, attachments = item.attachments :+ attachment)
+    val outcome                         = for {
+      item  <- OptionT(findByReference((reference)))
+      count <- OptionT.liftF(repository.replaceItem(updateItem(item)))
+    } yield count
 
     outcome.getOrElse(throw new Exception("failed to update state to rejected"))
   }
 
-  override def unAssignCase(reference: String, caseWorker: CaseWorker): Future[Long] = repository.unAssignCase(reference, caseWorker)
+  override def unAssignCase(reference: String, caseWorker: CaseWorker): Future[Long] =
+    repository.unAssignCase(reference, caseWorker)
 
 }

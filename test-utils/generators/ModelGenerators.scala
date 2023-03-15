@@ -19,10 +19,12 @@ package generators
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.UUID
+
 import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
 import uk.gov.hmrc.advancevaluationrulings.models.common._
-import uk.gov.hmrc.advancevaluationrulings.models.errors.{ETMPError, ErrorDetail, SourceFaultDetail}
+import uk.gov.hmrc.advancevaluationrulings.models.errors.{ErrorDetail, ETMPError, SourceFaultDetail}
 import uk.gov.hmrc.advancevaluationrulings.models.etmp._
+
 import org.scalacheck.{Arbitrary, Gen}
 import wolfendale.scalacheck.regexp.RegexpGen
 

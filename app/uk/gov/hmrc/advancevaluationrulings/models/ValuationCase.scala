@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models
 
-import play.api.libs.json.{Format, Json, OFormat}
-
 import java.time.Instant
+
+import play.api.libs.json.{Format, Json, OFormat}
 
 object CancelReason extends Enumeration {
   type CancelReason = Value
 
   val ANNULLED, INVALIDATED_CODE_CHANGE, INVALIDATED_EU_MEASURE, INVALIDATED_NATIONAL_MEASURE,
-  INVALIDATED_WRONG_CLASSIFICATION, INVALIDATED_OTHER, OTHER = Value
+    INVALIDATED_WRONG_CLASSIFICATION, INVALIDATED_OTHER, OTHER = Value
 
   def format(reason: CancelReason): String = {
     val message = reason match {
@@ -34,7 +34,8 @@ object CancelReason extends Enumeration {
       case INVALIDATED_NATIONAL_MEASURE     => s"Invalidated due to national legal measure"
       case INVALIDATED_WRONG_CLASSIFICATION => s"Invalidated due to incorrect classification"
       case INVALIDATED_OTHER | OTHER        => s"Invalidated due to other reasons"
-      case unknown: CancelReason            => throw new IllegalArgumentException(s"Unexpected reason: $unknown")
+      case unknown: CancelReason            =>
+        throw new IllegalArgumentException(s"Unexpected reason: $unknown")
     }
 
     message + code(reason).map(c => s" ($c)").getOrElse("")
@@ -49,18 +50,19 @@ object CancelReason extends Enumeration {
       case INVALIDATED_WRONG_CLASSIFICATION => Some(64)
       case INVALIDATED_OTHER                => Some(65)
       case OTHER                            => None
-      case unknown: CancelReason            => throw new IllegalArgumentException(s"Unexpected reason: $unknown")
+      case unknown: CancelReason            =>
+        throw new IllegalArgumentException(s"Unexpected reason: $unknown")
     }
 
   implicit val format: Format[CancelReason] = Json.formatEnum(this)
 }
 
 case class Cancellation(
-                         reason: CancelReason.Value,
-                         applicationForExtendedUse: Boolean = false
-                       )
+  reason: CancelReason.Value,
+  applicationForExtendedUse: Boolean = false
+)
 
-object Cancellation{
+object Cancellation {
   implicit val format: OFormat[Cancellation] = Json.format[Cancellation]
 }
 
@@ -80,9 +82,9 @@ object AppealType extends Enumeration {
     case _      => "Appeal"
   }
 
-  /**
-   * The order of enum matters as it is used how to show elements in UI in some cases, where it is sorted by ID
-   */
+  /** The order of enum matters as it is used how to show elements in UI in some cases, where it is
+    * sorted by ID
+    */
   type AppealType = Value
   val ADR, REVIEW, APPEAL_TIER_1, APPEAL_TIER_2, COURT_OF_APPEALS, SUPREME_COURT = Value
 
@@ -118,7 +120,8 @@ object AppealStatus extends Enumeration {
   }
 
   def validFor(appealType: AppealType.Value): Seq[AppealStatus] = appealType match {
-    case AppealType.REVIEW => Seq(AppealStatus.IN_PROGRESS, AppealStatus.ALLOWED, AppealStatus.DISMISSED)
+    case AppealType.REVIEW =>
+      Seq(AppealStatus.IN_PROGRESS, AppealStatus.ALLOWED, AppealStatus.DISMISSED)
     case AppealType.ADR    => Seq(AppealStatus.IN_PROGRESS, AppealStatus.ALLOWED)
     case _                 => Seq(AppealStatus.IN_PROGRESS, AppealStatus.ALLOWED, AppealStatus.DISMISSED)
   }
@@ -128,10 +131,10 @@ object AppealStatus extends Enumeration {
 }
 
 case class Appeal(
-                   id: String,
-                   status: AppealStatus.Value,
-                   `type`: AppealType.Value
-                 )
+  id: String,
+  status: AppealStatus.Value,
+  `type`: AppealType.Value
+)
 
 object Appeal {
 
@@ -149,27 +152,28 @@ object Appeal {
 }
 
 case class Decision(
-                     bindingCommodityCode: String,
-                     effectiveStartDate: Option[Instant] = None,
-                     effectiveEndDate: Option[Instant]   = None,
-                     justification: String,
-                     goodsDescription: String,
-                     methodSearch: Option[String]                 = None,
-                     methodExclusion: Option[String]              = None,
-                     methodCommercialDenomination: Option[String] = None,
-                     appeal: Seq[Appeal]                          = Seq.empty,
-                     cancellation: Option[Cancellation]           = None,
-                     explanation: Option[String]                  = None,
-                     decisionPdf: Option[Attachment]              = None,
-                     letterPdf: Option[Attachment]                = None
-                   )
-object Decision{
+  bindingCommodityCode: String,
+  effectiveStartDate: Option[Instant] = None,
+  effectiveEndDate: Option[Instant] = None,
+  justification: String,
+  goodsDescription: String,
+  methodSearch: Option[String] = None,
+  methodExclusion: Option[String] = None,
+  methodCommercialDenomination: Option[String] = None,
+  appeal: Seq[Appeal] = Seq.empty,
+  cancellation: Option[Cancellation] = None,
+  explanation: Option[String] = None,
+  decisionPdf: Option[Attachment] = None,
+  letterPdf: Option[Attachment] = None
+)
+object Decision {
   implicit val fmt: OFormat[Decision] = Json.format[Decision]
 }
 
 object CaseStatus extends Enumeration {
   type CaseStatus = Value
-  val DRAFT, NEW, OPEN, SUPPRESSED, REFERRED, REJECTED, CANCELLED, SUSPENDED, COMPLETED, REVOKED, ANNULLED = Value
+  val DRAFT, NEW, OPEN, SUPPRESSED, REFERRED, REJECTED, CANCELLED, SUSPENDED, COMPLETED, REVOKED,
+    ANNULLED = Value
 
   val openStatuses: Set[Value] = Set(OPEN, REFERRED, SUSPENDED)
 
@@ -205,94 +209,93 @@ object Role extends Enumeration {
 }
 
 case class CaseWorker(
-                     id: String,
-                     name: Option[String]         = None,
-                     email: Option[String]        = None,
-                     role: Role.Role              = Role.CLASSIFICATION_OFFICER
-                   )
-object CaseWorker{
+  id: String,
+  name: Option[String] = None,
+  email: Option[String] = None,
+  role: Role.Role = Role.CLASSIFICATION_OFFICER
+)
+object CaseWorker {
   implicit val format: OFormat[CaseWorker] = Json.format[CaseWorker]
 }
 
 case class Attachment(
-                       id: String,
-                       public: Boolean = false,
-                       operator: Option[CaseWorker],
-                       timestamp: Instant              = Instant.now(),
-                       description: Option[String]     = None,
-                       shouldPublishToRulings: Boolean = false
-                     )
+  id: String,
+  public: Boolean = false,
+  operator: Option[CaseWorker],
+  timestamp: Instant = Instant.now(),
+  description: Option[String] = None,
+  shouldPublishToRulings: Boolean = false
+)
 
-object Attachment{
+object Attachment {
   implicit val format: OFormat[Attachment] = Json.format[Attachment]
 }
 
 case class AgentDetails(
-                         eoriDetails: EORIDetails,
-                         letterOfAuthorisation: Option[Attachment]
-                       )
+  eoriDetails: EORIDetails,
+  letterOfAuthorisation: Option[Attachment]
+)
 
-object AgentDetails{
+object AgentDetails {
   implicit val format: OFormat[AgentDetails] = Json.format[AgentDetails]
 }
 
 case class EORIDetails(
-                        eori: String,
-                        businessName: String,
-                        addressLine1: String,
-                        addressLine2: String,
-                        addressLine3: String,
-                        postcode: String,
-                        country: String
-                      )
+  eori: String,
+  businessName: String,
+  addressLine1: String,
+  addressLine2: String,
+  addressLine3: String,
+  postcode: String,
+  country: String
+)
 
-object EORIDetails{
+object EORIDetails {
   implicit val format: OFormat[EORIDetails] = Json.format[EORIDetails]
 }
 
 case class Contact(
-                    name: String,
-                    email: String,
-                    phone: Option[String] = None
-                  )
+  name: String,
+  email: String,
+  phone: Option[String] = None
+)
 
-object Contact{
+object Contact {
   implicit val format: OFormat[Contact] = Json.format[Contact]
 }
 
 case class ValuationApplication(
-                           holder: EORIDetails,
-                           contact: Contact,
-                           goodName: String,
-                           goodDescription: String,
-                           agent: Option[AgentDetails] = None,
-                           confidentialInformation: Option[String] = None,
-                           otherInformation: Option[String] = None,
-                           knownLegalProceedings: Option[String] = None,
-                           envisagedCommodityCode: Option[String] = None,
-                           applicationPdf: Option[Attachment] = None
-                         )
+  holder: EORIDetails,
+  contact: Contact,
+  goodName: String,
+  goodDescription: String,
+  agent: Option[AgentDetails] = None,
+  confidentialInformation: Option[String] = None,
+  otherInformation: Option[String] = None,
+  knownLegalProceedings: Option[String] = None,
+  envisagedCommodityCode: Option[String] = None,
+  applicationPdf: Option[Attachment] = None
+)
 
-object ValuationApplication{
+object ValuationApplication {
   implicit val format: OFormat[ValuationApplication] = Json.format[ValuationApplication]
 }
 
-
 case class ValuationCase(
-                          reference: String,
-                          status: CaseStatus.Value,
-                          createdDate: Instant,
-                          daysElapsed: Long,
-                          application: ValuationApplication,
-                          referredDaysElapsed: Long,
-                          caseBoardsFileNumber: Option[String] = None,
-                          assignee: Option[CaseWorker] = None,
-                          decision: Option[Decision] = None,
-                          attachments: Seq[Attachment] = Seq.empty,
-                          keywords: Set[String]             = Set.empty,
-                          dateOfExtract: Option[Instant]    = None,
-                          migratedDaysElapsed: Option[Long] = None
-               )
+  reference: String,
+  status: CaseStatus.Value,
+  createdDate: Instant,
+  daysElapsed: Long,
+  application: ValuationApplication,
+  referredDaysElapsed: Long,
+  caseBoardsFileNumber: Option[String] = None,
+  assignee: Option[CaseWorker] = None,
+  decision: Option[Decision] = None,
+  attachments: Seq[Attachment] = Seq.empty,
+  keywords: Set[String] = Set.empty,
+  dateOfExtract: Option[Instant] = None,
+  migratedDaysElapsed: Option[Long] = None
+)
 
 object ValuationCase {
   implicit val fmt: OFormat[ValuationCase] = Json.format[ValuationCase]

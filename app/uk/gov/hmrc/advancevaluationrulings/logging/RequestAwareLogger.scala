@@ -16,23 +16,34 @@
 
 package uk.gov.hmrc.advancevaluationrulings.logging
 
-import org.slf4j.MDC
 import play.api.Logger
 import uk.gov.hmrc.advancevaluationrulings.models.common.HeaderNames.{CorrelationId, RequestIdKey}
 import uk.gov.hmrc.http.{HeaderCarrier, RequestId}
+
+import org.slf4j.MDC
 
 class RequestAwareLogger(clazz: Class[_]) {
 
   private val underlying = Logger(clazz)
 
-  def trace(msg: => String)(implicit hc: HeaderCarrier): Unit = withRequestIDsInMDC(underlying.trace(msg))
-  def debug(msg: => String)(implicit hc: HeaderCarrier): Unit = withRequestIDsInMDC(underlying.debug(msg))
-  def info(msg:  => String)(implicit hc: HeaderCarrier): Unit = withRequestIDsInMDC(underlying.info(msg))
-  def warn(msg:  => String)(implicit hc: HeaderCarrier): Unit = withRequestIDsInMDC(underlying.warn(msg))
-  def error(msg: => String)(implicit hc: HeaderCarrier): Unit = withRequestIDsInMDC(underlying.error(msg))
+  def trace(msg: => String)(implicit hc: HeaderCarrier): Unit = withRequestIDsInMDC(
+    underlying.trace(msg)
+  )
+  def debug(msg: => String)(implicit hc: HeaderCarrier): Unit = withRequestIDsInMDC(
+    underlying.debug(msg)
+  )
+  def info(msg: => String)(implicit hc: HeaderCarrier): Unit  = withRequestIDsInMDC(
+    underlying.info(msg)
+  )
+  def warn(msg: => String)(implicit hc: HeaderCarrier): Unit  = withRequestIDsInMDC(
+    underlying.warn(msg)
+  )
+  def error(msg: => String)(implicit hc: HeaderCarrier): Unit = withRequestIDsInMDC(
+    underlying.error(msg)
+  )
 
   private def withRequestIDsInMDC(f: => Unit)(implicit hc: HeaderCarrier): Unit = {
-    val requestId = hc.requestId.getOrElse(RequestId("Undefined"))
+    val requestId     = hc.requestId.getOrElse(RequestId("Undefined"))
     val correlationId = hc.otherHeaders
       .collectFirst { case (key, value) if key.equalsIgnoreCase(CorrelationId) => value }
 

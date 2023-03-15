@@ -17,7 +17,9 @@
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
 import scala.concurrent.Future
+
 import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
+
 import com.google.inject.ImplementedBy
 
 @ImplementedBy(classOf[ValuationRulingsRepositoryImpl])
