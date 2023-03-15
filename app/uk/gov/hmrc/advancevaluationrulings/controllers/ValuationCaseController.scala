@@ -97,7 +97,7 @@ object ValuationCaseController {
     implicit val fmt: OFormat[AssignCaseRequest] = Json.format[AssignCaseRequest]
   }
 
-  case class RejectCaseRequest(reference: String, reason: RejectReason.Value, attachment: Attachment, note: String)
+  case class RejectCaseRequest(reference: String, reason: RejectReason, attachment: Attachment, note: String)
 
   object RejectCaseRequest {
     implicit val fmt: OFormat[RejectCaseRequest] = Json.format[RejectCaseRequest]

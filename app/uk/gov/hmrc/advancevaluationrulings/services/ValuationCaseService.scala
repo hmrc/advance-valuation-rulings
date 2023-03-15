@@ -40,7 +40,7 @@ trait ValuationCaseService {
 
   def findByAssignee(assignee: String): Future[List[ValuationCase]]
 
-  def rejectCase(reference: String, reason: RejectReason.Value, attachment: Attachment, note: String): Future[Long]
+  def rejectCase(reference: String, reason: RejectReason, attachment: Attachment, note: String): Future[Long]
 }
 
 class MongoValuationCaseService @Inject() (repository: ValuationCaseRepository)(implicit ec: ExecutionContext) extends ValuationCaseService {
@@ -64,7 +64,7 @@ class MongoValuationCaseService @Inject() (repository: ValuationCaseRepository)(
 
   override def assignCase(reference: String, caseWorker: CaseWorker): Future[Long] = repository.assignCase(reference, caseWorker)
 
-  override def rejectCase(reference: String, reason: RejectReason.Value, attachment: Attachment, note: String): Future[Long] = {
+  override def rejectCase(reference: String, reason: RejectReason, attachment: Attachment, note: String): Future[Long] = {
      def updateItem(item: ValuationCase) = item.copy(status = CaseStatus.REJECTED, attachments = item.attachments :+ attachment)
      val outcome = for{
        item <- OptionT(findByReference((reference)))
