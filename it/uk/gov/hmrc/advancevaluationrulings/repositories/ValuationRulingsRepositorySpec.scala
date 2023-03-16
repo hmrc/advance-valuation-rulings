@@ -1,17 +1,17 @@
-package uk.gov.hmrc.advancevaluationrulings.repository
-
-import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
-import uk.gov.hmrc.advancevaluationrulings.repositories.ValuationRulingsRepositoryImpl
-import uk.gov.hmrc.advancevaluationrulings.utils.BaseIntegrationSpec
-import uk.gov.hmrc.mongo.test.PlayMongoRepositorySupport
+package uk.gov.hmrc.advancevaluationrulings.repositories
 
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
+import uk.gov.hmrc.advancevaluationrulings.utils.BaseIntegrationSpec
+import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 class ValuationRulingsRepositorySpec
     extends BaseIntegrationSpec
-    with PlayMongoRepositorySupport[ValuationRulingsApplication] {
+    with DefaultPlayMongoRepositorySupport[ValuationRulingsApplication] {
 
-  override protected def repository = new ValuationRulingsRepositoryImpl(
+  override val checkTtlIndex: Boolean = false
+
+  override protected val repository = new ValuationRulingsRepositoryImpl(
     mongoComponent
   )
 
@@ -64,5 +64,4 @@ class ValuationRulingsRepositorySpec
       }
     }
   }
-
 }
