@@ -1,5 +1,3 @@
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
-
 lazy val microservice = Project("advance-valuation-rulings", file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin, ScalafmtPlugin)
   .settings(
@@ -19,7 +17,6 @@ lazy val microservice = Project("advance-valuation-rulings", file("."))
     ),
     PlayKeys.playDefaultPort := 12601
   )
-  .settings(publishingSettings: _*)
   .settings(inConfig(Test)(testSettings): _*)
   .configs(IntegrationTest)
   .settings(inConfig(IntegrationTest)(itSettings): _*)

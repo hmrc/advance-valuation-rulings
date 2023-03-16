@@ -1,7 +1,6 @@
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
-import com.mongodb.MongoWriteException
-import generators.{CaseManagementGenerators, Generators, ModelGenerators}
+import generators.{CaseManagementGenerators, ModelGenerators}
 import org.mongodb.scala.model.Filters
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -10,8 +9,8 @@ import org.scalatest.matchers.must.Matchers
 import uk.gov.hmrc.advancevaluationrulings.models._
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
-import java.time.{Clock, Instant, ZoneId}
 import java.time.temporal.ChronoUnit
+import java.time.{Clock, Instant, ZoneId}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class ValuationCaseRepositorySpec
@@ -24,11 +23,11 @@ class ValuationCaseRepositorySpec
     with ModelGenerators
     with CaseManagementGenerators {
 
-  override protected def repository = new ValuationCaseRepository(mongoComponent)
+  override val checkTtlIndex: Boolean = false
+
+  override protected val repository = new ValuationCaseRepository(mongoComponent)
 
   private val instant = Instant.now.truncatedTo(ChronoUnit.MILLIS)
-  private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
-
 
   ".create" - {
     "must save the item, with the status as New" in {
