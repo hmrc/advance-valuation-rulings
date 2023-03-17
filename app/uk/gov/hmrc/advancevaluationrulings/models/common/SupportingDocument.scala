@@ -21,7 +21,9 @@ import play.api.libs.json.{Json, OFormat}
 final case class SupportingDocument(
   fileName: String,
   downloadUrl: String,
-  isConfidential: Boolean
+  isConfidential: Boolean,
+  mimeType: Option[String],
+  size: Option[Long]
 )
 
 object SupportingDocument {

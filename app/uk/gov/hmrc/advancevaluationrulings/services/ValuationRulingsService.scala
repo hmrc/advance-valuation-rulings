@@ -22,7 +22,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 import uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger
-import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
+import uk.gov.hmrc.advancevaluationrulings.models.{Application, IndividualApplicant, ValuationRulingsApplication}
 import uk.gov.hmrc.advancevaluationrulings.models.common.{Envelope, SubmissionSuccess}
 import uk.gov.hmrc.advancevaluationrulings.models.errors.{BaseError, SubmissionError}
 import uk.gov.hmrc.advancevaluationrulings.repositories.ValuationRulingsRepository
@@ -49,6 +49,29 @@ class ValuationRulingsService @Inject() (repository: ValuationRulingsRepository)
         .recover {
           case NonFatal(ex) =>
             val eori = application.data.checkRegisteredDetails.eori
+            logger.error(s"Failed to insert application with eori: $eori: ${ex.getMessage}")
+            SubmissionError(s"Failed to insert application with eori: $eori").asLeft
+        }
+    }
+
+  def submitApplication(
+    application: Application
+  )(implicit
+    ec: ExecutionContext,
+    hc: HeaderCarrier
+  ): EitherT[Future, BaseError, SubmissionSuccess] =
+    Envelope.apply {
+      repository
+        .insert(application)
+        .map(acknowledged => SubmissionSuccess(acknowledged).asRight)
+        .recover {
+          case NonFatal(ex) =>
+
+            val eori = application.applicant match {
+              case IndividualApplicant(holder, contact) => holder.eori
+              case _                                    => ???
+            }
+
             logger.error(s"Failed to insert application with eori: $eori: ${ex.getMessage}")
             SubmissionError(s"Failed to insert application with eori: $eori").asLeft
         }

@@ -17,13 +17,11 @@
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
 import javax.inject.{Inject, Singleton}
-
 import scala.concurrent.ExecutionContext
-
-import play.api.libs.json.{Json, JsValue}
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger
-import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
+import uk.gov.hmrc.advancevaluationrulings.models.{Application, ValuationRulingsApplication}
 import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
 import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope._
 import uk.gov.hmrc.advancevaluationrulings.services.{TraderDetailsService, ValuationRulingsService}
@@ -58,6 +56,18 @@ class ValuationRulingsController @Inject() (
     Action.async(parse.json) {
       implicit request =>
         extractFromJson[ValuationRulingsApplication] {
+          rulingsApplication =>
+            logger.debug(s"User answers: ${Json.prettyPrint(Json.toJson(rulingsApplication))}")
+            valuationRulingsService
+              .submitApplication(rulingsApplication)
+              .toResult
+        }
+    }
+
+  def submitValuations(): Action[JsValue] =
+    Action.async(parse.json) {
+      implicit request =>
+        extractFromJson[Application] {
           rulingsApplication =>
             logger.debug(s"User answers: ${Json.prettyPrint(Json.toJson(rulingsApplication))}")
             valuationRulingsService

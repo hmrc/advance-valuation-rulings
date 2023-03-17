@@ -4,6 +4,8 @@ GET        /trader-details/:acknowledgementReference/:eoriNumber             uk.
 
 POST       /submit-answers                   uk.gov.hmrc.advancevaluationrulings.controllers.ValuationRulingsController.submitAnswers()
 
+POST       /valuations                       uk.gov.hmrc.advancevaluationrulings.controllers.ValuationRulingsController.submitValuations()
+
 POST       /valuation                        uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.create()
 
 GET       /valuation                          uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.allOpenCases()

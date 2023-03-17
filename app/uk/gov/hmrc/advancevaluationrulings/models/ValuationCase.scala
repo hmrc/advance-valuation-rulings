@@ -240,9 +240,9 @@ case class EORIDetails(
                         eori: String,
                         businessName: String,
                         addressLine1: String,
-                        addressLine2: String,
+                        addressLine2: Option[String],
                         addressLine3: String,
-                        postcode: String,
+                        postcode: Option[String],
                         country: String
                       )
 

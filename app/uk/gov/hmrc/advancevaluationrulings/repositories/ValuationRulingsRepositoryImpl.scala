@@ -18,7 +18,7 @@ package uk.gov.hmrc.advancevaluationrulings.repositories
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
+import uk.gov.hmrc.advancevaluationrulings.models.{Application, ValuationRulingsApplication}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes}
@@ -27,10 +27,10 @@ import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes}
 class ValuationRulingsRepositoryImpl @Inject() (
   val mongoComponent: MongoComponent
 )(implicit ec: ExecutionContext)
-    extends PlayMongoRepository[ValuationRulingsApplication](
+    extends PlayMongoRepository[Application](
       mongoComponent,
       collectionName = "valuation-rulings-application",
-      domainFormat = ValuationRulingsApplication.format,
+      domainFormat = Application.format,
       indexes = Seq(
         IndexModel(
           Indexes.ascending("applicationNumber"),
@@ -41,20 +41,20 @@ class ValuationRulingsRepositoryImpl @Inject() (
           IndexOptions().name("lastUpdatedIdx")
         ),
         IndexModel(
-          Indexes.ascending("data.checkRegisteredDetails.eori"),
+          Indexes.ascending("applicantholder.eori"),
           IndexOptions().name("eoriNumberIdx")
         )
       )
     )
     with ValuationRulingsRepository {
 
-  override def insert(application: ValuationRulingsApplication): Future[Boolean] =
+  override def insert(application: Application): Future[Boolean] =
     collection
       .insertOne(application)
       .toFuture()
       .map(_.wasAcknowledged())
 
-  override def getItems(eoriNumber: String): Future[Seq[ValuationRulingsApplication]] =
+  override def getItems(eoriNumber: String): Future[Seq[Application]] =
     collection
       .find(Filters.equal("data.checkRegisteredDetails.eori", eoriNumber))
       .toFuture()
