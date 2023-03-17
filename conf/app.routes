@@ -1,43 +1,43 @@
 # microservice specific routes
 
 # cases endpoints
-GET           /cases                            @uk.gov.hmrc.bindingtariffclassification.controllers.CaseController.get(query: uk.gov.hmrc.bindingtariffclassification.model.CaseSearch, pagination: uk.gov.hmrc.bindingtariffclassification.model.Pagination ?= uk.gov.hmrc.bindingtariffclassification.model.Pagination())
-POST          /cases                            @uk.gov.hmrc.bindingtariffclassification.controllers.CaseController.create
-GET           /cases/:reference                 @uk.gov.hmrc.bindingtariffclassification.controllers.CaseController.getByReference(reference: String)
-PUT           /cases/:reference                 @uk.gov.hmrc.bindingtariffclassification.controllers.CaseController.put(reference: String)
-POST          /cases/:reference                 @uk.gov.hmrc.bindingtariffclassification.controllers.CaseController.update(reference: String)
+GET           /cases                            @controllers.CaseController.get(query: model.CaseSearch, pagination: model.Pagination ?= model.Pagination())
+POST          /cases                            @controllers.CaseController.create
+GET           /cases/:reference                 @controllers.CaseController.getByReference(reference: String)
+PUT           /cases/:reference                 @controllers.CaseController.put(reference: String)
+POST          /cases/:reference                 @controllers.CaseController.update(reference: String)
 
 # events endpoints
-GET           /events                           @uk.gov.hmrc.bindingtariffclassification.controllers.EventController.search(query: uk.gov.hmrc.bindingtariffclassification.model.EventSearch, pagination: uk.gov.hmrc.bindingtariffclassification.model.Pagination ?= uk.gov.hmrc.bindingtariffclassification.model.Pagination())
-GET           /cases/:reference/events          @uk.gov.hmrc.bindingtariffclassification.controllers.EventController.getByCaseReference(reference: String, pagination: uk.gov.hmrc.bindingtariffclassification.model.Pagination ?= uk.gov.hmrc.bindingtariffclassification.model.Pagination())
-POST          /cases/:reference/events          @uk.gov.hmrc.bindingtariffclassification.controllers.EventController.create(reference: String)
+GET           /events                           @controllers.EventController.search(query: model.EventSearch, pagination: model.Pagination ?= model.Pagination())
+GET           /cases/:reference/events          @controllers.EventController.getByCaseReference(reference: String, pagination: model.Pagination ?= model.Pagination())
+POST          /cases/:reference/events          @controllers.EventController.create(reference: String)
 
 # reporting endpoints
-GET           /report/summary                   @uk.gov.hmrc.bindingtariffclassification.controllers.ReportingController.summaryReport(report: uk.gov.hmrc.bindingtariffclassification.model.reporting.SummaryReport, pagination: uk.gov.hmrc.bindingtariffclassification.model.Pagination ?= uk.gov.hmrc.bindingtariffclassification.model.Pagination())
-GET           /report/cases                     @uk.gov.hmrc.bindingtariffclassification.controllers.ReportingController.caseReport(report: uk.gov.hmrc.bindingtariffclassification.model.reporting.CaseReport, pagination: uk.gov.hmrc.bindingtariffclassification.model.Pagination ?= uk.gov.hmrc.bindingtariffclassification.model.Pagination())
-GET           /report/queues                    @uk.gov.hmrc.bindingtariffclassification.controllers.ReportingController.queueReport(report: uk.gov.hmrc.bindingtariffclassification.model.reporting.QueueReport, pagination: uk.gov.hmrc.bindingtariffclassification.model.Pagination ?= uk.gov.hmrc.bindingtariffclassification.model.Pagination())
+GET           /report/summary                   @controllers.ReportingController.summaryReport(report: model.reporting.SummaryReport, pagination: model.Pagination ?= model.Pagination())
+GET           /report/cases                     @controllers.ReportingController.caseReport(report: model.reporting.CaseReport, pagination: model.Pagination ?= model.Pagination())
+GET           /report/queues                    @controllers.ReportingController.queueReport(report: model.reporting.QueueReport, pagination: model.Pagination ?= model.Pagination())
 
 # users endpoints
-POST          /users                            @uk.gov.hmrc.bindingtariffclassification.controllers.UsersController.createUser
-GET           /users                            @uk.gov.hmrc.bindingtariffclassification.controllers.UsersController.allUsers(query: uk.gov.hmrc.bindingtariffclassification.model.UserSearch, pagination: uk.gov.hmrc.bindingtariffclassification.model.Pagination ?= uk.gov.hmrc.bindingtariffclassification.model.Pagination())
-PUT           /users/:id                        @uk.gov.hmrc.bindingtariffclassification.controllers.UsersController.updateUser(id: String)
-GET           /users/:id                        @uk.gov.hmrc.bindingtariffclassification.controllers.UsersController.fetchUserDetails(id: String)
-PUT           /mark-deleted/users/:id           @uk.gov.hmrc.bindingtariffclassification.controllers.UsersController.markDeleted(id: String)
+POST          /users                            @controllers.UsersController.createUser
+GET           /users                            @controllers.UsersController.allUsers(query: model.UserSearch, pagination: model.Pagination ?= model.Pagination())
+PUT           /users/:id                        @controllers.UsersController.updateUser(id: String)
+GET           /users/:id                        @controllers.UsersController.fetchUserDetails(id: String)
+PUT           /mark-deleted/users/:id           @controllers.UsersController.markDeleted(id: String)
 
 # keyword endpoints
-POST          /keyword                          @uk.gov.hmrc.bindingtariffclassification.controllers.KeywordController.addKeyword
-DELETE        /keyword/:name                    @uk.gov.hmrc.bindingtariffclassification.controllers.KeywordController.deleteKeyword(name: String)
-POST          /keyword/:name/approve            @uk.gov.hmrc.bindingtariffclassification.controllers.KeywordController.approveKeyword(name: String)
-GET           /keywords                         @uk.gov.hmrc.bindingtariffclassification.controllers.KeywordController.getAllKeywords(pagination: uk.gov.hmrc.bindingtariffclassification.model.Pagination ?= uk.gov.hmrc.bindingtariffclassification.model.Pagination())
-GET           /case-keywords                    @uk.gov.hmrc.bindingtariffclassification.controllers.KeywordController.fetchCaseKeywords(pagination: uk.gov.hmrc.bindingtariffclassification.model.Pagination ?= uk.gov.hmrc.bindingtariffclassification.model.Pagination())
+POST          /keyword                          @controllers.KeywordController.addKeyword
+DELETE        /keyword/:name                    @controllers.KeywordController.deleteKeyword(name: String)
+POST          /keyword/:name/approve            @controllers.KeywordController.approveKeyword(name: String)
+GET           /keywords                         @controllers.KeywordController.getAllKeywords(pagination: model.Pagination ?= model.Pagination())
+GET           /case-keywords                    @controllers.KeywordController.fetchCaseKeywords(pagination: model.Pagination ?= model.Pagination())
 
 # admin/test endpoints
-DELETE        /cases                            @uk.gov.hmrc.bindingtariffclassification.controllers.CaseController.deleteAll()
-DELETE        /events                           @uk.gov.hmrc.bindingtariffclassification.controllers.EventController.deleteAll()
-DELETE        /case/:reference                  @uk.gov.hmrc.bindingtariffclassification.controllers.CaseController.delete(reference: String)
-DELETE        /events/:reference                @uk.gov.hmrc.bindingtariffclassification.controllers.EventController.deleteCaseEvents(reference: String)
-PUT           /migrations/amend-date-of-extract @uk.gov.hmrc.bindingtariffclassification.controllers.MigrationController.amendDateOfExtract()
+DELETE        /cases                            @controllers.CaseController.deleteAll()
+DELETE        /events                           @controllers.EventController.deleteAll()
+DELETE        /case/:reference                  @controllers.CaseController.delete(reference: String)
+DELETE        /events/:reference                @controllers.EventController.deleteCaseEvents(reference: String)
+PUT           /migrations/amend-date-of-extract @controllers.MigrationController.amendDateOfExtract()
 
 # bta integration endpoints
 
-GET           /bta-card                         @uk.gov.hmrc.bindingtariffclassification.controllers.BtaCardController.getBtaCard
+GET           /bta-card                         @controllers.BtaCardController.getBtaCard

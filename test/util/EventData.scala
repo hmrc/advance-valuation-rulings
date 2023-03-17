@@ -19,9 +19,9 @@ package util
 import java.time.{Instant, LocalDateTime, ZoneOffset}
 import java.util.UUID
 
-import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.{CaseStatus, _}
-import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.bindingtariffclassification.utils.RandomGenerator
+import model.CaseStatus.{CaseStatus, _}
+import model._
+import utils.RandomGenerator
 
 object EventData {
 

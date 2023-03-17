@@ -1,0 +1,70 @@
+/*
+ * Copyright 2023 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package controllers
+
+import javax.inject.{Inject, Singleton}
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc._
+import config.AppConfig
+import model.RESTFormatters.{formatEvent, formatNewEventRequest}
+import model._
+import service.{CaseService, EventService}
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
+@Singleton
+class EventController @Inject() (
+  appConfig: AppConfig,
+  eventService: EventService,
+  caseService: CaseService,
+  parser: BodyParsers.Default,
+  mcc: MessagesControllerComponents
+) extends CommonController(mcc) {
+
+  lazy private val testModeFilter = TestMode.actionFilter(appConfig, parser)
+
+  def deleteAll(): Action[AnyContent] = testModeFilter.async {
+    eventService.deleteAll() map (_ => NoContent) recover recovery
+  }
+
+  def deleteCaseEvents(caseReference: String): Action[AnyContent] = testModeFilter.async {
+    eventService.deleteCaseEvents(caseReference) map (_ => NoContent) recover recovery
+  }
+
+  def search(search: EventSearch, pagination: Pagination): Action[AnyContent] = Action.async {
+    eventService.search(search, pagination) map { events: Paged[Event] =>
+      Ok(Json.toJson(events))
+    } recover recovery
+  }
+
+  def getByCaseReference(caseRef: String, pagination: Pagination): Action[AnyContent] = Action.async {
+    eventService.search(EventSearch(Some(Set(caseRef))), pagination) map { events: Paged[Event] =>
+      Ok(Json.toJson(events))
+    } recover recovery
+  }
+
+  def create(caseRef: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
+    withJsonBody[NewEventRequest] { request =>
+      caseService.getByReference(caseRef) flatMap {
+        case Some(c: Case) => eventService.insert(request.toEvent(c.reference)).map(e => Created(Json.toJson(e)))
+        case _             => Future.successful(NotFound(JsErrorResponse(ErrorCode.NOTFOUND, "Case not found")))
+      }
+    }
+  }
+
+}

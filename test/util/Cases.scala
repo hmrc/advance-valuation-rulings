@@ -19,8 +19,8 @@ package util
 import java.time.Instant
 import java.util.UUID
 
-import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
-import uk.gov.hmrc.bindingtariffclassification.model._
+import model.CaseStatus.CaseStatus
+import model._
 import java.time.temporal.ChronoUnit
 import java.time.ZonedDateTime
 import java.time.ZoneOffset

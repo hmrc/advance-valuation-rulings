@@ -16,10 +16,10 @@
 
 package util
 
-import uk.gov.hmrc.bindingtariffclassification.model.CaseStatus.CaseStatus
-import uk.gov.hmrc.bindingtariffclassification.model.Role.Role
-import uk.gov.hmrc.bindingtariffclassification.model._
-import uk.gov.hmrc.bindingtariffclassification.utils.RandomGenerator
+import model.CaseStatus.CaseStatus
+import model.Role.Role
+import model._
+import utils.RandomGenerator
 
 import java.time.{Instant, LocalDate, ZoneId}
 
