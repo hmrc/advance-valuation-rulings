@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models
 
-import play.api.libs.json.{Format, Json, OFormat}
+import play.api.libs.json.{Format, JsObject, Json, OFormat}
 
 import java.time.Instant
 
@@ -278,6 +278,7 @@ object ValuationApplication{
 }
 
 
+
 case class ValuationCase(
                           reference: String,
                           status: CaseStatus.Value,
@@ -291,7 +292,8 @@ case class ValuationCase(
                           attachments: Seq[Attachment] = Seq.empty,
                           keywords: Set[String]             = Set.empty,
                           dateOfExtract: Option[Instant]    = None,
-                          migratedDaysElapsed: Option[Long] = None
+                          migratedDaysElapsed: Option[Long] = None,
+                          activities: Seq[JsObject] = Seq.empty //todo this should match the models in FE JsObject is flexible.
                )
 
 object ValuationCase {
