@@ -1,8 +1,7 @@
 import play.sbt.PlayScala
 import uk.gov.hmrc.DefaultBuildSettings._
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 
-val appName = "binding-tariff-classification"
+val appName = "advance-valuation-rulings"
 
 lazy val plugins: Seq[Plugins] =
   Seq(PlayScala, SbtDistributablesPlugin)
@@ -13,14 +12,13 @@ lazy val microservice = (project in file("."))
   .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
   .settings(playSettings: _*)
   .settings(scalaSettings: _*)
-  .settings(publishingSettings: _*)
   .settings(defaultSettings(): _*)
   .settings(majorVersion := 0)
   .settings(
     name := appName,
     scalaVersion := "2.13.10",
     targetJvm := "jvm-1.8",
-    PlayKeys.playDefaultPort := 9580,
+    PlayKeys.playDefaultPort := 12601,
     libraryDependencies ++= AppDependencies(),
     libraryDependencySchemes ++= Seq("org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always),
     Test / parallelExecution := false,
