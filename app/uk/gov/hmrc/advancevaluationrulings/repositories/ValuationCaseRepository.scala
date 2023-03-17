@@ -24,7 +24,7 @@ import uk.gov.hmrc.advancevaluationrulings.models.{CaseStatus, CaseWorker, Valua
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
-import java.lang.System.Logger
+
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
