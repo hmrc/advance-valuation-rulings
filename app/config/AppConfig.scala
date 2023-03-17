@@ -68,7 +68,7 @@ class AppConfig @Inject() (
   private def getBooleanConfig(key: String, default: Boolean = false): Boolean =
     configuration.getOptional[Boolean](key).getOrElse(default)
 
-  lazy val fileStoreUrl: String = config.baseUrl("binding-tariff-filestore")
+  lazy val fileStoreUrl: String = config.baseUrl("binding-valuation-filestore")
 
   lazy val upsertAgents: Seq[String] =
     configuration.get[String]("upsert-permitted-agents").split(",").filter(_.nonEmpty)

@@ -1,6 +1,6 @@
-# binding-tariff-classification
+# advance-valuation-rulings
 
-The backend service which manages case data for the Advance Tariff Rulings services.
+The backend service which manages case data for the Advance Valuation Rulings services.
 
 ### Running
 
@@ -10,7 +10,7 @@ The backend service which manages case data for the Advance Tariff Rulings servi
 2) [SBT](https://www.scala-sbt.org) Version `>=1.x` installed
 3) [MongoDB](https://www.mongodb.com/) version `>=3.6` installed and running on port 27017
 4) [Localstack](https://github.com/localstack/localstack) installed and running on port 4572
-5) Create an S3 bucket in localstack by using `awslocal s3 mb s3://digital-tariffs-local` within the localstack container
+5) Create an S3 bucket in localstack by using `awslocal s3 mb s3://digital-valuations-local` within the localstack container
 
 The easiest way to run MongoDB and Localstack for local development is to use [Docker](https://docs.docker.com/get-docker/).
 
@@ -25,14 +25,14 @@ The easiest way to run MongoDB and Localstack for local development is to use [D
 ```
 > docker run -d --restart unless-stopped --name localstack -e SERVICES=s3 -p4572:4566 -p8080:8080 localstack/localstack
 > docker exec -it localstack bash
-> awslocal s3 mb s3://digital-tariffs-local
+> awslocal s3 mb s3://digital-valuations-local
 > exit
 ```
 
 #### Starting the application:
  
 1) Launch dependencies using `sm --start DIGITAL_TARIFF_DEPS -r`
-2) Start the filestore service [binding-tariff-filestore](https://github.com/hmrc/binding-tariff-filestore) using `sm --start BINDING_TARIFF_FILESTORE -r`
+2) Start the filestore service [binding-valuation-filestore](https://github.com/hmrc/binding-valuation-filestore) using `sm --start BINDING_TARIFF_FILESTORE -r`
 
 Use `sbt run` to boot the app or run it with Service Manager using `sm --start BINDING_TARIFF_CLASSIFICATION -r`.
 
