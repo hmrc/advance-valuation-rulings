@@ -31,3 +31,8 @@ tmp
 bin
 metals.sbt
 /.bsp
+!.gitignore
+!.scalafmt.conf
+.bloop/
+.metals/
+.vscode/
