@@ -16,8 +16,6 @@
 
 package model
 
-import model.LiabilityStatus.LiabilityStatus
-
 case class Keyword(
   name: String,
   approved: Boolean = false
@@ -31,7 +29,6 @@ case class CaseHeader(
   caseType: ApplicationType.Value,
   status: CaseStatus.Value,
   daysElapsed: Long,
-  liabilityStatus: Option[LiabilityStatus]
 )
 
 case class CaseKeyword(keyword: Keyword, cases: List[CaseHeader])

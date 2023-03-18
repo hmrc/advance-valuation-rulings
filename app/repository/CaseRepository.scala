@@ -352,13 +352,6 @@ class CaseMongoRepository @Inject() (
         or((Seq(concreteFilter) ++ pseudoFilters.toSeq): _*)
       }
 
-    val liabilityStatusesFilter =
-      if (report.liabilityStatuses.isEmpty) {
-        empty()
-      } else {
-        in(ReportField.LiabilityStatus.underlyingField, report.liabilityStatuses.map(_.toString).toSeq: _*)
-      }
-
     val teamFilter =
       if (report.teams.isEmpty) {
         empty()
@@ -401,7 +394,7 @@ class CaseMongoRepository @Inject() (
         }
     }
 
-    val bson = and(caseTypeFilter, statusFilter, teamFilter, dateFilter, assigneeFilter, liabilityStatusesFilter)
+    val bson = and(caseTypeFilter, statusFilter, teamFilter, dateFilter, assigneeFilter)
     `match`(bson)
   }
 
@@ -481,7 +474,6 @@ class CaseMongoRepository @Inject() (
     case field @ DaysSinceField(_, _)       => field.withValue(json.flatMap(_.asOpt[Long]))
     case field @ NumberField(_, _)          => field.withValue(json.flatMap(_.asOpt[Long]))
     case field @ StatusField(_, _)          => field.withValue(json.flatMap(_.asOpt[PseudoCaseStatus.Value]))
-    case field @ LiabilityStatusField(_, _) => field.withValue(json.flatMap(_.asOpt[LiabilityStatus.Value]))
     case field @ StringField(_, _)          => field.withValue(json.flatMap(_.asOpt[String]))
     case field @ CoalesceField(_, _)        => field.withValue(json.flatMap(_.asOpt[String].filterNot(_.isEmpty)))
   }

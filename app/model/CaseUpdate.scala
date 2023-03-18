@@ -60,34 +60,6 @@ case class BTIUpdate(
   val `type`: ApplicationType.Value = ApplicationType.BTI
 }
 
-case class LiabilityUpdate(
-  // contact: Option[Contact]                                   = None,
-  // goodName: Option[Option[String]]                           = None,
-  // status: Option[LiabilityStatus.Value]                      = None,
-  traderName: Update[String] = NoChange
-  // entryDate: Option[Option[Instant]]                         = None,
-  // entryNumber: Option[Option[String]]                        = None,
-  // traderCommodityCode: Option[Option[String]]                = None,
-  // officerCommodityCode: Option[Option[String]]               = None,
-  // btiReference: Option[Option[String]]                       = None,
-  // repaymentClaim: Option[Option[RepaymentClaim]]             = None,
-  // dateOfReceipt: Option[Option[Instant]]                     = None,
-  // traderContactDetails: Option[Option[TraderContactDetails]] = None,
-  // agentName: Option[Option[String]]                          = None,
-  // port: Option[Option[String]]                               = None
-) extends ApplicationUpdate {
-  val `type`: ApplicationType.Value = ApplicationType.LIABILITY_ORDER
-}
-
-// case class CorrespondenceUpdate(
-//   ) extends ApplicationUpdate {
-//   val `type`: ApplicationType.Value = ApplicationType.CORRESPONDENCE
-// }
-
-// case class MiscUpdate(
-//   ) extends ApplicationUpdate {
-//   val `type`: ApplicationType.Value = ApplicationType.MISCELLANEOUS
-// }
 
 case class CaseUpdate(
   // status: Option[CaseStatus.Value]             = None,

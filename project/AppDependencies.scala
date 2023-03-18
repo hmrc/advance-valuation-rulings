@@ -19,6 +19,7 @@ object AppDependencies {
     "com.github.pathikrit"         %% "better-files"                % "3.9.1",
     "org.quartz-scheduler"         % "quartz"                       % "2.3.2",
     "com.fasterxml.jackson.module" %% "jackson-module-scala"        % "2.14.1",
+    "com.beachape"                 %% "enumeratum-play-json"        % "1.6.3",
     ws
   )
 

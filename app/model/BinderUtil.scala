@@ -17,7 +17,6 @@
 package model
 
 import model.ApplicationType.ApplicationType
-import model.LiabilityStatus.LiabilityStatus
 import model.PseudoCaseStatus.PseudoCaseStatus
 import sort.CaseSortField.CaseSortField
 import sort.SortDirection.SortDirection
@@ -36,9 +35,6 @@ object BinderUtil {
 
   def bindPseudoCaseStatus(value: String): Option[PseudoCaseStatus] =
     PseudoCaseStatus.values.find(_.toString.equalsIgnoreCase(value))
-
-  def bindLiabilityStatus(value: String): Option[LiabilityStatus] =
-    LiabilityStatus.values.find(_.toString.equalsIgnoreCase(value))
 
   def bindApplicationType(value: String): Option[ApplicationType] =
     ApplicationType.values.find(_.toString.equalsIgnoreCase(value))

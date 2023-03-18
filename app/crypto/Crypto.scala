@@ -77,31 +77,6 @@ class Crypto @Inject() (crypto: CompositeSymmetricCrypto) {
             confidentialInformation = bti.confidentialInformation map f
           )
         )
-      case LIABILITY_ORDER =>
-        val l = c.application.asLiabilityOrder
-        c.copy(
-          application = l.copy(
-            contact = applyCrypto(l.contact)(f)
-          )
-        )
-      case MISCELLANEOUS =>
-        val misc = c.application.asMisc
-        c.copy(
-          application = misc.copy(
-            contact     = applyCrypto(misc.contact)(f),
-            contactName = misc.contactName.map(f(_)),
-            name        = f(misc.name)
-          )
-        )
-      case CORRESPONDENCE =>
-        val corres = c.application.asCorrespondence
-        c.copy(
-          application = corres.copy(
-            contact   = applyCrypto(corres.contact)(f),
-            agentName = corres.agentName.map(f(_)),
-            address   = applyCrypto(corres.address)(f)
-          )
-        )
       case t: ApplicationType =>
         throw new IllegalStateException(s"Unexpected application type: $t")
     }

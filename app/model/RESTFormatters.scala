@@ -41,7 +41,6 @@ object RESTFormatters {
 
   implicit val formatCaseStatus: Format[CaseStatus.Value]             = EnumJson.format(CaseStatus)
   implicit val formatPseudoCaseStatus: Format[PseudoCaseStatus.Value] = EnumJson.format(PseudoCaseStatus)
-  implicit val formatLiabilityStatus: Format[LiabilityStatus.Value]   = EnumJson.format(LiabilityStatus)
   implicit val formatAppealStatus: Format[AppealStatus.Value]         = EnumJson.format(AppealStatus)
   implicit val formatAppealType: Format[AppealType.Value]             = EnumJson.format(AppealType)
   implicit val formatSampleStatus: Format[SampleStatus.Value]         = EnumJson.format(SampleStatus)
@@ -56,19 +55,12 @@ object RESTFormatters {
   implicit val formatAttachment: OFormat[Attachment]     = Json.using[Json.WithDefaultValues].format[Attachment]
   implicit val formatAgentDetails: OFormat[AgentDetails] = Json.format[AgentDetails]
   implicit val formatContact: OFormat[Contact]           = Json.format[Contact]
-  implicit val messageLoggedFormat: OFormat[Message]     = Json.format[Message]
 
-  implicit val formatLiabilityOrder: OFormat[LiabilityOrder]            = Json.format[LiabilityOrder]
   implicit val formatBTIApplication: OFormat[BTIApplication]            = Json.using[Json.WithDefaultValues].format[BTIApplication]
-  implicit val formatCorrespondence: OFormat[CorrespondenceApplication] = Json.format[CorrespondenceApplication]
-  implicit val formatMisc: OFormat[MiscApplication]                     = Json.format[MiscApplication]
 
   implicit val formatApplication: Format[Application] = Union
     .from[Application]("type")
     .and[BTIApplication](ApplicationType.BTI.toString)
-    .and[LiabilityOrder](ApplicationType.LIABILITY_ORDER.toString)
-    .and[CorrespondenceApplication](ApplicationType.CORRESPONDENCE.toString)
-    .and[MiscApplication](ApplicationType.MISCELLANEOUS.toString)
     .format
 
   implicit val formatAppeal: OFormat[Appeal]             = Json.format[Appeal]
@@ -150,19 +142,15 @@ object RESTFormatters {
     Json.format[BTIUpdate]
   }
 
-  implicit val formatLiabilityUpdate: OFormat[LiabilityUpdate] = Json.format[LiabilityUpdate]
-
   implicit val formatApplicationUpdate: Format[ApplicationUpdate] = Union
     .from[ApplicationUpdate]("type")
     .and[BTIUpdate](ApplicationType.BTI.toString)
-    .and[LiabilityUpdate](ApplicationType.LIABILITY_ORDER.toString)
     .format
 
   implicit val formatCaseUpdate: OFormat[CaseUpdate] = Json.format[CaseUpdate]
 
   implicit val formatNumberField: OFormat[NumberField]                   = Json.format[NumberField]
   implicit val formatStatusField: OFormat[StatusField]                   = Json.format[StatusField]
-  implicit val formatLiabilityStatusField: OFormat[LiabilityStatusField] = Json.format[LiabilityStatusField]
   implicit val formatCaseTypeField: OFormat[CaseTypeField]               = Json.format[CaseTypeField]
   implicit val formatChapterField: OFormat[ChapterField]                 = Json.format[ChapterField]
   implicit val formatDateField: OFormat[DateField]                       = Json.format[DateField]
@@ -173,7 +161,6 @@ object RESTFormatters {
     .from[ReportField[_]]("type")
     .and[NumberField](ReportFieldType.Number.name)
     .and[StatusField](ReportFieldType.Status.name)
-    .and[LiabilityStatusField](ReportFieldType.LiabilityStatus.name)
     .and[CaseTypeField](ReportFieldType.CaseType.name)
     .and[ChapterField](ReportFieldType.Chapter.name)
     .and[DateField](ReportFieldType.Date.name)
@@ -183,8 +170,6 @@ object RESTFormatters {
 
   implicit val formatNumberResultField: OFormat[NumberResultField] = Json.format[NumberResultField]
   implicit val formatStatusResultField: OFormat[StatusResultField] = Json.format[StatusResultField]
-  implicit val formatLiabilityStatusResultField: OFormat[LiabilityStatusResultField] =
-    Json.format[LiabilityStatusResultField]
   implicit val formatCaseTypeResultField: OFormat[CaseTypeResultField] = Json.format[CaseTypeResultField]
   implicit val formatDateResultField: OFormat[DateResultField]         = Json.format[DateResultField]
   implicit val formatStringResultField: OFormat[StringResultField]     = Json.format[StringResultField]
@@ -193,7 +178,6 @@ object RESTFormatters {
     .from[ReportResultField[_]]("type")
     .and[NumberResultField](ReportFieldType.Number.name)
     .and[StatusResultField](ReportFieldType.Status.name)
-    .and[LiabilityStatusResultField](ReportFieldType.LiabilityStatus.name)
     .and[CaseTypeResultField](ReportFieldType.CaseType.name)
     .and[DateResultField](ReportFieldType.Date.name)
     .and[StringResultField](ReportFieldType.String.name)

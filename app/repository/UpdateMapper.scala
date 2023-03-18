@@ -19,7 +19,7 @@ package repository
 import org.bson.conversions.Bson
 import play.api.libs.json.Json.JsValueWrapper
 import model.MongoFormatters._
-import model.{ApplicationUpdate, BTIUpdate, CaseUpdate, LiabilityUpdate}
+import model.{ApplicationUpdate, BTIUpdate, CaseUpdate}
 
 import javax.inject.{Inject, Singleton}
 
@@ -29,8 +29,6 @@ class UpdateMapper @Inject() () extends Mapper {
     update match {
       case BTIUpdate(applicationPdf) =>
         applicationPdf.map(att => field("application.applicationPdf", att)).getOrElse(Seq.empty)
-      case LiabilityUpdate(traderName) =>
-        traderName.map(name => field("application.traderName", name)).getOrElse(Seq.empty)
     }
 
   def updateCase(update: CaseUpdate): Bson = {

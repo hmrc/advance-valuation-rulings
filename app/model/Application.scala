@@ -17,24 +17,208 @@
 package model
 
 import java.time.Instant
-
 import model.ApplicationType.ApplicationType
-import model.LiabilityStatus.LiabilityStatus
 import model.MiscCaseType.MiscCaseType
 
+import play.api.libs.json._
+
+import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
+case class UploadedDocument(
+                             id: String,
+                             name: String,
+                             url: String,
+                             public: Boolean, // isConfidential
+                             mimeType: String,
+                             size: Long
+                           )
+object UploadedDocument {
+  implicit val format: OFormat[UploadedDocument] = Json.format[UploadedDocument]
+}
+
+sealed trait Applicant
+case class IndividualApplicant(
+                                holder: EORIDetails,
+                                contact: ContactDetails
+                              ) extends Applicant
+
+object Applicant {
+  import ApplicationRequest._
+  implicit val roleFormat: OFormat[Applicant] = Json.configured(jsonConfig).format[Applicant]
+}
+
+object IndividualApplicant {
+  implicit val format: OFormat[IndividualApplicant] = Json.format[IndividualApplicant]
+}
+
+case class GoodsDetails(
+                         goodDescription: String,
+                         envisagedCommodityCode: Option[String],
+                         knownLegalProceedings: Option[String],
+                         confidentialInformation: Option[String]
+                       )
+
+object GoodsDetails {
+  implicit val format: OFormat[GoodsDetails] = Json.format[GoodsDetails]
+}
+
+case class EORIDetails(
+                        eori: String,
+                        businessName: String,
+                        addressLine1: String,
+                        addressLine2: String,
+                        addressLine3: String,
+                        postcode: String,
+                        country: String
+                      )
+object EORIDetails {
+  implicit val format: OFormat[EORIDetails] = Json.format[EORIDetails]
+}
+
+case class ContactDetails(
+                           name: String,
+                           email: String,
+                           phone: Option[String]
+                         )
+object ContactDetails {
+  implicit val format: OFormat[ContactDetails] = Json.format[ContactDetails]
+}
+
+sealed trait RequestedMethod
+
+case class MethodOne(
+                      saleBetweenRelatedParties: Option[String],
+                      goodsRestrictions: Option[String],
+                      saleConditions: Option[String]
+                    ) extends RequestedMethod
+object MethodOne {
+  implicit val format: OFormat[MethodOne] = Json.format[MethodOne]
+}
+
+sealed trait IdenticalGoodsExplaination extends Any
+case class PreviousIdenticalGoods(val value: String) extends AnyVal with IdenticalGoodsExplaination
+object PreviousIdenticalGoods {
+  implicit val format: Format[PreviousIdenticalGoods] = Json.valueFormat[PreviousIdenticalGoods]
+}
+case class OtherUsersIdenticalGoods(val value: String)
+  extends AnyVal
+    with IdenticalGoodsExplaination
+object OtherUsersIdenticalGoods {
+  implicit val format = Json.valueFormat[OtherUsersIdenticalGoods]
+}
+
+object IdenticalGoodsExplaination {
+  import ApplicationRequest.jsonConfig
+  implicit val format: Format[IdenticalGoodsExplaination] =
+    Json.configured(jsonConfig).format[IdenticalGoodsExplaination]
+}
+
+case class MethodTwo(
+                      whyNotOtherMethods: String,
+                      detailedDescription: IdenticalGoodsExplaination
+                    ) extends RequestedMethod
+object MethodTwo {
+  implicit val format: OFormat[MethodTwo] = Json.format[MethodTwo]
+}
+
+sealed trait SimilarGoodsExplaination extends Any
+case class PreviousSimilarGoods(val value: String) extends AnyVal with SimilarGoodsExplaination
+case class OtherUsersSimilarGoods(val value: String) extends AnyVal with SimilarGoodsExplaination
+
+object PreviousSimilarGoods {
+  implicit val format: Format[PreviousSimilarGoods] = Json.valueFormat[PreviousSimilarGoods]
+}
+object OtherUsersSimilarGoods {
+  implicit val format: Format[OtherUsersSimilarGoods] = Json.valueFormat[OtherUsersSimilarGoods]
+}
+
+object SimilarGoodsExplaination {
+  import ApplicationRequest.jsonConfig
+  implicit val format: OFormat[SimilarGoodsExplaination] =
+    Json.configured(jsonConfig).format[SimilarGoodsExplaination]
+}
+
+case class MethodThree(
+                        whyNotOtherMethods: String,
+                        detailedDescription: SimilarGoodsExplaination
+                      ) extends RequestedMethod
+object MethodThree {
+  implicit val format: Format[MethodThree] =
+    Json.format[MethodThree]
+}
+
+case class MethodFour(
+                       whyNotOtherMethods: String,
+                       deductiveMethod: String
+                     ) extends RequestedMethod
+object MethodFour {
+  implicit val format: OFormat[MethodFour] = Json.format[MethodFour]
+}
+
+case class MethodFive(
+                       whyNotOtherMethods: String,
+                       computedValue: String
+                     ) extends RequestedMethod
+object MethodFive {
+  implicit val format: OFormat[MethodFive] = Json.format[MethodFive]
+}
+
+sealed abstract class AdaptedMethod(override val entryName: String) extends EnumEntry
+
+object AdaptedMethod extends Enum[AdaptedMethod] with PlayJsonEnum[AdaptedMethod] {
+  val values: IndexedSeq[AdaptedMethod] = findValues
+
+  case object MethodOne extends AdaptedMethod("MethodOne")
+  case object MethodTwo extends AdaptedMethod("MethodTwo")
+  case object MethodThree extends AdaptedMethod("MethodThree")
+  case object MethodFour extends AdaptedMethod("MethodFour")
+  case object MethodFive extends AdaptedMethod("MethodFive")
+  case object Unable extends AdaptedMethod("Unable")
+}
+
+case class MethodSix(
+                      whyNotOtherMethods: String,
+                      adoptMethod: AdaptedMethod,
+                      valuationDescription: String
+                    ) extends RequestedMethod
+object MethodSix {
+  implicit val format: OFormat[MethodSix] = Json.format[MethodSix]
+}
+
+case class ApplicationRequest(
+                               applicant: Applicant,
+                               requestedMethod: RequestedMethod,
+                               goodsDetails: GoodsDetails,
+                               attachments: Seq[UploadedDocument]
+                             )
+object RequestedMethod {
+  import ApplicationRequest.jsonConfig
+  implicit val format: OFormat[RequestedMethod] =
+    Json.configured(jsonConfig).format[RequestedMethod]
+}
+object ApplicationRequest {
+  private[model] val jsonConfig                   = JsonConfiguration(
+    discriminator = "_type",
+    typeNaming =
+      JsonNaming(fullName => fullName.slice(1 + fullName.lastIndexOf("."), fullName.length))
+  )
+  implicit val format: OFormat[ApplicationRequest] =
+    Json.configured(jsonConfig).format[ApplicationRequest]
+}
+
+
+/////////////////
+// OLD
+/////////////////
+object ApplicationType extends Enumeration {
+  type ApplicationType = Value
+  val BTI = Value // TODO: Rename to Valuation
+}
 sealed trait Application {
   val `type`: ApplicationType
   val contact: Contact
 
   def isBTI: Boolean            = isInstanceOf[BTIApplication]
-  def isLiabilityOrder: Boolean = isInstanceOf[LiabilityOrder]
-  def isCorrespondence: Boolean = isInstanceOf[CorrespondenceApplication]
-  def isMisc: Boolean           = isInstanceOf[MiscApplication]
-
   def asBTI: BTIApplication                       = asInstanceOf[BTIApplication]
-  def asLiabilityOrder: LiabilityOrder            = asInstanceOf[LiabilityOrder]
-  def asCorrespondence: CorrespondenceApplication = asInstanceOf[CorrespondenceApplication]
-  def asMisc: MiscApplication                     = asInstanceOf[MiscApplication]
 }
 
 case class BTIApplication(
@@ -59,64 +243,15 @@ case class BTIApplication(
   override val `type`: model.ApplicationType.Value = ApplicationType.BTI
 }
 
-case class LiabilityOrder(
-  override val contact: Contact,
-  goodName: Option[String],
-  status: LiabilityStatus,
-  traderName: String,
-  entryDate: Option[Instant]                         = None,
-  entryNumber: Option[String]                        = None,
-  traderCommodityCode: Option[String]                = None,
-  officerCommodityCode: Option[String]               = None,
-  btiReference: Option[String]                       = None,
-  repaymentClaim: Option[RepaymentClaim]             = None,
-  dateOfReceipt: Option[Instant]                     = None,
-  traderContactDetails: Option[TraderContactDetails] = None,
-  agentName: Option[String]                          = None,
-  port: Option[String]                               = None
-) extends Application {
-  override val `type`: model.ApplicationType.Value = ApplicationType.LIABILITY_ORDER
-}
-
-case class CorrespondenceApplication(
-  correspondenceStarter: Option[String],
-  agentName: Option[String],
-  address: Address,
-  override val contact: Contact,
-  fax: Option[String] = None,
-  summary: String,
-  detailedDescription: String,
-  relatedBTIReference: Option[String] = None,
-  relatedBTIReferences: List[String]  = Nil,
-  sampleToBeProvided: Boolean,
-  sampleToBeReturned: Boolean,
-  messagesLogged: List[Message] = Nil
-) extends Application {
-  override val `type`: model.ApplicationType.Value = ApplicationType.CORRESPONDENCE
-}
-
-case class MiscApplication(
-  override val contact: Contact,
-  name: String,
-  contactName: Option[String],
-  caseType: MiscCaseType,
-  detailedDescription: Option[String],
-  sampleToBeProvided: Boolean,
-  sampleToBeReturned: Boolean,
-  messagesLogged: List[Message] = Nil
-) extends Application {
-  override val `type`: model.ApplicationType.Value = ApplicationType.MISCELLANEOUS
-}
-
-case class EORIDetails(
-  eori: String,
-  businessName: String,
-  addressLine1: String,
-  addressLine2: String,
-  addressLine3: String,
-  postcode: String,
-  country: String
-)
+//case class EORIDetails(
+//  eori: String,
+//  businessName: String,
+//  addressLine1: String,
+//  addressLine2: String,
+//  addressLine3: String,
+//  postcode: String,
+//  country: String
+//)
 
 case class AgentDetails(
   eoriDetails: EORIDetails,
@@ -129,14 +264,3 @@ case class Contact(
   phone: Option[String]
 )
 
-case class Message(name: String, date: Instant, message: String)
-
-object LiabilityStatus extends Enumeration {
-  type LiabilityStatus = Value
-  val LIVE, NON_LIVE = Value
-}
-
-object ApplicationType extends Enumeration {
-  type ApplicationType = Value
-  val BTI, LIABILITY_ORDER, CORRESPONDENCE, MISCELLANEOUS = Value
-}

@@ -85,25 +85,17 @@ object MongoFormatters {
   implicit val formatCancelReason: Format[CancelReason.Value]         = EnumJson.format(CancelReason)
   implicit val formatReferralReason: Format[ReferralReason.Value]     = EnumJson.format(ReferralReason)
   implicit val formatRejectedReason: Format[RejectReason.Value]       = EnumJson.format(RejectReason)
-  implicit val formatLiabilityStatus: Format[LiabilityStatus.Value]   = EnumJson.format(LiabilityStatus)
   implicit val miscCaseType: Format[MiscCaseType.Value]               = EnumJson.format(MiscCaseType)
   implicit val formatAttachment: OFormat[Attachment]                  = Json.using[Json.WithDefaultValues].format[Attachment]
   implicit val formatEORIDetails: OFormat[EORIDetails]                = Json.format[EORIDetails]
   implicit val formatAgentDetails: OFormat[AgentDetails]              = Json.format[AgentDetails]
   implicit val formatContact: OFormat[Contact]                        = Json.format[Contact]
-  implicit val messageLoggedFormat: OFormat[Message]                  = Json.format[Message]
 
-  implicit val formatLiabilityOrder: OFormat[LiabilityOrder]            = Json.format[LiabilityOrder]
   implicit val formatBTIApplication: OFormat[BTIApplication]            = Json.using[Json.WithDefaultValues].format[BTIApplication]
-  implicit val formatCorrespondence: OFormat[CorrespondenceApplication] = Json.format[CorrespondenceApplication]
-  implicit val formatMisc: OFormat[MiscApplication]                     = Json.format[MiscApplication]
 
   implicit val formatApplication: Format[Application] = Union
     .from[Application]("type")
     .and[BTIApplication](ApplicationType.BTI.toString)
-    .and[LiabilityOrder](ApplicationType.LIABILITY_ORDER.toString)
-    .and[CorrespondenceApplication](ApplicationType.CORRESPONDENCE.toString)
-    .and[MiscApplication](ApplicationType.MISCELLANEOUS.toString)
     .format
 
   implicit val formatAppeal: OFormat[Appeal]             = Json.format[Appeal]

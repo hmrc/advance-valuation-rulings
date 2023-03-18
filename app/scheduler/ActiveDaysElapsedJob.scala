@@ -76,17 +76,7 @@ class ActiveDaysElapsedJob @Inject() (
       // For migrated cases, we only track the case history after the date of extraction
       LocalDateTime.ofInstant(c.dateOfExtract.get, ZoneOffset.UTC).toLocalDate
     } else {
-      if (c.application.isLiabilityOrder) {
-        val liability = c.application.asLiabilityOrder
-        if (liability.dateOfReceipt.isDefined) {
-          LocalDateTime.ofInstant(liability.dateOfReceipt.get, ZoneOffset.UTC).toLocalDate
-        } else {
-          //when liability doesn't have date of receipt use case create date
-          LocalDateTime.ofInstant(c.createdDate, ZoneOffset.UTC).toLocalDate
-        }
-      } else {
         LocalDateTime.ofInstant(c.createdDate, ZoneOffset.UTC).toLocalDate
-      }
     }
 
   private def refreshDaysElapsed(c: Case)(implicit bankHolidays: Set[LocalDate]): Future[Unit] = {

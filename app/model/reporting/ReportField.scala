@@ -58,11 +58,6 @@ case class CoalesceField(override val fieldName: String, val fieldChoices: NonEm
     extends ReportField[String](fieldName, fieldChoices.head) {
   def withValue(value: Option[String]): StringResultField = StringResultField(fieldName, value)
 }
-case class LiabilityStatusField(override val fieldName: String, override val underlyingField: String)
-    extends ReportField[LiabilityStatus.Value](fieldName, underlyingField) {
-  def withValue(value: Option[LiabilityStatus.Value]): LiabilityStatusResultField =
-    LiabilityStatusResultField(fieldName, value)
-}
 
 object ReportField {
   val Count       = NumberField("count", "count")
@@ -84,7 +79,6 @@ object ReportField {
   val ElapsedDays     = NumberField("elapsed_days", "daysElapsed")
   val TotalDays       = DaysSinceField("total_days", "createdDate")
   val ReferredDays    = NumberField("referred_days", "referredDaysElapsed")
-  val LiabilityStatus = LiabilityStatusField("liability_status", "application.status")
 
   val fields: Map[String, ReportField[_]] = List(
     Count,
@@ -102,7 +96,6 @@ object ReportField {
     DateCompleted,
     ElapsedDays,
     TotalDays,
-    ReferredDays,
-    LiabilityStatus
+    ReferredDays
   ).map(field => field.fieldName -> field).toMap
 }
