@@ -16,13 +16,18 @@
 
 package model
 
+import java.time.{Clock, Instant}
+
 case class NewCaseRequest(
   application: Application,
   attachments: Seq[Attachment] = Seq.empty
 ) {
-  def toCase(reference: String) = Case(
+
+  // TODO: Investigate alternative to passing clock here but will still make Case easily tested
+  def toCase(reference: String, clock: Clock) = Case(
     reference = reference,
     status    = CaseStatus.NEW,
+    createdDate = Instant.now(clock),
     sample =
       if (application.isBTI && application.asBTI.sampleToBeProvided) Sample(status = Some(SampleStatus.AWAITING))
       else Sample(),

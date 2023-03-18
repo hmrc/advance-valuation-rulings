@@ -22,18 +22,19 @@ import org.scalatestplus.mockito.MockitoSugar
 import util.CaseData
 import util.Matchers.roughlyBe
 
-import java.time.Instant
+import java.time.{Clock, Instant, ZoneOffset}
 
 class CaseRequestSpec extends BaseSpec with MockitoSugar {
 
   private val application = mock[Application]
   private val attachments = mock[Seq[Attachment]]
+  private val fixedClock =  Clock.fixed(Instant.parse("2021-02-01T09:00:00.00Z"), ZoneOffset.UTC)
 
   "To Case" should {
 
     "Convert NewCaseRequest To A Case" in {
       when(application.asBTI).thenReturn(CaseData.createBasicBTIApplication)
-      val c = NewCaseRequest(application, attachments).toCase("reference")
+      val c = NewCaseRequest(application, attachments).toCase("reference", fixedClock)
       c.status               shouldBe CaseStatus.NEW
       c.createdDate          should roughlyBe(Instant.now())
       c.daysElapsed          shouldBe 0
@@ -49,7 +50,7 @@ class CaseRequestSpec extends BaseSpec with MockitoSugar {
     "Convert NewCaseRequest To A Case with sample provided" in {
       when(application.isBTI).thenReturn(true)
       when(application.asBTI).thenReturn(CaseData.createBTIApplicationWithAllFields())
-      val c = NewCaseRequest(application, attachments).toCase("reference")
+      val c = NewCaseRequest(application, attachments).toCase("reference", fixedClock)
       c.sample.status shouldBe Some(SampleStatus.AWAITING)
     }
   }

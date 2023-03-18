@@ -30,7 +30,7 @@ class ReportSpec extends BaseSpec {
       val params1 = Map[String, Seq[String]](
         "sort_by"          -> Seq("count"),
         "sort_order"       -> Seq("desc"),
-        "case_type"        -> Seq("BTI", "CORRESPONDENCE"),
+        "case_type"        -> Seq("BTI"),
         "status"           -> Seq("LIVE", "REFERRED"),
         "liability_status" -> Seq(),
         "team"             -> Seq("1", "3"),
@@ -59,7 +59,7 @@ class ReportSpec extends BaseSpec {
       val params2 = Map[String, Seq[String]](
         "sort_by"          -> Seq("date_created"),
         "sort_order"       -> Seq("asc"),
-        "case_type"        -> Seq("MISCELLANEOUS", "CORRESPONDENCE"),
+        "case_type"        -> Seq("BTI"),
         "status"           -> Seq("COMPLETED", "REJECTED"),
         "liability_status" -> Seq("NON_LIVE"),
         "team"             -> Seq("4", "5"),
@@ -120,9 +120,8 @@ class ReportSpec extends BaseSpec {
       ) shouldBe (
         "sort_by=count" +
           "&sort_order=desc" +
-          "&case_type=BTI,CORRESPONDENCE" +
+          "&case_type=BTI" +
           "&status=LIVE,NEW" +
-          "&liability_status=NON_LIVE" +
           "&team=1,3" +
           "&min_date=2020-03-21T12:03:15Z" +
           "&max_date=2021-03-21T12:03:15Z" +
@@ -151,9 +150,8 @@ class ReportSpec extends BaseSpec {
       ) shouldBe (
         "sort_by=date_created" +
           "&sort_order=asc" +
-          "&case_type=MISCELLANEOUS,CORRESPONDENCE" +
+          "&case_type=BTI" +
           "&status=COMPLETED,REJECTED" +
-          "&liability_status=NON_LIVE" +
           "&team=4,5" +
           "&min_date=-1000000000-01-01T00:00:00Z" +
           "&max_date=+1000000000-12-31T23:59:59.999999999Z" +
@@ -168,7 +166,7 @@ class ReportSpec extends BaseSpec {
         "group_by"   -> Seq("status"),
         "sort_by"    -> Seq("count"),
         "sort_order" -> Seq("desc"),
-        "case_type"  -> Seq("BTI", "CORRESPONDENCE"),
+        "case_type"  -> Seq("BTI"),
         "status"     -> Seq("LIVE", "REFERRED"),
         "team"       -> Seq("1", "3"),
         "min_date"   -> Seq("2020-03-21T12:03:15.000Z"),
@@ -198,7 +196,7 @@ class ReportSpec extends BaseSpec {
         "group_by"   -> Seq("assigned_user"),
         "sort_by"    -> Seq("date_created"),
         "sort_order" -> Seq("asc"),
-        "case_type"  -> Seq("MISCELLANEOUS", "CORRESPONDENCE"),
+        "case_type"  -> Seq("BTI"),
         "status"     -> Seq("COMPLETED", "REJECTED"),
         "team"       -> Seq("4", "5"),
         "max_fields" -> Seq("elapsed_days")
@@ -256,9 +254,8 @@ class ReportSpec extends BaseSpec {
         "group_by=status" +
           "&sort_by=count" +
           "&sort_order=desc" +
-          "&case_type=BTI,CORRESPONDENCE" +
+          "&case_type=BTI" +
           "&status=LIVE,REFERRED" +
-          "&liability_status=NON_LIVE" +
           "&team=1,3" +
           "&min_date=2020-03-21T12:03:15Z" +
           "&max_date=2021-03-21T12:03:15Z" +
@@ -284,9 +281,8 @@ class ReportSpec extends BaseSpec {
         "group_by=assigned_user" +
           "&sort_by=date_created" +
           "&sort_order=asc" +
-          "&case_type=MISCELLANEOUS,CORRESPONDENCE" +
+          "&case_type=BTI" +
           "&status=COMPLETED,REJECTED" +
-          "&liability_status=NON_LIVE" +
           "&team=4,5" +
           "&min_date=-1000000000-01-01T00:00:00Z" +
           "&max_date=+1000000000-12-31T23:59:59.999999999Z" +
@@ -301,7 +297,7 @@ class ReportSpec extends BaseSpec {
       val params1 = Map[String, Seq[String]](
         "sort_by"       -> Seq("count"),
         "sort_order"    -> Seq("desc"),
-        "case_type"     -> Seq("BTI", "CORRESPONDENCE"),
+        "case_type"     -> Seq("BTI"),
         "status"        -> Seq("LIVE", "REFERRED"),
         "team"          -> Seq("1", "3"),
         "assigned_user" -> Seq("1"),
@@ -329,9 +325,8 @@ class ReportSpec extends BaseSpec {
       val params2 = Map[String, Seq[String]](
         "sort_by"          -> Seq("date_created"),
         "sort_order"       -> Seq("asc"),
-        "case_type"        -> Seq("MISCELLANEOUS", "CORRESPONDENCE"),
+        "case_type"        -> Seq("BTI"),
         "status"           -> Seq("COMPLETED", "REJECTED"),
-        "liability_status" -> Seq("NON_LIVE"),
         "team"             -> Seq("4", "5")
       )
 
@@ -370,9 +365,8 @@ class ReportSpec extends BaseSpec {
       ) shouldBe (
         "sort_by=count" +
           "&sort_order=desc" +
-          "&case_type=BTI,CORRESPONDENCE" +
+          "&case_type=BTI" +
           "&status=LIVE,NEW" +
-          "&liability_status=NON_LIVE" +
           "&team=1,3" +
           "&min_date=2020-03-21T12:03:15Z" +
           "&max_date=2021-03-21T12:03:15Z"
@@ -393,9 +387,8 @@ class ReportSpec extends BaseSpec {
       ) shouldBe (
         "sort_by=date_created" +
           "&sort_order=asc" +
-          "&case_type=MISCELLANEOUS,CORRESPONDENCE" +
+          "&case_type=BTI" +
           "&status=COMPLETED,REJECTED" +
-          "&liability_status=NON_LIVE" +
           "&team=4,5" +
           "&min_date=-1000000000-01-01T00:00:00Z" +
           "&max_date=+1000000000-12-31T23:59:59.999999999Z"

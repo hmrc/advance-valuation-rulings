@@ -86,7 +86,6 @@ class CaseSearchTest extends BaseSpec {
         "reference=id1" +
           "&reference=id2" +
           "&application_type=BTI" +
-          "&application_type=LIABILITY_ORDER" +
           "&queue_id=queue-id" +
           "&eori=eori-number" +
           "&assignee_id=assignee-id" +
@@ -132,7 +131,6 @@ class CaseSearchTest extends BaseSpec {
         "reference=id1" +
           "&reference=id2" +
           "&application_type=BTI" +
-          "&application_type=LIABILITY_ORDER" +
           "&queue_id=queue-id" +
           "&eori=eori-number" +
           "&assignee_id=assignee-id" +

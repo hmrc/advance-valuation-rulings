@@ -23,7 +23,7 @@ import model.CaseStatus.CaseStatus
 case class Case(
   reference: String,
   status: CaseStatus,
-  createdDate: Instant                 = Instant.now(),
+  createdDate: Instant,
   daysElapsed: Long                    = 0,
   referredDaysElapsed: Long            = 0,
   caseBoardsFileNumber: Option[String] = None,

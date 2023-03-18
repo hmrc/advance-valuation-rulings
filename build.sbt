@@ -7,6 +7,8 @@ lazy val plugins: Seq[Plugins] =
   Seq(PlayScala, SbtDistributablesPlugin)
 lazy val playSettings: Seq[Setting[_]] = Seq.empty
 
+Global / onChangedBuildSource := ReloadOnSourceChanges
+
 lazy val microservice = (project in file("."))
   .enablePlugins(plugins: _*)
   .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427

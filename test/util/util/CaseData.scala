@@ -21,7 +21,7 @@ import model.Role.Role
 import model._
 import utils.RandomGenerator
 
-import java.time.{Instant, LocalDate, ZoneId}
+import java.time.{Clock, Instant, LocalDate, ZoneId}
 
 object CaseData {
 
@@ -209,11 +209,13 @@ object CaseData {
     assignee: Option[Operator]     = None,
     attachments: Seq[Attachment]   = Seq.empty,
     keywords: Set[String]          = Set.empty,
-    dateOfExtract: Option[Instant] = None
+    dateOfExtract: Option[Instant] = None,
+    clock: Option[Clock] = None, // To allow easier testing of the createdDate field
   ): Case =
     Case(
       reference     = r,
       status        = status,
+      createdDate   = Instant.now(clock.getOrElse(Clock.systemUTC())),
       queueId       = queue,
       assignee      = assignee,
       application   = app,

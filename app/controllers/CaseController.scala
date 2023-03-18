@@ -51,7 +51,7 @@ class CaseController @Inject() (
     withJsonBody[NewCaseRequest] { caseRequest: NewCaseRequest =>
       for {
         r <- caseService.nextCaseReference(caseRequest.application.`type`)
-        c <- caseService.insert(caseRequest.toCase(r))
+        c <- caseService.insert(caseRequest.toCase(r, appConfig.clock))
         _ <- caseService.addInitialSampleStatusIfExists(c)
       } yield Created(Json.toJson(c)(RESTFormatters.formatCase))
     } recover recovery map { result =>
