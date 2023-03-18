@@ -70,15 +70,7 @@ class CaseServiceSpec extends BaseSpec with BeforeAndAfterEach {
         when(appConfig.atarCaseReferenceOffset).thenReturn(1000)
         await(service.nextCaseReference(ApplicationType.BTI)) shouldBe "1010"
       }
-
-      "Case is a Liability" in {
-        when(sequenceRepository.incrementAndGetByName("Other Case Reference"))
-          .thenReturn(successful(Sequence("Other Case Reference", 5)))
-        when(appConfig.otherCaseReferenceOffset).thenReturn(2000)
-        await(service.nextCaseReference(ApplicationType.LIABILITY_ORDER)) shouldBe "2005"
-      }
     }
-
   }
 
   "deleteAll()" should {

@@ -51,8 +51,7 @@ class KeywordControllerSpec extends BaseSpec with BeforeAndAfterEach {
     Some("Smartphone"),
     ApplicationType.BTI,
     CaseStatus.OPEN,
-    0,
-    None
+    0
   )
 
   private val caseKeyword  = CaseKeyword(Keyword("tool"), List(caseHeader))

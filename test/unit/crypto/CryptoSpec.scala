@@ -36,9 +36,6 @@ class CryptoSpec extends BaseSpec {
   private def encAddress(k: String)   = Address(k, k, Some(k), Some(k))
 
   private val bti    = createBTIApplicationWithAllFields()
-  private val lo     = createLiabilityOrder
-  private val misc   = createMiscApplication
-  private val corres = createCorrespondenceApplication
 
   private def expectedEncryptedBti(k: String, letter: Option[Attachment]): BTIApplication =
     bti.copy(
@@ -46,25 +43,6 @@ class CryptoSpec extends BaseSpec {
       contact                 = encContacts(k),
       agent                   = Some(AgentDetails(encAgentEori(k), letter)),
       confidentialInformation = Some(k)
-    )
-
-  private def expectedEncryptedLiabilityOrder(k: String): LiabilityOrder =
-    lo.copy(
-      contact = encContacts(k)
-    )
-
-  private def expectedEncryptedMiscApplication(k: String): MiscApplication =
-    misc.copy(
-      contact     = encContacts(k),
-      contactName = Some(k),
-      name        = k
-    )
-
-  private def expectedEncryptedCorrespondenceApplication(k: String): CorrespondenceApplication =
-    corres.copy(
-      contact   = encContacts(k),
-      agentName = Some(k),
-      address   = encAddress(k)
     )
 
   "encrypt()" should {
@@ -76,24 +54,6 @@ class CryptoSpec extends BaseSpec {
       val c   = createCase(app = bti)
       val enc = crypto.encrypt(c)
       enc shouldBe c.copy(application = expectedEncryptedBti(k, c.application.asBTI.agent.get.letterOfAuthorisation))
-    }
-
-    "encrypt Liability orders" in {
-      val c   = createCase(app = lo)
-      val enc = crypto.encrypt(c)
-      enc shouldBe c.copy(application = expectedEncryptedLiabilityOrder(k))
-    }
-
-    "encrypt Miscellaneous applications" in {
-      val c   = createCase(app = misc)
-      val enc = crypto.encrypt(c)
-      enc shouldBe c.copy(application = expectedEncryptedMiscApplication(k))
-    }
-
-    "encrypt Correspondence applications" in {
-      val c   = createCase(app = corres)
-      val enc = crypto.encrypt(c)
-      enc shouldBe c.copy(application = expectedEncryptedCorrespondenceApplication(k))
     }
 
   }
@@ -108,25 +68,6 @@ class CryptoSpec extends BaseSpec {
       val dec = crypto.decrypt(c)
       dec shouldBe c.copy(application = expectedEncryptedBti(k, c.application.asBTI.agent.get.letterOfAuthorisation))
     }
-
-    "decrypt Liability orders" in {
-      val c   = createCase(app = lo)
-      val dec = crypto.decrypt(c)
-      dec shouldBe c.copy(application = expectedEncryptedLiabilityOrder(k))
-    }
-
-    "decrypt Misc applications" in {
-      val c   = createCase(app = misc)
-      val dec = crypto.decrypt(c)
-      dec shouldBe c.copy(application = expectedEncryptedMiscApplication(k))
-    }
-
-    "decrypt Correspondence applications" in {
-      val c   = createCase(app = corres)
-      val dec = crypto.decrypt(c)
-      dec shouldBe c.copy(application = expectedEncryptedCorrespondenceApplication(k))
-    }
-
   }
 
   "encrypt string()" should {

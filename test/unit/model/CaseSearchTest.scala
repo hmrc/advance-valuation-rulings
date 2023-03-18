@@ -31,7 +31,7 @@ class CaseSearchTest extends BaseSpec {
 
   private val filter = CaseFilter(
     reference       = Some(Set("id1", "id2")),
-    applicationType = Some(Set(ApplicationType.BTI, ApplicationType.LIABILITY_ORDER)),
+    applicationType = Some(Set(ApplicationType.BTI)),
     caseSource      = Some("trader-name"),
     queueId         = Some(Set("queue-id")),
     eori            = Some("eori-number"),

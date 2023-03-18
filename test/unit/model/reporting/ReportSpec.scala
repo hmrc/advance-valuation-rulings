@@ -22,7 +22,7 @@ import java.time.Instant
 
 import cats.data.NonEmptySeq
 import sort.SortDirection
-import model.{ApplicationType, LiabilityStatus, PseudoCaseStatus}
+import model.{ApplicationType, PseudoCaseStatus}
 
 class ReportSpec extends BaseSpec {
   "CaseReport" should {
@@ -44,9 +44,8 @@ class ReportSpec extends BaseSpec {
           CaseReport(
             sortBy            = ReportField.Count,
             sortOrder         = SortDirection.DESCENDING,
-            caseTypes         = Set(ApplicationType.BTI, ApplicationType.CORRESPONDENCE),
+            caseTypes         = Set(ApplicationType.BTI),
             statuses          = Set(PseudoCaseStatus.LIVE, PseudoCaseStatus.REFERRED),
-            liabilityStatuses = Set(),
             teams             = Set("1", "3"),
             dateRange = InstantRange(
               Instant.parse("2020-03-21T12:03:15.000Z"),
@@ -72,9 +71,8 @@ class ReportSpec extends BaseSpec {
           CaseReport(
             sortBy            = ReportField.DateCreated,
             sortOrder         = SortDirection.ASCENDING,
-            caseTypes         = Set(ApplicationType.MISCELLANEOUS, ApplicationType.CORRESPONDENCE),
+            caseTypes         = Set(ApplicationType.BTI),
             statuses          = Set(PseudoCaseStatus.COMPLETED, PseudoCaseStatus.REJECTED),
-            liabilityStatuses = Set(LiabilityStatus.NON_LIVE),
             teams             = Set("4", "5"),
             fields =
               NonEmptySeq.of(ReportField.Reference, ReportField.Status, ReportField.ElapsedDays, ReportField.TotalDays)
@@ -93,7 +91,6 @@ class ReportSpec extends BaseSpec {
             fields = NonEmptySeq.of(
               ReportField.Reference,
               ReportField.Status,
-              ReportField.LiabilityStatus,
               ReportField.ElapsedDays,
               ReportField.TotalDays
             )
@@ -110,9 +107,8 @@ class ReportSpec extends BaseSpec {
             fields            = NonEmptySeq.one(ReportField.Reference),
             sortBy            = ReportField.Count,
             sortOrder         = SortDirection.DESCENDING,
-            caseTypes         = Set(ApplicationType.BTI, ApplicationType.CORRESPONDENCE),
+            caseTypes         = Set(ApplicationType.BTI),
             statuses          = Set(PseudoCaseStatus.LIVE, PseudoCaseStatus.NEW),
-            liabilityStatuses = Set(LiabilityStatus.NON_LIVE),
             teams             = Set("1", "3"),
             dateRange = InstantRange(
               Instant.parse("2020-03-21T12:03:15.000Z"),
@@ -139,9 +135,8 @@ class ReportSpec extends BaseSpec {
           CaseReport(
             sortBy            = ReportField.DateCreated,
             sortOrder         = SortDirection.ASCENDING,
-            caseTypes         = Set(ApplicationType.MISCELLANEOUS, ApplicationType.CORRESPONDENCE),
+            caseTypes         = Set(ApplicationType.BTI),
             statuses          = Set(PseudoCaseStatus.COMPLETED, PseudoCaseStatus.REJECTED),
-            liabilityStatuses = Set(LiabilityStatus.NON_LIVE),
             teams             = Set("4", "5"),
             fields = NonEmptySeq.of(
               ReportField.Reference,
@@ -187,7 +182,7 @@ class ReportSpec extends BaseSpec {
             groupBy   = NonEmptySeq.one(ReportField.Status),
             sortBy    = ReportField.Count,
             sortOrder = SortDirection.DESCENDING,
-            caseTypes = Set(ApplicationType.BTI, ApplicationType.CORRESPONDENCE),
+            caseTypes = Set(ApplicationType.BTI),
             statuses  = Set(PseudoCaseStatus.LIVE, PseudoCaseStatus.REFERRED),
             teams     = Set("1", "3"),
             maxFields = Seq(ReportField.TotalDays),
@@ -215,7 +210,7 @@ class ReportSpec extends BaseSpec {
             groupBy   = NonEmptySeq.one(ReportField.User),
             sortBy    = ReportField.DateCreated,
             sortOrder = SortDirection.ASCENDING,
-            caseTypes = Set(ApplicationType.MISCELLANEOUS, ApplicationType.CORRESPONDENCE),
+            caseTypes = Set(ApplicationType.BTI),
             statuses  = Set(PseudoCaseStatus.COMPLETED, PseudoCaseStatus.REJECTED),
             teams     = Set("4", "5"),
             maxFields = Seq(ReportField.ElapsedDays)
@@ -246,9 +241,8 @@ class ReportSpec extends BaseSpec {
             groupBy           = NonEmptySeq.one(ReportField.Status),
             sortBy            = ReportField.Count,
             sortOrder         = SortDirection.DESCENDING,
-            caseTypes         = Set(ApplicationType.BTI, ApplicationType.CORRESPONDENCE),
+            caseTypes         = Set(ApplicationType.BTI),
             statuses          = Set(PseudoCaseStatus.LIVE, PseudoCaseStatus.REFERRED),
-            liabilityStatuses = Set(LiabilityStatus.NON_LIVE),
             teams             = Set("1", "3"),
             maxFields         = Seq(ReportField.ElapsedDays),
             dateRange = InstantRange(
@@ -279,9 +273,8 @@ class ReportSpec extends BaseSpec {
             groupBy           = NonEmptySeq.one(ReportField.User),
             sortBy            = ReportField.DateCreated,
             sortOrder         = SortDirection.ASCENDING,
-            caseTypes         = Set(ApplicationType.MISCELLANEOUS, ApplicationType.CORRESPONDENCE),
+            caseTypes         = Set(ApplicationType.BTI),
             statuses          = Set(PseudoCaseStatus.COMPLETED, PseudoCaseStatus.REJECTED),
-            liabilityStatuses = Set(LiabilityStatus.NON_LIVE),
             teams             = Set("4", "5"),
             maxFields         = Seq(ReportField.TotalDays)
           )
@@ -321,7 +314,7 @@ class ReportSpec extends BaseSpec {
           QueueReport(
             sortBy    = ReportField.Count,
             sortOrder = SortDirection.DESCENDING,
-            caseTypes = Set(ApplicationType.BTI, ApplicationType.CORRESPONDENCE),
+            caseTypes = Set(ApplicationType.BTI),
             statuses  = Set(PseudoCaseStatus.LIVE, PseudoCaseStatus.REFERRED),
             teams     = Set("1", "3"),
             assignee  = Some("1"),
@@ -347,9 +340,8 @@ class ReportSpec extends BaseSpec {
           QueueReport(
             sortBy            = ReportField.DateCreated,
             sortOrder         = SortDirection.ASCENDING,
-            caseTypes         = Set(ApplicationType.MISCELLANEOUS, ApplicationType.CORRESPONDENCE),
+            caseTypes         = Set(ApplicationType.BTI),
             statuses          = Set(PseudoCaseStatus.COMPLETED, PseudoCaseStatus.REJECTED),
-            liabilityStatuses = Set(LiabilityStatus.NON_LIVE),
             teams             = Set("4", "5")
           )
         )
@@ -365,9 +357,8 @@ class ReportSpec extends BaseSpec {
           QueueReport(
             sortBy            = ReportField.Count,
             sortOrder         = SortDirection.DESCENDING,
-            caseTypes         = Set(ApplicationType.BTI, ApplicationType.CORRESPONDENCE),
+            caseTypes         = Set(ApplicationType.BTI),
             statuses          = Set(PseudoCaseStatus.LIVE, PseudoCaseStatus.NEW),
-            liabilityStatuses = Set(LiabilityStatus.NON_LIVE),
             teams             = Set("1", "3"),
             dateRange = InstantRange(
               Instant.parse("2020-03-21T12:03:15.000Z"),
@@ -393,9 +384,8 @@ class ReportSpec extends BaseSpec {
           QueueReport(
             sortBy            = ReportField.DateCreated,
             sortOrder         = SortDirection.ASCENDING,
-            caseTypes         = Set(ApplicationType.MISCELLANEOUS, ApplicationType.CORRESPONDENCE),
+            caseTypes         = Set(ApplicationType.BTI),
             statuses          = Set(PseudoCaseStatus.COMPLETED, PseudoCaseStatus.REJECTED),
-            liabilityStatuses = Set(LiabilityStatus.NON_LIVE),
             teams             = Set("4", "5")
           )
         ),

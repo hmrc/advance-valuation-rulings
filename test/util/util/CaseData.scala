@@ -80,66 +80,6 @@ object CaseData {
       decisionPdf                  = decisionPdf
     )
 
-  def createLiabilityOrder: LiabilityOrder =
-    LiabilityOrder(
-      contact              = createContact,
-      status               = LiabilityStatus.LIVE,
-      traderName           = "John Lewis",
-      goodName             = Some("Hair dryer"),
-      entryNumber          = Some("23-SGD"),
-      entryDate            = Some(Instant.now()),
-      traderCommodityCode  = Some("1234567890"),
-      officerCommodityCode = Some("0987654321")
-    )
-
-  def createLiabilityOrderWithExtraFields: LiabilityOrder =
-    LiabilityOrder(
-      contact              = createContact,
-      status               = LiabilityStatus.LIVE,
-      traderName           = "Acme Corp.",
-      goodName             = Some("Large Iron Anvil"),
-      entryNumber          = Some("23-SGD"),
-      entryDate            = Some(Instant.now()),
-      traderCommodityCode  = Some("6666666666"),
-      officerCommodityCode = Some("0987654321"),
-      btiReference         = Some("BTI-REFERENCE"),
-      repaymentClaim       = Some(RepaymentClaim(dvrNumber = Some("DVR-123456"), dateForRepayment = Some(Instant.now()))),
-      dateOfReceipt        = Some(Instant.now()),
-      traderContactDetails = Some(
-        TraderContactDetails(
-          Some("email"),
-          Some("phone"),
-          Some(Address("Street Name", "Town", Some("County"), Some("P0ST C05E")))
-        )
-      ),
-      agentName = Some("agent"),
-      port      = Some("port")
-    )
-
-  def createCorrespondenceApplication: CorrespondenceApplication =
-    CorrespondenceApplication(
-      None,
-      Some("agent"),
-      createAddress,
-      createContact,
-      None,
-      "Laptop",
-      "Personal Computer",
-      sampleToBeProvided = false,
-      sampleToBeReturned = false
-    )
-
-  def createMiscApplication: MiscApplication =
-    MiscApplication(
-      createContact,
-      "name",
-      Some("contactName"),
-      MiscCaseType.HARMONISED,
-      None,
-      sampleToBeProvided = false,
-      sampleToBeReturned = false
-    )
-
   def createAgentDetails(
     letterOfAuthorization: Option[Attachment] = Some(createAttachment.copy(public = false))
   ): AgentDetails =

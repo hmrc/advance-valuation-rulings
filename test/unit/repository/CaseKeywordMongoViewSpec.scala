@@ -23,7 +23,7 @@ import config.AppConfig
 import model.Role.CLASSIFICATION_OFFICER
 import model._
 import uk.gov.hmrc.mongo.test.MongoSupport
-import util.CaseData.{createBasicBTIApplication, createDecision, createLiabilityOrder}
+import util.CaseData.{createBasicBTIApplication, createDecision}
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -47,31 +47,29 @@ class CaseKeywordMongoViewSpec
 
   private val secondsInAYear = 3600 * 24 * 365
 
-  private val btiCaseHeader = CaseHeader(
+  private val btiCaseHeader1 = CaseHeader(
     reference = "0000001",
     Some(Operator("001", None, None, CLASSIFICATION_OFFICER, List(), List())),
     Some("3"),
     Some("HTC Wildfire smartphone"),
     ApplicationType.BTI,
     CaseStatus.OPEN,
-    0,
-    None
+    0
   )
 
-  private val liabilityCaseHeader = CaseHeader(
+  private val btiCaseHeader2 = CaseHeader(
     reference = "0000002",
     Some(Operator("002", None, None, CLASSIFICATION_OFFICER, List(), List())),
     Some("3"),
     Some("Hair dryer"),
-    ApplicationType.LIABILITY_ORDER,
+    ApplicationType.BTI,
     CaseStatus.OPEN,
-    0,
-    Some(LiabilityStatus.LIVE)
+    0
   )
 
-  private val caseKeywordBike = CaseKeyword(Keyword("bike"), List(btiCaseHeader, liabilityCaseHeader))
-  private val caseKeywordTool = CaseKeyword(Keyword("tool"), List(liabilityCaseHeader))
-  private val caseKeywordCar  = CaseKeyword(Keyword("car"), List(liabilityCaseHeader))
+  private val caseKeywordBike = CaseKeyword(Keyword("bike"), List(btiCaseHeader1, btiCaseHeader2))
+  private val caseKeywordTool = CaseKeyword(Keyword("tool"), List(btiCaseHeader2))
+  private val caseKeywordCar  = CaseKeyword(Keyword("car"), List(btiCaseHeader2))
 
   private val caseWithKeywordsBTI: Case =
     Case(
@@ -93,7 +91,7 @@ class CaseKeywordMongoViewSpec
       createdDate = Instant.now.minusSeconds(1 * secondsInAYear),
       queueId     = Some("3"),
       assignee    = Some(Operator("002")),
-      application = createLiabilityOrder,
+      application = createBasicBTIApplication,
       decision    = Some(createDecision()),
       attachments = Seq.empty,
       keywords    = Set(caseKeywordBike.keyword.name, caseKeywordTool.keyword.name)
@@ -106,7 +104,7 @@ class CaseKeywordMongoViewSpec
       createdDate = Instant.now.minusSeconds(1 * secondsInAYear),
       queueId     = Some("3"),
       assignee    = Some(Operator("003")),
-      application = createLiabilityOrder,
+      application = createBasicBTIApplication,
       decision    = Some(createDecision()),
       attachments = Seq.empty,
       keywords    = Set(caseKeywordTool.keyword.name, caseKeywordCar.keyword.name)

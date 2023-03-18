@@ -38,7 +38,7 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
 
       val filter = CaseFilter(
         reference        = Some(Set("id1", "id2")),
-        applicationType  = Some(Set(ApplicationType.BTI, ApplicationType.LIABILITY_ORDER)),
+        applicationType  = Some(Set(ApplicationType.BTI)),
         queueId          = Some(Set("valid_queue")),
         eori             = Some("eori-number"),
         assigneeId       = Some("valid_assignee"),
@@ -99,10 +99,10 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
 
     "filter by 'application type'" in {
       jsonMapper.filterBy(
-        CaseFilter(applicationType = Some(Set(ApplicationType.BTI, ApplicationType.LIABILITY_ORDER)))
+        CaseFilter(applicationType = Some(Set(ApplicationType.BTI)))
       ) shouldBe Json
         .obj(
-          "application.type" -> Json.obj("$in" -> Json.arr("BTI", "LIABILITY_ORDER"))
+          "application.type" -> Json.obj("$in" -> Json.arr("BTI"))
         )
     }
 

@@ -60,12 +60,7 @@ object Cases {
     None,
     None
   )
-  private val liabilityApplicationExample = LiabilityOrder(
-    contactExample,
-    Some("good name"),
-    LiabilityStatus.LIVE,
-    "trader name"
-  )
+
   private val decision = Decision(
     "040900",
     Some(Instant.now()),
@@ -77,6 +72,7 @@ object Cases {
     Some("denomination"),
     Seq.empty
   )
+
   private val btiCaseExample = Case(
     UUID.randomUUID().toString,
     CaseStatus.OPEN,
@@ -118,15 +114,6 @@ object Cases {
 
   def withoutQueue(): Case => Case =
     _.copy(queueId = None)
-
-  def withLiabilityDetails(goodName: Option[String] = Some("good name")): Case => Case = { c =>
-    c.copy(application =
-      liabilityApplicationExample.copy(
-        goodName = goodName
-      )
-    )
-
-  }
 
   def withBTIDetails(
     offline: Boolean                        = false,
