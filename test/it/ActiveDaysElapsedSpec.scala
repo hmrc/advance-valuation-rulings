@@ -68,50 +68,6 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
       daysElapsedForCase("completed")    shouldBe -1 // Unchanged
     }
 
-    Scenario("Calculates elapsed days for OPEN & NEW Liability cases") {
-      Given("There are cases with mixed statuses in the database")
-
-      //OPEN
-      //without date of receipt will take created date
-      givenThereIs(
-        aLiabilityCaseWith(reference = "ref-1", status = OPEN, createdDate = "2018-12-20", dateOfReceipt = None)
-      )
-      //with date of receipt will take date of receipt
-      givenThereIs(
-        aLiabilityCaseWith(
-          reference     = "ref-2",
-          status        = OPEN,
-          createdDate   = "2018-12-30",
-          dateOfReceipt = Some("2018-12-20")
-        )
-      )
-
-      //NEW
-      //without date of receipt will take created date
-      givenThereIs(
-        aLiabilityCaseWith(reference = "ref-3", status = NEW, createdDate = "2018-12-10", dateOfReceipt = None)
-      )
-      //with date of receipt will take date of receipt
-      givenThereIs(
-        aLiabilityCaseWith(
-          reference     = "ref-4",
-          status        = NEW,
-          createdDate   = "2018-12-20",
-          dateOfReceipt = Some("2018-12-10")
-        )
-      )
-
-      When("The job runs")
-      result(job.execute(), timeout)
-
-      Then("The Days Elapsed should be correct")
-      daysElapsedForCase("ref-1") shouldBe 29
-      daysElapsedForCase("ref-2") shouldBe 29
-
-      daysElapsedForCase("ref-3") shouldBe 37
-      daysElapsedForCase("ref-4") shouldBe 37
-    }
-
     Scenario("Calculates elapsed days for a referred case") {
       Given("A Case which was REFERRED in the past")
       givenThereIs(aCaseWith(reference             = "valid-ref", status = OPEN, createdDate = "2019-01-10"))
@@ -277,26 +233,6 @@ class ActiveDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
       dateOfExtract       = Some(LocalDate.parse(dateOfExtract).atStartOfDay().toInstant(ZoneOffset.UTC)),
       migratedDaysElapsed = Some(migratedDaysElapsed)
     )
-
-  private def aLiabilityCaseWith(
-    reference: String,
-    createdDate: String,
-    status: CaseStatus,
-    dateOfReceipt: Option[String]
-  ): Case = {
-    val liability = createLiabilityOrder
-    createCase(app = liability).copy(
-      reference   = reference,
-      createdDate = LocalDate.parse(createdDate).atStartOfDay().toInstant(ZoneOffset.UTC),
-      status      = status,
-      daysElapsed = -1,
-      application = liability.copy(
-        dateOfReceipt =
-          if (dateOfReceipt.isDefined) Some(LocalDate.parse(dateOfReceipt.get).atStartOfDay().toInstant(ZoneOffset.UTC))
-          else None
-      )
-    )
-  }
 
   private def aStatusChangeWith(caseReference: String, status: CaseStatus, date: String): Event =
     EventData

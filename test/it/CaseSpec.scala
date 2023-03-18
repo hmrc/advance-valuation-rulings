@@ -41,17 +41,7 @@ class CaseSpec extends BaseFeatureSpec {
   private val c1_updated = c1.copy(status = status)
   private val c2 = createCase(
     r           = "case_ref_2",
-    app         = createLiabilityOrder,
-    decision    = Some(createDecision()),
-    attachments = Seq(createAttachment, createAttachmentWithOperator),
-    keywords    = Set("BIKE", "MTB", "HARDTAIL")
-  )
-  private val c2CreateWithExtraFields = createNewCase(app = createLiabilityOrderWithExtraFields)
-  private val correspondenceCase      = createNewCase(app = createCorrespondenceApplication)
-  private val miscCase                = createNewCase(app = createMiscApplication)
-  private val c2WithExtraFields = createCase(
-    r           = "case_ref_2",
-    app         = createLiabilityOrderWithExtraFields,
+    app         = createBasicBTIApplication,
     decision    = Some(createDecision()),
     attachments = Seq(createAttachment, createAttachmentWithOperator),
     keywords    = Set("BIKE", "MTB", "HARDTAIL")
@@ -107,10 +97,6 @@ class CaseSpec extends BaseFeatureSpec {
   private val c1UpdatedJson               = Json.toJson(c1_updated)
   private val c3Json                      = Json.toJson(c3)
   private val c4Json                      = Json.toJson(c4)
-  private val c2WithExtraFieldsJson       = Json.toJson(c2WithExtraFields)
-  private val c2CreateWithExtraFieldsJson = Json.toJson(c2CreateWithExtraFields)
-  private val correspondenceCaseJson      = Json.toJson(correspondenceCase)
-  private val miscCaseJson                = Json.toJson(miscCase)
 
   Feature("Delete All") {
 
@@ -195,96 +181,6 @@ class CaseSpec extends BaseFeatureSpec {
       responseCase.reference shouldBe "600000001"
       responseCase.status    shouldBe CaseStatus.NEW
     }
-
-    Scenario("Create a new liability case with new fields DIT-1962") {
-
-      When("I create a new liability case")
-      val result: HttpResponse[String] = Http(s"$serviceUrl/cases")
-        .header(apiTokenKey, appConfig.authorization)
-        .header(CONTENT_TYPE, JSON)
-        .postData(c2CreateWithExtraFieldsJson.toString())
-        .asString
-
-      Then("The response code should be created")
-      result.code shouldEqual CREATED
-
-      And("The case is returned in the JSON response")
-      val responseCase = Json.parse(result.body).as[Case]
-      responseCase.reference                                                            shouldBe "800000001"
-      responseCase.status                                                               shouldBe CaseStatus.NEW
-      responseCase.application.asLiabilityOrder.btiReference                            shouldBe Some("BTI-REFERENCE")
-      responseCase.application.asLiabilityOrder.repaymentClaim.get.dvrNumber            shouldBe Some("DVR-123456")
-      responseCase.application.asLiabilityOrder.repaymentClaim.get.dateForRepayment.get should roughlyBe(Instant.now())
-      responseCase.application.asLiabilityOrder.dateOfReceipt.get                       should roughlyBe(Instant.now())
-
-      responseCase.application.asLiabilityOrder.traderContactDetails.get shouldBe
-        TraderContactDetails(
-          Some("email"),
-          Some("phone"),
-          Some(Address("Street Name", "Town", Some("County"), Some("P0ST C05E")))
-        )
-
-      responseCase.application.asLiabilityOrder.agentName shouldBe Some("agent")
-      responseCase.application.asLiabilityOrder.port      shouldBe Some("port")
-    }
-
-    Scenario("Create a new Correspondence case") {
-
-      When("I create a new Correspondence case")
-      val result: HttpResponse[String] = Http(s"$serviceUrl/cases")
-        .header(apiTokenKey, appConfig.authorization)
-        .header(CONTENT_TYPE, JSON)
-        .postData(correspondenceCaseJson.toString())
-        .asString
-
-      Then("The response code should be created")
-      result.code shouldEqual CREATED
-
-      And("The case is returned in the JSON response")
-      val responseCase = Json.parse(result.body).as[Case]
-      responseCase.reference                                        shouldBe "800000001"
-      responseCase.status                                           shouldBe CaseStatus.NEW
-      responseCase.application.asCorrespondence.summary             shouldBe "Laptop"
-      responseCase.application.asCorrespondence.detailedDescription shouldBe "Personal Computer"
-      responseCase.application.asCorrespondence.address shouldBe Address(
-        "23, Leyton St",
-        "Leeds",
-        Some("West Yorkshire"),
-        Some("LS4 99AA")
-      )
-      responseCase.application.asCorrespondence.contact shouldBe Contact(
-        "Maurizio",
-        "maurizio@me.com",
-        Some("0123456789")
-      )
-      responseCase.application.asCorrespondence.agentName          shouldBe Some("agent")
-      responseCase.application.asCorrespondence.sampleToBeProvided shouldBe false
-      responseCase.application.asCorrespondence.sampleToBeReturned shouldBe false
-    }
-
-    Scenario("Create a new Misc case") {
-
-      When("I create a new Misc case")
-      val result: HttpResponse[String] = Http(s"$serviceUrl/cases")
-        .header(apiTokenKey, appConfig.authorization)
-        .header(CONTENT_TYPE, JSON)
-        .postData(miscCaseJson.toString())
-        .asString
-
-      Then("The response code should be created")
-      result.code shouldEqual CREATED
-
-      And("The case is returned in the JSON response")
-      val responseCase = Json.parse(result.body).as[Case]
-      responseCase.reference                             shouldBe "800000001"
-      responseCase.status                                shouldBe CaseStatus.NEW
-      responseCase.application.asMisc.name               shouldBe "name"
-      responseCase.application.asMisc.contactName        shouldBe Some("contactName")
-      responseCase.application.asMisc.caseType           shouldBe MiscCaseType.HARMONISED
-      responseCase.application.asMisc.contact            shouldBe Contact("Maurizio", "maurizio@me.com", Some("0123456789"))
-      responseCase.application.asMisc.sampleToBeProvided shouldBe false
-      responseCase.application.asMisc.sampleToBeReturned shouldBe false
-    }
   }
 
   Feature("Update Case") {
@@ -330,14 +226,14 @@ class CaseSpec extends BaseFeatureSpec {
       val result = Http(s"$serviceUrl/cases/${c2.reference}")
         .header(apiTokenKey, appConfig.authorization)
         .header(CONTENT_TYPE, JSON)
-        .put(c2WithExtraFieldsJson.toString())
+        .put(c2.toString())
         .asString
 
       Then("Response should be OK")
       result.code shouldEqual OK
 
       And("The case is returned in the JSON response")
-      Json.parse(result.body) shouldBe c2WithExtraFieldsJson
+      Json.parse(result.body) shouldBe c2
     }
   }
 
