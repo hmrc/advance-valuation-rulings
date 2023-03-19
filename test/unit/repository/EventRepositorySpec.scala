@@ -39,12 +39,15 @@ class EventRepositorySpec
   self =>
   private val mongoErrorCode = 11000
 
+   val fixedInstant = Instant.parse("2021-02-01T09:00:00.00Z")
+
+
   private val repository = createMongoRepo
 
   private def createMongoRepo =
     new EventMongoRepository(mongoComponent)
 
-  private val e: Event = createNoteEvent("")
+  private val e: Event = createNoteEvent("", date = fixedInstant)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -78,9 +81,9 @@ class EventRepositorySpec
 
   "delete" should {
     "clear events by case reference" in {
-      val e1 = createNoteEvent("REF_1")
-      val e2 = createCaseStatusChangeEvent("REF_1")
-      val e3 = createCaseStatusChangeEvent("REF_2")
+      val e1 = createNoteEvent("REF_1", date = fixedInstant)
+      val e2 = createCaseStatusChangeEvent("REF_1", date = fixedInstant)
+      val e3 = createCaseStatusChangeEvent("REF_2", date = fixedInstant)
 
       await(repository.insert(e1))
       await(repository.insert(e2))
@@ -95,8 +98,8 @@ class EventRepositorySpec
     }
 
     "clear events by event type" in {
-      val e1 = createNoteEvent("REF_1")
-      val e2 = createCaseStatusChangeEvent("REF_2")
+      val e1 = createNoteEvent("REF_1", date = fixedInstant)
+      val e2 = createCaseStatusChangeEvent("REF_2", date = fixedInstant)
 
       await(repository.insert(e1))
       await(repository.insert(e2))
@@ -142,8 +145,8 @@ class EventRepositorySpec
   "search" should {
 
     "retrieve all expected events from the collection by reference" in {
-      val e1 = createNoteEvent("REF_1")
-      val e2 = createCaseStatusChangeEvent("REF_2")
+      val e1 = createNoteEvent("REF_1", date = fixedInstant)
+      val e2 = createCaseStatusChangeEvent("REF_2", date = fixedInstant)
 
       await(repository.insert(e1))
       await(repository.insert(e2))
@@ -154,8 +157,8 @@ class EventRepositorySpec
     }
 
     "retrieve all expected events from the collection by type" in {
-      val e1 = createNoteEvent("REF_1")
-      val e2 = createCaseStatusChangeEvent("REF_1")
+      val e1 = createNoteEvent("REF_1", date = fixedInstant)
+      val e2 = createCaseStatusChangeEvent("REF_1", date = fixedInstant)
 
       await(repository.insert(e1))
       await(repository.insert(e2))
