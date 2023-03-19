@@ -53,7 +53,7 @@ class CaseSearchMapperSpec extends BaseMongoIndexSpec {
 
       jsonMapper.filterBy(filter) shouldBe Json.obj(
         "reference"                     -> Json.obj("$in" -> Json.arr("id1", "id2")),
-        "application.type"              -> Json.obj("$in" -> Json.arr("BTI", "LIABILITY_ORDER")),
+        "application.type"              -> Json.obj("$in" -> Json.arr("BTI")),
         "queueId"                       -> Json.obj("$in" -> Json.arr("valid_queue")),
         "assignee.id"                   -> "valid_assignee",
         "status"                        -> Json.obj("$in" -> Json.arr("NEW", "OPEN")),
