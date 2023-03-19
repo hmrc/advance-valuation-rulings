@@ -18,10 +18,12 @@ package repository
 
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import config.AppConfig
-import model.Case
+import model.{Attachment, Case}
 import uk.gov.hmrc.mongo.test.MongoSupport
 import util.CaseData.{createAttachment, createBTIApplicationWithAllFields, createCase, createDecision}
+import utils.RandomGenerator
 
+import java.time.{Clock, Instant, ZoneOffset}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class CaseAttachmentAggregationSpec
@@ -30,6 +32,8 @@ class CaseAttachmentAggregationSpec
     with BeforeAndAfterEach
     with MongoSupport {
   self =>
+
+  val fixedClock = Clock.fixed(Instant.parse("2021-02-01T09:00:00.00Z"), ZoneOffset.UTC)
 
   private val config      = mock[AppConfig]
   private val repository  = newMongoRepository
@@ -41,12 +45,20 @@ class CaseAttachmentAggregationSpec
   private def newMongoAggregation: CaseAttachmentAggregation =
     new CaseAttachmentAggregation(mongoComponent)
 
-  private val attachment1           = createAttachment
-  private val attachment2           = createAttachment
-  private val attachment3           = createAttachment
-  private val applicationPdf        = createAttachment
-  private val decisionPdf           = createAttachment
-  private val letterOfAuthorization = createAttachment
+  private val pubicAttachmentToPublish =
+    Attachment(
+      id = RandomGenerator.randomUUID(),
+      public = true,
+      timestamp = Instant.now(fixedClock),
+      shouldPublishToRulings = true
+    )
+
+  private val attachment1           = pubicAttachmentToPublish.copy(id = RandomGenerator.randomUUID())
+  private val attachment2           = pubicAttachmentToPublish.copy(id = RandomGenerator.randomUUID())
+  private val attachment3           = pubicAttachmentToPublish.copy(id = RandomGenerator.randomUUID())
+  private val applicationPdf        = pubicAttachmentToPublish.copy(id = RandomGenerator.randomUUID())
+  private val decisionPdf           = pubicAttachmentToPublish.copy(id = RandomGenerator.randomUUID())
+  private val letterOfAuthorization = pubicAttachmentToPublish.copy(id = RandomGenerator.randomUUID())
 
   private val caseWithAttachments: Case = createCase(
     attachments = Seq(attachment1, attachment2, attachment3),
@@ -54,7 +66,8 @@ class CaseAttachmentAggregationSpec
       applicationPdf        = Some(applicationPdf),
       letterOfAuthorization = Some(letterOfAuthorization)
     ),
-    decision = Some(createDecision(decisionPdf = Some(decisionPdf)))
+    decision = Some(createDecision(decisionPdf = Some(decisionPdf))),
+    clock = Some(fixedClock)
   )
 
   override def beforeEach(): Unit = {
