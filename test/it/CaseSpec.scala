@@ -32,12 +32,12 @@ class CaseSpec extends BaseFeatureSpec {
 
   protected val serviceUrl = s"http://localhost:$port"
 
-  private val clock      = Clock.systemUTC()
-  private val q1         = "queue1"
-  private val u1         = Operator("user1")
-  private val c0         = createNewCase(app = createBasicBTIApplication)
-  private val c1         = createCase(app = createBasicBTIApplication, queue = Some(q1), assignee = Some(u1))
-  private val status     = CaseStatus.CANCELLED
+  private val clock = Clock.systemUTC()
+  private val q1 = "queue1"
+  private val u1 = Operator("user1")
+  private val c0 = createNewCase(app = createBasicBTIApplication)
+  private val c1 = createCase(app = createBasicBTIApplication, queue = Some(q1), assignee = Some(u1))
+  private val status = CaseStatus.CANCELLED
   private val c1_updated = c1.copy(status = status)
   private val c_noQueue = createNewCaseWithExtraFields.copy(queueId = None)
   private val c_noAssignee = createNewCaseWithExtraFields.copy(assignee = None)
@@ -45,24 +45,24 @@ class CaseSpec extends BaseFeatureSpec {
   private val c4 = createNewCase(app = createBTIApplicationWithAllFields())
   private val c5 = createCase(r = "case_ref_5", app = createBasicBTIApplication.copy(holder = eORIDetailForNintedo))
   private val c6_live = createCase(
-    status   = CaseStatus.COMPLETED,
+    status = CaseStatus.COMPLETED,
     decision = Some(createDecision(effectiveEndDate = Some(Instant.now(clock).plusSeconds(3600 * 24))))
   )
   private val c6_expired = createCase(
-    status   = CaseStatus.COMPLETED,
+    status = CaseStatus.COMPLETED,
     decision = Some(createDecision(effectiveEndDate = Some(Instant.now(clock).minusSeconds(3600 * 24))))
   )
   private val c7 = createCase(decision = Some(createDecision(goodsDescription = "LAPTOP")))
   private val c8 =
     createCase(decision = Some(createDecision(methodCommercialDenomination = Some("laptop from Mexico"))))
-  private val c9  = createCase(decision = Some(createDecision(justification = "this LLLLaptoppp")))
+  private val c9 = createCase(decision = Some(createDecision(justification = "this LLLLaptoppp")))
   private val c10 = createCase(keywords = Set("MTB", "BICYCLE"))
   private val c11 = createCase(
     decision = Some(
       createDecision(
-        goodsDescription   = "LAPTOP",
+        goodsDescription = "LAPTOP",
         effectiveStartDate = Some(Instant.now().minus(3, ChronoUnit.DAYS)),
-        effectiveEndDate   = Some(Instant.now().minus(1, ChronoUnit.DAYS))
+        effectiveEndDate = Some(Instant.now().minus(1, ChronoUnit.DAYS))
       )
     ),
     status = CaseStatus.COMPLETED
@@ -70,9 +70,9 @@ class CaseSpec extends BaseFeatureSpec {
   private val c12 = createCase(
     decision = Some(
       createDecision(
-        goodsDescription   = "SPANNER",
+        goodsDescription = "SPANNER",
         effectiveStartDate = Some(Instant.now().minus(3, ChronoUnit.DAYS)),
-        effectiveEndDate   = Some(Instant.now().minus(1, ChronoUnit.DAYS))
+        effectiveEndDate = Some(Instant.now().minus(1, ChronoUnit.DAYS))
       )
     ),
     status = CaseStatus.COMPLETED
@@ -80,18 +80,18 @@ class CaseSpec extends BaseFeatureSpec {
   private val c13 = createCase(
     decision = Some(
       createDecision(
-        goodsDescription   = "LAPTOP",
+        goodsDescription = "LAPTOP",
         effectiveStartDate = Some(Instant.now()),
-        effectiveEndDate   = Some(Instant.now().plus(1, ChronoUnit.DAYS))
+        effectiveEndDate = Some(Instant.now().plus(1, ChronoUnit.DAYS))
       )
     ),
     status = CaseStatus.COMPLETED
   )
-  private val c0Json                      = Json.toJson(c0)
-  private val c1Json                      = Json.toJson(c1)
-  private val c1UpdatedJson               = Json.toJson(c1_updated)
-  private val c3Json                      = Json.toJson(c3)
-  private val c4Json                      = Json.toJson(c4)
+  private val c0Json = Json.toJson(c0)
+  private val c1Json = Json.toJson(c1)
+  private val c1UpdatedJson = Json.toJson(c1_updated)
+  private val c3Json = Json.toJson(c3)
+  private val c4Json = Json.toJson(c4)
 
   Feature("Delete All") {
 
@@ -135,7 +135,7 @@ class CaseSpec extends BaseFeatureSpec {
       And("The case is returned in the JSON response")
       val responseCase = Json.parse(result.body).as[Case]
       responseCase.reference shouldBe "600000001"
-      responseCase.status    shouldBe CaseStatus.NEW
+      responseCase.status shouldBe CaseStatus.NEW
     }
 
     Scenario("Extra fields are ignored when creating a case") {
@@ -151,12 +151,12 @@ class CaseSpec extends BaseFeatureSpec {
 
       And("The case is returned in the JSON response")
       val responseCase = Json.parse(result.body).as[Case]
-      responseCase.reference   shouldBe "600000001"
-      responseCase.status      shouldBe CaseStatus.NEW
+      responseCase.reference shouldBe "600000001"
+      responseCase.status shouldBe CaseStatus.NEW
       responseCase.createdDate should roughlyBe(Instant.now())
-      responseCase.assignee    shouldBe None
-      responseCase.queueId     shouldBe None
-      responseCase.decision    shouldBe None
+      responseCase.assignee shouldBe None
+      responseCase.queueId shouldBe None
+      responseCase.decision shouldBe None
     }
 
     Scenario("Create a new case with all fields") {
@@ -174,7 +174,7 @@ class CaseSpec extends BaseFeatureSpec {
       And("The case is returned in the JSON response")
       val responseCase = Json.parse(result.body).as[Case]
       responseCase.reference shouldBe "600000001"
-      responseCase.status    shouldBe CaseStatus.NEW
+      responseCase.status shouldBe CaseStatus.NEW
     }
   }
 
@@ -432,7 +432,7 @@ class CaseSpec extends BaseFeatureSpec {
     Scenario("Filtering cases that have undefined assigneeId and undefined queueId") {
 
       Given("There are few cases in the database")
-      storeCases(c1, c_noQueue, c_noAssignee, c_noQueue_noAssignee) // TODO: Should we remove the noQueue and noAssignee?
+      storeCases(c1, c_noQueue, c_noAssignee, c_noQueue_noAssignee)
 
       When("I get cases by assignee id and queue id")
       val result = Http(s"$serviceUrl/cases?assignee_id=none&queue_id=none")
@@ -597,28 +597,28 @@ class CaseSpec extends BaseFeatureSpec {
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body).as[Paged[Case]].results.map(_.reference) should contain only (c_Reference1.reference, c_Reference2.reference)
+      Json.parse(result.body).as[Paged[Case]].results.map(_.reference) should contain only(c_Reference1.reference, c_Reference2.reference)
     }
 
     Scenario("Filtering cases by multiple references - comma separated") {
 
-      storeCases(c_Reference1, c5, c10)
+      storeCases(c_Reference1, c_Reference2, c_Reference3)
 
       val result = Http(s"$serviceUrl/cases?reference=${c_Reference1.reference},${c_Reference2.reference}")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body).as[Paged[Case]].results.map(_.reference) should contain only (c_Reference1.reference, c_Reference2.reference)
+      Json.parse(result.body).as[Paged[Case]].results.map(_.reference) should contain only(c_Reference1.reference, c_Reference2.reference)
     }
 
   }
 
   Feature("Get Cases by keywords") {
-    val c_keyword_empty = createNewCaseWithExtraFields.copy(keywords = Set.empty)
-    val c_keyword_1 = createNewCaseWithExtraFields.copy(keywords = Set("MTB", "HARDTAIL"))
-    val c_keyword_2 = createNewCaseWithExtraFields.copy(keywords = Set("PHONE"))
-    val c_keyword_3 = createNewCaseWithExtraFields.copy(keywords = Set("MTB", "BICYCLE"))
+    val c_keyword_empty = createCase().copy(keywords = Set.empty)
+    val c_keyword_1 = createCase().copy(keywords = Set("MTB", "HARDTAIL"))
+    val c_keyword_2 = createCase().copy(keywords = Set("PHONE"))
+    val c_keyword_3 = createCase().copy(keywords = Set("MTB", "BICYCLE"))
 
 
     Scenario("No matches") {
@@ -635,7 +635,7 @@ class CaseSpec extends BaseFeatureSpec {
 
     Scenario("Filtering cases by single keyword") {
 
-      storeCases(c_keyword_empty, c_keyword_1, c_keyword_2)
+      storeCases(c_keyword_empty, c_keyword_1, c_keyword_2, c_keyword_3)
 
       val result = Http(s"$serviceUrl/cases?keyword=MTB")
         .header(apiTokenKey, appConfig.authorization)
@@ -672,9 +672,9 @@ class CaseSpec extends BaseFeatureSpec {
   }
 
   Feature("Get Cases by trader name") {
-    val c_name_1 = createNewCaseWithExtraFields
-    val c_name_2 = createNewCaseWithExtraFields.copy(application = createBasicBTIApplication.copy(holder = createEORIDetails.copy("johN LeWIS")))
-    val c_name_3 = createNewCaseWithExtraFields.copy(application = createBasicBTIApplication.copy(holder = eORIDetailForNintedo))
+    val c_name_1 = createCase()
+    val c_name_2 = createCase().copy(application = createBasicBTIApplication.copy(holder = createEORIDetails.copy("johN LeWIS")))
+    val c_name_3 = createCase().copy(application = createBasicBTIApplication.copy(holder = eORIDetailForNintedo))
 
     Scenario("Filtering cases by trader name") {
 
@@ -697,7 +697,7 @@ class CaseSpec extends BaseFeatureSpec {
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_name_1)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_name_1, c_name_2)))
     }
 
     Scenario("Search by substring") {
@@ -709,7 +709,7 @@ class CaseSpec extends BaseFeatureSpec {
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_name_1)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_name_1, c_name_2)))
     }
 
     Scenario("No matches") {
@@ -755,9 +755,9 @@ class CaseSpec extends BaseFeatureSpec {
   }
 
   Feature("Get Cases by commodity code") {
-    val c_comodity_code_1 = createNewCaseWithExtraFields
-    val c_comodity_code_2 = createNewCaseWithExtraFields.copy(decision    = Some(createDecision()))
-    val c_comodity_code_3 = createNewCaseWithExtraFields
+    val c_comodity_code_1 = createCase()
+    val c_comodity_code_2 = createCase().copy(decision = Some(createDecision()))
+    val c_comodity_code_3 = createCase()
     val c_commodity_code_live = createCase(
       status = CaseStatus.COMPLETED,
       decision = Some(createDecision(effectiveEndDate = Some(Instant.now(clock).plusSeconds(3600 * 24))))
@@ -946,7 +946,7 @@ class CaseSpec extends BaseFeatureSpec {
     val c_eori_2 = createCase(app = createBasicBTIApplication, queue = Some(q1), assignee = Some(u1))
 
     val holderEori = "eori_01234"
-    val agentEori  = "eori_98765"
+    val agentEori = "eori_98765"
 
     val agentDetails = createAgentDetails().copy(eoriDetails = createEORIDetails.copy(eori = agentEori))
 
@@ -954,7 +954,7 @@ class CaseSpec extends BaseFeatureSpec {
     val agentApp = createBTIApplicationWithAllFields()
       .copy(holder = createEORIDetails.copy(eori = holderEori), agent = Some(agentDetails))
 
-    val agentCase  = createCase(app = agentApp)
+    val agentCase = createCase(app = agentApp)
     val holderCase = createCase(app = holderApp)
 
     Scenario("No matches") {
@@ -1017,9 +1017,9 @@ class CaseSpec extends BaseFeatureSpec {
   Feature("Get Cases sorted by commodity code") {
 
     val caseWithEmptyCommCode = createCase().copy(decision = None)
-    val caseY1                = createCase().copy(decision = Some(createDecision(bindingCommodityCode = "777")))
-    val caseY2                = createCase().copy(decision = Some(createDecision(bindingCommodityCode = "777")))
-    val caseZ                 = createCase().copy(decision = Some(createDecision(bindingCommodityCode = "1111111111")))
+    val caseY1 = createCase().copy(decision = Some(createDecision(bindingCommodityCode = "777")))
+    val caseY2 = createCase().copy(decision = Some(createDecision(bindingCommodityCode = "777")))
+    val caseZ = createCase().copy(decision = Some(createDecision(bindingCommodityCode = "1111111111")))
 
     Scenario("Sorting default - ascending order") {
       Given("There are few cases in the database")
