@@ -16,7 +16,6 @@
 
 package repository
 
-import base.FixedTimeFixtures
 import cats.data.NonEmptySeq
 import cats.syntax.all._
 import org.mockito.BDDMockito.given
@@ -34,6 +33,7 @@ import sort.{CaseSortField, SortDirection}
 import uk.gov.hmrc.mongo.test.MongoSupport
 import util.CaseData._
 import util.Cases._
+import util.FixedTimeFixtures
 
 import java.time._
 import scala.concurrent.ExecutionContext.Implicits.global

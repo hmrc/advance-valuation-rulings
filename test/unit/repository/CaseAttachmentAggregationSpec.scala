@@ -16,12 +16,12 @@
 
 package repository
 
-import base.FixedTimeFixtures
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import config.AppConfig
 import model.{Attachment, Case}
 import uk.gov.hmrc.mongo.test.MongoSupport
 import util.CaseData.{createAttachment, createBTIApplicationWithAllFields, createCase, createDecision}
+import util.FixedTimeFixtures
 import utils.RandomGenerator
 
 import java.time.{Clock, Instant, ZoneOffset}

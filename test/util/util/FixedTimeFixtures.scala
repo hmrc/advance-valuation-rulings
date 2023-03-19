@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package base
+package util
 
 import java.time.{Clock, Instant, ZoneOffset}
 

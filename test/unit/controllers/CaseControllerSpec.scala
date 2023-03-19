@@ -16,7 +16,7 @@
 
 package controllers
 
-import base.{BaseSpec, FixedTimeFixtures}
+import base.BaseSpec
 import org.mockito.ArgumentMatchers.{any, refEq}
 import org.mockito.Mockito.{verify, when}
 import org.mockito.{ArgumentCaptor, Mockito}
@@ -30,7 +30,7 @@ import model._
 import service.CaseService
 import sort.{CaseSortField, SortDirection}
 import uk.gov.hmrc.http.HttpVerbs
-import util.{CaseData, DatabaseException}
+import util.{CaseData, DatabaseException, FixedTimeFixtures}
 
 import java.time.Instant
 import scala.concurrent.Future

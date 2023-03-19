@@ -16,7 +16,6 @@
 
 package util
 
-import base.FixedTimeFixtures
 import model.CaseStatus.CaseStatus
 import model.Role.Role
 import model._
