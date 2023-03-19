@@ -28,7 +28,8 @@ class CaseRequestSpec extends BaseSpec with MockitoSugar {
 
   private val application = mock[Application]
   private val attachments = mock[Seq[Attachment]]
-  private val fixedClock =  Clock.fixed(Instant.parse("2021-02-01T09:00:00.00Z"), ZoneOffset.UTC)
+  private val fixedInstant =Instant.parse("2021-02-01T09:00:00.00Z")
+  private val fixedClock =  Clock.fixed(fixedInstant, ZoneOffset.UTC)
 
   "To Case" should {
 
@@ -36,7 +37,7 @@ class CaseRequestSpec extends BaseSpec with MockitoSugar {
       when(application.asBTI).thenReturn(CaseData.createBasicBTIApplication)
       val c = NewCaseRequest(application, attachments).toCase("reference", fixedClock)
       c.status               shouldBe CaseStatus.NEW
-      c.createdDate          should roughlyBe(Instant.now())
+      c.createdDate          should roughlyBe(fixedInstant)
       c.daysElapsed          shouldBe 0
       c.assignee             shouldBe None
       c.queueId              shouldBe None
