@@ -46,7 +46,7 @@ class CaseSearchTest extends BaseSpec {
 
   private val params: Map[String, Seq[String]] = Map(
     "reference"        -> Seq("id1", "id2"),
-    "application_type" -> Seq("BTI", "LIABILITY_ORDER"),
+    "application_type" -> Seq("BTI", "LIABILITY_ORDER"), // TODO: Remove this as not applicable
     "case_source"      -> Seq("trader-name"),
     "queue_id"         -> Seq("queue-id"),
     "eori"             -> Seq("eori-number"),
@@ -61,7 +61,7 @@ class CaseSearchTest extends BaseSpec {
 
   private val emptyParams: Map[String, Seq[String]] = Map(
     "reference"        -> Seq(""),
-    "application_type" -> Seq(""),
+    "application_type" -> Seq(""), // TODO: Remove this as not applicable
     "case_source"      -> Seq(""),
     "queue_id"         -> Seq(""),
     "eori"             -> Seq(""),
@@ -85,7 +85,7 @@ class CaseSearchTest extends BaseSpec {
       val populatedQueryParam: String =
         "reference=id1" +
           "&reference=id2" +
-          "&application_type=BTI" +
+          "&application_type=BTI" + // TODO: Remove this as not applicable
           "&queue_id=queue-id" +
           "&eori=eori-number" +
           "&assignee_id=assignee-id" +

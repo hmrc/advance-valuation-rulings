@@ -39,13 +39,8 @@ class CaseSpec extends BaseFeatureSpec {
   private val c1         = createCase(app = createBasicBTIApplication, queue = Some(q1), assignee = Some(u1))
   private val status     = CaseStatus.CANCELLED
   private val c1_updated = c1.copy(status = status)
-  private val c2 = createCase(
-    r           = "case_ref_2",
-    app         = createBasicBTIApplication,
-    decision    = Some(createDecision()),
-    attachments = Seq(createAttachment, createAttachmentWithOperator),
-    keywords    = Set("BIKE", "MTB", "HARDTAIL")
-  )
+  private val c_noQueue = createNewCaseWithExtraFields.copy(queueId = None)
+  private val c_noAssignee = createNewCaseWithExtraFields.copy(assignee = None)
   private val c3 = createNewCaseWithExtraFields()
   private val c4 = createNewCase(app = createBTIApplicationWithAllFields())
   private val c5 = createCase(r = "case_ref_5", app = createBasicBTIApplication.copy(holder = eORIDetailForNintedo))
@@ -103,7 +98,7 @@ class CaseSpec extends BaseFeatureSpec {
     Scenario("Clear Collection") {
 
       Given("There are some documents in the collection")
-      storeCases(c1, c2)
+      storeCases(c1, c3)
 
       When("I delete all documents")
       val deleteResult = Http(s"$serviceUrl/cases")
@@ -216,25 +211,6 @@ class CaseSpec extends BaseFeatureSpec {
       And("The case is returned in the JSON response")
       Json.parse(result.body) shouldBe c1UpdatedJson
     }
-
-    Scenario("Update an existing case with new fields DIT-1962") {
-
-      Given("There is an existing case in the database")
-      storeCases(c2)
-
-      When("I update an existing case")
-      val result = Http(s"$serviceUrl/cases/${c2.reference}")
-        .header(apiTokenKey, appConfig.authorization)
-        .header(CONTENT_TYPE, JSON)
-        .put(c2.toString())
-        .asString
-
-      Then("Response should be OK")
-      result.code shouldEqual OK
-
-      And("The case is returned in the JSON response")
-      Json.parse(result.body) shouldBe c2
-    }
   }
 
   Feature("Get Case by Reference") {
@@ -274,7 +250,7 @@ class CaseSpec extends BaseFeatureSpec {
     Scenario("Get all cases") {
 
       Given("There are few cases in the database")
-      storeCases(c1, c2)
+      storeCases(c1, c3)
 
       When("I get all cases")
       val result = Http(s"$serviceUrl/cases")
@@ -285,7 +261,7 @@ class CaseSpec extends BaseFeatureSpec {
       result.code shouldEqual OK
 
       And("The cases are returned in the JSON response")
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1, c2)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1, c3)))
     }
 
     Scenario("Get no cases") {
@@ -311,7 +287,7 @@ class CaseSpec extends BaseFeatureSpec {
     Scenario("Filtering cases that have undefined queueId") {
 
       Given("There are few cases in the database")
-      storeCases(c1, c2)
+      storeCases(c1, c_noQueue)
 
       When("I get cases by queue id")
       val result = Http(s"$serviceUrl/cases?queue_id=none")
@@ -322,13 +298,13 @@ class CaseSpec extends BaseFeatureSpec {
       result.code shouldEqual OK
 
       And("The expected cases are returned in the JSON response")
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_noQueue)))
     }
 
     Scenario("Filtering cases that have defined queueId") {
 
       Given("There are few cases in the database")
-      storeCases(c1, c2)
+      storeCases(c1, c_noQueue)
 
       When("I get cases by queue id")
       val result = Http(s"$serviceUrl/cases?queue_id=some")
@@ -345,7 +321,7 @@ class CaseSpec extends BaseFeatureSpec {
     Scenario("Filtering cases by a valid queueId") {
 
       Given("There are few cases in the database")
-      storeCases(c1, c2)
+      storeCases(c1, c_noQueue)
 
       When("I get cases by queue id")
       val result = Http(s"$serviceUrl/cases?queue_id=$q1")
@@ -362,7 +338,7 @@ class CaseSpec extends BaseFeatureSpec {
     Scenario("Filtering cases by a wrong queueId") {
 
       Given("There are few cases in the database")
-      storeCases(c1, c2)
+      storeCases(c1, c_noQueue)
 
       When("I get cases by queue id")
       val result = Http(s"$serviceUrl/cases?queue_id=wrong")
@@ -383,7 +359,7 @@ class CaseSpec extends BaseFeatureSpec {
     Scenario("Filtering cases that have undefined assigneeId") {
 
       Given("There are few cases in the database")
-      storeCases(c1, c2)
+      storeCases(c1, c_noAssignee)
 
       When("I get cases by assignee id")
       val result = Http(s"$serviceUrl/cases?assignee_id=none")
@@ -394,13 +370,13 @@ class CaseSpec extends BaseFeatureSpec {
       result.code shouldEqual OK
 
       And("The expected cases are returned in the JSON response")
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_noAssignee)))
     }
 
     Scenario("Filtering cases that have defined assigneeId") {
 
       Given("There are few cases in the database")
-      storeCases(c1, c2)
+      storeCases(c1, c_noAssignee)
 
       When("I get cases by assignee id")
       val result = Http(s"$serviceUrl/cases?assignee_id=some")
@@ -417,7 +393,7 @@ class CaseSpec extends BaseFeatureSpec {
     Scenario("Filtering cases by a valid assigneeId") {
 
       Given("There are few cases in the database")
-      storeCases(c1, c2)
+      storeCases(c1, c_noAssignee)
 
       When("I get cases by assignee id")
       val result = Http(s"$serviceUrl/cases?assignee_id=${u1.id}")
@@ -434,7 +410,7 @@ class CaseSpec extends BaseFeatureSpec {
     Scenario("Filtering cases by a wrong assigneeId") {
 
       Given("There are few cases in the database")
-      storeCases(c1, c2)
+      storeCases(c1, c_noAssignee)
 
       When("I get cases by assignee id")
       val result = Http(s"$serviceUrl/cases?assignee_id=wrong")
@@ -451,11 +427,12 @@ class CaseSpec extends BaseFeatureSpec {
   }
 
   Feature("Get Cases by Assignee Id and Queue Id") {
+    val c_noQueue_noAssignee = createNewCaseWithExtraFields.copy(queueId = None, assignee = None)
 
     Scenario("Filtering cases that have undefined assigneeId and undefined queueId") {
 
       Given("There are few cases in the database")
-      storeCases(c1, c2)
+      storeCases(c1, c_noQueue, c_noAssignee, c_noQueue_noAssignee) // TODO: Should we remove the noQueue and noAssignee?
 
       When("I get cases by assignee id and queue id")
       val result = Http(s"$serviceUrl/cases?assignee_id=none&queue_id=none")
@@ -466,13 +443,13 @@ class CaseSpec extends BaseFeatureSpec {
       result.code shouldEqual OK
 
       And("The expected cases are returned in the JSON response")
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_noQueue_noAssignee)))
     }
 
     Scenario("Filtering cases by a valid assigneeId and a valid queueId") {
 
       Given("There are few cases in the database")
-      storeCases(c1, c2)
+      storeCases(c1, c_noQueue_noAssignee)
 
       When("I get cases by assignee id and queue id")
       val result = Http(s"$serviceUrl/cases?assignee_id=${u1.id}&queue_id=$q1")
@@ -489,7 +466,7 @@ class CaseSpec extends BaseFeatureSpec {
     Scenario("Filtering cases by a wrong assigneeId and a valid queueId") {
 
       Given("There are few cases in the database")
-      storeCases(c1, c2)
+      storeCases(c1, c_noQueue_noAssignee)
 
       When("I get cases by assignee id")
       val result = Http(s"$serviceUrl/cases?assignee_id=_a_&queue_id=$q1")
@@ -506,10 +483,11 @@ class CaseSpec extends BaseFeatureSpec {
   }
 
   Feature("Get Cases by statuses") {
+    val c_New = createNewCaseWithExtraFields.copy(status = CaseStatus.NEW)
 
     Scenario("No matches") {
 
-      storeCases(c1_updated, c2, c5)
+      storeCases(c1_updated, c5)
 
       val result = Http(s"$serviceUrl/cases?status=SUSPENDED")
         .header(apiTokenKey, appConfig.authorization)
@@ -521,19 +499,19 @@ class CaseSpec extends BaseFeatureSpec {
 
     Scenario("Filtering cases by single status") {
 
-      storeCases(c1_updated, c2, c5)
+      storeCases(c1_updated, c_New, c5)
 
       val result = Http(s"$serviceUrl/cases?status=NEW")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2, c5)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_New, c5)))
     }
 
     Scenario("Filtering cases by single pseudo status") {
 
-      storeCases(c1_updated, c2, c6_live)
+      storeCases(c1_updated, c_New, c6_live)
 
       val result = Http(s"$serviceUrl/cases?status=LIVE")
         .header(apiTokenKey, appConfig.authorization)
@@ -545,14 +523,14 @@ class CaseSpec extends BaseFeatureSpec {
 
     Scenario("Filtering cases by multiple statuses") {
 
-      storeCases(c1_updated, c2, c5)
+      storeCases(c1_updated, c_New, c5)
 
       val result = Http(s"$serviceUrl/cases?status=NEW&status=CANCELLED")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1_updated, c2, c5)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1_updated, c_New, c5)))
     }
 
     Scenario("Filtering cases by multiple pseudo statuses") {
@@ -569,23 +547,26 @@ class CaseSpec extends BaseFeatureSpec {
 
     Scenario("Filtering cases by multiple statuses - comma separated") {
 
-      storeCases(c1_updated, c2, c5)
+      storeCases(c1_updated, c_New, c5)
 
       val result = Http(s"$serviceUrl/cases?status=NEW,CANCELLED")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1_updated, c2, c5)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1_updated, c_New, c5)))
     }
 
   }
 
   Feature("Get Cases by references") {
+    val c_Reference1 = createNewCaseWithExtraFields.copy(reference = "case_ref_1")
+    val c_Reference2 = createNewCaseWithExtraFields.copy(reference = "case_ref_2")
+    val c_Reference3 = createNewCaseWithExtraFields.copy(reference = "case_ref_3")
 
     Scenario("No matches") {
 
-      storeCases(c2, c10)
+      storeCases(c_Reference1, c_Reference2, c_Reference3)
 
       val result = Http(s"$serviceUrl/cases?reference=a")
         .header(apiTokenKey, appConfig.authorization)
@@ -597,47 +578,52 @@ class CaseSpec extends BaseFeatureSpec {
 
     Scenario("Filtering cases by single reference") {
 
-      storeCases(c2, c5, c10)
+      storeCases(c_Reference1, c_Reference2, c_Reference3)
 
-      val result = Http(s"$serviceUrl/cases?reference=${c2.reference}")
+      val result = Http(s"$serviceUrl/cases?reference=${c_Reference1.reference}")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_Reference1)))
     }
 
     Scenario("Filtering cases by multiple references") {
 
-      storeCases(c2, c5, c10)
+      storeCases(c_Reference1, c_Reference2, c_Reference3)
 
-      val result = Http(s"$serviceUrl/cases?reference=${c2.reference}&reference=${c5.reference}")
+      val result = Http(s"$serviceUrl/cases?reference=${c_Reference1.reference}&reference=${c_Reference2.reference}")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body).as[Paged[Case]].results.map(_.reference) should contain only (c2.reference, c5.reference)
+      Json.parse(result.body).as[Paged[Case]].results.map(_.reference) should contain only (c_Reference1.reference, c_Reference2.reference)
     }
 
     Scenario("Filtering cases by multiple references - comma separated") {
 
-      storeCases(c2, c5, c10)
+      storeCases(c_Reference1, c5, c10)
 
-      val result = Http(s"$serviceUrl/cases?reference=${c2.reference},${c5.reference}")
+      val result = Http(s"$serviceUrl/cases?reference=${c_Reference1.reference},${c_Reference2.reference}")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body).as[Paged[Case]].results.map(_.reference) should contain only (c2.reference, c5.reference)
+      Json.parse(result.body).as[Paged[Case]].results.map(_.reference) should contain only (c_Reference1.reference, c_Reference2.reference)
     }
 
   }
 
   Feature("Get Cases by keywords") {
+    val c_keyword_empty = createNewCaseWithExtraFields.copy(keywords = Set.empty)
+    val c_keyword_1 = createNewCaseWithExtraFields.copy(keywords = Set("MTB", "HARDTAIL"))
+    val c_keyword_2 = createNewCaseWithExtraFields.copy(keywords = Set("PHONE"))
+    val c_keyword_3 = createNewCaseWithExtraFields.copy(keywords = Set("MTB", "BICYCLE"))
+
 
     Scenario("No matches") {
 
-      storeCases(c2, c10)
+      storeCases(c_keyword_empty, c_keyword_1)
 
       val result = Http(s"$serviceUrl/cases?keyword=PHONE")
         .header(apiTokenKey, appConfig.authorization)
@@ -649,83 +635,86 @@ class CaseSpec extends BaseFeatureSpec {
 
     Scenario("Filtering cases by single keyword") {
 
-      storeCases(c2, c5, c10)
+      storeCases(c_keyword_empty, c_keyword_1, c_keyword_2)
 
       val result = Http(s"$serviceUrl/cases?keyword=MTB")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2, c10)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_keyword_1, c_keyword_3)))
     }
 
     Scenario("Filtering cases by multiple keywords") {
 
-      storeCases(c2, c5, c10)
+      storeCases(c_keyword_empty, c_keyword_1, c_keyword_2)
 
       val result = Http(s"$serviceUrl/cases?keyword=MTB&keyword=HARDTAIL")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_keyword_1)))
     }
 
     Scenario("Filtering cases by multiple keywords - comma separated") {
 
-      storeCases(c2, c5, c10)
+      storeCases(c_keyword_empty, c_keyword_1, c_keyword_2)
 
       val result = Http(s"$serviceUrl/cases?keyword=MTB,HARDTAIL")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_keyword_1)))
     }
 
   }
 
   Feature("Get Cases by trader name") {
+    val c_name_1 = createNewCaseWithExtraFields
+    val c_name_2 = createNewCaseWithExtraFields.copy(application = createBasicBTIApplication.copy(holder = createEORIDetails.copy("johN LeWIS")))
+    val c_name_3 = createNewCaseWithExtraFields.copy(application = createBasicBTIApplication.copy(holder = eORIDetailForNintedo))
 
     Scenario("Filtering cases by trader name") {
 
-      storeCases(c1, c2, c5)
+      storeCases(c_name_1, c_name_2, c_name_3)
 
       val result = Http(s"$serviceUrl/cases?case_source=John%20Lewis")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1, c2)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_name_1, c_name_2)))
     }
 
     Scenario("Case-insensitive search") {
 
-      storeCases(c1)
+      storeCases(c_name_1, c_name_2, c_name_3)
 
       val result = Http(s"$serviceUrl/cases?case_source=john%20Lewis")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_name_1)))
     }
 
     Scenario("Search by substring") {
 
-      storeCases(c1)
+      storeCases(c_name_1, c_name_2, c_name_3)
 
       val result = Http(s"$serviceUrl/cases?case_source=Lewis")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_name_1)))
     }
 
     Scenario("No matches") {
 
-      storeCases(c1)
+      storeCases(c_name_1, c_name_2, c_name_3)
 
       val result = Http(s"$serviceUrl/cases?case_source=Albert")
         .header(apiTokenKey, appConfig.authorization)
@@ -766,10 +755,17 @@ class CaseSpec extends BaseFeatureSpec {
   }
 
   Feature("Get Cases by commodity code") {
+    val c_comodity_code_1 = createNewCaseWithExtraFields
+    val c_comodity_code_2 = createNewCaseWithExtraFields.copy(decision    = Some(createDecision()))
+    val c_comodity_code_3 = createNewCaseWithExtraFields
+    val c_commodity_code_live = createCase(
+      status = CaseStatus.COMPLETED,
+      decision = Some(createDecision(effectiveEndDate = Some(Instant.now(clock).plusSeconds(3600 * 24))))
+    )
 
     Scenario("filtering by non-existing commodity code") {
 
-      storeCases(c1, c2, c5)
+      storeCases(c_comodity_code_1, c_comodity_code_2, c_comodity_code_3)
 
       val result = Http(s"$serviceUrl/cases?commodity_code=66")
         .header(apiTokenKey, appConfig.authorization)
@@ -781,31 +777,31 @@ class CaseSpec extends BaseFeatureSpec {
 
     Scenario("filtering by existing commodity code") {
 
-      storeCases(c1, c2, c5, c6_live)
+      storeCases(c_comodity_code_1, c_comodity_code_2, c_comodity_code_3, c_commodity_code_live)
 
       val result = Http(s"$serviceUrl/cases?commodity_code=12345678")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2, c6_live)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_comodity_code_2, c_commodity_code_live)))
     }
 
     Scenario("Starts-with match") {
 
-      storeCases(c1, c2, c5, c6_live)
+      storeCases(c_comodity_code_1, c_comodity_code_2, c_comodity_code_3, c_commodity_code_live)
 
       val result = Http(s"$serviceUrl/cases?commodity_code=123")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c2, c6_live)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_comodity_code_2, c_commodity_code_live)))
     }
 
     Scenario("Contains-match does not return any result") {
 
-      storeCases(c2, c6_live)
+      storeCases(c_comodity_code_2, c_commodity_code_live)
 
       val result = Http(s"$serviceUrl/cases?commodity_code=456")
         .header(apiTokenKey, appConfig.authorization)
@@ -818,10 +814,50 @@ class CaseSpec extends BaseFeatureSpec {
   }
 
   Feature("Get Cases by decision details") {
+    val c_denomination_1 = createCase()
+    val c_denomination_2 = createCase()
+    val c_denomination_3 = createCase(r = "case_ref_5", app = createBasicBTIApplication.copy(holder = eORIDetailForNintedo))
+    val c_denomination_4 = createCase(
+      decision = Some(createDecision(methodCommercialDenomination = Some("laptop from Mexico")))
+    )
+    val c_denomination_5 = createCase(decision = Some(createDecision(goodsDescription = "LAPTOP")))
+    val c_denomination_6 = createCase(decision = Some(createDecision(justification = "this LLLLaptoppp")))
+    val c_denomination_7 = createCase(
+      decision = Some(
+        createDecision(
+          goodsDescription = "LAPTOP",
+          effectiveStartDate = Some(Instant.now().minus(3, ChronoUnit.DAYS)),
+          effectiveEndDate = Some(Instant.now().minus(1, ChronoUnit.DAYS))
+        )
+      ),
+      status = CaseStatus.COMPLETED
+    )
+    val c_denomination_8 = createCase(
+      decision = Some(
+        createDecision(
+          goodsDescription = "SPANNER",
+          effectiveStartDate = Some(Instant.now().minus(3, ChronoUnit.DAYS)),
+          effectiveEndDate = Some(Instant.now().minus(1, ChronoUnit.DAYS))
+        )
+      ),
+      status = CaseStatus.COMPLETED
+    )
+    val c_denomination_9 = createCase(
+      decision = Some(
+        createDecision(
+          goodsDescription = "LAPTOP",
+          effectiveStartDate = Some(Instant.now()),
+          effectiveEndDate = Some(Instant.now().plus(1, ChronoUnit.DAYS))
+        )
+      ),
+      status = CaseStatus.COMPLETED
+    )
+    val c_denomination_10 =
+      createCase(decision = Some(createDecision(methodCommercialDenomination = Some("laptop from Mexico"))))
 
     Scenario("No matches") {
 
-      storeCases(c1, c2, c5)
+      storeCases(c_denomination_1, c_denomination_2, c_denomination_3)
 
       val result = Http(s"$serviceUrl/cases?decision_details=laptop")
         .header(apiTokenKey, appConfig.authorization)
@@ -833,78 +869,81 @@ class CaseSpec extends BaseFeatureSpec {
 
     Scenario("Filtering by existing good description") {
 
-      storeCases(c1, c2, c7)
+      storeCases(c_denomination_1, c_denomination_2, c_denomination_5)
 
       val result = Http(s"$serviceUrl/cases?decision_details=LAPTOP")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c7)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_denomination_5)))
     }
 
     Scenario("Filtering by method commercial denomination") {
 
-      storeCases(c1, c2, c8)
+      storeCases(c_denomination_1, c_denomination_2, c_denomination_4)
 
       val result = Http(s"$serviceUrl/cases?decision_details=laptop%20from%20Mexico")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c8)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_denomination_4)))
     }
 
     Scenario("Filtering by justification") {
 
-      storeCases(c1, c2, c9)
+      storeCases(c_denomination_1, c_denomination_2, c_denomination_6)
 
       val result = Http(s"$serviceUrl/cases?decision_details=this%20LLLLaptoppp")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c9)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_denomination_6)))
     }
 
     Scenario("Case-insensitive search") {
 
-      storeCases(c1, c2, c7)
+      storeCases(c_denomination_1, c_denomination_2, c_denomination_5)
 
       val result = Http(s"$serviceUrl/cases?decision_details=laptop")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c7)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_denomination_5)))
     }
 
     Scenario("Filtering by substring") {
 
-      storeCases(c1, c2, c7, c8, c9)
+      storeCases(c_denomination_1, c_denomination_2, c_denomination_5, c_denomination_10, c_denomination_6)
 
       val result = Http(s"$serviceUrl/cases?decision_details=laptop")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c7, c8, c9)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_denomination_5, c_denomination_10, c_denomination_6)))
     }
 
     Scenario("Filtering by goods description and expired case status") {
 
-      storeCases(c11, c12, c13)
+      storeCases(c_denomination_7, c_denomination_8, c_denomination_9)
 
       val result = Http(s"$serviceUrl/cases?decision_details=LAPTOP&status=EXPIRED")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c11)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_denomination_7)))
     }
   }
 
   Feature("Get Cases by EORI number") {
+
+    val c_eori_1 = createCase(app = createBasicBTIApplication, queue = Some(q1), assignee = Some(u1))
+    val c_eori_2 = createCase(app = createBasicBTIApplication, queue = Some(q1), assignee = Some(u1))
 
     val holderEori = "eori_01234"
     val agentEori  = "eori_98765"
@@ -919,7 +958,7 @@ class CaseSpec extends BaseFeatureSpec {
     val holderCase = createCase(app = holderApp)
 
     Scenario("No matches") {
-      storeCases(c1, c2)
+      storeCases(c_eori_1, c_eori_2)
 
       val result = Http(s"$serviceUrl/cases?eori=333333")
         .header(apiTokenKey, appConfig.authorization)
@@ -930,7 +969,7 @@ class CaseSpec extends BaseFeatureSpec {
     }
 
     Scenario("Filtering by agent EORI") {
-      storeCases(c1, c2, agentCase, holderCase)
+      storeCases(c_eori_1, c_eori_2, agentCase, holderCase)
 
       val result = Http(s"$serviceUrl/cases?eori=eori_98765")
         .header(apiTokenKey, appConfig.authorization)
@@ -941,7 +980,7 @@ class CaseSpec extends BaseFeatureSpec {
     }
 
     Scenario("Filtering by applicant EORI") {
-      storeCases(c1, c2, agentCase, holderCase)
+      storeCases(c_eori_1, c_eori_2, agentCase, holderCase)
 
       val result = Http(s"$serviceUrl/cases?eori=eori_01234")
         .header(apiTokenKey, appConfig.authorization)
@@ -952,7 +991,7 @@ class CaseSpec extends BaseFeatureSpec {
     }
 
     Scenario("Case-insensitive search") {
-      storeCases(c1, c2, agentCase, holderCase)
+      storeCases(c_eori_1, c_eori_2, agentCase, holderCase)
 
       val result = Http(s"$serviceUrl/cases?eori=EORI_98765")
         .header(apiTokenKey, appConfig.authorization)
@@ -963,7 +1002,7 @@ class CaseSpec extends BaseFeatureSpec {
     }
 
     Scenario("Filtering by substring") {
-      storeCases(c1, c2, agentCase, holderCase)
+      storeCases(c_eori_1, c_eori_2, agentCase, holderCase)
 
       val result = Http(s"$serviceUrl/cases?eori=2345")
         .header(apiTokenKey, appConfig.authorization)
@@ -973,45 +1012,6 @@ class CaseSpec extends BaseFeatureSpec {
       Json.parse(result.body) shouldBe Json.toJson(Paged.empty[Case])
     }
 
-  }
-
-  Feature("Get Cases by application type") {
-
-    Scenario("No matches") {
-
-      storeCases(c1, c5)
-
-      val result = Http(s"$serviceUrl/cases?application_type=LIABILITY_ORDER")
-        .header(apiTokenKey, appConfig.authorization)
-        .asString
-
-      result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged.empty[Case])
-    }
-
-    Scenario("Filtering by existing application type") {
-
-      storeCases(c1, c2, c7)
-
-      val result = Http(s"$serviceUrl/cases?application_type=BTI")
-        .header(apiTokenKey, appConfig.authorization)
-        .asString
-
-      result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1, c7)))
-    }
-
-    Scenario("Case-insensitive search") {
-
-      storeCases(c7)
-
-      val result = Http(s"$serviceUrl/cases?application_type=bti")
-        .header(apiTokenKey, appConfig.authorization)
-        .asString
-
-      result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c7)))
-    }
   }
 
   Feature("Get Cases sorted by commodity code") {
@@ -1128,8 +1128,8 @@ class CaseSpec extends BaseFeatureSpec {
 
   Feature("Get Cases sorted by days elapsed") {
 
-    val oldCase = c1.copy(daysElapsed = 1)
-    val newCase = c2.copy(daysElapsed = 0)
+    val oldCase = createCase(app = createBasicBTIApplication, queue = Some(q1), assignee = Some(u1)).copy(daysElapsed = 1)
+    val newCase = createCase(app = createBasicBTIApplication, queue = Some(q1), assignee = Some(u1)).copy(daysElapsed = 0)
 
     Scenario("Sorting default - ascending order") {
       Given("There are few cases in the database")
@@ -1184,8 +1184,10 @@ class CaseSpec extends BaseFeatureSpec {
   Feature("Get Cases with Pagination") {
 
     Scenario("Paginates with 'page_size' and 'page'") {
+      val case_1 = createCase(app = createBasicBTIApplication, queue = Some(q1), assignee = Some(u1))
+      val case_2 = createCase(app = createBasicBTIApplication, queue = Some(q1), assignee = Some(u1))
 
-      storeCases(c1, c2)
+      storeCases(case_1, case_2)
 
       val result1 = Http(s"$serviceUrl/cases?page_size=1&page=1")
         .header(apiTokenKey, appConfig.authorization)
@@ -1193,7 +1195,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       result1.code shouldEqual OK
       Json.parse(result1.body) shouldBe Json.toJson(
-        Paged(results = Seq(c1), pageIndex = 1, pageSize = 1, resultCount = 2)
+        Paged(results = Seq(case_1), pageIndex = 1, pageSize = 1, resultCount = 2)
       )
 
       val result2 = Http(s"$serviceUrl/cases?page_size=1&page=2")
@@ -1202,7 +1204,7 @@ class CaseSpec extends BaseFeatureSpec {
 
       result2.code shouldEqual OK
       Json.parse(result2.body) shouldBe Json.toJson(
-        Paged(results = Seq(c2), pageIndex = 2, pageSize = 1, resultCount = 2)
+        Paged(results = Seq(case_2), pageIndex = 2, pageSize = 1, resultCount = 2)
       )
     }
 

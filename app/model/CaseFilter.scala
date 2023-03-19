@@ -42,7 +42,7 @@ case class CaseFilter(
 object CaseFilter {
 
   private val referenceKey        = "reference"
-  private val applicationTypeKey  = "application_type"
+  private val applicationTypeKey  = "application_type" // TODO: Remove this as not applicable
   private val queueIdKey          = "queue_id"
   private val eoriKey             = "eori"
   private val assigneeIdKey       = "assignee_id"
@@ -70,7 +70,7 @@ object CaseFilter {
         Right(
           CaseFilter(
             reference        = params(referenceKey),
-            applicationType  = params(applicationTypeKey).map(_.map(bindApplicationType).filter(_.isDefined).map(_.get)),
+            applicationType  = params(applicationTypeKey).map(_.map(bindApplicationType).filter(_.isDefined).map(_.get)), // TODO: Remove this as not applicable
             queueId          = params(queueIdKey),
             eori             = param(eoriKey),
             assigneeId       = param(assigneeIdKey),
@@ -91,7 +91,7 @@ object CaseFilter {
     override def unbind(key: String, filter: CaseFilter): String =
       Seq(
         filter.reference.map(_.map(s => stringBinder.unbind(referenceKey, s.toString)).mkString("&")),
-        filter.applicationType.map(_.map(s => stringBinder.unbind(applicationTypeKey, s.toString)).mkString("&")),
+        filter.applicationType.map(_.map(s => stringBinder.unbind(applicationTypeKey, s.toString)).mkString("&")), // TODO: Remove this as not applicable
         filter.queueId.map(_.map(s => stringBinder.unbind(queueIdKey, s.toString)).mkString("&")),
         filter.eori.map(stringBinder.unbind(eoriKey, _)),
         filter.assigneeId.map(stringBinder.unbind(assigneeIdKey, _)),

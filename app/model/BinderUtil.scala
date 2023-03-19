@@ -36,6 +36,7 @@ object BinderUtil {
   def bindPseudoCaseStatus(value: String): Option[PseudoCaseStatus] =
     PseudoCaseStatus.values.find(_.toString.equalsIgnoreCase(value))
 
+  // TODO: Remove this as not applicable
   def bindApplicationType(value: String): Option[ApplicationType] =
     ApplicationType.values.find(_.toString.equalsIgnoreCase(value))
 
