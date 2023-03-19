@@ -16,6 +16,7 @@
 
 package repository
 
+import base.FixedTimeFixtures
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import config.AppConfig
 import model.{Attachment, Case}
@@ -30,10 +31,9 @@ class CaseAttachmentAggregationSpec
     extends BaseMongoIndexSpec
     with BeforeAndAfterAll
     with BeforeAndAfterEach
-    with MongoSupport {
+    with MongoSupport
+    with FixedTimeFixtures {
   self =>
-
-  val fixedClock = Clock.fixed(Instant.parse("2021-02-01T09:00:00.00Z"), ZoneOffset.UTC)
 
   private val config      = mock[AppConfig]
   private val repository  = newMongoRepository
@@ -67,7 +67,7 @@ class CaseAttachmentAggregationSpec
       letterOfAuthorization = Some(letterOfAuthorization)
     ),
     decision = Some(createDecision(decisionPdf = Some(decisionPdf))),
-    clock = Some(fixedClock)
+//    createdDate = Some(fixedTime)
   )
 
   override def beforeEach(): Unit = {

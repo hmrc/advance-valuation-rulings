@@ -16,6 +16,7 @@
 
 package repository
 
+import base.FixedTimeFixtures
 import cats.data.NonEmptySeq
 import cats.syntax.all._
 import org.mockito.BDDMockito.given
@@ -29,23 +30,22 @@ import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import config.AppConfig
 import model._
 import model.reporting._
-import org.mockito.Mockito.{mockStatic, when}
 import sort.{CaseSortField, SortDirection}
 import uk.gov.hmrc.mongo.test.MongoSupport
 import util.CaseData._
 import util.Cases._
 
-import java.time.{Clock, _}
+import java.time._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.Using
 
 class CaseRepositorySpec
     extends BaseMongoIndexSpec
     with BeforeAndAfterAll
     with BeforeAndAfterEach
     with MongoSupport
-    with Eventually {
+    with Eventually
+    with FixedTimeFixtures {
   self =>
 
   private val conflict = 11000
@@ -56,10 +56,8 @@ class CaseRepositorySpec
   private def newMongoRepository: CaseMongoRepository =
     new CaseMongoRepository(config, mongoComponent, new SearchMapper(config), new UpdateMapper)
 
-  val fixedClock = Clock.fixed(Instant.parse("2021-02-01T09:00:00.00Z"), ZoneOffset.UTC)
-
-  private val case1: Case     = createCase(clock = Some(fixedClock))
-  private val case2: Case     = createCase(clock = Some(fixedClock))
+  private val case1: Case     = createCase()
+  private val case2: Case     = createCase()
 
 
   override def beforeEach(): Unit = {
@@ -92,8 +90,8 @@ class CaseRepositorySpec
 
   "delete" should {
     "remove the matching case" in {
-      val c1 = createCase(r = "REF_1", clock = Some(fixedClock))
-      val c2 = createCase(r = "REF_2", clock = Some(fixedClock))
+      val c1 = createCase(r = "REF_1")
+      val c2 = createCase(r = "REF_2")
 
       val size = collectionSize
 
@@ -258,10 +256,10 @@ class CaseRepositorySpec
     val queueIdY       = Some("queue_y")
     val unknownQueueId = Some("unknown_queue_id")
 
-    val caseWithEmptyQueue = createCase(clock = Some(fixedClock))
-    val caseWithQueueX1    = createCase(clock = Some(fixedClock)).copy(queueId = queueIdX)
-    val caseWithQueueX2    = createCase(clock = Some(fixedClock)).copy(queueId = queueIdX)
-    val caseWithQueueY     = createCase(clock = Some(fixedClock)).copy(queueId = queueIdY)
+    val caseWithEmptyQueue = createCase()
+    val caseWithQueueX1    = createCase().copy(queueId = queueIdX)
+    val caseWithQueueX2    = createCase().copy(queueId = queueIdX)
+    val caseWithQueueY     = createCase().copy(queueId = queueIdY)
 
     "return an empty sequence when there are no matches" in {
       val search = CaseSearch(CaseFilter(queueId = unknownQueueId.map(Set(_))))
@@ -292,17 +290,17 @@ class CaseRepositorySpec
 
     val decisionExpired         = createDecision(effectiveEndDate = Some(pastDate))
     val decisionFuture          = createDecision(effectiveEndDate = Some(futureDate))
-    val caseWithExpiredDecision = createCase(decision             = Some(decisionExpired), clock = Some(fixedClock))
-    val caseWithFutureDecision  = createCase(decision             = Some(decisionFuture), clock = Some(fixedClock))
+    val caseWithExpiredDecision = createCase(decision             = Some(decisionExpired))
+    val caseWithFutureDecision  = createCase(decision             = Some(decisionFuture))
 
     "return an empty sequence when there are no matches" in {
-      val search = CaseSearch(CaseFilter(minDecisionEnd = Some(Instant.now())))
+      val search = CaseSearch(CaseFilter(minDecisionEnd = Some(fixedTime)))
       store(caseWithExpiredDecision)
       await(repository.get(search, Pagination())).results shouldBe Seq.empty
     }
 
     "return the expected document when there is a match" in {
-      val search = CaseSearch(CaseFilter(minDecisionEnd = Some(Instant.now(fixedClock))))
+      val search = CaseSearch(CaseFilter(minDecisionEnd = Some(fixedTime)))
       store(caseWithExpiredDecision, caseWithFutureDecision)
       await(repository.get(search, Pagination())).results shouldBe Seq(caseWithFutureDecision)
     }
@@ -315,10 +313,10 @@ class CaseRepositorySpec
     val assigneeY       = Operator("assignee_y")
     val unknownAssignee = Operator("unknown_assignee_id")
 
-    val caseWithEmptyAssignee = createCase(clock = Some(fixedClock))
-    val caseWithAssigneeX1    = createCase(clock = Some(fixedClock)).copy(assignee = Some(assigneeX))
-    val caseWithAssigneeX2    = createCase(clock = Some(fixedClock)).copy(assignee = Some(assigneeX))
-    val caseWithAssigneeY1    = createCase(clock = Some(fixedClock)).copy(assignee = Some(assigneeY))
+    val caseWithEmptyAssignee = createCase()
+    val caseWithAssigneeX1    = createCase().copy(assignee = Some(assigneeX))
+    val caseWithAssigneeX2    = createCase().copy(assignee = Some(assigneeX))
+    val caseWithAssigneeY1    = createCase().copy(assignee = Some(assigneeY))
 
     "return an empty sequence when there are no matches" in {
       val search = CaseSearch(CaseFilter(assigneeId = Some(unknownAssignee.id)))
@@ -354,9 +352,9 @@ class CaseRepositorySpec
 
   "get by concrete status" should {
 
-    val caseWithStatusX1 = createCase(clock = Some(fixedClock)).copy(status = CaseStatus.NEW)
-    val caseWithStatusX2 = createCase(clock = Some(fixedClock)).copy(status = CaseStatus.NEW)
-    val caseWithStatusY1 = createCase(clock = Some(fixedClock)).copy(status = CaseStatus.OPEN)
+    val caseWithStatusX1 = createCase().copy(status = CaseStatus.NEW)
+    val caseWithStatusX2 = createCase().copy(status = CaseStatus.NEW)
+    val caseWithStatusY1 = createCase().copy(status = CaseStatus.OPEN)
 
     "return an empty sequence when there are no matches" in {
       val search = CaseSearch(CaseFilter(statuses = Some(Set(PseudoCaseStatus.DRAFT))))
@@ -382,14 +380,12 @@ class CaseRepositorySpec
     val effectiveEndDateTime = LocalDateTime.of(2019, 1, 1, 0, 0).toInstant(ZoneOffset.UTC)
 
     val expiredCase = createCase(
-      clock = Some(fixedClock),
       r        = "expired",
       status   = CaseStatus.COMPLETED,
       decision = Some(createDecision(effectiveEndDate = Some(effectiveEndDateTime.minusSeconds(1))))
     )
-    val newCase = createCase(clock = Some(fixedClock), r = "new", status = CaseStatus.NEW)
+    val newCase = createCase(r = "new", status = CaseStatus.NEW)
     val liveCase = createCase(
-      clock = Some(fixedClock),
       r        = "live",
       status   = CaseStatus.COMPLETED,
       decision = Some(createDecision(effectiveEndDate = Some(effectiveEndDateTime.plusSeconds(1))))
@@ -423,11 +419,11 @@ class CaseRepositorySpec
 
   "get by multiple statuses" should {
 
-    val caseWithStatusX1 = createCase(clock = Some(fixedClock)).copy(status = CaseStatus.NEW)
-    val caseWithStatusX2 = createCase(clock = Some(fixedClock)).copy(status = CaseStatus.NEW)
-    val caseWithStatusY1 = createCase(clock = Some(fixedClock)).copy(status = CaseStatus.OPEN)
-    val caseWithStatusZ1 = createCase(clock = Some(fixedClock)).copy(status = CaseStatus.CANCELLED)
-    val caseWithStatusW1 = createCase(clock = Some(fixedClock)).copy(status = CaseStatus.SUPPRESSED)
+    val caseWithStatusX1 = createCase().copy(status = CaseStatus.NEW)
+    val caseWithStatusX2 = createCase().copy(status = CaseStatus.NEW)
+    val caseWithStatusY1 = createCase().copy(status = CaseStatus.OPEN)
+    val caseWithStatusZ1 = createCase().copy(status = CaseStatus.CANCELLED)
+    val caseWithStatusW1 = createCase().copy(status = CaseStatus.SUPPRESSED)
 
     "return an empty sequence when there are no matches" in {
       val search = CaseSearch(CaseFilter(statuses = Some(Set(PseudoCaseStatus.DRAFT, PseudoCaseStatus.REFERRED))))
@@ -458,11 +454,11 @@ class CaseRepositorySpec
   }
 
   "get by multiple references" should {
-    val caseWithReferenceX1 = createCase(clock = Some(fixedClock)).copy(reference = "x1")
-    val caseWithReferenceX2 = createCase(clock = Some(fixedClock)).copy(reference = "x2")
-    val caseWithReferenceY1 = createCase(clock = Some(fixedClock)).copy(reference = "y1")
-    val caseWithReferenceZ1 = createCase(clock = Some(fixedClock)).copy(reference = "z1")
-    val caseWithReferenceW1 = createCase(clock = Some(fixedClock)).copy(reference = "w1")
+    val caseWithReferenceX1 = createCase().copy(reference = "x1")
+    val caseWithReferenceX2 = createCase().copy(reference = "x2")
+    val caseWithReferenceY1 = createCase().copy(reference = "y1")
+    val caseWithReferenceZ1 = createCase().copy(reference = "z1")
+    val caseWithReferenceW1 = createCase().copy(reference = "w1")
 
     "return an empty sequence when there are no matches" in {
       val search = CaseSearch(CaseFilter(reference = Some(Set("a", "b"))))
@@ -490,9 +486,9 @@ class CaseRepositorySpec
 
   "get by single keyword" should {
 
-    val c1 = createCase(keywords = Set("BIKE", "MTB"), clock = Some(fixedClock))
-    val c2 = createCase(keywords = Set("KNIFE", "KITCHEN"), clock = Some(fixedClock))
-    val c3 = createCase(keywords = Set("BIKE", "HARDTAIL"), clock = Some(fixedClock))
+    val c1 = createCase(keywords = Set("BIKE", "MTB"))
+    val c2 = createCase(keywords = Set("KNIFE", "KITCHEN"))
+    val c3 = createCase(keywords = Set("BIKE", "HARDTAIL"))
 
     "return an empty sequence when there are no matches" in {
       store(case1, c1)
@@ -516,9 +512,9 @@ class CaseRepositorySpec
 
   "get by multiple keywords" should {
 
-    val c1 = createCase(keywords = Set("BIKE", "MTB"), clock = Some(fixedClock))
-    val c2 = createCase(keywords = Set("BIKE", "MTB", "29ER"), clock = Some(fixedClock))
-    val c3 = createCase(keywords = Set("BIKE", "HARDTAIL"), clock = Some(fixedClock))
+    val c1 = createCase(keywords = Set("BIKE", "MTB"))
+    val c2 = createCase(keywords = Set("BIKE", "MTB", "29ER"))
+    val c3 = createCase(keywords = Set("BIKE", "HARDTAIL"))
 
     "return an empty sequence when there are no matches" in {
       store(case1, c1, c2, c3)
@@ -543,7 +539,7 @@ class CaseRepositorySpec
   "get by trader name" should {
 
     val novakApp = createBasicBTIApplication.copy(holder = createEORIDetails.copy(businessName = "Novak Djokovic"))
-    val caseX    = createCase(app                        = novakApp, clock = Some(fixedClock))
+    val caseX    = createCase(app                        = novakApp)
 
     "return an empty sequence when there are no matches" in {
       store(case1, caseX)
@@ -581,7 +577,7 @@ class CaseRepositorySpec
 
     "return the expected documents when there are multiple matches" in {
       val novakApp2 = createBasicBTIApplication.copy(holder = createEORIDetails.copy(businessName = "Novak Djokovic 2"))
-      val caseX2    = createCase(app                        = novakApp2, clock = Some(fixedClock))
+      val caseX2    = createCase(app                        = novakApp2)
       store(caseX, caseX2)
 
       val search = CaseSearch(CaseFilter(caseSource = Some("Novak Djokovic")))
@@ -600,8 +596,8 @@ class CaseRepositorySpec
     val agentApp = createBTIApplicationWithAllFields()
       .copy(holder = createEORIDetails.copy(eori = holderEori), agent = Some(agentDetails))
 
-    val agentCase  = createCase(app = agentApp, clock = Some(fixedClock))
-    val holderCase = createCase(app = holderApp, clock = Some(fixedClock))
+    val agentCase  = createCase(app = agentApp)
+    val holderCase = createCase(app = holderApp)
 
     "return an empty sequence when there are no matches" in {
       store(agentCase, holderCase)
@@ -629,11 +625,11 @@ class CaseRepositorySpec
   "get by decision details" should {
 
     val c1 = createCase(decision = Some(createDecision(goodsDescription             = "Amazing HTC smartphone")),
-      clock = Some(fixedClock))
+      )
     val c2 = createCase(decision = Some(createDecision(methodCommercialDenomination = Some("amazing football shoes"))),
-      clock = Some(fixedClock))
+      )
     val c3 = createCase(decision = Some(createDecision(justification                = "this is absolutely AAAAMAZINGGGG")),
-      clock = Some(fixedClock))
+      )
 
     "return an empty sequence when there are no matches" in {
       store(case1, c1, c2, c3)
@@ -706,7 +702,7 @@ class CaseRepositorySpec
   }
 
   "get by migration status" should {
-    val case1Migrated     = case1.copy(dateOfExtract     = Some(Instant.now()))
+    val case1Migrated     = case1.copy(dateOfExtract     = Some(fixedTime))
 
     "return only migrated cases when specified in search" in {
       store(case1Migrated, case2)
@@ -757,13 +753,13 @@ class CaseRepositorySpec
     val statusX   = CaseStatus.NEW
     val statusY   = CaseStatus.OPEN
 
-    val caseWithNoQueueAndNoAssignee = createCase(clock = Some(fixedClock))
-    val caseWithQxAndAxAndSx         = createCase(clock = Some(fixedClock)).copy(queueId = queueIdX, assignee = Some(assigneeX), status = statusX)
-    val caseWithQxAndAxAndSy         = createCase(clock = Some(fixedClock)).copy(queueId = queueIdX, assignee = Some(assigneeX), status = statusY)
-    val caseWithQxAndAyAndSx         = createCase(clock = Some(fixedClock)).copy(queueId = queueIdX, assignee = Some(assigneeY), status = statusX)
-    val caseWithQxAndAyAndSy         = createCase(clock = Some(fixedClock)).copy(queueId = queueIdX, assignee = Some(assigneeY), status = statusY)
-    val caseWithQyAndAxAndSx         = createCase(clock = Some(fixedClock)).copy(queueId = queueIdY, assignee = Some(assigneeX), status = statusX)
-    val caseWithQyAndAxAndSy         = createCase(clock = Some(fixedClock)).copy(queueId = queueIdY, assignee = Some(assigneeX), status = statusY)
+    val caseWithNoQueueAndNoAssignee = createCase()
+    val caseWithQxAndAxAndSx         = createCase().copy(queueId = queueIdX, assignee = Some(assigneeX), status = statusX)
+    val caseWithQxAndAxAndSy         = createCase().copy(queueId = queueIdX, assignee = Some(assigneeX), status = statusY)
+    val caseWithQxAndAyAndSx         = createCase().copy(queueId = queueIdX, assignee = Some(assigneeY), status = statusX)
+    val caseWithQxAndAyAndSy         = createCase().copy(queueId = queueIdX, assignee = Some(assigneeY), status = statusY)
+    val caseWithQyAndAxAndSx         = createCase().copy(queueId = queueIdY, assignee = Some(assigneeX), status = statusX)
+    val caseWithQyAndAxAndSy         = createCase().copy(queueId = queueIdY, assignee = Some(assigneeX), status = statusY)
 
     "filter as expected" in {
       val search = CaseSearch(
@@ -2162,7 +2158,7 @@ class CaseRepositorySpec
     }
 
     "store dates as Mongo Dates" in {
-      val date    = Instant.now()
+      val date    = fixedTime
       val oldCase = case1.copy(createdDate = date)
       val newCase = case2.copy(createdDate = date.plusSeconds(1))
       await(repository.insert(oldCase))

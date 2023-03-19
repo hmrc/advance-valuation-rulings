@@ -16,14 +16,15 @@
 
 package util
 
+import base.FixedTimeFixtures
 import model.CaseStatus.CaseStatus
 import model.Role.Role
 import model._
 import utils.RandomGenerator
 
-import java.time.{Clock, Instant, LocalDate, ZoneId}
+import java.time.{Instant, LocalDate, ZoneId}
 
-object CaseData {
+object CaseData extends FixedTimeFixtures {
 
   private val secondsInAYear = 3600 * 24 * 365
 
@@ -61,8 +62,8 @@ object CaseData {
 
   def createDecision(
     bindingCommodityCode: String                 = "12345678",
-    effectiveStartDate: Option[Instant]          = Some(Instant.now()),
-    effectiveEndDate: Option[Instant]            = Some(Instant.now().plusSeconds(3 * secondsInAYear)),
+    effectiveStartDate: Option[Instant]          = Some(fixedTime),
+    effectiveEndDate: Option[Instant]            = Some(fixedTime.plusSeconds(3 * secondsInAYear)),
     methodSearch: Option[String]                 = Some("bike spanner"),
     justification: String                        = "Found precedent case",
     goodsDescription: String                     = "Bike tool",
@@ -137,7 +138,7 @@ object CaseData {
     Case(
       reference   = "9999999999",
       status      = CaseStatus.OPEN,
-      createdDate = Instant.now.minusSeconds(1 * secondsInAYear),
+      createdDate = fixedTime.minusSeconds(1 * secondsInAYear),
       queueId     = Some("3"),
       assignee    = Some(Operator("0")),
       application = createBasicBTIApplication,
@@ -210,12 +211,12 @@ object CaseData {
     attachments: Seq[Attachment]   = Seq.empty,
     keywords: Set[String]          = Set.empty,
     dateOfExtract: Option[Instant] = None,
-    clock: Option[Clock] = None, // To allow easier testing of the createdDate field
+    createdDate: Option[Instant]   = None // To allow easier testing of the createdDate field
   ): Case =
     Case(
       reference     = r,
       status        = status,
-      createdDate   = Instant.now(clock.getOrElse(Clock.systemUTC())),
+      createdDate   = createdDate.getOrElse(Instant.now(fixedClock)),
       queueId       = queue,
       assignee      = assignee,
       application   = app,
@@ -229,6 +230,7 @@ object CaseData {
     Attachment(
       id                     = RandomGenerator.randomUUID(),
       public                 = true,
+      timestamp              = fixedTime,
       shouldPublishToRulings = true
     )
 

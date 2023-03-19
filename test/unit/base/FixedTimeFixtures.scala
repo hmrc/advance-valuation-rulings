@@ -16,12 +16,9 @@
 
 package base
 
-import org.scalatest.TestSuite
-
 import java.time.{Clock, Instant, ZoneOffset}
 
-trait FixedClockFixture {
-  self: TestSuite =>
+trait FixedTimeFixtures {
 
   val fixedTime  = Instant.parse("2021-02-01T09:00:00.00Z")
   val fixedClock = Clock.fixed(fixedTime, ZoneOffset.UTC)

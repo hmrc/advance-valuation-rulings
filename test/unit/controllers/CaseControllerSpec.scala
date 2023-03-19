@@ -16,7 +16,7 @@
 
 package controllers
 
-import base.{BaseSpec, FixedClockFixture}
+import base.{BaseSpec, FixedTimeFixtures}
 import org.mockito.ArgumentMatchers.{any, refEq}
 import org.mockito.Mockito.{verify, when}
 import org.mockito.{ArgumentCaptor, Mockito}
@@ -37,7 +37,7 @@ import scala.concurrent.Future
 import scala.concurrent.Future._
 
 // scalastyle:off magic.number
-class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach with FixedClockFixture {
+class CaseControllerSpec extends BaseSpec with BeforeAndAfterEach with FixedTimeFixtures {
 
   override protected def beforeEach(): Unit =
     Mockito.reset(caseService)
