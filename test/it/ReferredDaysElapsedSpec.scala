@@ -25,7 +25,6 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import scheduler.ReferredDaysElapsedJob
 import util.CaseData._
 import util.{EventData, TestMetrics}
-import utils.AppConfigWithAFixedDate
 
 import java.time._
 import scala.concurrent.Await.result
@@ -35,7 +34,7 @@ class ReferredDaysElapsedSpec extends BaseFeatureSpec with MockitoSugar {
   protected val serviceUrl = s"http://localhost:$port"
 
   override lazy val app: Application = new GuiceApplicationBuilder()
-    .bindings(bind[AppConfig].to[AppConfigWithAFixedDate])
+    .overrides(bind[Clock].toInstance(Clock.fixed(LocalDate.parse("2019-02-03").atStartOfDay().toInstant(ZoneOffset.UTC), ZoneId.systemDefault())))
     .disable[com.kenshoo.play.metrics.PlayModule]
     .configure("metrics.enabled" -> false)
     .configure("mongodb.uri" -> "mongodb://localhost:27017/test-ClassificationMongoRepositoryTest")

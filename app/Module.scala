@@ -22,6 +22,7 @@ import repository.{CaseMongoRepository, CaseRepository, EncryptedCaseMongoReposi
 import scheduler._
 import uk.gov.hmrc.crypto.CompositeSymmetricCrypto
 
+import java.time.Clock
 import javax.inject.{Inject, Provider}
 
 class Module extends play.api.inject.Module {
@@ -41,7 +42,8 @@ class Module extends play.api.inject.Module {
       bind[ScheduledJobs].toProvider[ScheduledJobProvider],
       bind[MigrationJobs].toProvider[MigrationJobProvider],
       bind[Scheduler].toSelf.eagerly(),
-      repositoryBinding
+      repositoryBinding,
+      bind[Clock].toInstance(Clock.systemUTC()),
     )
   }
 

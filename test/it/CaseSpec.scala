@@ -23,12 +23,13 @@ import play.api.http.Status._
 import play.api.libs.json.Json
 import scalaj.http.{Http, HttpResponse}
 import util.CaseData._
+import util.FixedTimeFixtures
 import util.Matchers.roughlyBe
 
 import java.time.temporal.ChronoUnit
 import java.time.{Clock, Instant}
 
-class CaseSpec extends BaseFeatureSpec {
+class CaseSpec extends BaseFeatureSpec with FixedTimeFixtures {
 
   protected val serviceUrl = s"http://localhost:$port"
 
@@ -46,47 +47,13 @@ class CaseSpec extends BaseFeatureSpec {
   private val c5 = createCase(r = "case_ref_5", app = createBasicBTIApplication.copy(holder = eORIDetailForNintedo))
   private val c6_live = createCase(
     status = CaseStatus.COMPLETED,
-    decision = Some(createDecision(effectiveEndDate = Some(Instant.now(clock).plusSeconds(3600 * 24))))
+    decision = Some(createDecision(effectiveEndDate = Some(fixedTime.plusSeconds(3600 * 24))))
   )
   private val c6_expired = createCase(
     status = CaseStatus.COMPLETED,
-    decision = Some(createDecision(effectiveEndDate = Some(Instant.now(clock).minusSeconds(3600 * 24))))
+    decision = Some(createDecision(effectiveEndDate = Some(fixedTime.minusSeconds(3600 * 24))))
   )
-  private val c7 = createCase(decision = Some(createDecision(goodsDescription = "LAPTOP")))
-  private val c8 =
-    createCase(decision = Some(createDecision(methodCommercialDenomination = Some("laptop from Mexico"))))
-  private val c9 = createCase(decision = Some(createDecision(justification = "this LLLLaptoppp")))
-  private val c10 = createCase(keywords = Set("MTB", "BICYCLE"))
-  private val c11 = createCase(
-    decision = Some(
-      createDecision(
-        goodsDescription = "LAPTOP",
-        effectiveStartDate = Some(Instant.now().minus(3, ChronoUnit.DAYS)),
-        effectiveEndDate = Some(Instant.now().minus(1, ChronoUnit.DAYS))
-      )
-    ),
-    status = CaseStatus.COMPLETED
-  )
-  private val c12 = createCase(
-    decision = Some(
-      createDecision(
-        goodsDescription = "SPANNER",
-        effectiveStartDate = Some(Instant.now().minus(3, ChronoUnit.DAYS)),
-        effectiveEndDate = Some(Instant.now().minus(1, ChronoUnit.DAYS))
-      )
-    ),
-    status = CaseStatus.COMPLETED
-  )
-  private val c13 = createCase(
-    decision = Some(
-      createDecision(
-        goodsDescription = "LAPTOP",
-        effectiveStartDate = Some(Instant.now()),
-        effectiveEndDate = Some(Instant.now().plus(1, ChronoUnit.DAYS))
-      )
-    ),
-    status = CaseStatus.COMPLETED
-  )
+
   private val c0Json = Json.toJson(c0)
   private val c1Json = Json.toJson(c1)
   private val c1UpdatedJson = Json.toJson(c1_updated)
@@ -138,7 +105,7 @@ class CaseSpec extends BaseFeatureSpec {
       responseCase.status shouldBe CaseStatus.NEW
     }
 
-    Scenario("Extra fields are ignored when creating a case") {
+    Scenario("Fields that are populated by the case management workflow are ignored when creating a case") {
       When("I create a new case with extra fields")
       val result: HttpResponse[String] = Http(s"$serviceUrl/cases")
         .header(apiTokenKey, appConfig.authorization)
@@ -153,7 +120,7 @@ class CaseSpec extends BaseFeatureSpec {
       val responseCase = Json.parse(result.body).as[Case]
       responseCase.reference shouldBe "600000001"
       responseCase.status shouldBe CaseStatus.NEW
-      responseCase.createdDate should roughlyBe(Instant.now())
+      responseCase.createdDate should roughlyBe(fixedTime)
       responseCase.assignee shouldBe None
       responseCase.queueId shouldBe None
       responseCase.decision shouldBe None
@@ -483,11 +450,20 @@ class CaseSpec extends BaseFeatureSpec {
   }
 
   Feature("Get Cases by statuses") {
-    val c_New = createNewCaseWithExtraFields.copy(status = CaseStatus.NEW)
+    val c_New_1 = createNewCaseWithExtraFields.copy(status = CaseStatus.NEW)
+    val c_New_2 = createCase(r = "case_ref_5", app = createBasicBTIApplication.copy(holder = eORIDetailForNintedo))
+    val c_Live = createCase(
+      status = CaseStatus.COMPLETED,
+      decision = Some(createDecision(effectiveEndDate = Some(fixedTime.plusSeconds(3600 * 24 * 2))))
+    )
+//    val c_Expired = createCase(
+//      status = CaseStatus.COMPLETED,
+//      decision = Some(createDecision(effectiveEndDate = Some(fixedTime.plusSeconds(3600 * 24 * 2))))
+//    )
 
     Scenario("No matches") {
 
-      storeCases(c1_updated, c5)
+      storeCases(c_New_1, c_New_2, c_Live)
 
       val result = Http(s"$serviceUrl/cases?status=SUSPENDED")
         .header(apiTokenKey, appConfig.authorization)
@@ -499,38 +475,38 @@ class CaseSpec extends BaseFeatureSpec {
 
     Scenario("Filtering cases by single status") {
 
-      storeCases(c1_updated, c_New, c5)
+      storeCases(c_New_1, c_New_2, c_Live)
 
       val result = Http(s"$serviceUrl/cases?status=NEW")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_New, c5)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_New_1, c_New_2)))
     }
 
     Scenario("Filtering cases by single pseudo status") {
 
-      storeCases(c1_updated, c_New, c6_live)
+      storeCases(c_New_1, c_New_2, c_Live)
 
       val result = Http(s"$serviceUrl/cases?status=LIVE")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c6_live)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c_Live)))
     }
 
     Scenario("Filtering cases by multiple statuses") {
 
-      storeCases(c1_updated, c_New, c5)
+      storeCases(c1_updated, c_New_1, c5)
 
       val result = Http(s"$serviceUrl/cases?status=NEW&status=CANCELLED")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1_updated, c_New, c5)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1_updated, c_New_1, c5)))
     }
 
     Scenario("Filtering cases by multiple pseudo statuses") {
@@ -547,14 +523,14 @@ class CaseSpec extends BaseFeatureSpec {
 
     Scenario("Filtering cases by multiple statuses - comma separated") {
 
-      storeCases(c1_updated, c_New, c5)
+      storeCases(c1_updated, c_New_1, c5)
 
       val result = Http(s"$serviceUrl/cases?status=NEW,CANCELLED")
         .header(apiTokenKey, appConfig.authorization)
         .asString
 
       result.code shouldEqual OK
-      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1_updated, c_New, c5)))
+      Json.parse(result.body) shouldBe Json.toJson(Paged(Seq(c1_updated, c_New_1, c5)))
     }
 
   }
@@ -760,7 +736,7 @@ class CaseSpec extends BaseFeatureSpec {
     val c_comodity_code_3 = createCase()
     val c_commodity_code_live = createCase(
       status = CaseStatus.COMPLETED,
-      decision = Some(createDecision(effectiveEndDate = Some(Instant.now(clock).plusSeconds(3600 * 24))))
+      decision = Some(createDecision(effectiveEndDate = Some(fixedTime.plusSeconds(3600 * 24))))
     )
 
     Scenario("filtering by non-existing commodity code") {
@@ -826,8 +802,8 @@ class CaseSpec extends BaseFeatureSpec {
       decision = Some(
         createDecision(
           goodsDescription = "LAPTOP",
-          effectiveStartDate = Some(Instant.now().minus(3, ChronoUnit.DAYS)),
-          effectiveEndDate = Some(Instant.now().minus(1, ChronoUnit.DAYS))
+          effectiveStartDate = Some(fixedTime.minus(3, ChronoUnit.DAYS)),
+          effectiveEndDate = Some(fixedTime.minus(1, ChronoUnit.DAYS))
         )
       ),
       status = CaseStatus.COMPLETED
@@ -836,8 +812,8 @@ class CaseSpec extends BaseFeatureSpec {
       decision = Some(
         createDecision(
           goodsDescription = "SPANNER",
-          effectiveStartDate = Some(Instant.now().minus(3, ChronoUnit.DAYS)),
-          effectiveEndDate = Some(Instant.now().minus(1, ChronoUnit.DAYS))
+          effectiveStartDate = Some(fixedTime.minus(3, ChronoUnit.DAYS)),
+          effectiveEndDate = Some(fixedTime.minus(1, ChronoUnit.DAYS))
         )
       ),
       status = CaseStatus.COMPLETED
@@ -846,8 +822,8 @@ class CaseSpec extends BaseFeatureSpec {
       decision = Some(
         createDecision(
           goodsDescription = "LAPTOP",
-          effectiveStartDate = Some(Instant.now()),
-          effectiveEndDate = Some(Instant.now().plus(1, ChronoUnit.DAYS))
+          effectiveStartDate = Some(fixedTime),
+          effectiveEndDate = Some(fixedTime.plus(1, ChronoUnit.DAYS))
         )
       ),
       status = CaseStatus.COMPLETED
@@ -1212,10 +1188,10 @@ class CaseSpec extends BaseFeatureSpec {
 
   Feature("Get Cases sorted by case created date") {
 
-    val caseD0 = createCase().copy(createdDate = Instant.now())
-    val caseD1 = createCase().copy(createdDate = Instant.now().minus(1, ChronoUnit.DAYS))
-    val caseD2 = createCase().copy(createdDate = Instant.now().minus(2, ChronoUnit.DAYS))
-    val caseD3 = createCase().copy(createdDate = Instant.now().minus(3, ChronoUnit.DAYS))
+    val caseD0 = createCase().copy(createdDate = fixedTime)
+    val caseD1 = createCase().copy(createdDate = fixedTime.minus(1, ChronoUnit.DAYS))
+    val caseD2 = createCase().copy(createdDate = fixedTime.minus(2, ChronoUnit.DAYS))
+    val caseD3 = createCase().copy(createdDate = fixedTime.minus(3, ChronoUnit.DAYS))
 
     Scenario("Sorting default - ascending order") {
       Given("There are few cases in the database")
@@ -1269,13 +1245,13 @@ class CaseSpec extends BaseFeatureSpec {
 
   Feature("Get Cases sorted by case decision effective start date") {
 
-    val caseD0 = createCase().copy(decision = Some(createDecision(effectiveStartDate = Some(Instant.now()))))
+    val caseD0 = createCase().copy(decision = Some(createDecision(effectiveStartDate = Some(fixedTime))))
     val caseD1 = createCase()
-      .copy(decision = Some(createDecision(effectiveStartDate = Some(Instant.now().minus(1, ChronoUnit.DAYS)))))
+      .copy(decision = Some(createDecision(effectiveStartDate = Some(fixedTime.minus(1, ChronoUnit.DAYS)))))
     val caseD2 = createCase()
-      .copy(decision = Some(createDecision(effectiveStartDate = Some(Instant.now().minus(2, ChronoUnit.DAYS)))))
+      .copy(decision = Some(createDecision(effectiveStartDate = Some(fixedTime.minus(2, ChronoUnit.DAYS)))))
     val caseD3 = createCase()
-      .copy(decision = Some(createDecision(effectiveStartDate = Some(Instant.now().minus(3, ChronoUnit.DAYS)))))
+      .copy(decision = Some(createDecision(effectiveStartDate = Some(fixedTime.minus(3, ChronoUnit.DAYS)))))
 
     Scenario("Sorting default - ascending order") {
       Given("There are few cases in the database")

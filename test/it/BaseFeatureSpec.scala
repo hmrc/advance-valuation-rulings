@@ -28,8 +28,9 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import repository.{CaseMongoRepository, EventMongoRepository, SequenceMongoRepository}
 import scheduler.ScheduledJobs
 import uk.gov.hmrc.mongo.lock.{LockRepository, MongoLockRepository}
-import util.TestMetrics
+import util.{FixedTimeFixtures, TestMetrics}
 
+import java.time.Clock
 import scala.concurrent.Await.result
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -41,11 +42,15 @@ abstract class BaseFeatureSpec
     with GivenWhenThen
     with GuiceOneServerPerSuite
     with BeforeAndAfterEach
-    with BeforeAndAfterAll {
+    with BeforeAndAfterAll
+    with FixedTimeFixtures {
 
   override lazy val app: Application = GuiceApplicationBuilder()
     .configure("mongodb.uri" -> "mongodb://localhost:27017/test-ClassificationMongoRepositoryTest")
-    .overrides(bind[Metrics].toInstance(new TestMetrics))
+    .overrides(
+      bind[Metrics].toInstance(new TestMetrics),
+      bind[Clock].toInstance(fixedClock),
+    )
     .build()
 
   protected val timeout: FiniteDuration = 5.seconds

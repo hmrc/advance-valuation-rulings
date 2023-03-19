@@ -23,9 +23,9 @@ import model.CaseStatus.{CaseStatus, _}
 import model._
 import utils.RandomGenerator
 
-object EventData {
+object EventData extends FixedTimeFixtures  {
 
-  private def createEvent(caseRef: String, details: Details, date: Instant = Instant.now()): Event =
+  private def createEvent(caseRef: String, details: Details, date: Instant = fixedTime): Event =
     Event(
       id            = RandomGenerator.randomUUID(),
       details       = details,
@@ -45,7 +45,7 @@ object EventData {
     caseReference: String,
     from: CaseStatus = DRAFT,
     to: CaseStatus   = NEW,
-    date: Instant    = Instant.now()
+    date: Instant    = fixedTime
   ): Event =
     createEvent(
       caseRef = caseReference,

@@ -18,6 +18,7 @@ package config
 
 import base.BaseSpec
 import play.api.Configuration
+import util.FixedTimeFixtures
 
 import java.time.ZoneOffset
 
@@ -26,7 +27,7 @@ class AppConfigTest extends BaseSpec {
   private def configWith(pairs: (String, String)*): AppConfig = {
     val currConfigs  = realConfig.entrySet.map(pair => pair._1 -> pair._2.render()).toMap
     val finalConfigs = currConfigs ++ pairs.map(e => e._1      -> e._2).toMap
-    new AppConfig(Configuration.from(finalConfigs), serviceConfig)
+    new AppConfig(Configuration.from(finalConfigs), serviceConfig, FixedTimeFixtures.fixedClock)
   }
 
   "Config" should {
@@ -115,7 +116,7 @@ class AppConfigTest extends BaseSpec {
 
     "build 'mongoEncryption' with value true and without key" in {
       val caught = intercept[RuntimeException] {
-        new AppConfig(Configuration.from(Map("mongodb.encryption.enabled" -> "true")), serviceConfig).mongoEncryption
+        new AppConfig(Configuration.from(Map("mongodb.encryption.enabled" -> "true")), serviceConfig, FixedTimeFixtures.fixedClock).mongoEncryption
       }
       caught.getMessage shouldBe s"Could not find config key 'mongodb.encryption.key'"
     }

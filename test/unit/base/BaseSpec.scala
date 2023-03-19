@@ -30,8 +30,9 @@ import play.api.{Application, Configuration}
 import connector.ResourceFiles
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import util.TestMetrics
+import util.{FixedTimeFixtures, TestMetrics}
 
+import java.time.Clock
 import scala.concurrent.duration.{Duration, DurationInt, FiniteDuration}
 import scala.concurrent.{Await, Future}
 import scala.language.implicitConversions
@@ -52,7 +53,10 @@ abstract class BaseSpec
       "scheduler.referred-days-elapsed.enabled" -> false,
       "scheduler.filestore-cleanup.enabled"     -> false
     )
-    .overrides(bind[Metrics].toInstance(new TestMetrics))
+    .overrides(
+      bind[Metrics].toInstance(new TestMetrics),
+      bind[Clock].toInstance(FixedTimeFixtures.fixedClock)
+    )
     .build()
 
   implicit val mat: Materializer              = fakeApplication.materializer

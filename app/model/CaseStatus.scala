@@ -19,6 +19,7 @@ package model
 object CaseStatus extends Enumeration {
   type CaseStatus = Value
   val DRAFT, NEW, OPEN, SUPPRESSED, REFERRED, REJECTED, CANCELLED, SUSPENDED, COMPLETED, REVOKED, ANNULLED = Value
+//val DRAFT, NEW, OPEN, SUPPRESSED, REFERRED, REJECTED, CANCELLED, SUSPENDED, COMPLETED, REVOKED, ANNULLED, LIVE, EXPIRED, UNDER_APPEAL, UNDER_REVIEW = Value
 
   def fromPseudoStatus(pseudoStatus: PseudoCaseStatus.Value): Option[CaseStatus.Value] =
     CaseStatus.values.find(_.toString == pseudoStatus.toString)

@@ -27,7 +27,8 @@ import javax.inject._
 @Singleton
 class AppConfig @Inject() (
   val configuration: Configuration,
-  config: ServicesConfig
+  config: ServicesConfig,
+  val clock: Clock
 ) extends Logging {
 
   private def configNotFoundError(key: String): Nothing =
@@ -42,8 +43,6 @@ class AppConfig @Inject() (
     val url = configuration.get[String]("bank-holidays-url")
     url.dropWhile(_ == '"').takeWhile(_ != '"')
   }
-
-  lazy val clock: Clock = Clock.systemUTC()
 
   lazy val activeDaysElapsed: JobConfig = JobConfig(
     "ActiveDaysElapsed",

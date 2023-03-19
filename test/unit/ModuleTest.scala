@@ -24,14 +24,19 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.PlayRunners
 import repository.{CaseMongoRepository, CaseRepository, EncryptedCaseMongoRepository}
 import scheduler.{ActiveDaysElapsedJob, FileStoreCleanupJob, ReferredDaysElapsedJob, ScheduledJobs}
-import util.TestMetrics
+import util.{FixedTimeFixtures, TestMetrics}
 
-class ModuleTest extends BaseSpec with BeforeAndAfterEach with PlayRunners {
+import java.time.Clock
+
+class ModuleTest extends BaseSpec with BeforeAndAfterEach with PlayRunners with FixedTimeFixtures {
 
   private def app(conf: (String, Any)*): Application =
     new GuiceApplicationBuilder()
       .bindings(new Module)
-      .overrides(bind[Metrics].toInstance(new TestMetrics))
+      .overrides(
+        bind[Metrics].toInstance(new TestMetrics),
+        bind[Clock].toInstance(fixedClock)
+      )
       .configure(conf: _*)
       .build()
 
