@@ -43,7 +43,7 @@ class Module extends play.api.inject.Module {
       bind[MigrationJobs].toProvider[MigrationJobProvider],
       bind[Scheduler].toSelf.eagerly(),
       repositoryBinding,
-      bind[Clock].toInstance(Clock.systemUTC()),
+      bind[Clock].toInstance(Clock.systemUTC())
     )
   }
 

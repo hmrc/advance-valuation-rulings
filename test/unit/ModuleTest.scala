@@ -18,6 +18,8 @@ import base.BaseSpec
 import com.kenshoo.play.metrics.Metrics
 import migrations.{AddKeywordsMigrationJob, AmendDateOfExtractMigrationJob, MigrationJobs}
 import org.scalatest.BeforeAndAfterEach
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -28,15 +30,11 @@ import util.{FixedTimeFixtures, TestMetrics}
 
 import java.time.Clock
 
-class ModuleTest extends BaseSpec with BeforeAndAfterEach with PlayRunners with FixedTimeFixtures {
+class ModuleTest extends AnyWordSpecLike with Matchers with BeforeAndAfterEach with PlayRunners with FixedTimeFixtures {
 
   private def app(conf: (String, Any)*): Application =
     new GuiceApplicationBuilder()
-      .bindings(new Module)
-      .overrides(
-        bind[Metrics].toInstance(new TestMetrics),
-        bind[Clock].toInstance(fixedClock)
-      )
+      .overrides(bind[Metrics].toInstance(new TestMetrics))
       .configure(conf: _*)
       .build()
 
@@ -46,7 +44,6 @@ class ModuleTest extends BaseSpec with BeforeAndAfterEach with PlayRunners with 
       running(application) {
         application.injector.instanceOf[CaseRepository].isInstanceOf[EncryptedCaseMongoRepository] shouldBe true
       }
-
     }
 
     "Bind standard repository" in {
@@ -85,7 +82,6 @@ class ModuleTest extends BaseSpec with BeforeAndAfterEach with PlayRunners with 
         )
       }
     }
-
   }
 
 }
