@@ -27,26 +27,27 @@ final case class MethodOne(
                     ) extends Method
 
 sealed trait IdenticalGoodsExplanation extends Product with Serializable
-final case class PreviousIdenticalGoods(value: String) extends AnyVal with IdenticalGoodsExplanation
-final case class OtherUsersIdenticalGoods(value: String)
-  extends AnyVal
-    with IdenticalGoodsExplanation
+
+final case class PreviousIdenticalGoods(value: String) extends IdenticalGoodsExplanation
+
+final case class OtherUsersIdenticalGoods(value: String) extends IdenticalGoodsExplanation
 
 final case class MethodTwo(
                       whyNotOtherMethods: String,
                       detailedDescription: IdenticalGoodsExplanation
                     ) extends Method
 
+
 sealed trait SimilarGoodsExplanation extends Product with Serializable
-final case class PreviousSimilarGoods(value: String) extends AnyVal with SimilarGoodsExplanation
-final case class OtherUsersSimilarGoods(value: String) extends AnyVal with SimilarGoodsExplanation
+final case class PreviousSimilarGoods(value: String) extends SimilarGoodsExplanation
+final case class OtherUsersSimilarGoods(value: String) extends SimilarGoodsExplanation
 
 final case class MethodThree(
                         whyNotOtherMethods: String,
                         detailedDescription: SimilarGoodsExplanation
                       ) extends Method
 
-finalcase class MethodFour(
+final case class MethodFour(
                        whyNotOtherMethods: String,
                        deductiveMethod: String
                      ) extends Method

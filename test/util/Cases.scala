@@ -52,13 +52,7 @@ object Cases {
     offline = false,
     "Laptop",
     "Personal Computer",
-    None,
-    None,
-    None,
-    None,
-    Nil,
-    None,
-    None
+    requestedMethod = MethodOne(None, None, None)
   )
 
   private val decision = Decision(
@@ -134,13 +128,9 @@ object Cases {
         goodName                = goodName,
         goodDescription         = goodDescription,
         confidentialInformation = confidentialInformation,
-        otherInformation        = otherInformation,
-        reissuedBTIReference    = reissuedBTIReference,
-        relatedBTIReference     = relatedBTIReference,
         knownLegalProceedings   = knownLegalProceedings,
         envisagedCommodityCode  = envisagedCommodityCode,
-        sampleToBeProvided      = sampleToBeProvided,
-        sampleToBeReturned      = sampleToBeReturned
+        requestedMethod = MethodOne(None, None, None)
       )
     )
   }
@@ -184,11 +174,9 @@ object Cases {
         .asInstanceOf[BTIApplication]
         .copy(
           confidentialInformation = confidentialInformation,
-          otherInformation        = otherInformation,
-          reissuedBTIReference    = reissuedBTIReference,
-          relatedBTIReference     = relatedBTIReference,
           knownLegalProceedings   = knownLegalProceedings,
-          envisagedCommodityCode  = envisagedCommodityCode
+          envisagedCommodityCode  = envisagedCommodityCode,
+          requestedMethod = MethodOne(None, None, None)
         )
     )
   }

@@ -35,7 +35,8 @@ object CaseData extends FixedTimeFixtures {
       holder          = createEORIDetails,
       contact         = createContact,
       goodDescription = "this is a BTI application for HTC Wildfire mobile phones",
-      goodName        = "HTC Wildfire smartphone"
+      goodName        = "HTC Wildfire smartphone",
+        requestedMethod = MethodOne(None, None, None)
     )
 
   def createBTIApplicationWithAllFields(
@@ -49,14 +50,10 @@ object CaseData extends FixedTimeFixtures {
       goodDescription         = "this is a BTI application for HTC Wildfire mobile phones",
       goodName                = "HTC Wildfire smartphone",
       confidentialInformation = Some("This phone has a secret processor."),
-      otherInformation        = Some("The phone comes in multiple colors"),
-      reissuedBTIReference    = Some("BTI123"),
-      relatedBTIReference     = Some("BTI987"),
       knownLegalProceedings   = Some("Someone is suing me!"),
       envisagedCommodityCode  = Some("12345"),
-      sampleToBeProvided      = true,
-      sampleToBeReturned      = true,
-      applicationPdf          = applicationPdf
+      applicationPdf          = applicationPdf,
+      requestedMethod = MethodOne(None, None, None)
     )
 
   def createDecision(
