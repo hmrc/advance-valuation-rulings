@@ -16,13 +16,26 @@
 
 package uk.gov.hmrc.advancevaluationrulings.config
 
-import com.google.inject.AbstractModule
+import play.api.{Configuration, Environment}
+import play.api.inject.{bind => binding}
+import play.api.inject.Binding
+import uk.gov.hmrc.advancevaluationrulings.config._
 import uk.gov.hmrc.advancevaluationrulings.services.{MongoValuationCaseService, ValuationCaseService}
 
-class Module extends AbstractModule {
+class Module extends play.api.inject.Module {
 
-  override def configure(): Unit = {
-    bind(classOf[AppConfig]).asEagerSingleton()
-    bind(classOf[ValuationCaseService]).to(classOf[MongoValuationCaseService]).asEagerSingleton()
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
+    val authTokenInitialiserBindings: Seq[Binding[_]] =
+      if (configuration.get[Boolean]("create-internal-auth-token-on-start")) {
+        Seq(binding[InternalAuthTokenInitialiser].to[InternalAuthTokenInitialiserImpl].eagerly())
+      } else
+        Seq(binding[InternalAuthTokenInitialiser].to[NoOpInternalAuthTokenInitialiser].eagerly())
+
+    Seq(
+      binding(classOf[ValuationCaseService])
+        .to(classOf[MongoValuationCaseService])
+        .eagerly(),
+      binding(classOf[AppConfig]).toSelf.eagerly()
+    ) ++ authTokenInitialiserBindings
   }
 }
