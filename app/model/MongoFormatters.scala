@@ -16,9 +16,9 @@
 
 package model
 
-import utils.JsonUtil
 import play.api.libs.json._
 import uk.gov.hmrc.play.json.Union
+import utils.JsonUtil
 
 import java.time.{Instant, LocalDateTime, ZoneOffset, ZonedDateTime}
 import scala.util.{Success, Try}
@@ -90,6 +90,35 @@ object MongoFormatters {
   implicit val formatEORIDetails: OFormat[EORIDetails]                = Json.format[EORIDetails]
   implicit val formatAgentDetails: OFormat[AgentDetails]              = Json.format[AgentDetails]
   implicit val formatContact: OFormat[Contact]                        = Json.format[Contact]
+
+  implicit val formatPreviousIdenticalGoods: OFormat[PreviousIdenticalGoods] = Json.format[PreviousIdenticalGoods]
+  implicit val formatOtherUsersIdenticalGoods: OFormat[OtherUsersIdenticalGoods] = Json.format[OtherUsersIdenticalGoods]
+  implicit val formatIdenticalGoods: OFormat[IdenticalGoodsExplanation] = Union.from[IdenticalGoodsExplanation]("type")
+    .and[PreviousIdenticalGoods]("PreviousIdenticalGoods")
+    .and[OtherUsersIdenticalGoods]("OtherUsersIdenticalGoods")
+    .format
+  implicit val formatMethodOne: OFormat[MethodOne] = Json.format[MethodOne]
+  implicit val formatMethodTwo: OFormat[MethodTwo] = Json.format[MethodTwo]
+
+  implicit val formatPreviousSimilarGoods: OFormat[PreviousSimilarGoods] = Json.format[PreviousSimilarGoods]
+  implicit val formatOtherUsersSimilarGoods: OFormat[OtherUsersSimilarGoods] = Json.format[OtherUsersSimilarGoods]
+  implicit val formatSimilarGoods: OFormat[SimilarGoodsExplanation] = Union.from[SimilarGoodsExplanation]("type")
+    .and[PreviousSimilarGoods]("PreviousSimilarGoods")
+    .and[OtherUsersSimilarGoods]("OtherUsersSimilarGoods")
+    .format
+  implicit val formatMethodThree: OFormat[MethodThree] = Json.format[MethodThree]
+  implicit val formatMethodFour: OFormat[MethodFour] = Json.format[MethodFour]
+  implicit val formatMethodFive: OFormat[MethodFive] = Json.format[MethodFive]
+  implicit val formatMethodSix: OFormat[MethodSix] = Json.format[MethodSix]
+
+  implicit val formatMethod: OFormat[Method] = Union.from[Method]("type")
+    .and[MethodOne]("MethodOne")
+    .and[MethodTwo]("MethodTwo")
+    .and[MethodThree]("MethodThree")
+    .and[MethodFour]("MethodFour")
+    .and[MethodFive]("MethodFive")
+    .and[MethodSix]("MethodSix")
+    .format
 
   implicit val formatBTIApplication: OFormat[BTIApplication]            = Json.using[Json.WithDefaultValues].format[BTIApplication]
 

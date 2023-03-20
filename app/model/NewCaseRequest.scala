@@ -28,9 +28,7 @@ case class NewCaseRequest(
     reference = reference,
     status    = CaseStatus.NEW,
     createdDate = Instant.now(clock),
-    sample =
-      if (application.isBTI && application.asBTI.sampleToBeProvided) Sample(status = Some(SampleStatus.AWAITING))
-      else Sample(),
+    sample = Sample(), // TODO remove sample
     application = application,
     attachments = attachments
   )
