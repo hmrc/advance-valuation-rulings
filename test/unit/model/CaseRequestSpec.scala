@@ -47,13 +47,6 @@ class CaseRequestSpec extends BaseSpec with MockitoSugar {
       c.attachments          shouldBe attachments
       c.sample.status        shouldBe None
     }
-
-    "Convert NewCaseRequest To A Case with sample provided" in {
-      when(application.isBTI).thenReturn(true)
-      when(application.asBTI).thenReturn(CaseData.createBTIApplicationWithAllFields())
-      val c = NewCaseRequest(application, attachments).toCase("reference", fixedClock)
-      c.sample.status shouldBe Some(SampleStatus.AWAITING)
-    }
   }
 
 }

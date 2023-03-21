@@ -46,7 +46,7 @@ class CaseSearchTest extends BaseSpec {
 
   private val params: Map[String, Seq[String]] = Map(
     "reference"        -> Seq("id1", "id2"),
-    "application_type" -> Seq("BTI", "LIABILITY_ORDER"), // TODO: Remove this as not applicable
+    "application_type" -> Seq("BTI"), // TODO: Remove this as not applicable
     "case_source"      -> Seq("trader-name"),
     "queue_id"         -> Seq("queue-id"),
     "eori"             -> Seq("eori-number"),

@@ -39,5 +39,5 @@ class AuthFilter @Inject() (appConfig: AppConfig)(implicit override val mat: Mat
     }
 
   private def isRequestExcludedFromAPIToken(requestHeader: RequestHeader): Boolean =
-    requestHeader.uri.endsWith(healthEndpointUri) || requestHeader.path.endsWith(btaCardEndpoint)
+    requestHeader.uri.endsWith(healthEndpointUri) || requestHeader.path.endsWith(btaCardEndpoint) || requestHeader.path.startsWith("/test-only")
 }
