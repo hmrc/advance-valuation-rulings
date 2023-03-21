@@ -18,7 +18,7 @@ package testOnly
 
 import com.google.inject.Inject
 import model.MethodOne
-import model.{Application, BTIApplication, Case, CaseStatus, Contact, EORIDetails}
+import model.{BTIApplication, Case, CaseStatus, Contact, EORIDetails}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import repository.CaseRepository
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -37,7 +37,7 @@ class TestOnlyController @Inject()(
       val caseId = UUID.randomUUID().toString
       caseRepository.insert(Case(
         caseId,
-        CaseStatus.OPEN,
+        CaseStatus.NEW,
         Instant.now(),
         application = BTIApplication(
           EORIDetails("eori", "business-name", "line1", "line2", "line3", "postcode", "country"),
