@@ -58,7 +58,7 @@ object RESTFormatters {
 
   implicit val formatPreviousIdenticalGoods: OFormat[PreviousIdenticalGoods] = Json.format[PreviousIdenticalGoods]
   implicit val formatOtherUsersIdenticalGoods: OFormat[OtherUsersIdenticalGoods] = Json.format[OtherUsersIdenticalGoods]
-  implicit val formatIdenticalGoods: OFormat[IdenticalGoodsExplanation] = Union.from[IdenticalGoodsExplanation]("type")
+  implicit val formatIdenticalGoods: OFormat[IdenticalGoodsExplanation] = Union.from[IdenticalGoodsExplanation]("_type")
     .and[PreviousIdenticalGoods]("PreviousIdenticalGoods")
     .and[OtherUsersIdenticalGoods]("OtherUsersIdenticalGoods")
     .format
@@ -67,7 +67,7 @@ object RESTFormatters {
 
   implicit val formatPreviousSimilarGoods: OFormat[PreviousSimilarGoods] = Json.format[PreviousSimilarGoods]
   implicit val formatOtherUsersSimilarGoods: OFormat[OtherUsersSimilarGoods] = Json.format[OtherUsersSimilarGoods]
-  implicit val formatSimilarGoods: OFormat[SimilarGoodsExplanation] = Union.from[SimilarGoodsExplanation]("type")
+  implicit val formatSimilarGoods: OFormat[SimilarGoodsExplanation] = Union.from[SimilarGoodsExplanation]("_type")
     .and[PreviousSimilarGoods]("PreviousSimilarGoods")
     .and[OtherUsersSimilarGoods]("OtherUsersSimilarGoods")
     .format
@@ -76,7 +76,7 @@ object RESTFormatters {
   implicit val formatMethodFive: OFormat[MethodFive] = Json.format[MethodFive]
   implicit val formatMethodSix: OFormat[MethodSix] = Json.format[MethodSix]
 
-  implicit val formatMethod: OFormat[Method] = Union.from[Method]("type")
+  implicit val formatMethod: OFormat[Method] = Union.from[Method]("_type")
     .and[MethodOne]("MethodOne")
     .and[MethodTwo]("MethodTwo")
     .and[MethodThree]("MethodThree")
@@ -88,7 +88,7 @@ object RESTFormatters {
   implicit val formatBTIApplication: OFormat[BTIApplication]            = Json.using[Json.WithDefaultValues].format[BTIApplication]
 
   implicit val formatApplication: Format[Application] = Union
-    .from[Application]("type")
+    .from[Application]("type") //todo not currwnrly used
     .and[BTIApplication](ApplicationType.BTI.toString)
     .format
 

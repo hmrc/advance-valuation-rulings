@@ -1,7 +1,13 @@
 # microservice specific routes
 
+# todo this wants re-implimented
+#GET        /trader-details/:acknowledgementReference/:eoriNumber             uk.gov.hmrc.advancevaluationrulings.controllers.ValuationRulingsController.retrieveTraderDetails(acknowledgementReference: String, eoriNumber: String)
+
+
 # cases endpoints
 GET           /cases                            @controllers.CaseController.get(query: model.CaseSearch, pagination: model.Pagination ?= model.Pagination())
+# todo this wants to be /cases however will require FE change
+POST          /application                      @controllers.CaseController.create
 POST          /cases                            @controllers.CaseController.create
 GET           /cases/:reference                 @controllers.CaseController.getByReference(reference: String)
 PUT           /cases/:reference                 @controllers.CaseController.put(reference: String)

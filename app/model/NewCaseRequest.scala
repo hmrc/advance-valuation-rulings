@@ -16,6 +16,8 @@
 
 package model
 
+import play.api.libs.json.{JsResult, JsSuccess, JsValue, Json, Reads}
+
 import java.time.{Clock, Instant}
 
 case class NewCaseRequest(
@@ -32,4 +34,45 @@ case class NewCaseRequest(
     application = application,
     attachments = attachments
   )
+}
+
+object NewCaseRequest {
+
+  import RESTFormatters._
+
+  val customReadsFromFE: Reads[NewCaseRequest] = new Reads[NewCaseRequest] {
+    override def reads(json: JsValue): JsResult[NewCaseRequest] = {
+
+      println(Json.prettyPrint(json))
+
+      for {
+        method <- (json \ "requestedMethod").validate[Method]
+        holder <- (json \ "applicant" \ "holder").validate[EORIDetails]
+        contact <- (json \ "applicant" \ "contact").validate[Contact]
+        goodName <- (json \ "goodsDetails" \ "goodDescription").validate[String] //todo not in their model... will need added. SHOULD NOT BE \ "goodDescription"
+        goodDescription <- (json \ "goodsDetails" \ "goodDescription").validate[String]
+        envisagedCommodityCode = (json \ "goodsDetails" \ "envisagedCommodityCode").validate[String].asOpt
+        knownLegalProceedings = (json \ "goodsDetails" \ "knownLegalProceedings").validate[String].asOpt
+        confidentialInformation = (json \ "goodsDetails" \ "confidentialInformation").validate[String].asOpt
+        attachments <- (json \ "attachments").validate[Seq[Attachment]] //todo this does not look like Seq[UploadedDocument] from FE, why not?
+      } yield {
+        NewCaseRequest(
+          application = BTIApplication(
+            holder = holder,
+            contact = contact,
+            agent = None, //todo not yet implimented.
+            offline = false, //todo what even is this???
+            goodName = goodName,
+            goodDescription = goodDescription,
+            requestedMethod = method,
+            confidentialInformation = confidentialInformation,
+            knownLegalProceedings = knownLegalProceedings,
+            envisagedCommodityCode = envisagedCommodityCode,
+            applicationPdf = None // todo we dont plan to use pdf generator, is this business requirement required.
+          ),
+          attachments = attachments
+        )
+      }
+    }
+  }
 }

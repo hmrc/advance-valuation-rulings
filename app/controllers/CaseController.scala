@@ -17,7 +17,6 @@
 package controllers
 
 import javax.inject.{Inject, Singleton}
-
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
 import config.AppConfig
@@ -27,6 +26,7 @@ import model._
 import service.CaseService
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.concurrent.Future.successful
 
 @Singleton
@@ -54,7 +54,7 @@ class CaseController @Inject() (
         c <- caseService.insert(caseRequest.toCase(r, appConfig.clock))
         _ <- caseService.addInitialSampleStatusIfExists(c)
       } yield Created(Json.toJson(c)(RESTFormatters.formatCase))
-    } recover recovery map { result =>
+    }(implicitly, implicitly[Manifest[NewCaseRequest]], NewCaseRequest.customReadsFromFE) recover recovery map { result =>
       logger.debug(s"Case creation Result : $result");
       result
     }
