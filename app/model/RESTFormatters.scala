@@ -58,19 +58,25 @@ object RESTFormatters {
 
   implicit val formatPreviousIdenticalGoods: OFormat[PreviousIdenticalGoods] = Json.format[PreviousIdenticalGoods]
   implicit val formatOtherUsersIdenticalGoods: OFormat[OtherUsersIdenticalGoods] = Json.format[OtherUsersIdenticalGoods]
-  implicit val formatIdenticalGoods: OFormat[IdenticalGoodsExplanation] = Union.from[IdenticalGoodsExplanation]("_type")
-    .and[PreviousIdenticalGoods]("PreviousIdenticalGoods")
-    .and[OtherUsersIdenticalGoods]("OtherUsersIdenticalGoods")
-    .format
+  private[models] val jsonConfig                   = JsonConfiguration(
+    discriminator = "_type",
+    typeNaming =
+      JsonNaming(fullName => fullName.slice(1 + fullName.lastIndexOf("."), fullName.length))
+  )
+  
+  implicit val formatIdenticalGoodsExplanation: OFormat[IdenticalGoodsExplanation] =
+    Json.configured(jsonConfig).format[IdenticalGoodsExplanation]
+
   implicit val formatMethodOne: OFormat[MethodOne] = Json.format[MethodOne]
   implicit val formatMethodTwo: OFormat[MethodTwo] = Json.format[MethodTwo]
 
-  implicit val formatPreviousSimilarGoods: OFormat[PreviousSimilarGoods] = Json.format[PreviousSimilarGoods]
-  implicit val formatOtherUsersSimilarGoods: OFormat[OtherUsersSimilarGoods] = Json.format[OtherUsersSimilarGoods]
-  implicit val formatSimilarGoods: OFormat[SimilarGoodsExplanation] = Union.from[SimilarGoodsExplanation]("_type")
-    .and[PreviousSimilarGoods]("PreviousSimilarGoods")
-    .and[OtherUsersSimilarGoods]("OtherUsersSimilarGoods")
-    .format
+  implicit val formatPreviousSimilarGoods: Format[PreviousSimilarGoods] = Json.valueFormat[PreviousSimilarGoods]
+  implicit val formatOtherUsersSimilarGoods: Format[OtherUsersSimilarGoods] = Json.valueFormat[OtherUsersSimilarGoods]
+
+
+  implicit val formatSimilarGoods: OFormat[SimilarGoodsExplanation] =
+    Json.configured(jsonConfig).format[SimilarGoodsExplanation]
+
   implicit val formatMethodThree: OFormat[MethodThree] = Json.format[MethodThree]
   implicit val formatMethodFour: OFormat[MethodFour] = Json.format[MethodFour]
   implicit val formatMethodFive: OFormat[MethodFive] = Json.format[MethodFive]
