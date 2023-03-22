@@ -6,8 +6,8 @@
 
 # cases endpoints
 GET           /cases                            @controllers.CaseController.get(query: model.CaseSearch, pagination: model.Pagination ?= model.Pagination())
-# todo this wants to be /cases however will require FE change
-POST          /application                      @controllers.CaseController.create
+
+POST          /application                      @controllers.CaseController.create # todo delete this when FE is using 'POST /cases'
 POST          /cases                            @controllers.CaseController.create
 GET           /cases/:reference                 @controllers.CaseController.getByReference(reference: String)
 PUT           /cases/:reference                 @controllers.CaseController.put(reference: String)

@@ -34,7 +34,7 @@ final case class OtherUsersIdenticalGoods(val value: String) extends AnyVal with
 
 final case class MethodTwo(
                       whyNotOtherMethods: String,
-                      detailedDescription: JsObject
+                      detailedDescription: IdenticalGoodsExplanation
                     ) extends Method
 
 
@@ -45,7 +45,7 @@ final case class OtherUsersSimilarGoods(val value: String) extends AnyVal with S
 
 final case class MethodThree(
                         whyNotOtherMethods: String,
-                        detailedDescription: JsObject
+                        detailedDescription: SimilarGoodsExplanation
                       ) extends Method
 
 final case class MethodFour(
