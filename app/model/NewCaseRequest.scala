@@ -42,9 +42,6 @@ object NewCaseRequest {
 
   val customReadsFromFE: Reads[NewCaseRequest] = new Reads[NewCaseRequest] {
     override def reads(json: JsValue): JsResult[NewCaseRequest] = {
-
-      println(Json.prettyPrint(json))
-
       for {
         method <- (json \ "requestedMethod").validate[Method]
         holder <- (json \ "applicant" \ "holder").validate[EORIDetails]
