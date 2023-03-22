@@ -19,6 +19,7 @@ package model
 import cats.data.NonEmptySeq
 import play.api.libs.json._
 import model.reporting._
+import play.api.libs.json.JsonConfiguration.Aux
 import uk.gov.hmrc.play.json.Union
 
 object RESTFormatters {
@@ -58,7 +59,7 @@ object RESTFormatters {
 
   implicit val formatPreviousIdenticalGoods: OFormat[PreviousIdenticalGoods] = Json.format[PreviousIdenticalGoods]
   implicit val formatOtherUsersIdenticalGoods: OFormat[OtherUsersIdenticalGoods] = Json.format[OtherUsersIdenticalGoods]
-  private[models] val jsonConfig                   = JsonConfiguration(
+  val jsonConfig: Aux[Json.MacroOptions] = JsonConfiguration(
     discriminator = "_type",
     typeNaming =
       JsonNaming(fullName => fullName.slice(1 + fullName.lastIndexOf("."), fullName.length))
