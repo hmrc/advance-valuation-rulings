@@ -117,7 +117,7 @@ trait ModelGenerators extends Generators {
     for {
       importGoods                              <- Arbitrary.arbitrary[Boolean]
       registeredDetailsCheck                   <- registeredDetailsCheckGen
-      applicationContactsDetails               <- applicationContactsDetailsGen
+      applicationContactDetails                <- Gen.option(applicationContactsDetailsGen)
       valuationMethod                          <- Gen.oneOf(ValuationMethod.values)
       isThereASaleInvolved                     <- Gen.option(Arbitrary.arbitrary[Boolean])
       isSaleBetweenRelatedParties              <- Gen.option(Arbitrary.arbitrary[Boolean])
@@ -133,7 +133,7 @@ trait ModelGenerators extends Generators {
     } yield UserAnswers(
       importGoods = importGoods,
       checkRegisteredDetails = registeredDetailsCheck,
-      applicationContactDetails = applicationContactsDetails,
+      applicationContactDetails = applicationContactDetails,
       valuationMethod = valuationMethod,
       isThereASaleInvolved = isThereASaleInvolved,
       isSaleBetweenRelatedParties = isSaleBetweenRelatedParties,
