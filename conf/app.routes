@@ -3,21 +3,3 @@
 GET        /trader-details/:acknowledgementReference/:eoriNumber             uk.gov.hmrc.advancevaluationrulings.controllers.ValuationRulingsController.retrieveTraderDetails(acknowledgementReference: String, eoriNumber: String)
 
 POST       /submit-answers                   uk.gov.hmrc.advancevaluationrulings.controllers.ValuationRulingsController.submitAnswers()
-
-POST       /valuation                        uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.create()
-
-GET       /valuation                          uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.allOpenCases()
-
-GET       /valuation/new                      uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.allNewCases()
-
-GET       /valuations/:assignee               uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.findByAssignee(assignee)
-
-GET       /valuation/:reference               uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.findByReference(reference)
-
-
-POST       /valuation/assign                 uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.assignCase()
-
-POST       /valuation/reject                 uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.rejectCase()
-
-POST       /valuation/unassign                uk.gov.hmrc.advancevaluationrulings.controllers.ValuationCaseController.unAssignCase()
-
