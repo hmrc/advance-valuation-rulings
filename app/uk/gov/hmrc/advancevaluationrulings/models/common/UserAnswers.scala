@@ -21,7 +21,7 @@ import play.api.libs.json.{Json, OFormat}
 final case class UserAnswers(
   importGoods: Boolean,
   checkRegisteredDetails: RegisteredDetailsCheck,
-  applicationContactDetails: ApplicationContactDetails,
+  applicationContactDetails: Option[ApplicationContactDetails],
   valuationMethod: ValuationMethod,
   isThereASaleInvolved: Option[Boolean],
   isSaleBetweenRelatedParties: Option[Boolean],
