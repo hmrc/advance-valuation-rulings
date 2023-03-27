@@ -11,5 +11,3 @@
 
 # Add all the application routes to the prod.routes file
 ->         /                          prod.Routes
-
-GET        /test-only/clear-db         uk.gov.hmrc.advancevaluationrulings.testOnly.TestOnlyController.clear()
