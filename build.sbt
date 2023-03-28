@@ -1,3 +1,5 @@
+import play.sbt.routes.RoutesKeys
+
 lazy val microservice = Project("advance-valuation-rulings", file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin, ScalafmtPlugin)
   .settings(
@@ -23,6 +25,7 @@ lazy val microservice = Project("advance-valuation-rulings", file("."))
   .settings(resolvers += Resolver.jcenterRepo)
   .settings(CodeCoverageSettings.settings: _*)
   .settings(scoverageSettings)
+  .settings(RoutesKeys.routesImport ++= Seq("uk.gov.hmrc.advancevaluationrulings.models.application.ApplicationId"))
 
 lazy val testSettings: Seq[Def.Setting[_]] = Seq(
   fork := true,

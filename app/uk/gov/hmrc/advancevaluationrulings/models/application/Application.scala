@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.config
+package uk.gov.hmrc.advancevaluationrulings.models.application
 
-import com.google.inject.AbstractModule
+import play.api.libs.json.{Json, OFormat}
 
-import java.time.Clock
+import java.time.Instant
 
-class Module extends AbstractModule {
+final case class Application(
+                              id: ApplicationId,
+                              created: Instant,
+                              lastUpdated: Instant
+                            )
 
-  override def configure(): Unit = {
-    bind(classOf[AppConfig]).asEagerSingleton()
-    bind(classOf[Clock]).toInstance(Clock.systemUTC())
-  }
+object Application {
+
+  implicit lazy val format: OFormat[Application] = Json.format
 }
