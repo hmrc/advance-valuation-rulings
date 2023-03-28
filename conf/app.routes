@@ -3,3 +3,7 @@
 GET        /trader-details/:acknowledgementReference/:eoriNumber             uk.gov.hmrc.advancevaluationrulings.controllers.ValuationRulingsController.retrieveTraderDetails(acknowledgementReference: String, eoriNumber: String)
 
 POST       /submit-answers                   uk.gov.hmrc.advancevaluationrulings.controllers.ValuationRulingsController.submitAnswers()
+
+GET         /applications                   uk.gov.hmrc.advancevaluationrulings.controllers.ApplicationController.summaries
+GET         /applications/:applicationId    uk.gov.hmrc.advancevaluationrulings.controllers.ApplicationController.get(applicationId: ApplicationId)
+POST        /applications                   uk.gov.hmrc.advancevaluationrulings.controllers.ApplicationController.submit
