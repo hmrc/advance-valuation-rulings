@@ -24,9 +24,15 @@ import uk.gov.hmrc.advancevaluationrulings.models.common._
 import uk.gov.hmrc.advancevaluationrulings.models.errors.{ETMPError, ErrorDetail, SourceFaultDetail}
 import uk.gov.hmrc.advancevaluationrulings.models.etmp._
 import org.scalacheck.{Arbitrary, Gen}
+import uk.gov.hmrc.advancevaluationrulings.models.application.ApplicationId
 import wolfendale.scalacheck.regexp.RegexpGen
 
 trait ModelGenerators extends Generators {
+
+  def applicationIdGen: Gen[ApplicationId] =
+    for {
+      value <- Gen.choose(1, 999999999)
+    } yield ApplicationId(value)
 
   def regimeGen: Gen[Regime] = Gen.oneOf(Regime.values)
 
