@@ -32,7 +32,7 @@ class CounterRepository @Inject()(
                                    mongoComponent: MongoComponent
                                  )(implicit ec: ExecutionContext)
   extends PlayMongoRepository[CounterWrapper](
-    collectionName = "ids",
+    collectionName = "counters",
     mongoComponent = mongoComponent,
     domainFormat   = CounterWrapper.format,
     indexes        = Nil
