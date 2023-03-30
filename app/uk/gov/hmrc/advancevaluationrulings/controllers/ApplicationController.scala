@@ -19,12 +19,16 @@ package uk.gov.hmrc.advancevaluationrulings.controllers
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, ApplicationId, ApplicationRequest, ApplicationSubmissionResponse, ApplicationSummaryResponse}
+import uk.gov.hmrc.advancevaluationrulings.repositories.{ApplicationRepository, CounterRepository}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import java.time.{Clock, Instant}
 import javax.inject.Inject
 
-class ApplicationController @Inject()(cc: ControllerComponents, clock: Clock) extends BackendController(cc) {
+class ApplicationController @Inject()(
+                                       cc: ControllerComponents,
+                                       clock: Clock
+                                     ) extends BackendController(cc) {
 
   def submit: Action[ApplicationRequest] = Action(parse.json[ApplicationRequest]) {
     implicit request =>
