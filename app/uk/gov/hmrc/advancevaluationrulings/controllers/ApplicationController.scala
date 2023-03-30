@@ -20,19 +20,26 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, ApplicationId, ApplicationRequest, ApplicationSubmissionResponse, ApplicationSummaryResponse}
 import uk.gov.hmrc.advancevaluationrulings.repositories.{ApplicationRepository, CounterRepository}
+import uk.gov.hmrc.advancevaluationrulings.services.ApplicationService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import java.time.{Clock, Instant}
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class ApplicationController @Inject()(
                                        cc: ControllerComponents,
-                                       clock: Clock
-                                     ) extends BackendController(cc) {
+                                       clock: Clock,
+                                       applicationService: ApplicationService
+                                     )(implicit ec: ExecutionContext) extends BackendController(cc) {
 
-  def submit: Action[ApplicationRequest] = Action(parse.json[ApplicationRequest]) {
+  def submit: Action[ApplicationRequest] = Action(parse.json[ApplicationRequest]).async {
     implicit request =>
-      Ok(Json.toJson(ApplicationSubmissionResponse(ApplicationId(1))))
+      applicationService
+        .save(request.body)
+        .map { id =>
+          Ok(Json.toJson(ApplicationSubmissionResponse(id)))
+      }
   }
 
   def summaries: Action[AnyContent] = Action {

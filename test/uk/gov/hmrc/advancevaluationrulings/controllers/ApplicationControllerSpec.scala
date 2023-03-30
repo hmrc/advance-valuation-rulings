@@ -17,7 +17,10 @@
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
 import generators.ModelGenerators
-import org.scalatest.OptionValues
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.{Mockito, MockitoSugar}
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.inject.bind
@@ -25,18 +28,35 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, ApplicationId, ApplicationRequest, ApplicationSubmissionResponse, ApplicationSummaryResponse, EORIDetails}
+import uk.gov.hmrc.advancevaluationrulings.models.application._
+import uk.gov.hmrc.advancevaluationrulings.services.ApplicationService
 
 import java.time.{Clock, Instant, ZoneId}
+import scala.concurrent.Future
 
-class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionValues with ModelGenerators {
+class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionValues with ModelGenerators with MockitoSugar with BeforeAndAfterEach {
 
   private val fixedClock = Clock.fixed(Instant.now, ZoneId.systemDefault)
-  private val app = GuiceApplicationBuilder().overrides(bind[Clock].toInstance(fixedClock)).build()
+  private val mockApplicationService = mock[ApplicationService]
+
+  private val app =
+    GuiceApplicationBuilder()
+      .overrides(
+        bind[Clock].toInstance(fixedClock),
+        bind[ApplicationService].toInstance(mockApplicationService)
+      ).build()
+
+  override def beforeEach(): Unit = {
+    Mockito.reset(mockApplicationService)
+    super.beforeEach()
+  }
 
   ".submit" - {
 
-    "must return an application submission response" in {
+    "must save the application and return an application submission response" in {
+
+      val id = 123L
+      when(mockApplicationService.save(any())) thenReturn Future.successful(ApplicationId(id))
 
       val eoriDetails = EORIDetails("eori", "name", "line1", "line2", "line3", "postcode", "country")
       val applicationRequest = ApplicationRequest(eoriDetails)
@@ -48,7 +68,8 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
       val result = route(app, request).value
 
       status(result) mustEqual OK
-      contentAsJson(result) mustEqual Json.toJson(ApplicationSubmissionResponse(ApplicationId(1)))
+      contentAsJson(result) mustEqual Json.toJson(ApplicationSubmissionResponse(ApplicationId(id)))
+      verify(mockApplicationService, times(1)).save(eqTo(applicationRequest))
     }
   }
 
