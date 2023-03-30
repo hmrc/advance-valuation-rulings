@@ -30,10 +30,15 @@ class ApplicationService @Inject()(
                                     clock: Clock
                                   )(implicit ec: ExecutionContext) {
 
-  def save(request: ApplicationRequest): Future[ApplicationId] =
+  def save(applicantEori: String, request: ApplicationRequest): Future[ApplicationId] =
     counterRepository.nextId(CounterId.ApplicationId).flatMap { id =>
       val applicationId = ApplicationId(id)
-      val application = Application(applicationId, Instant.now(clock), Instant.now(clock))
+      val application = Application(
+        id = applicationId,
+        applicantEori = applicantEori,
+        created = Instant.now(clock),
+        lastUpdated = Instant.now(clock)
+      )
 
       applicationRepository
         .set(application)

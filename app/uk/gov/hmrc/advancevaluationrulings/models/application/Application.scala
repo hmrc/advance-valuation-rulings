@@ -22,6 +22,7 @@ import java.time.Instant
 
 final case class Application(
                               id: ApplicationId,
+                              applicantEori: String,
                               created: Instant,
                               lastUpdated: Instant
                             )

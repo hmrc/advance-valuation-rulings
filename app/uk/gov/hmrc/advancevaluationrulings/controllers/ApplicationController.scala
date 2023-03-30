@@ -18,8 +18,8 @@ package uk.gov.hmrc.advancevaluationrulings.controllers
 
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, ApplicationId, ApplicationRequest, ApplicationSubmissionResponse, ApplicationSummaryResponse}
-import uk.gov.hmrc.advancevaluationrulings.repositories.{ApplicationRepository, CounterRepository}
+import uk.gov.hmrc.advancevaluationrulings.controllers.actions.IdentifierAction
+import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.services.ApplicationService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -30,13 +30,14 @@ import scala.concurrent.ExecutionContext
 class ApplicationController @Inject()(
                                        cc: ControllerComponents,
                                        clock: Clock,
-                                       applicationService: ApplicationService
+                                       applicationService: ApplicationService,
+                                       identify: IdentifierAction
                                      )(implicit ec: ExecutionContext) extends BackendController(cc) {
 
-  def submit: Action[ApplicationRequest] = Action(parse.json[ApplicationRequest]).async {
+  def submit: Action[ApplicationRequest] = identify(parse.json[ApplicationRequest]).async {
     implicit request =>
       applicationService
-        .save(request.body)
+        .save(request.eori, request.body)
         .map { id =>
           Ok(Json.toJson(ApplicationSubmissionResponse(id)))
       }
@@ -49,7 +50,7 @@ class ApplicationController @Inject()(
 
   def get(applicationId: ApplicationId): Action[AnyContent] = Action {
     implicit request =>
-      val application = Application(applicationId, Instant.now(clock), Instant.now(clock))
+      val application = Application(applicationId, "applicantEori", Instant.now(clock), Instant.now(clock))
 
       Ok(Json.toJson(application))
   }
