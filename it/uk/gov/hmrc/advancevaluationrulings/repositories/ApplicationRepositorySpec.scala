@@ -25,14 +25,14 @@ class ApplicationRepositorySpec
 
     "must insert an application" in {
 
-      val application = Application(ApplicationId(1), Instant.now, Instant.now)
+      val application = Application(ApplicationId(1), "eori", Instant.now, Instant.now)
 
       repository.set(application).futureValue
     }
 
     "must fail to insert a duplicate application" in {
 
-      val application = Application(ApplicationId(1), Instant.now, Instant.now)
+      val application = Application(ApplicationId(1), "eori", Instant.now, Instant.now)
 
       repository.set(application).futureValue
       repository.set(application).failed.futureValue
@@ -43,7 +43,7 @@ class ApplicationRepositorySpec
 
     "must return an application when one exists" in {
 
-      val application = Application(ApplicationId(1), Instant.now, Instant.now)
+      val application = Application(ApplicationId(1), "eori", Instant.now, Instant.now)
 
       insert(application).futureValue
       val result = repository.get(ApplicationId(1)).futureValue
