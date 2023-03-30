@@ -39,7 +39,7 @@ class IdentifierAction @Inject()(
     authorised().retrieve(Retrievals.authorisedEnrolments) {
       allEnrolments =>
         getEori(allEnrolments).map(eori => block(IdentifierRequest(request, eori)))
-          .getOrElse(throw InsufficientEnrolments())
+          .getOrElse(Future.successful(Unauthorized))
     }.recover {
       case _ => Unauthorized
     }
