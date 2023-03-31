@@ -14,20 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.models.application
+package uk.gov.hmrc.advancevaluationrulings.controllers.actions
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.mvc.{Request, WrappedRequest}
 
-import java.time.Instant
-
-final case class Application(
-                              id: ApplicationId,
-                              applicantEori: String,
-                              created: Instant,
-                              lastUpdated: Instant
-                            )
-
-object Application {
-
-  implicit lazy val format: OFormat[Application] = Json.format
-}
+final case class IdentifierRequest[A](request: Request[A], eori: String) extends WrappedRequest[A](request)
