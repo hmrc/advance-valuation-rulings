@@ -32,10 +32,12 @@ class ApplicationService @Inject()(
 
   def save(applicantEori: String, request: ApplicationRequest): Future[ApplicationId] =
     counterRepository.nextId(CounterId.ApplicationId).flatMap { id =>
+
       val applicationId = ApplicationId(id)
       val application = Application(
         id = applicationId,
         applicantEori = applicantEori,
+        attachments = Nil,
         created = Instant.now(clock),
         lastUpdated = Instant.now(clock)
       )

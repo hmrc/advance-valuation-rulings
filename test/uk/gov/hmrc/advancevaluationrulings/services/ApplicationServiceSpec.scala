@@ -56,8 +56,8 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
       when(mockCounterRepo.nextId(eqTo(CounterId.ApplicationId))) thenReturn Future.successful(id)
       when(mockApplicationRepo.set(any())) thenReturn Future.successful(Done)
 
-      val request = ApplicationRequest(EORIDetails("eori", "name", "line1", "line2", "line3", "postcode", "GB"))
-      val expectedApplication = Application(ApplicationId(id), applicantEori, fixedInstant, fixedInstant)
+      val request = ApplicationRequest(EORIDetails("eori", "name", "line1", "line2", "line3", "postcode", "GB"), Nil)
+      val expectedApplication = Application(ApplicationId(id), applicantEori, Nil, fixedInstant, fixedInstant)
 
       val result = service.save(applicantEori, request).futureValue
 

@@ -67,7 +67,7 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
       when(mockApplicationService.save(any(), any())) thenReturn Future.successful(ApplicationId(id))
 
       val eoriDetails = EORIDetails("eori", "name", "line1", "line2", "line3", "postcode", "country")
-      val applicationRequest = ApplicationRequest(eoriDetails)
+      val applicationRequest = ApplicationRequest(eoriDetails, Nil)
 
       val request =
         FakeRequest(POST, routes.ApplicationController.submit.url)
@@ -98,7 +98,7 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
     "must return an application" in {
 
       val applicationId = applicationIdGen.sample.value
-      val expectedApplication = Application(applicationId, "applicantEori", Instant.now(fixedClock), Instant.now(fixedClock))
+      val expectedApplication = Application(applicationId, "applicantEori", Nil, Instant.now(fixedClock), Instant.now(fixedClock))
 
       val request = FakeRequest(GET, routes.ApplicationController.get(applicationId).url)
       val result = route(app, request).value
