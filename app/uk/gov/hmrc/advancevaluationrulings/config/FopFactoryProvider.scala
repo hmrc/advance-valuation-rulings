@@ -16,20 +16,17 @@
 
 package uk.gov.hmrc.advancevaluationrulings.config
 
-import org.apache.fop.apps.FopFactory
-import play.api.inject.Binding
-import play.api.{Configuration, Environment}
+import org.apache.fop.apps.{FopFactory, FopFactoryBuilder}
+import play.api.Environment
 
-import java.time.Clock
+import javax.inject.{Inject, Provider, Singleton}
 
-class Module extends play.api.inject.Module {
-
-  override def bindings(environment: Environment, configuration: Configuration): collection.Seq[Binding[_]] = {
-
-    Seq(
-      bind[AppConfig].toSelf.eagerly(),
-      bind[Clock].toInstance(Clock.systemUTC()),
-      bind[FopFactory].toProvider[FopFactoryProvider].eagerly()
-    )
+@Singleton
+class FopFactoryProvider @Inject() (
+                                     environment: Environment
+                                   ) extends Provider[FopFactory] {
+  override def get(): FopFactory = {
+    new FopFactoryBuilder(environment.rootPath.toURI)
+      .build()
   }
 }
