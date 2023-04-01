@@ -18,9 +18,16 @@ package uk.gov.hmrc.advancevaluationrulings.models.application
 
 import play.api.libs.json.{Json, OFormat}
 
-final case class ApplicationRequest(holder: EORIDetails, attachments: Seq[AttachmentRequest])
+final case class AttachmentRequest(
+                                    name: String,
+                                    url: String,
+                                    public: Boolean,
+                                    mimeType: String,
+                                    size: Long,
+                                    contentMd5: String
+                                  )
 
-object ApplicationRequest {
+object AttachmentRequest {
 
-  implicit lazy val format: OFormat[ApplicationRequest] = Json.format
+  implicit lazy val format: OFormat[AttachmentRequest] = Json.format
 }

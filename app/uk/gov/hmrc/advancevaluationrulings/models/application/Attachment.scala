@@ -18,7 +18,15 @@ package uk.gov.hmrc.advancevaluationrulings.models.application
 
 import play.api.libs.json.{Json, OFormat}
 
-final case class Attachment(location: String, contentMd5: String)
+final case class Attachment(
+                             id: Long,
+                             name: String,
+                             location: String,
+                             public: Boolean,
+                             mimeType: String,
+                             size: Long,
+                             contentMd5: String
+                           )
 
 object Attachment {
 

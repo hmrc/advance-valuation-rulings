@@ -50,7 +50,7 @@ class ApplicationController @Inject()(
 
   def get(applicationId: ApplicationId): Action[AnyContent] = Action {
     implicit request =>
-      val application = Application(applicationId, "applicantEori", Instant.now(clock), Instant.now(clock))
+      val application = Application(applicationId, "applicantEori", Nil, Instant.now(clock), Instant.now(clock))
 
       Ok(Json.toJson(application))
   }

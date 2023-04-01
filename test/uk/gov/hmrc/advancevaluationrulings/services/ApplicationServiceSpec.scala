@@ -56,14 +56,50 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
       when(mockCounterRepo.nextId(eqTo(CounterId.ApplicationId))) thenReturn Future.successful(id)
       when(mockApplicationRepo.set(any())) thenReturn Future.successful(Done)
 
-      val request = ApplicationRequest(EORIDetails("eori", "name", "line1", "line2", "line3", "postcode", "GB"))
-      val expectedApplication = Application(ApplicationId(id), applicantEori, fixedInstant, fixedInstant)
+      val request = ApplicationRequest(EORIDetails("eori", "name", "line1", "line2", "line3", "postcode", "GB"), Nil)
+      val expectedApplication = Application(ApplicationId(id), applicantEori, Nil, fixedInstant, fixedInstant)
 
       val result = service.save(applicantEori, request).futureValue
 
       result mustEqual ApplicationId(id)
       verify(mockCounterRepo, times(1)).nextId(eqTo(CounterId.ApplicationId))
       verify(mockApplicationRepo, times(1)).set(eqTo(expectedApplication))
+    }
+
+    "must convert attachments, giving them unique ids" in {
+
+      val id = 123L
+      val applicantEori = "applicantEori"
+      val attachmentRequest1 = AttachmentRequest("name", "url", true, "mime", 1L, "md5")
+      val attachmentRequest2 = AttachmentRequest("name", "url", false, "mime", 2L, "md5")
+      val attachmentId1 = 1L
+      val attachmentId2 = 2L
+
+      when(mockCounterRepo.nextId(eqTo(CounterId.ApplicationId))).thenReturn(Future.successful(id))
+      when(mockCounterRepo.nextId(eqTo(CounterId.AttachmentId))).thenReturn(
+        Future.successful(attachmentId1),
+        Future.successful(attachmentId2)
+      )
+      when(mockApplicationRepo.set(any())).thenReturn(Future.successful(Done))
+
+      val request = ApplicationRequest(EORIDetails("eori", "name", "line1", "line2", "line3", "postcode", "GB"), Seq(attachmentRequest1, attachmentRequest2))
+      val expectedApplication = Application(
+        id = ApplicationId(id),
+        applicantEori = applicantEori,
+        attachments = Seq(
+          Attachment(attachmentId1, "name", "url", true, "mime", 1L, "md5"),
+          Attachment(attachmentId2, "name", "url", false, "mime", 2L, "md5")
+        ),
+        created = fixedInstant,
+        lastUpdated = fixedInstant
+      )
+
+      val result = service.save(applicantEori, request).futureValue
+
+      result mustEqual ApplicationId(id)
+      verify(mockCounterRepo, times(1)).nextId(eqTo(CounterId.ApplicationId))
+      verify(mockApplicationRepo, times(1)).set(eqTo(expectedApplication))
+      verify(mockCounterRepo, times(2)).nextId(eqTo(CounterId.AttachmentId))
     }
   }
 }
