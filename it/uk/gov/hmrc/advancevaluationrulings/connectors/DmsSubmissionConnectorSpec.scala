@@ -64,7 +64,12 @@ class DmsSubmissionConnectorSpec
   ".submitApplication" - {
 
     val attachment = Attachment(
+      id = 1L,
+      name = "file",
       location = "some/file.pdf",
+      public = true,
+      mimeType = "application/pdf",
+      size = 1337,
       contentMd5 = "someMd5"
     )
 
