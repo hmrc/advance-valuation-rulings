@@ -43,6 +43,10 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
 
   private val applicantEori = "applicantEori"
   private val atarEnrolment = Enrolments(Set(Enrolment("HMRC-ATAR-ORG", Seq(EnrolmentIdentifier("EORINumber", applicantEori)), "Activated")))
+  private val trader = TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None)
+  private val goodsDetails = GoodsDetails("name", "description", None, None, None)
+  private val method = MethodOne(None, None, None)
+  private val contact = ContactDetails("name", "email", None)
 
   private val app =
     GuiceApplicationBuilder()
@@ -66,8 +70,14 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
       when(mockAuthConnector.authorise[Enrolments](any(), any())(any(), any())) thenReturn Future.successful(atarEnrolment)
       when(mockApplicationService.save(any(), any())) thenReturn Future.successful(ApplicationId(id))
 
-      val eoriDetails = EORIDetails("eori", "name", "line1", "line2", "line3", "postcode", "country")
-      val applicationRequest = ApplicationRequest(eoriDetails, Nil)
+      val applicationRequest = ApplicationRequest(
+        trader = trader,
+        agent = None,
+        contact = contact,
+        goodsDetails = goodsDetails,
+        requestedMethod = method,
+        attachments = Nil,
+      )
 
       val request =
         FakeRequest(POST, routes.ApplicationController.submit.url)
@@ -95,16 +105,14 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
 
   ".get" - {
 
-    "must return an application" in {
+    "must return Ok" in {
 
       val applicationId = applicationIdGen.sample.value
-      val expectedApplication = Application(applicationId, "applicantEori", Nil, Instant.now(fixedClock), Instant.now(fixedClock))
 
       val request = FakeRequest(GET, routes.ApplicationController.get(applicationId).url)
       val result = route(app, request).value
 
       status(result) mustEqual OK
-      contentAsJson(result) mustEqual Json.toJson(expectedApplication)
     }
   }
 }

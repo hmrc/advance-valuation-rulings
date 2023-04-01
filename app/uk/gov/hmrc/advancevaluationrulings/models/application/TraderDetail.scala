@@ -18,16 +18,18 @@ package uk.gov.hmrc.advancevaluationrulings.models.application
 
 import play.api.libs.json.{Json, OFormat}
 
-final case class ApplicationRequest(
-                                     trader: TraderDetail,
-                                     agent: Option[TraderDetail],
-                                     contact: ContactDetails,
-                                     requestedMethod: RequestedMethod,
-                                     goodsDetails: GoodsDetails,
-                                     attachments: Seq[AttachmentRequest]
-                                   )
+final case class TraderDetail(
+                               eori: String,
+                               businessName: String,
+                               addressLine1: String,
+                               addressLine2: Option[String],
+                               addressLine3: Option[String],
+                               postcode: String,
+                               countryCode: String,
+                               phoneNumber: Option[String]
+                             )
 
-object ApplicationRequest {
+object TraderDetail {
 
-  implicit lazy val format: OFormat[ApplicationRequest] = Json.format
+  implicit lazy val format: OFormat[TraderDetail] = Json.format
 }

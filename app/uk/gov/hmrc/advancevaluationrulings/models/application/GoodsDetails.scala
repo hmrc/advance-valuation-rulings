@@ -18,16 +18,15 @@ package uk.gov.hmrc.advancevaluationrulings.models.application
 
 import play.api.libs.json.{Json, OFormat}
 
-final case class EORIDetails(
-                              eori: String,
-                              businessName: String,
-                              addressLine1: String,
-                              addressLine2: String,
-                              addressLine3: String,
-                              postcode: String,
-                              country: String
-                            )
-object EORIDetails {
+final case class GoodsDetails(
+                               goodsName: String,
+                               goodsDescription: String,
+                               envisagedCommodityCode: Option[String],
+                               knownLegalProceedings: Option[String],
+                               confidentialInformation: Option[String]
+                             )
 
-  implicit val format: OFormat[EORIDetails] = Json.format
+object GoodsDetails {
+
+  implicit val format: OFormat[GoodsDetails] = Json.format
 }

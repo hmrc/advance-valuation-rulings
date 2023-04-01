@@ -37,6 +37,10 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
   private val mockApplicationRepo = mock[ApplicationRepository]
   private val fixedInstant = Instant.now
   private val fixedClock = Clock.fixed(fixedInstant, ZoneId.systemDefault())
+  private val trader = TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None)
+  private val goodsDetails = GoodsDetails("name", "description", None, None, None)
+  private val method = MethodOne(None, None, None)
+  private val contact = ContactDetails("name", "email", None)
 
   private val service = new ApplicationService(mockCounterRepo, mockApplicationRepo, fixedClock)
 
@@ -56,8 +60,27 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
       when(mockCounterRepo.nextId(eqTo(CounterId.ApplicationId))) thenReturn Future.successful(id)
       when(mockApplicationRepo.set(any())) thenReturn Future.successful(Done)
 
-      val request = ApplicationRequest(EORIDetails("eori", "name", "line1", "line2", "line3", "postcode", "GB"), Nil)
-      val expectedApplication = Application(ApplicationId(id), applicantEori, Nil, fixedInstant, fixedInstant)
+      val request = ApplicationRequest(
+        trader = trader,
+        agent = None,
+        contact = contact,
+        goodsDetails = goodsDetails,
+        requestedMethod = method,
+        attachments = Nil,
+      )
+
+      val expectedApplication = Application(
+        id = ApplicationId(id),
+        applicantEori = applicantEori,
+        trader = trader,
+        agent = None,
+        contact = contact,
+        goodsDetails = goodsDetails,
+        requestedMethod = method,
+        attachments = Nil,
+        created = fixedInstant,
+        lastUpdated = fixedInstant
+      )
 
       val result = service.save(applicantEori, request).futureValue
 
@@ -70,6 +93,7 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
 
       val id = 123L
       val applicantEori = "applicantEori"
+
       val attachmentRequest1 = AttachmentRequest("name", "url", true, "mime", 1L, "md5")
       val attachmentRequest2 = AttachmentRequest("name", "url", false, "mime", 2L, "md5")
       val attachmentId1 = 1L
@@ -82,10 +106,24 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
       )
       when(mockApplicationRepo.set(any())).thenReturn(Future.successful(Done))
 
-      val request = ApplicationRequest(EORIDetails("eori", "name", "line1", "line2", "line3", "postcode", "GB"), Seq(attachmentRequest1, attachmentRequest2))
+
+      val request = ApplicationRequest(
+        trader = trader,
+        agent = None,
+        contact = contact,
+        goodsDetails = goodsDetails,
+        requestedMethod = method,
+        attachments = Seq(attachmentRequest1, attachmentRequest2),
+      )
+
       val expectedApplication = Application(
         id = ApplicationId(id),
         applicantEori = applicantEori,
+        trader = trader,
+        agent = None,
+        contact = contact,
+        goodsDetails = goodsDetails,
+        requestedMethod = method,
         attachments = Seq(
           Attachment(attachmentId1, "name", "url", true, "mime", 1L, "md5"),
           Attachment(attachmentId2, "name", "url", false, "mime", 2L, "md5")

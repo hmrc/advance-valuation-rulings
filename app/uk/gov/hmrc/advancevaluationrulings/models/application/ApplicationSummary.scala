@@ -19,8 +19,7 @@ package uk.gov.hmrc.advancevaluationrulings.models.application
 import play.api.libs.json.{Json, OFormat}
 
 final case class ApplicationSummary(
-                                     id: ApplicationId,
-                                     holder: EORIDetails
+                                     id: ApplicationId
                                    )
 
 object ApplicationSummary {
