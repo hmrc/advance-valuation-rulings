@@ -62,11 +62,18 @@ class ApplicationRepository @Inject()(
       .toFuture()
       .map(_ => Done)
 
-  def get(id: ApplicationId): Future[Option[Application]] =
+  def get(id: ApplicationId, applicantEori: String): Future[Option[Application]] = {
+
+    val filter = Filters.and(
+      Filters.eq("id", id),
+      Filters.eq("applicantEori", applicantEori)
+    )
+
     collection
-      .find(Filters.eq("id", id))
+      .find(filter)
       .toFuture()
       .map(_.headOption)
+  }
 
   def summaries(eori: String): Future[Seq[ApplicationSummary]] =
     collection

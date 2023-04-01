@@ -67,7 +67,7 @@ class ApplicationRepositorySpec
 
   ".get" - {
 
-    "must return an application when one exists" in {
+    "must return an application when one exists for this eori" in {
 
       val application = Application(
         id = ApplicationId(1),
@@ -83,13 +83,33 @@ class ApplicationRepositorySpec
       )
 
       insert(application).futureValue
-      val result = repository.get(ApplicationId(1)).futureValue
+      val result = repository.get(ApplicationId(1), "applicantEori").futureValue
       result.value mustEqual application
+    }
+
+    "must return None when an application exists but with a different eori" in {
+
+      val application = Application(
+        id = ApplicationId(1),
+        applicantEori = "applicantEori",
+        trader = trader,
+        agent = None,
+        contact = contact,
+        goodsDetails = goodsDetails,
+        requestedMethod = method,
+        attachments = Nil,
+        created = now,
+        lastUpdated = now
+      )
+
+      insert(application).futureValue
+      val result = repository.get(ApplicationId(1), "otherEori").futureValue
+      result must not be defined
     }
 
     "must return None when an application does not exist" in {
 
-      val result = repository.get(ApplicationId(1)).futureValue
+      val result = repository.get(ApplicationId(1), "applicantEori").futureValue
       result must not be defined
     }
   }

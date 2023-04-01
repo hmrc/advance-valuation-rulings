@@ -114,14 +114,42 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
 
   ".get" - {
 
-    "must return Ok" in {
+    "must return Ok when an application can be found" in {
 
       val applicationId = applicationIdGen.sample.value
+      val application = Application(
+        id = applicationId,
+        applicantEori = applicantEori,
+        trader = trader,
+        agent = None,
+        contact = contact,
+        goodsDetails = goodsDetails,
+        requestedMethod = method,
+        attachments = Nil,
+        created = Instant.now(fixedClock),
+        lastUpdated = Instant.now(fixedClock)
+      )
+
+      when(mockApplicationRepository.get(any(), any())).thenReturn(Future.successful(Some(application)))
 
       val request = FakeRequest(GET, routes.ApplicationController.get(applicationId).url)
       val result = route(app, request).value
 
       status(result) mustEqual OK
+      contentAsJson(result) mustEqual Json.toJson(application)
+    }
+
+    "must return NotFound when an application cannot be found" in {
+
+
+      val applicationId = applicationIdGen.sample.value
+
+      when(mockApplicationRepository.get(any(), any())).thenReturn(Future.successful(None))
+
+      val request = FakeRequest(GET, routes.ApplicationController.get(applicationId).url)
+      val result = route(app, request).value
+
+      status(result) mustEqual NOT_FOUND
     }
   }
 }

@@ -24,7 +24,7 @@ import uk.gov.hmrc.advancevaluationrulings.repositories.ApplicationRepository
 import uk.gov.hmrc.advancevaluationrulings.services.ApplicationService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import java.time.{Clock, Instant}
+import java.time.Clock
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
@@ -54,9 +54,13 @@ class ApplicationController @Inject()(
         }
   }
 
-  def get(applicationId: ApplicationId): Action[AnyContent] = Action {
+  def get(applicationId: ApplicationId): Action[AnyContent] = identify.async {
     implicit request =>
-
-      Ok
+      applicationRepository
+        .get(applicationId, request.eori)
+        .map {
+          _.map(application => Ok(Json.toJson(application)))
+            .getOrElse(NotFound)
+        }
   }
 }
