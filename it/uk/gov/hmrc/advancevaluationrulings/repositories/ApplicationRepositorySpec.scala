@@ -23,6 +23,7 @@ class ApplicationRepositorySpec
   private val goodsDetails = GoodsDetails("name", "description", None, None, None)
   private val method = MethodOne(None, None, None)
   private val contact = ContactDetails("name", "email", None)
+  private val now = Instant.now
 
   ".set" - {
 
@@ -37,8 +38,8 @@ class ApplicationRepositorySpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
-        created = Instant.now,
-        lastUpdated = Instant.now
+        created = now,
+        lastUpdated = now
       )
 
       repository.set(application).futureValue
@@ -55,8 +56,8 @@ class ApplicationRepositorySpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
-        created = Instant.now,
-        lastUpdated = Instant.now
+        created = now,
+        lastUpdated = now
       )
 
       repository.set(application).futureValue
@@ -77,8 +78,8 @@ class ApplicationRepositorySpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
-        created = Instant.now,
-        lastUpdated = Instant.now
+        created = now,
+        lastUpdated = now
       )
 
       insert(application).futureValue
@@ -90,6 +91,29 @@ class ApplicationRepositorySpec
 
       val result = repository.get(ApplicationId(1)).futureValue
       result must not be defined
+    }
+  }
+  
+  ".summaries" - {
+    
+    "must return summaries of all applications for the given eori" in {
+
+      val eori1 = "eori 1"
+      val eori2 = "eori2"
+      val application1 = Application(ApplicationId(1), eori1, trader, None, contact, method, goodsDetails, Nil, now, now)
+      val application2 = Application(ApplicationId(2), eori1, trader, None, contact, method, goodsDetails, Nil, now, now)
+      val application3 = Application(ApplicationId(3), eori2, trader, None, contact, method, goodsDetails, Nil, now, now)
+
+      insert(application1).futureValue
+      insert(application2).futureValue
+      insert(application3).futureValue
+      
+      val result = repository.summaries(eori1).futureValue
+      
+      result must contain theSameElementsAs Seq(
+        ApplicationSummary(ApplicationId(1), "name", now),
+        ApplicationSummary(ApplicationId(2), "name", now)
+      )
     }
   }
 }
