@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
-import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, ApplicationId}
+import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, ApplicationId, ApplicationSummary}
 import org.mongodb.scala.model._
 import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
 import javax.inject.{Inject, Singleton}
@@ -32,16 +33,25 @@ class ApplicationRepository @Inject()(
   extends PlayMongoRepository[Application](
     collectionName = "applications",
     mongoComponent = mongoComponent,
-    domainFormat   = Application.format,
+    domainFormat   = Application.format(MongoJavatimeFormats.instantFormat),
     indexes        = Seq(
       IndexModel(
         Indexes.ascending("id"),
         IndexOptions()
           .name("idIdx")
           .unique(true)
+      ),
+      IndexModel(
+        Indexes.ascending("applicantEori"),
+        IndexOptions()
+          .name("applicantEoriIdx")
+          .unique(false)
       )
     ),
-    extraCodecs = Seq(Codecs.playFormatCodec(ApplicationId.format))
+    extraCodecs = Seq(
+      Codecs.playFormatCodec(ApplicationId.format),
+      Codecs.playFormatCodec(ApplicationSummary.mongoFormat)
+    )
   ) {
 
   override lazy val requiresTtlIndex: Boolean = false
@@ -52,9 +62,21 @@ class ApplicationRepository @Inject()(
       .toFuture()
       .map(_ => Done)
 
-  def get(id: ApplicationId): Future[Option[Application]] =
+  def get(id: ApplicationId, applicantEori: String): Future[Option[Application]] = {
+
+    val filter = Filters.and(
+      Filters.eq("id", id),
+      Filters.eq("applicantEori", applicantEori)
+    )
+
     collection
-      .find(Filters.eq("id", id))
+      .find(filter)
       .toFuture()
       .map(_.headOption)
+  }
+
+  def summaries(eori: String): Future[Seq[ApplicationSummary]] =
+    collection
+      .find[ApplicationSummary](Filters.eq("applicantEori", eori))
+      .toFuture()
 }

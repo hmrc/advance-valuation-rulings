@@ -29,6 +29,7 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.advancevaluationrulings.models.application._
+import uk.gov.hmrc.advancevaluationrulings.repositories.ApplicationRepository
 import uk.gov.hmrc.advancevaluationrulings.services.ApplicationService
 import uk.gov.hmrc.auth.core.{AuthConnector, Enrolment, EnrolmentIdentifier, Enrolments}
 
@@ -39,6 +40,7 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
 
   private val fixedClock = Clock.fixed(Instant.now, ZoneId.systemDefault)
   private val mockApplicationService = mock[ApplicationService]
+  private val mockApplicationRepository = mock[ApplicationRepository]
   private val mockAuthConnector = mock[AuthConnector]
 
   private val applicantEori = "applicantEori"
@@ -53,11 +55,13 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
       .overrides(
         bind[Clock].toInstance(fixedClock),
         bind[ApplicationService].toInstance(mockApplicationService),
+        bind[ApplicationRepository].toInstance(mockApplicationRepository),
         bind[AuthConnector].toInstance(mockAuthConnector)
       ).build()
 
   override def beforeEach(): Unit = {
     Mockito.reset(mockApplicationService)
+    Mockito.reset(mockApplicationRepository)
     super.beforeEach()
   }
 
@@ -95,24 +99,57 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
 
     "must return a list of application summaries" in {
 
+      val summary = ApplicationSummary(ApplicationId(1), "name", Instant.now(fixedClock))
+
+      when(mockAuthConnector.authorise[Enrolments](any(), any())(any(), any())) thenReturn Future.successful(atarEnrolment)
+      when(mockApplicationRepository.summaries(any())).thenReturn(Future.successful(Seq(summary)))
+
       val request = FakeRequest(GET, routes.ApplicationController.summaries.url)
       val result = route(app, request).value
 
       status(result) mustEqual OK
-      contentAsJson(result) mustEqual Json.toJson(ApplicationSummaryResponse(Nil))
+      contentAsJson(result) mustEqual Json.toJson(ApplicationSummaryResponse(Seq(summary)))
     }
   }
 
   ".get" - {
 
-    "must return Ok" in {
+    "must return Ok when an application can be found" in {
 
       val applicationId = applicationIdGen.sample.value
+      val application = Application(
+        id = applicationId,
+        applicantEori = applicantEori,
+        trader = trader,
+        agent = None,
+        contact = contact,
+        goodsDetails = goodsDetails,
+        requestedMethod = method,
+        attachments = Nil,
+        created = Instant.now(fixedClock),
+        lastUpdated = Instant.now(fixedClock)
+      )
+
+      when(mockApplicationRepository.get(any(), any())).thenReturn(Future.successful(Some(application)))
 
       val request = FakeRequest(GET, routes.ApplicationController.get(applicationId).url)
       val result = route(app, request).value
 
       status(result) mustEqual OK
+      contentAsJson(result) mustEqual Json.toJson(application)
+    }
+
+    "must return NotFound when an application cannot be found" in {
+
+
+      val applicationId = applicationIdGen.sample.value
+
+      when(mockApplicationRepository.get(any(), any())).thenReturn(Future.successful(None))
+
+      val request = FakeRequest(GET, routes.ApplicationController.get(applicationId).url)
+      val result = route(app, request).value
+
+      status(result) mustEqual NOT_FOUND
     }
   }
 }

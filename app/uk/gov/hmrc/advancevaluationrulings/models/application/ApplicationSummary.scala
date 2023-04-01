@@ -16,13 +16,28 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json._
+import play.api.libs.functional.syntax._
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
+
+import java.time.Instant
 
 final case class ApplicationSummary(
-                                     id: ApplicationId
+                                     id: ApplicationId,
+                                     goodsName: String,
+                                     dateSubmitted: Instant
                                    )
 
 object ApplicationSummary {
+
+  val mongoReads: Reads[ApplicationSummary] =
+    (
+      (__ \ "id").read[ApplicationId] and
+      (__ \ "goodsDetails" \ "goodsName").read[String] and
+      (__ \ "created").read[Instant](MongoJavatimeFormats.instantFormat)
+    )(ApplicationSummary.apply _)
+
+  val mongoFormat: OFormat[ApplicationSummary] = OFormat(mongoReads, format)
 
   implicit lazy val format: OFormat[ApplicationSummary] = Json.format
 }
