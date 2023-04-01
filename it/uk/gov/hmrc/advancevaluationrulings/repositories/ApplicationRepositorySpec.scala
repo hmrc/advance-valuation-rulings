@@ -8,6 +8,7 @@ import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class ApplicationRepositorySpec
@@ -23,7 +24,7 @@ class ApplicationRepositorySpec
   private val goodsDetails = GoodsDetails("name", "description", None, None, None)
   private val method = MethodOne(None, None, None)
   private val contact = ContactDetails("name", "email", None)
-  private val now = Instant.now
+  private val now = Instant.now.truncatedTo(ChronoUnit.MILLIS)
 
   ".set" - {
 

@@ -24,13 +24,11 @@ import uk.gov.hmrc.advancevaluationrulings.repositories.ApplicationRepository
 import uk.gov.hmrc.advancevaluationrulings.services.ApplicationService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import java.time.Clock
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class ApplicationController @Inject()(
                                        cc: ControllerComponents,
-                                       clock: Clock,
                                        applicationService: ApplicationService,
                                        applicationRepository: ApplicationRepository,
                                        identify: IdentifierAction

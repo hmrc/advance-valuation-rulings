@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Format, Json, OFormat}
 
 import java.time.Instant
 
@@ -35,5 +35,5 @@ final case class Application(
 
 object Application {
 
-  implicit lazy val format: OFormat[Application] = Json.format
+  implicit def format(implicit f: Format[Instant]): OFormat[Application] = Json.format
 }

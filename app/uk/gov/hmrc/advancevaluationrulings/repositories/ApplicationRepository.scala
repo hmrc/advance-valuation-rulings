@@ -18,9 +18,9 @@ package uk.gov.hmrc.advancevaluationrulings.repositories
 
 import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, ApplicationId, ApplicationSummary}
 import org.mongodb.scala.model._
-import play.api.libs.json.Reads
 import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
 import javax.inject.{Inject, Singleton}
@@ -33,7 +33,7 @@ class ApplicationRepository @Inject()(
   extends PlayMongoRepository[Application](
     collectionName = "applications",
     mongoComponent = mongoComponent,
-    domainFormat   = Application.format,
+    domainFormat   = Application.format(MongoJavatimeFormats.instantFormat),
     indexes        = Seq(
       IndexModel(
         Indexes.ascending("id"),
