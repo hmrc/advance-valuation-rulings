@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.models.application
+package uk.gov.hmrc.advancevaluationrulings.models
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Json, JsonConfiguration, JsonNaming}
+import play.api.libs.json.JsonConfiguration.Aux
 
-final case class ApplicationSummaryRequest(holder: EORIDetails)
+package object application {
 
-object ApplicationSummaryRequest {
-
-  implicit lazy val format: OFormat[ApplicationSummaryRequest] = Json.format
+  val jsonConfig: Aux[Json.MacroOptions] = JsonConfiguration(
+    discriminator = "_type",
+    typeNaming =
+      JsonNaming(fullName => fullName.slice(1 + fullName.lastIndexOf("."), fullName.length))
+  )
 }

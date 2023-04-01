@@ -23,6 +23,11 @@ import java.time.Instant
 final case class Application(
                               id: ApplicationId,
                               applicantEori: String,
+                              trader: TraderDetail,
+                              agent: Option[TraderDetail],
+                              contact: ContactDetails,
+                              requestedMethod: RequestedMethod,
+                              goodsDetails: GoodsDetails,
                               attachments: Seq[Attachment],
                               created: Instant,
                               lastUpdated: Instant

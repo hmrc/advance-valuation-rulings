@@ -37,6 +37,11 @@ class ApplicationService @Inject()(
         val application = Application(
           id = applicationId,
           applicantEori = applicantEori,
+          trader = request.trader,
+          agent = request.agent,
+          contact = request.contact,
+          goodsDetails = request.goodsDetails,
+          requestedMethod = request.requestedMethod,
           attachments = attachments,
           created = Instant.now(clock),
           lastUpdated = Instant.now(clock)
