@@ -16,20 +16,14 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
-import play.api.libs.json.{Json, OFormat}
+import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
 
-final case class Attachment(
-                             id: Long,
-                             name: String,
-                             description: Option[String],
-                             location: String,
-                             privacy: Privacy,
-                             mimeType: String,
-                             size: Long,
-                             contentMd5: String
-                           )
+sealed abstract class Privacy(override val entryName: String) extends EnumEntry
 
-object Attachment {
+object Privacy extends Enum[Privacy] with PlayJsonEnum[Privacy] {
+  val values: IndexedSeq[Privacy] = findValues
 
-  implicit lazy val format: OFormat[Attachment] = Json.format
+  case object Public extends Privacy("Public")
+  case object HmrcOnly extends Privacy("HmrcOnly")
+  case object Confidential extends Privacy("Confidential")
 }

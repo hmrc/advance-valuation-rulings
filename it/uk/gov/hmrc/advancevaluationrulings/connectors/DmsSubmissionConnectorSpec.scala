@@ -12,7 +12,7 @@ import play.api.http.Status.{ACCEPTED, INTERNAL_SERVER_ERROR}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.Helpers.{AUTHORIZATION, USER_AGENT}
-import uk.gov.hmrc.advancevaluationrulings.models.application.Attachment
+import uk.gov.hmrc.advancevaluationrulings.models.application.{Attachment, Privacy}
 import uk.gov.hmrc.advancevaluationrulings.utils.WireMockHelper
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -66,8 +66,9 @@ class DmsSubmissionConnectorSpec
     val attachment = Attachment(
       id = 1L,
       name = "file",
+      description = None,
       location = "some/file.pdf",
-      public = true,
+      privacy = Privacy.Public,
       mimeType = "application/pdf",
       size = 1337,
       contentMd5 = "someMd5"
