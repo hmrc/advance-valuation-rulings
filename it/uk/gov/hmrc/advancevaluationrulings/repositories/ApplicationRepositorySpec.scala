@@ -22,6 +22,7 @@ class ApplicationRepositorySpec
 
   private val trader = TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None)
   private val goodsDetails = GoodsDetails("name", "description", None, None, None)
+  private val submissionReference = "submissionReference"
   private val method = MethodOne(None, None, None)
   private val contact = ContactDetails("name", "email", None)
   private val now = Instant.now.truncatedTo(ChronoUnit.MILLIS)
@@ -39,6 +40,7 @@ class ApplicationRepositorySpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
+        submissionReference = "submissionReference",
         created = now,
         lastUpdated = now
       )
@@ -57,6 +59,7 @@ class ApplicationRepositorySpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
+        submissionReference = "submissionReference",
         created = now,
         lastUpdated = now
       )
@@ -79,6 +82,7 @@ class ApplicationRepositorySpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
+        submissionReference = "submissionReference",
         created = now,
         lastUpdated = now
       )
@@ -99,6 +103,7 @@ class ApplicationRepositorySpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
+        submissionReference = "submissionReference",
         created = now,
         lastUpdated = now
       )
@@ -121,9 +126,9 @@ class ApplicationRepositorySpec
 
       val eori1 = "eori 1"
       val eori2 = "eori2"
-      val application1 = Application(ApplicationId(1), eori1, trader, None, contact, method, goodsDetails, Nil, now, now)
-      val application2 = Application(ApplicationId(2), eori1, trader, None, contact, method, goodsDetails, Nil, now, now)
-      val application3 = Application(ApplicationId(3), eori2, trader, None, contact, method, goodsDetails, Nil, now, now)
+      val application1 = Application(ApplicationId(1), eori1, trader, None, contact, method, goodsDetails, Nil, submissionReference, now, now)
+      val application2 = Application(ApplicationId(2), eori1, trader, None, contact, method, goodsDetails, Nil, submissionReference, now, now)
+      val application3 = Application(ApplicationId(3), eori2, trader, None, contact, method, goodsDetails, Nil, submissionReference, now, now)
 
       insert(application1).futureValue
       insert(application2).futureValue

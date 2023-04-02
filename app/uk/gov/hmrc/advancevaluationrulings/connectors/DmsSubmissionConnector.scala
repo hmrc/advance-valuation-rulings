@@ -51,7 +51,7 @@ class DmsSubmissionConnector @Inject() (
   private val classificationType: String = dmsSubmissionConfig.get[String]("classificationType")
   private val businessArea: String = dmsSubmissionConfig.get[String]("businessArea")
 
-  def submitApplication(eori: String, pdf: Source[ByteString, _], attachments: Seq[Attachment], timestamp: Instant)(implicit hc: HeaderCarrier): Future[Done] = {
+  def submitApplication(eori: String, pdf: Source[ByteString, _], attachments: Seq[Attachment], timestamp: Instant, submissionReference: String)(implicit hc: HeaderCarrier): Future[Done] = {
 
     val dateOfReceipt = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(
       LocalDateTime.ofInstant(timestamp.truncatedTo(ChronoUnit.SECONDS), ZoneOffset.UTC)
@@ -59,6 +59,7 @@ class DmsSubmissionConnector @Inject() (
 
     val dataParts = Seq(
       MultipartFormData.DataPart("callbackUrl", callbackUrl),
+      MultipartFormData.DataPart("submissionReference", submissionReference),
       MultipartFormData.DataPart("metadata.source", source),
       MultipartFormData.DataPart("metadata.timeOfReceipt", dateOfReceipt),
       MultipartFormData.DataPart("metadata.formId", formId),

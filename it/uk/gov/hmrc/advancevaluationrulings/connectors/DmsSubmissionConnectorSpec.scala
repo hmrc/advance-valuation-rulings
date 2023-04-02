@@ -78,6 +78,8 @@ class DmsSubmissionConnectorSpec
 
     val eori = "someEori"
 
+    val submissionReference = "submissionReference"
+
     val timestamp = LocalDateTime.of(2022, 3, 2, 12, 30, 45)
       .atZone(ZoneId.of("UTC"))
       .toInstant
@@ -88,6 +90,7 @@ class DmsSubmissionConnectorSpec
         post(urlEqualTo("/dms-submission/submit"))
           .withHeader(AUTHORIZATION, equalTo("authKey"))
           .withHeader(USER_AGENT, equalTo("advance-valuation-rulings"))
+          .withMultipartRequestBody(aMultipart().withName("submissionReference").withBody(equalTo("submissionReference")))
           .withMultipartRequestBody(aMultipart().withName("callbackUrl").withBody(equalTo("http://localhost/callback")))
           .withMultipartRequestBody(aMultipart().withName("metadata.source").withBody(equalTo("advance-ruling-service")))
           .withMultipartRequestBody(aMultipart().withName("metadata.timeOfReceipt").withBody(equalTo("2022-03-02T12:30:45")))
@@ -103,7 +106,7 @@ class DmsSubmissionConnectorSpec
           )
       )
 
-      connector.submitApplication(eori, source, Seq(attachment), timestamp)(hc).futureValue
+      connector.submitApplication(eori, source, Seq(attachment), timestamp, submissionReference)(hc).futureValue
     }
 
     "must fail when the server returns another status" in {
@@ -116,7 +119,7 @@ class DmsSubmissionConnectorSpec
           )
       )
 
-      connector.submitApplication(eori, source, Seq(attachment), timestamp)(hc).failed.futureValue
+      connector.submitApplication(eori, source, Seq(attachment), timestamp, submissionReference)(hc).failed.futureValue
     }
   }
 }

@@ -24,24 +24,27 @@ import uk.gov.hmrc.http.HeaderCarrier
 import java.time.{Clock, Instant}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Random
 
 @Singleton
 class ApplicationService @Inject()(
                                     counterRepository: CounterRepository,
                                     applicationRepository: ApplicationRepository,
                                     dmsSubmissionService: DmsSubmissionService,
+                                    submissionReferenceService: SubmissionReferenceService,
                                     clock: Clock
                                   )(implicit ec: ExecutionContext) {
 
   def save(applicantEori: String, request: ApplicationRequest)(implicit hc: HeaderCarrier): Future[ApplicationId] =
     for {
-      appId       <- counterRepository.nextId(CounterId.ApplicationId).map(ApplicationId(_))
-      attachments <- buildAttachments(request.attachments)
-      application <- saveApplication(applicantEori, request, appId, attachments)
-      _           <- dmsSubmissionService.submitApplication(application)
+      appId               <- counterRepository.nextId(CounterId.ApplicationId).map(ApplicationId(_))
+      attachments         <- buildAttachments(request.attachments)
+      submissionReference =  submissionReferenceService.random()
+      application         <- saveApplication(applicantEori, request, appId, attachments, submissionReference)
+      _                   <- dmsSubmissionService.submitApplication(application, submissionReference)
     } yield appId
 
-  private def saveApplication(applicantEori: String, request: ApplicationRequest, appId: ApplicationId, attachments: Seq[Attachment]): Future[Application] = {
+  private def saveApplication(applicantEori: String, request: ApplicationRequest, appId: ApplicationId, attachments: Seq[Attachment], submissionReference: String): Future[Application] = {
 
     val application = Application(
       id = appId,
@@ -52,6 +55,7 @@ class ApplicationService @Inject()(
       goodsDetails = request.goodsDetails,
       requestedMethod = request.requestedMethod,
       attachments = attachments,
+      submissionReference = submissionReference,
       created = Instant.now(clock),
       lastUpdated = Instant.now(clock)
     )
