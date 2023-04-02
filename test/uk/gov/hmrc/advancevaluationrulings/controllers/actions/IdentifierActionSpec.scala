@@ -92,19 +92,5 @@ class IdentifierActionSpec extends AnyFreeSpec with Matchers with MockitoSugar {
         status(result) mustBe UNAUTHORIZED
       }
     }
-
-    "when the user is not authenticated" - {
-
-      "must return Unauthorized" in {
-
-        when(mockAuthConnector.authorise[Enrolments](any(), any())(any(), any())) thenReturn Future.failed(MissingBearerToken())
-
-        val identifierAction = new IdentifierAction(mockAuthConnector, bodyParsers)
-        val controller = new Harness(identifierAction)
-        val result = controller.onPageLoad()(FakeRequest())
-
-        status(result) mustBe UNAUTHORIZED
-      }
-    }
   }
 }
