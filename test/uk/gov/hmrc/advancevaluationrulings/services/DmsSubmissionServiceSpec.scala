@@ -25,6 +25,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.advancevaluationrulings.connectors.DmsSubmissionConnector
@@ -57,6 +58,7 @@ class DmsSubmissionServiceSpec extends AnyFreeSpec with Matchers with ScalaFutur
   private lazy val service = app.injector.instanceOf[DmsSubmissionService]
   private lazy val applicationTemplate = app.injector.instanceOf[ApplicationPdf]
   private implicit lazy val mat: Materializer = app.injector.instanceOf[Materializer]
+  private implicit lazy val messages: Messages = app.injector.instanceOf[MessagesApi].preferred(Seq.empty)
 
   "submitApplication" - {
 

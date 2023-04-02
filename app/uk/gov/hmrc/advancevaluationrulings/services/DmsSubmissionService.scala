@@ -18,6 +18,7 @@ package uk.gov.hmrc.advancevaluationrulings.services
 
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
+import play.api.i18n.{Messages, MessagesApi}
 import uk.gov.hmrc.advancevaluationrulings.connectors.DmsSubmissionConnector
 import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application.Application
@@ -31,8 +32,12 @@ import scala.concurrent.{ExecutionContext, Future}
 class DmsSubmissionService @Inject() (
                                        dmsConnector: DmsSubmissionConnector,
                                        fopService: FopService,
-                                       pdfTemplate: ApplicationPdf
+                                       pdfTemplate: ApplicationPdf,
+                                       messagesApi: MessagesApi
                                      )(implicit ec: ExecutionContext) {
+
+  private implicit val messages: Messages =
+    messagesApi.preferred(Seq.empty)
 
   def submitApplication(application: Application)(implicit hc: HeaderCarrier): Future[Done] =
     for {
