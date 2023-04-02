@@ -20,11 +20,13 @@ import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import config.Service
 import play.api.Configuration
+import play.api.http.Status.ACCEPTED
 import play.api.mvc.MultipartFormData
 import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application.Attachment
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -87,6 +89,12 @@ class DmsSubmissionConnector @Inject() (
         Source(
           dataParts ++ attachmentParts ++ fileParts
         )
-      ).execute[HttpResponse].map(_ => Done)
+      ).execute[HttpResponse].flatMap { response =>
+        if (response.status == ACCEPTED) {
+          Future.successful(Done)
+        } else {
+          Future.failed(UpstreamErrorResponse("Unexpected response from dms-submission", response.status, reportAs = 500))
+        }
+      }
   }
 }

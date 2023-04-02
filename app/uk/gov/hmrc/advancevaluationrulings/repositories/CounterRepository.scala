@@ -24,6 +24,7 @@ import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import javax.inject.{Inject, Singleton}
+import scala.annotation.nowarn
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
 
@@ -48,6 +49,7 @@ class CounterRepository @Inject()(
     CounterWrapper(CounterId.AttachmentId, 0)
   )
 
+  @nowarn
   private val seedDatabase = seeds // Eagerly call seed to ensure records are created on startup if needed
 
   def seed: Future[Done] =
@@ -68,6 +70,6 @@ class CounterRepository @Inject()(
           .bypassDocumentValidation(false)
           .returnDocument(ReturnDocument.AFTER)
       )
-      .toFuture
+      .toFuture()
       .map(_.index)
 }

@@ -18,35 +18,37 @@ package uk.gov.hmrc.advancevaluationrulings.services
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.{Mockito, MockitoSugar}
+import org.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.repositories.{ApplicationRepository, CounterRepository}
+import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import java.time.{Clock, Instant, ZoneId}
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar with BeforeAndAfterEach with ScalaFutures {
+class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar with BeforeAndAfterEach with ScalaFutures with IntegrationPatience {
 
   private val mockCounterRepo = mock[CounterRepository]
   private val mockApplicationRepo = mock[ApplicationRepository]
+  private val mockDmsSubmissionService = mock[DmsSubmissionService]
   private val fixedInstant = Instant.now
   private val fixedClock = Clock.fixed(fixedInstant, ZoneId.systemDefault())
   private val trader = TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None)
   private val goodsDetails = GoodsDetails("name", "description", None, None, None)
   private val method = MethodOne(None, None, None)
   private val contact = ContactDetails("name", "email", None)
+  private val hc: HeaderCarrier = HeaderCarrier()
 
-  private val service = new ApplicationService(mockCounterRepo, mockApplicationRepo, fixedClock)
+  private val service = new ApplicationService(mockCounterRepo, mockApplicationRepo, mockDmsSubmissionService, fixedClock)
 
   override def beforeEach(): Unit = {
-    Mockito.reset(mockCounterRepo)
-    Mockito.reset(mockApplicationRepo)
+    reset(mockCounterRepo, mockApplicationRepo, mockDmsSubmissionService)
     super.beforeEach()
   }
 
@@ -59,6 +61,7 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
 
       when(mockCounterRepo.nextId(eqTo(CounterId.ApplicationId))) thenReturn Future.successful(id)
       when(mockApplicationRepo.set(any())) thenReturn Future.successful(Done)
+      when(mockDmsSubmissionService.submitApplication(any())(any())).thenReturn(Future.successful(Done))
 
       val request = ApplicationRequest(
         trader = trader,
@@ -82,11 +85,12 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
         lastUpdated = fixedInstant
       )
 
-      val result = service.save(applicantEori, request).futureValue
+      val result = service.save(applicantEori, request)(hc).futureValue
 
       result mustEqual ApplicationId(id)
       verify(mockCounterRepo, times(1)).nextId(eqTo(CounterId.ApplicationId))
       verify(mockApplicationRepo, times(1)).set(eqTo(expectedApplication))
+      verify(mockDmsSubmissionService, times(1)).submitApplication(eqTo(expectedApplication))(any())
     }
 
     "must convert attachments, giving them unique ids" in {
@@ -105,6 +109,7 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
         Future.successful(attachmentId2)
       )
       when(mockApplicationRepo.set(any())).thenReturn(Future.successful(Done))
+      when(mockDmsSubmissionService.submitApplication(any())(any())).thenReturn(Future.successful(Done))
 
 
       val request = ApplicationRequest(
@@ -132,7 +137,7 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
         lastUpdated = fixedInstant
       )
 
-      val result = service.save(applicantEori, request).futureValue
+      val result = service.save(applicantEori, request)(hc).futureValue
 
       result mustEqual ApplicationId(id)
       verify(mockCounterRepo, times(1)).nextId(eqTo(CounterId.ApplicationId))
