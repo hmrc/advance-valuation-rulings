@@ -1,0 +1,8 @@
+@this()
+
+@(key: String, value: String)(implicit messages: Messages)
+
+<fo:block margin-bottom="5mm" keep-together="always">
+    <fo:block width="8cm" wrap-option="wrap" font-weight="bold">@messages(key)</fo:block>
+    <fo:block width="8cm" wrap-option="wrap">@(value)</fo:block>
+</fo:block>

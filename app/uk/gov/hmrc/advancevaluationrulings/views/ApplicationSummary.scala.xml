@@ -1,0 +1,35 @@
+@import uk.gov.hmrc.advancevaluationrulings.models.application.Application
+
+@this(
+    header: PageHeader,
+    footer: PageFooter,
+    stackedLine: StackedLine
+)
+
+@(application: Application)(implicit messages: Messages)
+
+<fo:page-sequence master-reference="main">
+
+    @header(isH1 = true)
+
+    @footer()
+
+    <fo:flow flow-name="xsl-region-body" font-size="12pt" text-align="left">
+
+        <fo:block-container>
+            <fo:block>
+                @stackedLine(messages("pdf.registeredEori"), application.applicantEori)
+
+                @stackedLine(messages("pdf.registeredBusinessName"), application.trader.businessName)
+
+                <fo:block margin-bottom="5mm" keep-together="always">
+                    <fo:block width="8cm" wrap-option="wrap" font-weight="bold">@messages("pdf.registeredBusinessAddress")</fo:block>
+                    @application.trader.addressLines.map { x =>
+                        <fo:block width="8cm" wrap-option="wrap">@(x)</fo:block>
+                    }
+                </fo:block>
+            </fo:block>
+        </fo:block-container>
+    </fo:flow>
+
+</fo:page-sequence>

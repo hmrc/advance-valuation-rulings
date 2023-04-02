@@ -27,7 +27,16 @@ final case class TraderDetail(
                                postcode: String,
                                countryCode: String,
                                phoneNumber: Option[String]
-                             )
+                             ) {
+
+  lazy val addressLines: Seq[String] = Seq(
+    Some(addressLine1),
+    addressLine2,
+    addressLine3,
+    Some(postcode),
+    Some(countryCode)
+  ).flatten
+}
 
 object TraderDetail {
 
