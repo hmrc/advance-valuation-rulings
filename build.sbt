@@ -10,7 +10,6 @@ lazy val microservice = Project("advance-valuation-rulings", file("."))
     // suppress warnings in generated routes files
     scalacOptions ++= Seq(
       "-Wconf:src=routes/.*:s",
-      "-Ywarn-dead-code",
       "-Ywarn-unused:imports",   // Warn if an import selector is not referenced.
       "-Ywarn-unused:locals",    // Warn if a local definition is unused.
       "-Ywarn-unused:params",    // Warn if a value parameter is unused.
