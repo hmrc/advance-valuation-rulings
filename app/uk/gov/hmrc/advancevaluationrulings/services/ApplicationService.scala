@@ -60,8 +60,9 @@ class ApplicationService @Inject()(
           Attachment(
             id = id,
             name = request.name,
+            description = request.description,
             location = request.url,
-            public = request.public,
+            privacy = request.privacy,
             mimeType = request.mimeType,
             size = request.size,
             contentMd5 = request.contentMd5

@@ -94,8 +94,8 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
       val id = 123L
       val applicantEori = "applicantEori"
 
-      val attachmentRequest1 = AttachmentRequest("name", "url", true, "mime", 1L, "md5")
-      val attachmentRequest2 = AttachmentRequest("name", "url", false, "mime", 2L, "md5")
+      val attachmentRequest1 = AttachmentRequest("name", None, "url", Privacy.Public, "mime", 1L, "md5")
+      val attachmentRequest2 = AttachmentRequest("name", None, "url", Privacy.Public, "mime", 2L, "md5")
       val attachmentId1 = 1L
       val attachmentId2 = 2L
 
@@ -125,8 +125,8 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Seq(
-          Attachment(attachmentId1, "name", "url", true, "mime", 1L, "md5"),
-          Attachment(attachmentId2, "name", "url", false, "mime", 2L, "md5")
+          Attachment(attachmentId1, "name", None, "url", Privacy.Public, "mime", 1L, "md5"),
+          Attachment(attachmentId2, "name", None, "url", Privacy.Public, "mime", 2L, "md5")
         ),
         created = fixedInstant,
         lastUpdated = fixedInstant

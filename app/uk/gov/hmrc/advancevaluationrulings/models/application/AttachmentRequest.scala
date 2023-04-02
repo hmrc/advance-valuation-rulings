@@ -20,8 +20,9 @@ import play.api.libs.json.{Json, OFormat}
 
 final case class AttachmentRequest(
                                     name: String,
+                                    description: Option[String],
                                     url: String,
-                                    public: Boolean,
+                                    privacy: Privacy,
                                     mimeType: String,
                                     size: Long,
                                     contentMd5: String
