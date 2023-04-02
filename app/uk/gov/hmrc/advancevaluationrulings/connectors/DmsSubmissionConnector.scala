@@ -70,14 +70,14 @@ class DmsSubmissionConnector @Inject() (
 
     val attachmentParts = attachments.zipWithIndex.flatMap { case (attachment, i) =>
       Seq(
-        MultipartFormData.DataPart(s"attachment[$i].location", attachment.location),
-        MultipartFormData.DataPart(s"attachment[$i].contentMd5", attachment.contentMd5)
+        MultipartFormData.DataPart(s"attachments[$i].location", attachment.location),
+        MultipartFormData.DataPart(s"attachments[$i].contentMd5", attachment.contentMd5)
       )
     }
 
     val fileParts = Seq(
       MultipartFormData.FilePart(
-        key = "file",
+        key = "form",
         filename = "application.pdf",
         contentType = Some("application/pdf"),
         ref = pdf,
