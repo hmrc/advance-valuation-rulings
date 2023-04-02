@@ -26,6 +26,7 @@ import javax.xml.transform.TransformerFactory
 import javax.xml.transform.sax.SAXResult
 import javax.xml.transform.stream.StreamSource
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Using
 
 @Singleton
 class FopService @Inject() (
@@ -34,18 +35,19 @@ class FopService @Inject() (
 
   def render(input: String): Future[Array[Byte]] = Future {
 
-    val out = new ByteArrayOutputStream()
+    Using.resource(new ByteArrayOutputStream()) { out =>
 
-    val fop = fopFactory.newFop(MimeConstants.MIME_PDF, out)
+      val fop = fopFactory.newFop(MimeConstants.MIME_PDF, out)
 
-    val transformerFactory = TransformerFactory.newInstance()
-    val transformer = transformerFactory.newTransformer()
+      val transformerFactory = TransformerFactory.newInstance()
+      val transformer = transformerFactory.newTransformer()
 
-    val source = new StreamSource(new StringReader(input))
-    val result = new SAXResult(fop.getDefaultHandler)
+      val source = new StreamSource(new StringReader(input))
+      val result = new SAXResult(fop.getDefaultHandler)
 
-    transformer.transform(source, result)
+      transformer.transform(source, result)
 
-    out.toByteArray
+      out.toByteArray
+    }
   }
 }
