@@ -1,0 +1,61 @@
+@import uk.gov.hmrc.advancevaluationrulings.models.application._
+
+@this(
+    header: PageHeader,
+    footer: PageFooter,
+    methodOneSnippet: MethodOneSnippet,
+    goodsLine: GoodsLine
+)
+
+@(application: Application)(implicit messages: Messages)
+
+<fo:page-sequence master-reference="main">
+
+    @header()
+
+    @footer()
+
+    <fo:flow flow-name="xsl-region-body" font-size="12pt" text-align="left">
+
+        <fo:block-container>
+
+            <fo:block role="H2" id="goods-details" font-size="18pt" font-weight="bold" margin-bottom="0.5cm">
+                @messages("pdf.goodsDetails")
+            </fo:block>
+
+            @{application.requestedMethod match {
+                case one: MethodOne =>
+                    methodOneSnippet(one)
+            }}
+
+            @goodsLine(messages("pdf.goodsDescription"), application.goodsDetails.goodsDescription)
+
+            @application.goodsDetails.envisagedCommodityCode.map { x =>
+                @goodsLine(messages("pdf.commodityCode"), x)
+            }.getOrElse {
+                @goodsLine(messages("pdf.commodityCode"), messages("pdf.notProvided"))
+            }
+
+            @application.goodsDetails.knownLegalProceedings.map { x =>
+                @goodsLine(messages("pdf.knownLegalProceedings"), messages("pdf.yes"))
+
+                @goodsLine(messages("pdf.knownLegalProceedingsDescription"), x)
+            }.getOrElse {
+                @goodsLine(messages("pdf.knownLegalProceedings"), messages("pdf.no"))
+            }
+
+            @application.goodsDetails.confidentialInformation.map { x =>
+                @goodsLine(messages("pdf.confidentialInformation"), messages("pdf.yes"))
+
+                @goodsLine(messages("pdf.confidentialInformationDescription"), x)
+            }.getOrElse {
+                @goodsLine(messages("pdf.confidentialInformation"), messages("pdf.no"))
+            }
+
+            <fo:block id="FinalElement">
+
+            </fo:block>
+        </fo:block-container>
+    </fo:flow>
+
+</fo:page-sequence>

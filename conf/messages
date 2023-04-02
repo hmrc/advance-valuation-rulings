@@ -1,0 +1,28 @@
+pdf.title = Advance Valuation Ruling application
+
+pdf.yes = Yes
+pdf.no = No
+pdf.notProvided = Not provided
+pdf.page = Page
+pdf.of = of
+
+pdf.registeredEori = Registered EORI number
+pdf.registeredBusinessName = Registered business name
+pdf.registeredBusinessAddress = Registered business address
+
+pdf.goodsDetails = About the goods
+pdf.method = Proposed method of valuation
+pdf.method.1 = Method 1: Transaction value
+pdf.saleInvolved = Is there a sale involved?
+pdf.saleBetweenRelatedParties = Is the sale between related parties?
+pdf.saleBetweenRelatedPartiesDescription = Description of how the parties are related
+pdf.goodsRestrictions = Are there restrictions on the use / resale of the goods?
+pdf.goodsRestrictionsDescription = Description of restrictions
+pdf.saleConditions = Is the sale subject to conditions or circumstances that could restrict you from valuing the goods?
+pdf.saleConditionsDescription = Description of conditions / circumstances
+pdf.goodsDescription = Short description of the goods
+pdf.commodityCode = Commodity code
+pdf.knownLegalProceedings = Have the goods been subject to any legal challenges?
+pdf.knownLegalProceedingsDescription = Description of legal challenges
+pdf.confidentialInformation = Do you want to add any confidential information about the goods?
+pdf.confidentialInformationDescription = Description of confidential information
