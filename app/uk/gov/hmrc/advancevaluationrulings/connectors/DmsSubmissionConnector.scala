@@ -44,7 +44,6 @@ class DmsSubmissionConnector @Inject() (
 
   private val dmsSubmissionConfig: Configuration = configuration.get[Configuration]("microservice.services.dms-submission")
   private val callbackUrl: String = dmsSubmissionConfig.get[String]("callbackUrl")
-  private val store: String = dmsSubmissionConfig.get[String]("store")
   private val source: String = dmsSubmissionConfig.get[String]("source")
   private val formId: String = dmsSubmissionConfig.get[String]("formId")
   private val classificationType: String = dmsSubmissionConfig.get[String]("classificationType")
@@ -58,7 +57,6 @@ class DmsSubmissionConnector @Inject() (
 
     val dataParts = Seq(
       MultipartFormData.DataPart("callbackUrl", callbackUrl),
-      MultipartFormData.DataPart("metadata.store", store),
       MultipartFormData.DataPart("metadata.source", source),
       MultipartFormData.DataPart("metadata.timeOfReceipt", dateOfReceipt),
       MultipartFormData.DataPart("metadata.formId", formId),

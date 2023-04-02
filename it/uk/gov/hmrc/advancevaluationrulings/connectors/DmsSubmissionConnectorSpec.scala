@@ -89,7 +89,6 @@ class DmsSubmissionConnectorSpec
           .withHeader(AUTHORIZATION, equalTo("authKey"))
           .withHeader(USER_AGENT, equalTo("advance-valuation-rulings"))
           .withMultipartRequestBody(aMultipart().withName("callbackUrl").withBody(equalTo("http://localhost/callback")))
-          .withMultipartRequestBody(aMultipart().withName("metadata.store").withBody(equalTo("true")))
           .withMultipartRequestBody(aMultipart().withName("metadata.source").withBody(equalTo("advance-ruling-service")))
           .withMultipartRequestBody(aMultipart().withName("metadata.timeOfReceipt").withBody(equalTo("2022-03-02T12:30:45")))
           .withMultipartRequestBody(aMultipart().withName("metadata.formId").withBody(equalTo("formId")))
