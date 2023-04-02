@@ -66,6 +66,7 @@ class DmsSubmissionServiceSpec extends AnyFreeSpec with Matchers with ScalaFutur
     val goodsDetails = GoodsDetails("name", "description", None, None, None)
     val method = MethodOne(None, None, None)
     val contact = ContactDetails("name", "email", None)
+    val submissionReference = "submissionReference"
     val now = Instant.now.truncatedTo(ChronoUnit.MILLIS)
 
     val attachment = Attachment(
@@ -88,6 +89,7 @@ class DmsSubmissionServiceSpec extends AnyFreeSpec with Matchers with ScalaFutur
       goodsDetails = goodsDetails,
       requestedMethod = method,
       attachments = Seq(attachment),
+      submissionReference = submissionReference,
       created = now,
       lastUpdated = now
     )
@@ -100,14 +102,14 @@ class DmsSubmissionServiceSpec extends AnyFreeSpec with Matchers with ScalaFutur
       val sourceCaptor: ArgumentCaptor[Source[ByteString, _]] = ArgumentCaptor.forClass(classOf[Source[ByteString, _]])
 
       when(mockFopService.render(any())).thenReturn(Future.successful(bytes))
-      when(mockDmsSubmissionConnector.submitApplication(any(), any(), any(), any())(any())).thenReturn(Future.successful(Done))
+      when(mockDmsSubmissionConnector.submitApplication(any(), any(), any(), any(), any())(any())).thenReturn(Future.successful(Done))
 
       val expectedXml = applicationTemplate(application).body
 
-      service.submitApplication(application)(hc).futureValue
+      service.submitApplication(application, submissionReference)(hc).futureValue
 
       verify(mockFopService).render(eqTo(expectedXml))
-      verify(mockDmsSubmissionConnector).submitApplication(eqTo("applicantEori"), sourceCaptor.capture(), eqTo(Seq(attachment)), eqTo(application.created))(eqTo(hc))
+      verify(mockDmsSubmissionConnector).submitApplication(eqTo("applicantEori"), sourceCaptor.capture(), eqTo(Seq(attachment)), eqTo(application.created), eqTo(submissionReference))(eqTo(hc))
 
       val result = sourceCaptor.getValue().toMat(Sink.fold(ByteString.emptyByteString)(_ ++ _))(Keep.right).run().futureValue
 
@@ -118,17 +120,17 @@ class DmsSubmissionServiceSpec extends AnyFreeSpec with Matchers with ScalaFutur
 
       when(mockFopService.render(any())).thenReturn(Future.failed(new RuntimeException()))
 
-      service.submitApplication(application)(hc).failed.futureValue
+      service.submitApplication(application, submissionReference)(hc).failed.futureValue
 
-      verify(mockDmsSubmissionConnector, never).submitApplication(any(), any(), any(), any())(any())
+      verify(mockDmsSubmissionConnector, never).submitApplication(any(), any(), any(), any(), any())(any())
     }
 
     "must fail if the dms submission connector fails" in {
 
       when(mockFopService.render(any())).thenReturn(Future.successful(Array.emptyByteArray))
-      when(mockDmsSubmissionConnector.submitApplication(any(), any(), any(), any())(any())).thenReturn(Future.failed(new RuntimeException()))
+      when(mockDmsSubmissionConnector.submitApplication(any(), any(), any(), any(), any())(any())).thenReturn(Future.failed(new RuntimeException()))
 
-      service.submitApplication(application)(hc).failed.futureValue
+      service.submitApplication(application, submissionReference)(hc).failed.futureValue
     }
   }
 }

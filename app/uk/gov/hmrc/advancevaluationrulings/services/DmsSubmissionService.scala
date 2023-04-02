@@ -39,17 +39,18 @@ class DmsSubmissionService @Inject() (
   private implicit val messages: Messages =
     messagesApi.preferred(Seq.empty)
 
-  def submitApplication(application: Application)(implicit hc: HeaderCarrier): Future[Done] =
+  def submitApplication(application: Application, submissionReference: String)(implicit hc: HeaderCarrier): Future[Done] =
     for {
       pdfBytes <- fopService.render(pdfTemplate(application).body)
-      _        <- submitToDms(application, pdfBytes)
+      _        <- submitToDms(application, pdfBytes, submissionReference)
     } yield Done
 
-  private def submitToDms(application: Application, pdfBytes: Array[Byte])(implicit hc: HeaderCarrier): Future[Done] =
+  private def submitToDms(application: Application, pdfBytes: Array[Byte], submissionReference: String)(implicit hc: HeaderCarrier): Future[Done] =
     dmsConnector.submitApplication(
       eori = application.applicantEori,
       pdf = Source.single(ByteString(pdfBytes)),
       attachments = application.attachments,
-      timestamp = application.created
+      timestamp = application.created,
+      submissionReference = submissionReference
     )
 }

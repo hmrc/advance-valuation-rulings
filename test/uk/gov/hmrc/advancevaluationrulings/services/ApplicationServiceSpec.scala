@@ -37,18 +37,20 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
   private val mockCounterRepo = mock[CounterRepository]
   private val mockApplicationRepo = mock[ApplicationRepository]
   private val mockDmsSubmissionService = mock[DmsSubmissionService]
+  private val mockSubmissionReferenceService = mock[SubmissionReferenceService]
   private val fixedInstant = Instant.now
   private val fixedClock = Clock.fixed(fixedInstant, ZoneId.systemDefault())
   private val trader = TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None)
   private val goodsDetails = GoodsDetails("name", "description", None, None, None)
+  private val submissionReference = "submissionReference"
   private val method = MethodOne(None, None, None)
   private val contact = ContactDetails("name", "email", None)
   private val hc: HeaderCarrier = HeaderCarrier()
 
-  private val service = new ApplicationService(mockCounterRepo, mockApplicationRepo, mockDmsSubmissionService, fixedClock)
+  private val service = new ApplicationService(mockCounterRepo, mockApplicationRepo, mockDmsSubmissionService, mockSubmissionReferenceService, fixedClock)
 
   override def beforeEach(): Unit = {
-    reset(mockCounterRepo, mockApplicationRepo, mockDmsSubmissionService)
+    reset(mockCounterRepo, mockApplicationRepo, mockDmsSubmissionService, mockSubmissionReferenceService)
     super.beforeEach()
   }
 
@@ -60,8 +62,9 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
       val applicantEori = "applicantEori"
 
       when(mockCounterRepo.nextId(eqTo(CounterId.ApplicationId))) thenReturn Future.successful(id)
+      when(mockSubmissionReferenceService.random()).thenReturn(submissionReference)
       when(mockApplicationRepo.set(any())) thenReturn Future.successful(Done)
-      when(mockDmsSubmissionService.submitApplication(any())(any())).thenReturn(Future.successful(Done))
+      when(mockDmsSubmissionService.submitApplication(any(), any())(any())).thenReturn(Future.successful(Done))
 
       val request = ApplicationRequest(
         trader = trader,
@@ -81,6 +84,7 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
+        submissionReference = submissionReference,
         created = fixedInstant,
         lastUpdated = fixedInstant
       )
@@ -90,7 +94,7 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
       result mustEqual ApplicationId(id)
       verify(mockCounterRepo, times(1)).nextId(eqTo(CounterId.ApplicationId))
       verify(mockApplicationRepo, times(1)).set(eqTo(expectedApplication))
-      verify(mockDmsSubmissionService, times(1)).submitApplication(eqTo(expectedApplication))(any())
+      verify(mockDmsSubmissionService, times(1)).submitApplication(eqTo(expectedApplication), any())(any())
     }
 
     "must convert attachments, giving them unique ids" in {
@@ -108,8 +112,9 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
         Future.successful(attachmentId1),
         Future.successful(attachmentId2)
       )
+      when(mockSubmissionReferenceService.random()).thenReturn(submissionReference)
       when(mockApplicationRepo.set(any())).thenReturn(Future.successful(Done))
-      when(mockDmsSubmissionService.submitApplication(any())(any())).thenReturn(Future.successful(Done))
+      when(mockDmsSubmissionService.submitApplication(any(), any())(any())).thenReturn(Future.successful(Done))
 
 
       val request = ApplicationRequest(
@@ -133,6 +138,7 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
           Attachment(attachmentId1, "name", None, "url", Privacy.Public, "mime", 1L, "md5"),
           Attachment(attachmentId2, "name", None, "url", Privacy.Public, "mime", 2L, "md5")
         ),
+        submissionReference = submissionReference,
         created = fixedInstant,
         lastUpdated = fixedInstant
       )

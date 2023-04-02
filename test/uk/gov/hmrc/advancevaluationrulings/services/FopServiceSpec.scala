@@ -77,6 +77,7 @@ class FopServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with In
           confidentialInformation = Some("confidential information")
         ),
         attachments = Nil,
+        submissionReference = "submissionReference",
         created = Instant.now,
         lastUpdated = Instant.now
       )
