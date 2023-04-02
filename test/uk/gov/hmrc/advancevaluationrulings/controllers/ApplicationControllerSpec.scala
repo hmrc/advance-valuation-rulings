@@ -72,7 +72,7 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
       val id = 123L
 
       when(mockAuthConnector.authorise[Enrolments](any(), any())(any(), any())) thenReturn Future.successful(atarEnrolment)
-      when(mockApplicationService.save(any(), any())) thenReturn Future.successful(ApplicationId(id))
+      when(mockApplicationService.save(any(), any())(any())) thenReturn Future.successful(ApplicationId(id))
 
       val applicationRequest = ApplicationRequest(
         trader = trader,
@@ -91,7 +91,7 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
 
       status(result) mustEqual OK
       contentAsJson(result) mustEqual Json.toJson(ApplicationSubmissionResponse(ApplicationId(id)))
-      verify(mockApplicationService, times(1)).save(eqTo(applicantEori), eqTo(applicationRequest))
+      verify(mockApplicationService, times(1)).save(eqTo(applicantEori), eqTo(applicationRequest))(any())
     }
   }
 
