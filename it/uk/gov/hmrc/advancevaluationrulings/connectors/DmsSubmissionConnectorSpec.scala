@@ -98,7 +98,9 @@ class DmsSubmissionConnectorSpec
           .withMultipartRequestBody(aMultipart().withName("metadata.customerId").withBody(equalTo("someEori")))
           .withMultipartRequestBody(aMultipart().withName("metadata.classificationType").withBody(equalTo("classificationType")))
           .withMultipartRequestBody(aMultipart().withName("metadata.businessArea").withBody(equalTo("businessArea")))
-          .withMultipartRequestBody(aMultipart().withName("file").withBody(equalTo("Hello, World!")))
+          .withMultipartRequestBody(aMultipart().withName("attachments[0].location").withBody(equalTo("some/file.pdf")))
+          .withMultipartRequestBody(aMultipart().withName("attachments[0].contentMd5").withBody(equalTo("someMd5")))
+          .withMultipartRequestBody(aMultipart().withName("form").withBody(equalTo("Hello, World!")))
           .willReturn(
             aResponse()
               .withStatus(ACCEPTED)
