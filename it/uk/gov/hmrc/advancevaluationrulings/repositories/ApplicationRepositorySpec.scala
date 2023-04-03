@@ -137,8 +137,8 @@ class ApplicationRepositorySpec
       val result = repository.summaries(eori1).futureValue
       
       result must contain theSameElementsAs Seq(
-        ApplicationSummary(ApplicationId(1), "name", now),
-        ApplicationSummary(ApplicationId(2), "name", now)
+        ApplicationSummary(ApplicationId(1), "name", now, "eori"),
+        ApplicationSummary(ApplicationId(2), "name", now, "eori")
       )
     }
   }

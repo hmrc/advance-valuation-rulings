@@ -100,7 +100,7 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
 
     "must return a list of application summaries" in {
 
-      val summary = ApplicationSummary(ApplicationId(1), "name", Instant.now(fixedClock))
+      val summary = ApplicationSummary(ApplicationId(1), "name", Instant.now(fixedClock), "eori")
 
       when(mockAuthConnector.authorise[Enrolments](any(), any())(any(), any())) thenReturn Future.successful(atarEnrolment)
       when(mockApplicationRepository.summaries(any())).thenReturn(Future.successful(Seq(summary)))
