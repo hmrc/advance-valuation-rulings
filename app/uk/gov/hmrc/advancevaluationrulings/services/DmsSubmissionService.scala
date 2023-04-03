@@ -28,18 +28,29 @@ import uk.gov.hmrc.http.HeaderCarrier
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
+abstract class DmsSubmissionService {
+
+  def submitApplication(application: Application, submissionReference: String)(implicit hc: HeaderCarrier): Future[Done]
+}
+
 @Singleton
-class DmsSubmissionService @Inject() (
+class NoOpDmsSubmissionService @Inject() () extends DmsSubmissionService {
+  override def submitApplication(application: Application, submissionReference: String)(implicit hc: HeaderCarrier): Future[Done] =
+    Future.successful(Done)
+}
+
+@Singleton
+class DefaultDmsSubmissionService @Inject() (
                                        dmsConnector: DmsSubmissionConnector,
                                        fopService: FopService,
                                        pdfTemplate: ApplicationPdf,
                                        messagesApi: MessagesApi
-                                     )(implicit ec: ExecutionContext) {
+                                     )(implicit ec: ExecutionContext) extends DmsSubmissionService {
 
   private implicit val messages: Messages =
     messagesApi.preferred(Seq.empty)
 
-  def submitApplication(application: Application, submissionReference: String)(implicit hc: HeaderCarrier): Future[Done] =
+  override def submitApplication(application: Application, submissionReference: String)(implicit hc: HeaderCarrier): Future[Done] =
     for {
       pdfBytes <- fopService.render(pdfTemplate(application).body)
       _        <- submitToDms(application, pdfBytes, submissionReference)

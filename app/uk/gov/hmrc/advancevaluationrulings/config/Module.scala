@@ -19,6 +19,7 @@ package uk.gov.hmrc.advancevaluationrulings.config
 import org.apache.fop.apps.FopFactory
 import play.api.inject.Binding
 import play.api.{Configuration, Environment}
+import uk.gov.hmrc.advancevaluationrulings.services.{DefaultDmsSubmissionService, DmsSubmissionService, NoOpDmsSubmissionService}
 
 import java.time.Clock
 
@@ -26,15 +27,22 @@ class Module extends play.api.inject.Module {
 
   override def bindings(environment: Environment, configuration: Configuration): collection.Seq[Binding[_]] = {
 
-    val authTokenInitialiserBindings: Seq[Binding[_]] =
+    val authTokenInitialiserBinding: Binding[InternalAuthTokenInitialiser] =
       if (configuration.get[Boolean]("internal-auth-token-initialiser.enabled")) {
-        Seq(bind[InternalAuthTokenInitialiser].to[InternalAuthTokenInitialiserImpl].eagerly())
-      } else Seq(bind[InternalAuthTokenInitialiser].to[NoOpInternalAuthTokenInitialiser].eagerly())
+        bind[InternalAuthTokenInitialiser].to[InternalAuthTokenInitialiserImpl].eagerly()
+      } else bind[InternalAuthTokenInitialiser].to[NoOpInternalAuthTokenInitialiser].eagerly()
+
+    val dmsSubmissionServiceBinding: Binding[DmsSubmissionService] =
+      if (configuration.get[Boolean]("dms-submission.enabled")) {
+        bind[DmsSubmissionService].to[DefaultDmsSubmissionService].eagerly()
+      } else bind[DmsSubmissionService].to[NoOpDmsSubmissionService].eagerly()
 
     Seq(
       bind[AppConfig].toSelf.eagerly(),
       bind[Clock].toInstance(Clock.systemUTC()),
-      bind[FopFactory].toProvider[FopFactoryProvider].eagerly()
-    ) ++ authTokenInitialiserBindings
+      bind[FopFactory].toProvider[FopFactoryProvider].eagerly(),
+      authTokenInitialiserBinding,
+      dmsSubmissionServiceBinding
+    )
   }
 }

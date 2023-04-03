@@ -53,6 +53,9 @@ class DmsSubmissionServiceSpec extends AnyFreeSpec with Matchers with ScalaFutur
       bind[FopService].toInstance(mockFopService),
       bind[DmsSubmissionConnector].toInstance(mockDmsSubmissionConnector)
     )
+    .configure(
+      "dms-submission.enabled" -> true
+    )
     .build()
 
   private lazy val service = app.injector.instanceOf[DmsSubmissionService]
