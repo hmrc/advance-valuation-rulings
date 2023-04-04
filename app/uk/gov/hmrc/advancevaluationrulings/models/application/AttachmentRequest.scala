@@ -24,8 +24,7 @@ final case class AttachmentRequest(
                                     url: String,
                                     privacy: Privacy,
                                     mimeType: String,
-                                    size: Long,
-                                    contentMd5: String
+                                    size: Long
                                   )
 
 object AttachmentRequest {

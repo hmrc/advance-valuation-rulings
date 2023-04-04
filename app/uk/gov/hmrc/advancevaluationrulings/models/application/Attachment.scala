@@ -25,8 +25,7 @@ final case class Attachment(
                              location: String,
                              privacy: Privacy,
                              mimeType: String,
-                             size: Long,
-                             contentMd5: String
+                             size: Long
                            )
 
 object Attachment {

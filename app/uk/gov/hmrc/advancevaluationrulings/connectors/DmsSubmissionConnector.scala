@@ -23,10 +23,9 @@ import play.api.Configuration
 import play.api.http.Status.ACCEPTED
 import play.api.mvc.MultipartFormData
 import uk.gov.hmrc.advancevaluationrulings.models.Done
-import uk.gov.hmrc.advancevaluationrulings.models.application.Attachment
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
-import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -51,7 +50,7 @@ class DmsSubmissionConnector @Inject() (
   private val classificationType: String = dmsSubmissionConfig.get[String]("classificationType")
   private val businessArea: String = dmsSubmissionConfig.get[String]("businessArea")
 
-  def submitApplication(eori: String, pdf: Source[ByteString, _], attachments: Seq[Attachment], timestamp: Instant, submissionReference: String)(implicit hc: HeaderCarrier): Future[Done] = {
+  def submitApplication(eori: String, pdf: Source[ByteString, _], timestamp: Instant, submissionReference: String)(implicit hc: HeaderCarrier): Future[Done] = {
 
     val dateOfReceipt = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(
       LocalDateTime.ofInstant(timestamp.truncatedTo(ChronoUnit.SECONDS), ZoneOffset.UTC)
@@ -68,13 +67,6 @@ class DmsSubmissionConnector @Inject() (
       MultipartFormData.DataPart("metadata.businessArea", businessArea),
     )
 
-    val attachmentParts = attachments.zipWithIndex.flatMap { case (attachment, i) =>
-      Seq(
-        MultipartFormData.DataPart(s"attachments[$i].location", attachment.location),
-        MultipartFormData.DataPart(s"attachments[$i].contentMd5", attachment.contentMd5)
-      )
-    }
-
     val fileParts = Seq(
       MultipartFormData.FilePart(
         key = "form",
@@ -88,7 +80,7 @@ class DmsSubmissionConnector @Inject() (
       .setHeader("Authorization" -> internalAuthToken)
       .withBody(
         Source(
-          dataParts ++ attachmentParts ++ fileParts
+          dataParts ++ fileParts
         )
       ).execute[HttpResponse].flatMap { response =>
         if (response.status == ACCEPTED) {

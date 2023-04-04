@@ -12,7 +12,6 @@ import play.api.http.Status.{ACCEPTED, INTERNAL_SERVER_ERROR}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.Helpers.{AUTHORIZATION, USER_AGENT}
-import uk.gov.hmrc.advancevaluationrulings.models.application.{Attachment, Privacy}
 import uk.gov.hmrc.advancevaluationrulings.utils.WireMockHelper
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -63,17 +62,6 @@ class DmsSubmissionConnectorSpec
 
   ".submitApplication" - {
 
-    val attachment = Attachment(
-      id = 1L,
-      name = "file",
-      description = None,
-      location = "some/file.pdf",
-      privacy = Privacy.Public,
-      mimeType = "application/pdf",
-      size = 1337,
-      contentMd5 = "someMd5"
-    )
-
     val source = Source.single(ByteString.fromString("Hello, World!"))
 
     val eori = "someEori"
@@ -98,8 +86,6 @@ class DmsSubmissionConnectorSpec
           .withMultipartRequestBody(aMultipart().withName("metadata.customerId").withBody(equalTo("someEori")))
           .withMultipartRequestBody(aMultipart().withName("metadata.classificationType").withBody(equalTo("classificationType")))
           .withMultipartRequestBody(aMultipart().withName("metadata.businessArea").withBody(equalTo("businessArea")))
-          .withMultipartRequestBody(aMultipart().withName("attachments[0].location").withBody(equalTo("some/file.pdf")))
-          .withMultipartRequestBody(aMultipart().withName("attachments[0].contentMd5").withBody(equalTo("someMd5")))
           .withMultipartRequestBody(aMultipart().withName("form").withBody(equalTo("Hello, World!")))
           .willReturn(
             aResponse()
@@ -108,7 +94,7 @@ class DmsSubmissionConnectorSpec
           )
       )
 
-      connector.submitApplication(eori, source, Seq(attachment), timestamp, submissionReference)(hc).futureValue
+      connector.submitApplication(eori, source, timestamp, submissionReference)(hc).futureValue
     }
 
     "must fail when the server returns another status" in {
@@ -121,7 +107,7 @@ class DmsSubmissionConnectorSpec
           )
       )
 
-      connector.submitApplication(eori, source, Seq(attachment), timestamp, submissionReference)(hc).failed.futureValue
+      connector.submitApplication(eori, source, timestamp, submissionReference)(hc).failed.futureValue
     }
   }
 }
