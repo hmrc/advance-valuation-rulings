@@ -79,8 +79,7 @@ class DmsSubmissionServiceSpec extends AnyFreeSpec with Matchers with ScalaFutur
       location = "some/location.pdf",
       privacy = Privacy.Public,
       mimeType = "application/pdf",
-      size = 1337,
-      contentMd5 = "contentMd5"
+      size = 1337
     )
 
     val application = Application(
@@ -105,14 +104,14 @@ class DmsSubmissionServiceSpec extends AnyFreeSpec with Matchers with ScalaFutur
       val sourceCaptor: ArgumentCaptor[Source[ByteString, _]] = ArgumentCaptor.forClass(classOf[Source[ByteString, _]])
 
       when(mockFopService.render(any())).thenReturn(Future.successful(bytes))
-      when(mockDmsSubmissionConnector.submitApplication(any(), any(), any(), any(), any())(any())).thenReturn(Future.successful(Done))
+      when(mockDmsSubmissionConnector.submitApplication(any(), any(), any(), any())(any())).thenReturn(Future.successful(Done))
 
       val expectedXml = applicationTemplate(application).body
 
       service.submitApplication(application, submissionReference)(hc).futureValue
 
       verify(mockFopService).render(eqTo(expectedXml))
-      verify(mockDmsSubmissionConnector).submitApplication(eqTo("applicantEori"), sourceCaptor.capture(), eqTo(Seq(attachment)), eqTo(application.created), eqTo(submissionReference))(eqTo(hc))
+      verify(mockDmsSubmissionConnector).submitApplication(eqTo("applicantEori"), sourceCaptor.capture(), eqTo(application.created), eqTo(submissionReference))(eqTo(hc))
 
       val result = sourceCaptor.getValue().toMat(Sink.fold(ByteString.emptyByteString)(_ ++ _))(Keep.right).run().futureValue
 
@@ -125,13 +124,13 @@ class DmsSubmissionServiceSpec extends AnyFreeSpec with Matchers with ScalaFutur
 
       service.submitApplication(application, submissionReference)(hc).failed.futureValue
 
-      verify(mockDmsSubmissionConnector, never).submitApplication(any(), any(), any(), any(), any())(any())
+      verify(mockDmsSubmissionConnector, never).submitApplication(any(), any(), any(), any())(any())
     }
 
     "must fail if the dms submission connector fails" in {
 
       when(mockFopService.render(any())).thenReturn(Future.successful(Array.emptyByteArray))
-      when(mockDmsSubmissionConnector.submitApplication(any(), any(), any(), any(), any())(any())).thenReturn(Future.failed(new RuntimeException()))
+      when(mockDmsSubmissionConnector.submitApplication(any(), any(), any(), any())(any())).thenReturn(Future.failed(new RuntimeException()))
 
       service.submitApplication(application, submissionReference)(hc).failed.futureValue
     }

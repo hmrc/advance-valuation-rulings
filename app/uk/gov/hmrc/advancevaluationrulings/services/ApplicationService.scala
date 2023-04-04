@@ -73,8 +73,7 @@ class ApplicationService @Inject()(
           location = request.url,
           privacy = request.privacy,
           mimeType = request.mimeType,
-          size = request.size,
-          contentMd5 = request.contentMd5
+          size = request.size
         )
       }
     }

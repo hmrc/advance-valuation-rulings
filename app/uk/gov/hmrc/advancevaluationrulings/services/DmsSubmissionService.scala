@@ -60,7 +60,6 @@ class DefaultDmsSubmissionService @Inject() (
     dmsConnector.submitApplication(
       eori = application.applicantEori,
       pdf = Source.single(ByteString(pdfBytes)),
-      attachments = application.attachments,
       timestamp = application.created,
       submissionReference = submissionReference
     )

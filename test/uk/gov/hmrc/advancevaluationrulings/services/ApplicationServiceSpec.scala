@@ -67,6 +67,7 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
       when(mockDmsSubmissionService.submitApplication(any(), any())(any())).thenReturn(Future.successful(Done))
 
       val request = ApplicationRequest(
+        draftId = "foo",
         trader = trader,
         agent = None,
         contact = contact,
@@ -102,8 +103,8 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
       val id = 123L
       val applicantEori = "applicantEori"
 
-      val attachmentRequest1 = AttachmentRequest("name", None, "url", Privacy.Public, "mime", 1L, "md5")
-      val attachmentRequest2 = AttachmentRequest("name", None, "url", Privacy.Public, "mime", 2L, "md5")
+      val attachmentRequest1 = AttachmentRequest("name", None, "url", Privacy.Public, "mime", 1L)
+      val attachmentRequest2 = AttachmentRequest("name", None, "url", Privacy.Public, "mime", 2L)
       val attachmentId1 = 1L
       val attachmentId2 = 2L
 
@@ -118,6 +119,7 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
 
 
       val request = ApplicationRequest(
+        draftId = "foo",
         trader = trader,
         agent = None,
         contact = contact,
@@ -135,8 +137,8 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Seq(
-          Attachment(attachmentId1, "name", None, "url", Privacy.Public, "mime", 1L, "md5"),
-          Attachment(attachmentId2, "name", None, "url", Privacy.Public, "mime", 2L, "md5")
+          Attachment(attachmentId1, "name", None, "url", Privacy.Public, "mime", 1L),
+          Attachment(attachmentId2, "name", None, "url", Privacy.Public, "mime", 2L)
         ),
         submissionReference = submissionReference,
         created = fixedInstant,

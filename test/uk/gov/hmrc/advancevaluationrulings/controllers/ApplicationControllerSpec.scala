@@ -76,6 +76,7 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
       when(mockApplicationService.save(any(), any())(any())) thenReturn Future.successful(ApplicationId(id))
 
       val applicationRequest = ApplicationRequest(
+        draftId = "foo",
         trader = trader,
         agent = None,
         contact = contact,
