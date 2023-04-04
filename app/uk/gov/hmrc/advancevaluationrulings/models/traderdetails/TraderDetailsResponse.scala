@@ -17,12 +17,13 @@
 package uk.gov.hmrc.advancevaluationrulings.models.traderdetails
 
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.advancevaluationrulings.models.etmp.CDSEstablishmentAddress
-
+import uk.gov.hmrc.advancevaluationrulings.models.etmp.{CDSEstablishmentAddress}
+import uk.gov.hmrc.advancevaluationrulings.models.etmp.ContactInformation
 final case class TraderDetailsResponse(
   EORINo: String,
   CDSFullName: String,
-  CDSEstablishmentAddress: CDSEstablishmentAddress
+  CDSEstablishmentAddress: CDSEstablishmentAddress,
+  contactInformation: Option[ContactInformation]
 )
 
 object TraderDetailsResponse {

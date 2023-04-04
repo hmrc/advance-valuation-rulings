@@ -30,7 +30,6 @@ import uk.gov.hmrc.advancevaluationrulings.models.etmp.Query
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 
-import akka.actor.ActorSystem
 import generators.ModelGenerators
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, EitherValues}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}

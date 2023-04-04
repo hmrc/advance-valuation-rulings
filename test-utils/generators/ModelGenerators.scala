@@ -16,15 +16,19 @@
 
 package generators
 
+import java.time.ZoneId
 import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.UUID
+
 import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
-import uk.gov.hmrc.advancevaluationrulings.models.common._
-import uk.gov.hmrc.advancevaluationrulings.models.errors.{ETMPError, ErrorDetail, SourceFaultDetail}
-import uk.gov.hmrc.advancevaluationrulings.models.etmp._
-import org.scalacheck.{Arbitrary, Gen}
 import uk.gov.hmrc.advancevaluationrulings.models.application.ApplicationId
+import uk.gov.hmrc.advancevaluationrulings.models.common._
+import uk.gov.hmrc.advancevaluationrulings.models.errors.{ErrorDetail, ETMPError, SourceFaultDetail}
+import uk.gov.hmrc.advancevaluationrulings.models.etmp._
+
+import org.scalacheck.{Arbitrary, Gen}
 import wolfendale.scalacheck.regexp.RegexpGen
 
 trait ModelGenerators extends Generators {
@@ -70,11 +74,39 @@ trait ModelGenerators extends Generators {
     postalCode      <- Gen.option(stringsWithMaxLength(9))
   } yield CDSEstablishmentAddress(streetAndNumber, city, countryCode, postalCode)
 
+  def contactInformationGen: Gen[ContactInformation] = for {
+    personOfContact            <- Gen.option(stringsWithMaxLength(70))
+    streetAndNumber            <- Gen.option(stringsWithMaxLength(70))
+    sepCorrAddrIndicator       <- Gen.option(Gen.oneOf(true, false))
+    city                       <- Gen.option(stringsWithMaxLength(35))
+    postalCode                 <- Gen.option(stringsWithMaxLength(9))
+    countryCode                <- Gen.option(stringsWithMaxLength(2))
+    telephoneNumber            <- Gen.option(stringsWithMaxLength(50))
+    faxNumber                  <- Gen.option(stringsWithMaxLength(50))
+    emailAddress               <- Gen.option(stringsWithMaxLength(50))
+    emailVerificationTimestamp <- Gen.option(localDateTimeGen)
+    instant                     = emailVerificationTimestamp.map(_.toInstant(ZoneOffset.UTC))
+    formatter                   = DateTimeFormatter.ISO_INSTANT
+    timestamp                   = instant.map(formatter.format(_))
+  } yield ContactInformation(
+    personOfContact,
+    sepCorrAddrIndicator,
+    streetAndNumber,
+    city,
+    postalCode,
+    countryCode,
+    telephoneNumber,
+    faxNumber,
+    emailAddress,
+    timestamp
+  )
+
   def responseDetailGen: Gen[ResponseDetail] = for {
     eoriNo                     <- eoriNumberGen
     cdsFullName                <- stringsWithMaxLength(512)
     cdsEstablishmentAddressGen <- CDSEstablishmentAddressGen
-  } yield ResponseDetail(eoriNo, cdsFullName, cdsEstablishmentAddressGen)
+    contactInformation         <- Gen.option(contactInformationGen)
+  } yield ResponseDetail(eoriNo, cdsFullName, cdsEstablishmentAddressGen, contactInformation)
 
   def subscriptionDisplayResponseGen: Gen[SubscriptionDisplayResponse] =
     responseDetailGen.map(SubscriptionDisplayResponse(_))
