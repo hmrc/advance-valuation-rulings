@@ -53,7 +53,8 @@ class TraderDetailsEndpointSpec
             TraderDetailsResponse(
               etmpResponse.subscriptionDisplayResponse.responseDetail.EORINo,
               etmpResponse.subscriptionDisplayResponse.responseDetail.CDSFullName,
-              etmpResponse.subscriptionDisplayResponse.responseDetail.CDSEstablishmentAddress
+              etmpResponse.subscriptionDisplayResponse.responseDetail.CDSEstablishmentAddress,
+              etmpResponse.subscriptionDisplayResponse.responseDetail.contactInformation
             )
           )
       }

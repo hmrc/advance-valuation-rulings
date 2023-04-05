@@ -21,7 +21,8 @@ import play.api.libs.json.{Json, OFormat}
 final case class ResponseDetail(
   EORINo: String,
   CDSFullName: String,
-  CDSEstablishmentAddress: CDSEstablishmentAddress
+  CDSEstablishmentAddress: CDSEstablishmentAddress,
+  contactInformation: Option[ContactInformation]
 )
 
 object ResponseDetail {

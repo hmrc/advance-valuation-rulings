@@ -14,18 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.models.traderdetails
+package uk.gov.hmrc.advancevaluationrulings.models.etmp
 
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.advancevaluationrulings.models.etmp.{CDSEstablishmentAddress, ContactInformation}
 
-final case class TraderDetailsResponse(
-  EORINo: String,
-  CDSFullName: String,
-  CDSEstablishmentAddress: CDSEstablishmentAddress,
-  contactInformation: Option[ContactInformation]
+case class ContactInformation(
+  personOfContact: Option[String],
+  sepCorrAddrIndicator: Option[Boolean],
+  streetAndNumber: Option[String],
+  city: Option[String],
+  postalCode: Option[String],
+  countryCode: Option[String],
+  telephoneNumber: Option[String],
+  faxNumber: Option[String],
+  emailAddress: Option[String],
+  emailVerificationTimestamp: Option[String]
 )
-
-object TraderDetailsResponse {
-  implicit val format: OFormat[TraderDetailsResponse] = Json.format[TraderDetailsResponse]
+object ContactInformation {
+  implicit val format: OFormat[ContactInformation] = Json.format[ContactInformation]
 }
