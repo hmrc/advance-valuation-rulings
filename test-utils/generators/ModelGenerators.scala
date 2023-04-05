@@ -75,19 +75,17 @@ trait ModelGenerators extends Generators {
   } yield CDSEstablishmentAddress(streetAndNumber, city, countryCode, postalCode)
 
   def contactInformationGen: Gen[ContactInformation] = for {
-    personOfContact            <- Gen.option(stringsWithMaxLength(70))
-    streetAndNumber            <- Gen.option(stringsWithMaxLength(70))
-    sepCorrAddrIndicator       <- Gen.option(Gen.oneOf(true, false))
-    city                       <- Gen.option(stringsWithMaxLength(35))
-    postalCode                 <- Gen.option(stringsWithMaxLength(9))
-    countryCode                <- Gen.option(stringsWithMaxLength(2))
-    telephoneNumber            <- Gen.option(stringsWithMaxLength(50))
-    faxNumber                  <- Gen.option(stringsWithMaxLength(50))
-    emailAddress               <- Gen.option(stringsWithMaxLength(50))
-    emailVerificationTimestamp <- Gen.option(localDateTimeGen)
-    instant                     = emailVerificationTimestamp.map(_.toInstant(ZoneOffset.UTC))
-    formatter                   = DateTimeFormatter.ISO_INSTANT
-    timestamp                   = instant.map(formatter.format(_))
+    personOfContact           <- Gen.option(stringsWithMaxLength(70))
+    streetAndNumber           <- Gen.option(stringsWithMaxLength(70))
+    sepCorrAddrIndicator      <- Gen.option(Gen.oneOf(true, false))
+    city                      <- Gen.option(stringsWithMaxLength(35))
+    postalCode                <- Gen.option(stringsWithMaxLength(9))
+    countryCode               <- Gen.option(stringsWithMaxLength(2))
+    telephoneNumber           <- Gen.option(stringsWithMaxLength(50))
+    faxNumber                 <- Gen.option(stringsWithMaxLength(50))
+    emailAddress              <- Gen.option(stringsWithMaxLength(50))
+    instant                   <- Gen.option(localDateTimeGen.map(_.toInstant(ZoneOffset.UTC)))
+    emailVerificationTimestamp = instant.map(DateTimeFormatter.ISO_INSTANT.format(_))
   } yield ContactInformation(
     personOfContact,
     sepCorrAddrIndicator,
@@ -98,7 +96,7 @@ trait ModelGenerators extends Generators {
     telephoneNumber,
     faxNumber,
     emailAddress,
-    timestamp
+    emailVerificationTimestamp
   )
 
   def responseDetailGen: Gen[ResponseDetail] = for {
