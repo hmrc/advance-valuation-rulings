@@ -18,7 +18,6 @@ package uk.gov.hmrc.advancevaluationrulings.models.etmp
 
 import play.api.libs.json.{Json, OFormat}
 
-import uk.gov.hmrc.advancevaluationrulings.models.etmp.ContactInformation
 final case class ResponseDetail(
   EORINo: String,
   CDSFullName: String,

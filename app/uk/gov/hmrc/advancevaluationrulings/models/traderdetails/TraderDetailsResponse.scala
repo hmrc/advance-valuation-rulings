@@ -17,8 +17,8 @@
 package uk.gov.hmrc.advancevaluationrulings.models.traderdetails
 
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.advancevaluationrulings.models.etmp.{CDSEstablishmentAddress}
-import uk.gov.hmrc.advancevaluationrulings.models.etmp.ContactInformation
+import uk.gov.hmrc.advancevaluationrulings.models.etmp.{CDSEstablishmentAddress, ContactInformation}
+
 final case class TraderDetailsResponse(
   EORINo: String,
   CDSFullName: String,
