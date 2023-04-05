@@ -6,9 +6,26 @@ pdf.notProvided = Not provided
 pdf.page = Page
 pdf.of = of
 
-pdf.registeredEori = Registered EORI number
-pdf.registeredBusinessName = Registered business name
-pdf.registeredBusinessAddress = Registered business address
+pdf.applicationSummary = About the application
+
+pdf.traderEori = Registered EORI number
+pdf.applicationId = Application reference number
+pdf.submitted = Date submitted
+
+pdf.traderDetail = About the applicant
+pdf.trader.businessName = Registered business name
+pdf.trader.address = Registered business address
+pdf.applicantName = Applicant name
+pdf.applicantEmail = Applicant email address
+pdf.applicantPhone = Applicant telephone number
+
+pdf.agentDetail = About the agent
+pdf.agent.eori = Agent EORI number
+pdf.agent.businessName = Agent business name
+pdf.agent.address = Agent business address
+pdf.agentName = Agent name
+pdf.agentEmail = Agent email address
+pdf.agentPhone = Agent telephone number
 
 pdf.goodsDetails = About the goods
 pdf.method = Proposed method of valuation

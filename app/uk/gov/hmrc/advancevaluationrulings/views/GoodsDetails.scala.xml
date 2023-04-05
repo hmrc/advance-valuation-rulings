@@ -4,7 +4,7 @@
     header: PageHeader,
     footer: PageFooter,
     methodOneSnippet: MethodOneSnippet,
-    goodsLine: GoodsLine
+    line: Line
 )
 
 @(application: Application)(implicit messages: Messages)
@@ -15,7 +15,7 @@
 
     @footer()
 
-    <fo:flow flow-name="xsl-region-body" font-size="12pt" text-align="left">
+    <fo:flow flow-name="xsl-region-body" font-size="11pt" text-align="left">
 
         <fo:block-container>
 
@@ -28,28 +28,28 @@
                     methodOneSnippet(one)
             }}
 
-            @goodsLine(messages("pdf.goodsDescription"), application.goodsDetails.goodsDescription)
+            @line(messages("pdf.goodsDescription"), application.goodsDetails.goodsDescription)
 
             @application.goodsDetails.envisagedCommodityCode.map { x =>
-                @goodsLine(messages("pdf.commodityCode"), x)
+                @line(messages("pdf.commodityCode"), x)
             }.getOrElse {
-                @goodsLine(messages("pdf.commodityCode"), messages("pdf.notProvided"))
+                @line(messages("pdf.commodityCode"), messages("pdf.notProvided"))
             }
 
             @application.goodsDetails.knownLegalProceedings.map { x =>
-                @goodsLine(messages("pdf.knownLegalProceedings"), messages("pdf.yes"))
+                @line(messages("pdf.knownLegalProceedings"), messages("pdf.yes"))
 
-                @goodsLine(messages("pdf.knownLegalProceedingsDescription"), x)
+                @line(messages("pdf.knownLegalProceedingsDescription"), x)
             }.getOrElse {
-                @goodsLine(messages("pdf.knownLegalProceedings"), messages("pdf.no"))
+                @line(messages("pdf.knownLegalProceedings"), messages("pdf.no"))
             }
 
             @application.goodsDetails.confidentialInformation.map { x =>
-                @goodsLine(messages("pdf.confidentialInformation"), messages("pdf.yes"))
+                @line(messages("pdf.confidentialInformation"), messages("pdf.yes"))
 
-                @goodsLine(messages("pdf.confidentialInformationDescription"), x)
+                @line(messages("pdf.confidentialInformationDescription"), x)
             }.getOrElse {
-                @goodsLine(messages("pdf.confidentialInformation"), messages("pdf.no"))
+                @line(messages("pdf.confidentialInformation"), messages("pdf.no"))
             }
 
             <fo:block id="FinalElement">
