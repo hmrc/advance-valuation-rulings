@@ -1,0 +1,13 @@
+@import uk.gov.hmrc.advancevaluationrulings.models.application.MethodFive
+
+@this(
+    line: Line
+)
+
+@(method: MethodFive)(implicit messages: Messages)
+
+@line(messages("pdf.method"), messages("pdf.method.5"))
+
+@line(messages("pdf.whyNotOtherMethods.5"), method.whyNotOtherMethods)
+
+@line(messages("pdf.computedValue"), method.computedValue)
