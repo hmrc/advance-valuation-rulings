@@ -19,7 +19,7 @@ package uk.gov.hmrc.advancevaluationrulings.controllers.actions
 import play.api.mvc.Results.Unauthorized
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolments}
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment, Enrolments}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
@@ -36,7 +36,7 @@ class IdentifierAction @Inject()(
 
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
-    authorised().retrieve(Retrievals.authorisedEnrolments) {
+    authorised(Enrolment(enrolmentKey)).retrieve(Retrievals.authorisedEnrolments) {
       allEnrolments =>
         getEori(allEnrolments).map(eori => block(IdentifierRequest(request, eori)))
           .getOrElse(Future.successful(Unauthorized))
