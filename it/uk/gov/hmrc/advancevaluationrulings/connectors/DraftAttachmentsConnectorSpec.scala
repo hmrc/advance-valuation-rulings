@@ -15,7 +15,7 @@ import play.api.http.Status.{NOT_FOUND, OK}
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.advancevaluationrulings.connectors.DraftAttachmentsConnector.DraftAttachmentsConnectorException
 import uk.gov.hmrc.advancevaluationrulings.utils.WireMockHelper
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 class DraftAttachmentsConnectorSpec
   extends AnyFreeSpec
@@ -145,7 +145,8 @@ class DraftAttachmentsConnectorSpec
           )
       )
 
-      connector.get("foo/bar").failed.futureValue
+      val error = connector.get("foo/bar").failed.futureValue
+      error mustBe an[UpstreamErrorResponse]
     }
 
     "must fail when the server fails" in {

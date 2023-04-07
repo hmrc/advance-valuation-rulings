@@ -23,12 +23,13 @@ import cats.implicits._
 import config.Service
 import play.api.Configuration
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
 import DraftAttachmentsConnector._
+import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.advancevaluationrulings.models.application.DraftAttachment
 
 @Singleton
@@ -42,15 +43,19 @@ class DraftAttachmentsConnector @Inject()(
   def get(path: String)(implicit hc: HeaderCarrier): Future[DraftAttachment] =
     httpClient.get(url"$advanceValuationRulingsFrontend/attachments/$path")
       .stream[HttpResponse].flatMap { response =>
+        if (response.status == 200) {
 
-        val result = (getContentType(response), getContentMd5(response)).parMapN {
-          DraftAttachment(response.bodyAsSource, _, _)
+          val result = (getContentType(response), getContentMd5(response)).parMapN {
+            DraftAttachment(response.bodyAsSource, _, _)
+          }
+
+          result.fold(
+            errors => Future.failed(DraftAttachmentsConnectorException(errors)),
+            result => Future.successful(result)
+          )
+        } else {
+          Future.failed(UpstreamErrorResponse("Unexpected response from advance-valuation-rulings-frontend", response.status, INTERNAL_SERVER_ERROR))
         }
-
-        result.fold(
-          errors => Future.failed(DraftAttachmentsConnectorException(errors)),
-          result => Future.successful(result)
-        )
       }
 
   private def getContentType(response: HttpResponse): EitherNec[String, String] =
