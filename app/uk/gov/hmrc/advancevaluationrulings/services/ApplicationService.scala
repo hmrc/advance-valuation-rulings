@@ -32,13 +32,14 @@ class ApplicationService @Inject()(
                                     applicationRepository: ApplicationRepository,
                                     dmsSubmissionService: DmsSubmissionService,
                                     submissionReferenceService: SubmissionReferenceService,
+                                    attachmentsService: AttachmentsService,
                                     clock: Clock
                                   )(implicit ec: ExecutionContext) {
 
   def save(applicantEori: String, request: ApplicationRequest)(implicit hc: HeaderCarrier): Future[ApplicationId] =
     for {
       appId               <- counterRepository.nextId(CounterId.ApplicationId).map(ApplicationId(_))
-      attachments         <- buildAttachments(request.attachments)
+      attachments         <- buildAttachments(appId, request.attachments)
       submissionReference =  submissionReferenceService.random()
       application         <- saveApplication(applicantEori, request, appId, attachments, submissionReference)
       _                   <- dmsSubmissionService.submitApplication(application, submissionReference)
@@ -63,18 +64,19 @@ class ApplicationService @Inject()(
     applicationRepository.set(application).as(application)
   }
 
-  private def buildAttachments(requests: Seq[AttachmentRequest]): Future[Seq[Attachment]] =
+  private def buildAttachments(applicationId: ApplicationId, requests: Seq[AttachmentRequest])(implicit hc: HeaderCarrier): Future[Seq[Attachment]] =
     requests.traverse { request =>
-      counterRepository.nextId(CounterId.AttachmentId).map { id =>
-        Attachment(
-          id = id,
-          name = request.name,
-          description = request.description,
-          location = request.url,
-          privacy = request.privacy,
-          mimeType = request.mimeType,
-          size = request.size
-        )
-      }
+      for {
+        id  <- counterRepository.nextId(CounterId.AttachmentId)
+        url <- attachmentsService.copyAttachment(applicationId, request.url)
+      } yield Attachment(
+        id = id,
+        name = request.name,
+        description = request.description,
+        location = url.asUri,
+        privacy = request.privacy,
+        mimeType = request.mimeType,
+        size = request.size
+      )
     }
 }

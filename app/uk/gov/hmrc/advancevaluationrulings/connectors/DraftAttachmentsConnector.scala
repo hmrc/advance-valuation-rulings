@@ -29,6 +29,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
 import DraftAttachmentsConnector._
+import uk.gov.hmrc.advancevaluationrulings.models.application.DraftAttachment
 
 @Singleton
 class DraftAttachmentsConnector @Inject()(
@@ -70,5 +71,3 @@ object DraftAttachmentsConnector {
     override def getMessage: String = errors.toList.mkString("Errors: ", ", ", "")
   }
 }
-
-final case class DraftAttachment(content: Source[ByteString, _], contentType: String, contentMd5: String)

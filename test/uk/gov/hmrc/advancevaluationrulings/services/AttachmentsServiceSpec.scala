@@ -30,7 +30,7 @@ import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.advancevaluationrulings.connectors.DraftAttachmentsConnector
-import uk.gov.hmrc.advancevaluationrulings.connectors.DraftAttachment
+import uk.gov.hmrc.advancevaluationrulings.models.application.{ApplicationId, DraftAttachment}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client.Path
 import uk.gov.hmrc.objectstore.client.RetentionPeriod.OneWeek
@@ -78,19 +78,22 @@ class AttachmentsServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures
   private val fileContent = "Hello, World"
   private val source = Source.single(ByteString.fromString(fileContent))
   private val frontendAttachment = DraftAttachment(source, "application/pdf", "grtBN0au5C+J3qK1lhT57w==")
+  private val applicationId = ApplicationId(1337)
 
   "copyAttachment" - {
 
     "must fetch the attachment from the frontend and put it into object-store" in {
 
+      val expectedPath = Path.File("attachments/GBAVR000001337/file.pdf")
+
       when(mockAttachmentsConnector.get(any())(any()))
         .thenReturn(Future.successful(frontendAttachment))
 
-      service.copyAttachment("applicationId", "path/to/file.pdf")(hc).futureValue
+      service.copyAttachment(applicationId, "path/to/file.pdf")(hc).futureValue mustEqual expectedPath
 
       verify(mockAttachmentsConnector).get(eqTo("path/to/file.pdf"))(eqTo(hc))
 
-      val savedObject = objectStoreStub.getObject(Path.Directory("attachments/applicationId").file("file.pdf")).futureValue.value
+      val savedObject = objectStoreStub.getObject(expectedPath).futureValue.value
       savedObject.metadata.contentLength mustEqual ByteString.fromString(fileContent).length
       savedObject.metadata.contentType mustEqual "application/pdf"
       savedObject.metadata.contentMd5.value mustEqual "grtBN0au5C+J3qK1lhT57w=="
@@ -104,7 +107,7 @@ class AttachmentsServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures
       when(mockAttachmentsConnector.get(any())(any()))
         .thenReturn(Future.failed(new RuntimeException()))
 
-      service.copyAttachment("applicationId", "path/to/file.pdf")(hc).failed.futureValue
+      service.copyAttachment(applicationId, "path/to/file.pdf")(hc).failed.futureValue
     }
   }
 }
