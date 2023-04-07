@@ -1,0 +1,33 @@
+@import uk.gov.hmrc.advancevaluationrulings.models.application.{ContactDetails, TraderDetail}
+
+@this(
+    line: Line,
+    addressLine: AddressLine
+)
+
+@(agent: TraderDetail, contact: ContactDetails)(implicit messages: Messages)
+
+
+<fo:block-container>
+
+    <fo:block role="H2" id="agent-details" font-size="18pt" font-weight="bold" margin-bottom="0.5cm" margin-top="1cm">
+
+        @messages("pdf.agentDetail")
+
+    </fo:block>
+
+    @line(messages("pdf.agent.eori"), agent.eori)
+
+    @line(messages("pdf.agent.businessName"), agent.businessName)
+
+    @addressLine(messages("pdf.agent.address"), agent.addressLines.mkString("\n"))
+
+    @line(messages("pdf.agentName"), contact.name)
+
+    @line(messages("pdf.agentEmail"), contact.email)
+
+    @contact.phone.map { phone =>
+        @line(messages("pdf.agentPhone"), phone)
+    }
+
+</fo:block-container>

@@ -58,23 +58,32 @@ class FopServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with In
           countryCode = "GB",
           phoneNumber = Some("07777 777777")
         ),
-        agent = None,
+        agent = Some(TraderDetail(
+          eori = "GB123123456456",
+          businessName = "Some other business",
+          addressLine1 = "2 The Street",
+          addressLine2 = Some("Some town"),
+          addressLine3 = None,
+          postcode = "AA11 1AA",
+          countryCode = "GB",
+          phoneNumber = Some("07777 777778")
+        )),
         contact = ContactDetails(
           name = "Contact name",
           email = "contact.email@example.com",
           phone = Some("0191 1919191")
         ),
         requestedMethod = MethodOne(
-          saleBetweenRelatedParties = Some("Some details of a sale between related parties.\n\nThis shows some line breaks."),
-          goodsRestrictions = Some("Information about any restrictions on sales"),
-          saleConditions = Some("Conditions on sale")
+          saleBetweenRelatedParties = Some("Lorem ipsum dolor sit amet. Sed internos corporis qui quod ipsum sit saepe dolores ab quas similique ut commodi tempora et facilis porro ut officiis nihil.\n\nUt eveniet assumenda sit quod fugit ut quae illo est amet iste. Ab nulla quia aut ipsam cumque aut aspernatur enim hic maiores voluptas aut dolores repudiandae eum maxime odio. In nesciunt mollitia quo reprehenderit natus qui soluta sequi."),
+          goodsRestrictions = Some("Lorem ipsum dolor sit amet. Sed internos corporis qui quod ipsum sit saepe dolores ab quas similique ut commodi tempora et facilis porro ut officiis nihil.\n\nUt eveniet assumenda sit quod fugit ut quae illo est amet iste. Ab nulla quia aut ipsam cumque aut aspernatur enim hic maiores voluptas aut dolores repudiandae eum maxime odio. In nesciunt mollitia quo reprehenderit natus qui soluta sequi."),
+          saleConditions = Some("Lorem ipsum dolor sit amet. Sed internos corporis qui quod ipsum sit saepe dolores ab quas similique ut commodi tempora et facilis porro ut officiis nihil.")
         ),
         goodsDetails = GoodsDetails(
-          goodsName = "The name of the goods",
+          goodsName = "The name for the goods",
           goodsDescription = "A short description of the goods",
           envisagedCommodityCode = Some("070190"),
-          knownLegalProceedings = Some("Information about some known legal proceedings"),
-          confidentialInformation = Some("confidential information")
+          knownLegalProceedings = Some("Lorem ipsum dolor sit amet. Sed internos corporis qui quod ipsum sit saepe dolores ab quas similique ut commodi tempora et facilis porro ut officiis nihil.\n\nUt eveniet assumenda sit quod fugit ut quae illo est amet iste. Ab nulla quia aut ipsam cumque aut aspernatur enim hic maiores voluptas aut dolores repudiandae eum maxime odio. In nesciunt mollitia quo reprehenderit natus qui soluta sequi."),
+          confidentialInformation = Some("Some confidential information")
         ),
         attachments = Nil,
         submissionReference = "submissionReference",

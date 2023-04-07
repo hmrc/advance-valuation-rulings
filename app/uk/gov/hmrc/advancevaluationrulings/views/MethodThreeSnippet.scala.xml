@@ -1,0 +1,13 @@
+@import uk.gov.hmrc.advancevaluationrulings.models.application.MethodThree
+
+@this(
+    line: Line
+)
+
+@(method: MethodThree)(implicit messages: Messages)
+
+@line(messages("pdf.method"), messages("pdf.method.3"))
+
+@line(messages("pdf.whyNotOtherMethods.3"), method.whyNotOtherMethods)
+
+@line(messages("pdf.previousSimilarGoods"), method.previousSimilarGoods)

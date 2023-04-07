@@ -1,0 +1,15 @@
+@import uk.gov.hmrc.advancevaluationrulings.models.application.MethodSix
+
+@this(
+    line: Line
+)
+
+@(method: MethodSix)(implicit messages: Messages)
+
+@line(messages("pdf.method"), messages("pdf.method.6"))
+
+@line(messages("pdf.whyNotOtherMethods.6"), method.whyNotOtherMethods)
+
+@line(messages("pdf.adaptedMethod"), messages(s"pdf.adaptedMethod.${method.adaptedMethod.toString}"))
+
+@line(messages("pdf.valuationDescription"), method.valuationDescription)

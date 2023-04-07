@@ -1,35 +1,35 @@
 @import uk.gov.hmrc.advancevaluationrulings.models.application.MethodOne
 
 @this(
-    goodsLine: GoodsLine
+    line: Line
 )
 
 @(method: MethodOne)(implicit messages: Messages)
 
-@goodsLine(messages("pdf.method"), messages("pdf.method.1"))
+@line(messages("pdf.method"), messages("pdf.method.1"))
 
-@goodsLine(messages("pdf.saleInvolved"), messages("pdf.yes"))
+@line(messages("pdf.saleInvolved"), messages("pdf.yes"))
 
 @method.saleBetweenRelatedParties.map { x =>
-    @goodsLine(messages("pdf.saleBetweenRelatedParties"), messages("pdf.yes"))
+    @line(messages("pdf.saleBetweenRelatedParties"), messages("pdf.yes"))
 
-    @goodsLine(messages("pdf.saleBetweenRelatedPartiesDescription"), x)
+    @line(messages("pdf.saleBetweenRelatedPartiesDescription"), x)
 }.getOrElse {
-    @goodsLine(messages("pdf.saleBetweenRelatedParties"), messages("pdf.no"))
+    @line(messages("pdf.saleBetweenRelatedParties"), messages("pdf.no"))
 }
 
 @method.goodsRestrictions.map { x =>
-    @goodsLine(messages("pdf.goodsRestrictions"), messages("pdf.yes"))
+    @line(messages("pdf.goodsRestrictions"), messages("pdf.yes"))
 
-    @goodsLine(messages("pdf.goodsRestrictionsDescription"), x)
+    @line(messages("pdf.goodsRestrictionsDescription"), x)
 }.getOrElse {
-    @goodsLine(messages("pdf.goodsRestrictions"), messages("pdf.no"))
+    @line(messages("pdf.goodsRestrictions"), messages("pdf.no"))
 }
 
 @method.saleConditions.map { x =>
-    @goodsLine(messages("pdf.saleConditions"), messages("pdf.yes"))
+    @line(messages("pdf.saleConditions"), messages("pdf.yes"))
 
-    @goodsLine(messages("pdf.saleConditionsDescription"), x)
+    @line(messages("pdf.saleConditionsDescription"), x)
 }.getOrElse {
-    @goodsLine(messages("pdf.saleConditions"), messages("pdf.no"))
+    @line(messages("pdf.saleConditions"), messages("pdf.no"))
 }

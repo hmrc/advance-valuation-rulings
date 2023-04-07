@@ -1,34 +1,44 @@
+@import java.time.format.DateTimeFormatter
+@import java.time.ZoneId
 @import uk.gov.hmrc.advancevaluationrulings.models.application.Application
 
 @this(
     header: PageHeader,
     footer: PageFooter,
-    stackedLine: StackedLine
+    line: Line,
+    traderDetail: TraderDetail,
+    agentDetail: AgentDetail
 )
 
 @(application: Application)(implicit messages: Messages)
 
 <fo:page-sequence master-reference="main">
 
-    @header(isH1 = true)
+    @header()
 
     @footer()
 
-    <fo:flow flow-name="xsl-region-body" font-size="12pt" text-align="left">
+    <fo:flow flow-name="xsl-region-body" font-size="11pt" text-align="left">
 
         <fo:block-container>
-            <fo:block>
-                @stackedLine(messages("pdf.registeredEori"), application.applicantEori)
 
-                @stackedLine(messages("pdf.registeredBusinessName"), application.trader.businessName)
+            <fo:block role="H2" id="application-details" font-size="18pt" font-weight="bold" margin-bottom="0.5cm">
 
-                <fo:block margin-bottom="5mm" keep-together="always">
-                    <fo:block width="8cm" wrap-option="wrap" font-weight="bold">@messages("pdf.registeredBusinessAddress")</fo:block>
-                    @application.trader.addressLines.map { x =>
-                        <fo:block width="8cm" wrap-option="wrap">@(x)</fo:block>
-                    }
-                </fo:block>
+                @messages("pdf.applicationSummary")
             </fo:block>
+
+            @line(messages("pdf.traderEori"), application.trader.eori)
+
+            @line(messages("pdf.applicationId"), application.id.toString)
+
+            @line(messages("pdf.submitted"), DateTimeFormatter.ofPattern("d MMMM yyyy").withZone(ZoneId.systemDefault()).format(application.created))
+
+            @traderDetail(application)
+
+            @application.agent.map { agent =>
+                @agentDetail(agent, application.contact)
+            }
+
         </fo:block-container>
     </fo:flow>
 
