@@ -19,7 +19,6 @@ package uk.gov.hmrc.advancevaluationrulings.controllers
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.advancevaluationrulings.controllers.actions.IdentifierAction
-import uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger
 import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
 import uk.gov.hmrc.advancevaluationrulings.services.TraderDetailsService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -28,13 +27,11 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton()
-class ValuationRulingsController @Inject() (
+class TraderDetailsController @Inject()(
   cc: ControllerComponents,
   traderDetailsService: TraderDetailsService,
   identify: IdentifierAction
 ) extends BackendController(cc) {
-
-  protected lazy val logger: RequestAwareLogger = new RequestAwareLogger(this.getClass)
 
   implicit val ec: ExecutionContext = cc.executionContext
 

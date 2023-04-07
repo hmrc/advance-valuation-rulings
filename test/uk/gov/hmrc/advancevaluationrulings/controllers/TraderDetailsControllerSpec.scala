@@ -36,7 +36,7 @@ import uk.gov.hmrc.auth.core.{AuthConnector, Enrolment, EnrolmentIdentifier, Enr
 
 import scala.concurrent.Future
 
-class ValuationRulingsControllerSpec extends AnyFreeSpec with Matchers with OptionValues with ModelGenerators with MockitoSugar with BeforeAndAfterEach {
+class TraderDetailsControllerSpec extends AnyFreeSpec with Matchers with OptionValues with ModelGenerators with MockitoSugar with BeforeAndAfterEach {
 
   private val mockConnector = mock[ETMPConnector]
   private val mockAuthConnector = mock[AuthConnector]
@@ -74,7 +74,7 @@ class ValuationRulingsControllerSpec extends AnyFreeSpec with Matchers with Opti
       when(mockConnector.getSubscriptionDetails(eqTo(etmpRequest))(any())).thenReturn(Future.successful(etmpResponse))
 
       val request =
-        FakeRequest(GET, routes.ValuationRulingsController.retrieveTraderDetails("foo", "eori").url)
+        FakeRequest(GET, routes.TraderDetailsController.retrieveTraderDetails("foo", "eori").url)
 
       val result = route(app, request).value
 

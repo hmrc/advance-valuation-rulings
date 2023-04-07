@@ -1,6 +1,6 @@
 # microservice specific routes
 
-GET        /trader-details/:acknowledgementReference/:eoriNumber             uk.gov.hmrc.advancevaluationrulings.controllers.ValuationRulingsController.retrieveTraderDetails(acknowledgementReference: String, eoriNumber: String)
+GET        /trader-details/:acknowledgementReference/:eoriNumber             uk.gov.hmrc.advancevaluationrulings.controllers.TraderDetailsController.retrieveTraderDetails(acknowledgementReference: String, eoriNumber: String)
 
 GET         /applications                   uk.gov.hmrc.advancevaluationrulings.controllers.ApplicationController.summaries
 GET         /applications/:applicationId    uk.gov.hmrc.advancevaluationrulings.controllers.ApplicationController.get(applicationId: ApplicationId)
