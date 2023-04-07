@@ -16,20 +16,14 @@
 
 package generators
 
-import java.time.ZoneId
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
-import java.util.UUID
-
-import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
+import org.scalacheck.{Arbitrary, Gen}
 import uk.gov.hmrc.advancevaluationrulings.models.application.ApplicationId
 import uk.gov.hmrc.advancevaluationrulings.models.common._
-import uk.gov.hmrc.advancevaluationrulings.models.errors.{ErrorDetail, ETMPError, SourceFaultDetail}
 import uk.gov.hmrc.advancevaluationrulings.models.etmp._
-
-import org.scalacheck.{Arbitrary, Gen}
 import wolfendale.scalacheck.regexp.RegexpGen
+
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 trait ModelGenerators extends Generators {
 
@@ -47,25 +41,6 @@ trait ModelGenerators extends Generators {
     acknowledgementReference <- stringsWithMaxLength(32)
     eori                     <- eoriNumberGen
   } yield Query(regime, acknowledgementReference, taxPayerID = None, EORI = Option(eori))
-
-  def sourceFaultDetail: Gen[SourceFaultDetail] =
-    Gen.listOf(stringsWithMaxLength(10)).map(SourceFaultDetail(_))
-
-  def errorDetailGen: Gen[ErrorDetail] = for {
-    timestamp         <- localDateTimeGen
-    correlationId     <- stringsWithMaxLength(36)
-    errorCode         <- intsBelowValue(999)
-    source            <- stringsWithMaxLength(10)
-    errorMessage      <- Gen.option(stringsWithMaxLength(35))
-    sourceFaultDetail <- Gen.option(sourceFaultDetail)
-  } yield ErrorDetail(
-    timestamp,
-    correlationId,
-    errorCode.toString,
-    source,
-    errorMessage,
-    sourceFaultDetail
-  )
 
   def CDSEstablishmentAddressGen: Gen[CDSEstablishmentAddress] = for {
     streetAndNumber <- stringsWithMaxLength(70)
@@ -109,29 +84,9 @@ trait ModelGenerators extends Generators {
   def subscriptionDisplayResponseGen: Gen[SubscriptionDisplayResponse] =
     responseDetailGen.map(SubscriptionDisplayResponse(_))
 
-  def ETMPErrorGen: Gen[ETMPError] = errorDetailGen.map(ETMPError(_))
-
   def ETMPSubscriptionDisplayResponseGen: Gen[ETMPSubscriptionDisplayResponse] =
     subscriptionDisplayResponseGen.map(ETMPSubscriptionDisplayResponse(_))
 
-  def applicationContactsDetailsGen: Gen[ApplicationContactDetails] = for {
-    name  <- stringsWithMaxLength(512)
-    email <- RegexpGen.from("^\\w+@[a-zA-Z_]+?\\.[a-zA-Z]{2,3}$")
-    phone <- RegexpGen.from("^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$")
-  } yield ApplicationContactDetails(
-    name = name,
-    email = email,
-    phone = phone
-  )
-
-  def supportingDocumentsGen: Gen[SupportingDocuments] = for {
-    fileName       <- stringsWithMaxLength(512)
-    downloadUrl    <- stringsWithMaxLength(512)
-    isConfidential <- Arbitrary.arbitrary[Boolean]
-    id              = UUID.randomUUID.toString
-  } yield SupportingDocuments(
-    files = Map(id -> SupportingDocument(fileName, downloadUrl, isConfidential))
-  )
 
   def registeredDetailsCheckGen: Gen[RegisteredDetailsCheck] = for {
     registeredDetailsAreCorrect <- Arbitrary.arbitrary[Boolean]
@@ -148,51 +103,4 @@ trait ModelGenerators extends Generators {
       postalCode = responseDetail.CDSEstablishmentAddress.postalCode
     )
   }
-
-  def userAnswersGen: Gen[UserAnswers] =
-    for {
-      importGoods                              <- Arbitrary.arbitrary[Boolean]
-      registeredDetailsCheck                   <- registeredDetailsCheckGen
-      applicationContactDetails                <- Gen.option(applicationContactsDetailsGen)
-      valuationMethod                          <- Gen.oneOf(ValuationMethod.values)
-      isThereASaleInvolved                     <- Gen.option(Arbitrary.arbitrary[Boolean])
-      isSaleBetweenRelatedParties              <- Gen.option(Arbitrary.arbitrary[Boolean])
-      areThereRestrictionsOnTheGoods           <- Gen.option(Arbitrary.arbitrary[Boolean])
-      isTheSaleSubjectToConditions             <- Gen.option(Arbitrary.arbitrary[Boolean])
-      descriptionOfGoods                       <- stringsWithMaxLength(512)
-      hasCommodityCode                         <- Arbitrary.arbitrary[Boolean]
-      commodityCode                            <- Gen.option(intsBelowValue(99999))
-      haveTheGoodsBeenSubjectToLegalChallenges <- Arbitrary.arbitrary[Boolean]
-      hasConfidentialInformation               <- Arbitrary.arbitrary[Boolean]
-      doYouWantToUploadDocuments               <- Arbitrary.arbitrary[Boolean]
-      supportingDocuments                      <- Gen.option(supportingDocumentsGen)
-    } yield UserAnswers(
-      importGoods = importGoods,
-      checkRegisteredDetails = registeredDetailsCheck,
-      applicationContactDetails = applicationContactDetails,
-      valuationMethod = valuationMethod,
-      isThereASaleInvolved = isThereASaleInvolved,
-      isSaleBetweenRelatedParties = isSaleBetweenRelatedParties,
-      areThereRestrictionsOnTheGoods = areThereRestrictionsOnTheGoods,
-      isTheSaleSubjectToConditions = isTheSaleSubjectToConditions,
-      descriptionOfGoods = descriptionOfGoods,
-      hasCommodityCode = hasCommodityCode,
-      commodityCode = commodityCode.map(_.toString),
-      haveTheGoodsBeenSubjectToLegalChallenges = haveTheGoodsBeenSubjectToLegalChallenges,
-      hasConfidentialInformation = hasConfidentialInformation,
-      doYouWantToUploadDocuments = doYouWantToUploadDocuments,
-      uploadSupportingDocument = supportingDocuments
-    )
-
-  def valuationRulingsApplicationGen: Gen[ValuationRulingsApplication] =
-    for {
-      userAnswers       <- userAnswersGen
-      applicationNumber <- stringsWithMaxLength(32)
-      localDateTime     <- localDateTimeGen
-    } yield ValuationRulingsApplication(
-      data = userAnswers,
-      applicationNumber = applicationNumber,
-      lastUpdated = localDateTime.toInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.MILLIS)
-    )
-
 }

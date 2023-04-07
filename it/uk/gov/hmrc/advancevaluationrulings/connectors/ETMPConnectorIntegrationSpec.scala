@@ -16,11 +16,9 @@
 
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
-import play.api.libs.json.Json
-import uk.gov.hmrc.advancevaluationrulings.models.errors.{JsonSerializationError, ParseError}
-import uk.gov.hmrc.advancevaluationrulings.utils.{BaseIntegrationSpec, WireMockHelper}
-
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import play.api.libs.json.Json
+import uk.gov.hmrc.advancevaluationrulings.utils.{BaseIntegrationSpec, WireMockHelper}
 
 class ETMPConnectorIntegrationSpec extends BaseIntegrationSpec with WireMockHelper {
 
@@ -39,7 +37,7 @@ class ETMPConnectorIntegrationSpec extends BaseIntegrationSpec with WireMockHelp
     resetWireMock()
   }
 
-  private val testETMPConnector = new DefaultETMPConnector(httpClient, appConfig)
+  private val testETMPConnector = new ETMPConnector(httpClient, appConfig)
 
   "DefaultETMPConnector" should {
     "get subscription details" in {
@@ -63,9 +61,9 @@ class ETMPConnectorIntegrationSpec extends BaseIntegrationSpec with WireMockHelp
     }
 
     "handle subscription details error response" in {
-      ScalaCheckPropertyChecks.forAll(queryGen, ETMPErrorGen) {
-        (etmpQuery, errorResponse) =>
-          val expectedResponse = Json.stringify(Json.toJson(errorResponse))
+      ScalaCheckPropertyChecks.forAll(queryGen) {
+        etmpQuery =>
+          val expectedResponse = "foo"
           stubGet(
             etmpQueryUrl(etmpQuery),
             statusCode = 500,
