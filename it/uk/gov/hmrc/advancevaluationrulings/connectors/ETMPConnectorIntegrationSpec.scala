@@ -16,11 +16,9 @@
 
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
-import play.api.libs.json.Json
-import uk.gov.hmrc.advancevaluationrulings.models.errors.{JsonSerializationError, ParseError}
-import uk.gov.hmrc.advancevaluationrulings.utils.{BaseIntegrationSpec, WireMockHelper}
-
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import play.api.libs.json.Json
+import uk.gov.hmrc.advancevaluationrulings.utils.{BaseIntegrationSpec, WireMockHelper}
 
 class ETMPConnectorIntegrationSpec extends BaseIntegrationSpec with WireMockHelper {
 
@@ -39,7 +37,7 @@ class ETMPConnectorIntegrationSpec extends BaseIntegrationSpec with WireMockHelp
     resetWireMock()
   }
 
-  private val testETMPConnector = new DefaultETMPConnector(httpClient, appConfig)
+  private val testETMPConnector = new ETMPConnector(httpClient, appConfig)
 
   "DefaultETMPConnector" should {
     "get subscription details" in {
@@ -56,16 +54,16 @@ class ETMPConnectorIntegrationSpec extends BaseIntegrationSpec with WireMockHelp
             requestHeaders
           )
 
-          val response = testETMPConnector.getSubscriptionDetails(request).value.futureValue
+          val response = testETMPConnector.getSubscriptionDetails(request).futureValue
 
-          response.value mustBe successResponse
+          response mustBe successResponse
       }
     }
 
     "handle subscription details error response" in {
-      ScalaCheckPropertyChecks.forAll(queryGen, ETMPErrorGen) {
-        (etmpQuery, errorResponse) =>
-          val expectedResponse = Json.stringify(Json.toJson(errorResponse))
+      ScalaCheckPropertyChecks.forAll(queryGen) {
+        etmpQuery =>
+          val expectedResponse = "foo"
           stubGet(
             etmpQueryUrl(etmpQuery),
             statusCode = 500,
@@ -73,15 +71,13 @@ class ETMPConnectorIntegrationSpec extends BaseIntegrationSpec with WireMockHelp
             requestHeaders
           )
 
-          val response = testETMPConnector.getSubscriptionDetails(etmpQuery).value.futureValue
-
-          response.left.value mustBe errorResponse
+          testETMPConnector.getSubscriptionDetails(etmpQuery).failed.futureValue
       }
     }
 
     forAll(statusCodes) {
       statusCode =>
-        s"return a ParseError when unable to parse ETMP response with statusCode $statusCode" in {
+        s"return a failed future when unable to parse ETMP response with statusCode $statusCode" in {
           ScalaCheckPropertyChecks.forAll(queryGen) {
             etmpQuery =>
               stubGet(
@@ -91,13 +87,11 @@ class ETMPConnectorIntegrationSpec extends BaseIntegrationSpec with WireMockHelp
                 requestHeaders
               )
 
-              val response = testETMPConnector.getSubscriptionDetails(etmpQuery).value.futureValue
-
-              response.left.value mustBe a[ParseError]
+              testETMPConnector.getSubscriptionDetails(etmpQuery).failed.futureValue
           }
         }
 
-        s"return a JsonSerializationError when ETMP returns an invalid json with statusCode $statusCode" in {
+        s"return a failed future when ETMP returns an invalid json with statusCode $statusCode" in {
           ScalaCheckPropertyChecks.forAll(queryGen) {
             etmpQuery =>
               stubGet(
@@ -107,9 +101,7 @@ class ETMPConnectorIntegrationSpec extends BaseIntegrationSpec with WireMockHelp
                 requestHeaders
               )
 
-              val response = testETMPConnector.getSubscriptionDetails(etmpQuery).value.futureValue
-
-              response.left.value mustBe a[JsonSerializationError]
+              testETMPConnector.getSubscriptionDetails(etmpQuery).failed.futureValue
           }
         }
     }

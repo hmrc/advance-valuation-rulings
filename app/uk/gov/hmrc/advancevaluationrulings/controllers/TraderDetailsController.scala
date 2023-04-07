@@ -16,27 +16,22 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
-import javax.inject.{Inject, Singleton}
-
-import scala.concurrent.ExecutionContext
-
-import play.api.libs.json.{Json, JsValue}
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger
-import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
+import uk.gov.hmrc.advancevaluationrulings.controllers.actions.IdentifierAction
 import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
-import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope._
-import uk.gov.hmrc.advancevaluationrulings.services.{TraderDetailsService, ValuationRulingsService}
+import uk.gov.hmrc.advancevaluationrulings.services.TraderDetailsService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.ExecutionContext
+
 @Singleton()
-class ValuationRulingsController @Inject() (
+class TraderDetailsController @Inject()(
   cc: ControllerComponents,
   traderDetailsService: TraderDetailsService,
-  valuationRulingsService: ValuationRulingsService
+  identify: IdentifierAction
 ) extends BackendController(cc) {
-
-  protected lazy val logger: RequestAwareLogger = new RequestAwareLogger(this.getClass)
 
   implicit val ec: ExecutionContext = cc.executionContext
 
@@ -44,25 +39,13 @@ class ValuationRulingsController @Inject() (
     acknowledgementReference: String,
     eoriNumber: String
   ): Action[AnyContent] =
-    Action.async {
+    identify.async {
       implicit request =>
         traderDetailsService
           .getTraderDetails(
             AcknowledgementReference(acknowledgementReference),
             eoriNumber = EoriNumber(eoriNumber)
           )
-          .toResult
-    }
-
-  def submitAnswers(): Action[JsValue] =
-    Action.async(parse.json) {
-      implicit request =>
-        extractFromJson[ValuationRulingsApplication] {
-          rulingsApplication =>
-            logger.debug(s"User answers: ${Json.prettyPrint(Json.toJson(rulingsApplication))}")
-            valuationRulingsService
-              .submitApplication(rulingsApplication)
-              .toResult
-        }
+          .map(x => Ok(Json.toJson(x)))
     }
 }
