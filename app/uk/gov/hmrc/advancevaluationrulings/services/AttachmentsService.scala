@@ -18,8 +18,8 @@ package uk.gov.hmrc.advancevaluationrulings.services
 
 import akka.stream.Materializer
 import cats.implicits._
-import uk.gov.hmrc.advancevaluationrulings.connectors.{DraftAttachment, DraftAttachmentsConnector}
-import uk.gov.hmrc.advancevaluationrulings.models.Done
+import uk.gov.hmrc.advancevaluationrulings.connectors.DraftAttachmentsConnector
+import uk.gov.hmrc.advancevaluationrulings.models.application.{ApplicationId, DraftAttachment}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client.play.Implicits._
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
@@ -34,17 +34,19 @@ class AttachmentsService @Inject() (
                                      objectStoreClient: PlayObjectStoreClient
                                    )(implicit ec: ExecutionContext, mat: Materializer) {
 
-  def copyAttachment(applicationId: String, path: String)(implicit hc: HeaderCarrier): Future[Done] =
+  def copyAttachment(applicationId: ApplicationId, path: String)(implicit hc: HeaderCarrier): Future[Path] =
     for {
       attachment <- draftAttachmentsConnector.get(path)
-      _          <- putAttachment(applicationId, path, attachment)
-    } yield Done
+      path       <- putAttachment(applicationId.toString, path, attachment)
+    } yield path
 
-  private def putAttachment(applicationId: String, path: String, attachment: DraftAttachment)(implicit hc: HeaderCarrier): Future[Done] =
+  private def putAttachment(applicationId: String, path: String, attachment: DraftAttachment)(implicit hc: HeaderCarrier): Future[Path] = {
+    val objectStorePath = Path.Directory(s"attachments/$applicationId").file(Path.File(path).fileName)
     objectStoreClient.putObject(
-      path = Path.Directory(s"attachments/$applicationId").file(Path.File(path).fileName),
+      path = objectStorePath,
       content = attachment.content,
       contentType = Some(attachment.contentType),
       contentMd5 = Some(Md5Hash(attachment.contentMd5))
-    ).as(Done)
+    ).as(objectStorePath)
+  }
 }

@@ -27,6 +27,7 @@ import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.repositories.{ApplicationRepository, CounterRepository}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.objectstore.client.Path
 
 import java.time.{Clock, Instant, ZoneId}
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -38,6 +39,7 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
   private val mockApplicationRepo = mock[ApplicationRepository]
   private val mockDmsSubmissionService = mock[DmsSubmissionService]
   private val mockSubmissionReferenceService = mock[SubmissionReferenceService]
+  private val mockAttachmentsService = mock[AttachmentsService]
   private val fixedInstant = Instant.now
   private val fixedClock = Clock.fixed(fixedInstant, ZoneId.systemDefault())
   private val trader = TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None)
@@ -47,7 +49,7 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
   private val contact = ContactDetails("name", "email", None)
   private val hc: HeaderCarrier = HeaderCarrier()
 
-  private val service = new ApplicationService(mockCounterRepo, mockApplicationRepo, mockDmsSubmissionService, mockSubmissionReferenceService, fixedClock)
+  private val service = new ApplicationService(mockCounterRepo, mockApplicationRepo, mockDmsSubmissionService, mockSubmissionReferenceService, mockAttachmentsService, fixedClock)
 
   override def beforeEach(): Unit = {
     reset(mockCounterRepo, mockApplicationRepo, mockDmsSubmissionService, mockSubmissionReferenceService)
@@ -98,13 +100,13 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
       verify(mockDmsSubmissionService, times(1)).submitApplication(eqTo(expectedApplication), any())(any())
     }
 
-    "must convert attachments, giving them unique ids" in {
+    "must convert attachments, giving them unique ids and copying the contents from the frontend" in {
 
       val id = 123L
       val applicantEori = "applicantEori"
 
-      val attachmentRequest1 = AttachmentRequest("name", None, "url", Privacy.Public, "mime", 1L)
-      val attachmentRequest2 = AttachmentRequest("name", None, "url", Privacy.Public, "mime", 2L)
+      val attachmentRequest1 = AttachmentRequest("name1", None, "url1", Privacy.Public, "application/pdf", 1L)
+      val attachmentRequest2 = AttachmentRequest("name2", None, "url2", Privacy.Public, "image/jpeg", 2L)
       val attachmentId1 = 1L
       val attachmentId2 = 2L
 
@@ -115,8 +117,12 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
       )
       when(mockSubmissionReferenceService.random()).thenReturn(submissionReference)
       when(mockApplicationRepo.set(any())).thenReturn(Future.successful(Done))
+      when(mockAttachmentsService.copyAttachment(any(), any())(any()))
+        .thenReturn(
+          Future.successful(Path.File("attachments/applicationId/url1")),
+          Future.successful(Path.File("attachments/applicationId/url2"))
+        )
       when(mockDmsSubmissionService.submitApplication(any(), any())(any())).thenReturn(Future.successful(Done))
-
 
       val request = ApplicationRequest(
         draftId = "foo",
@@ -137,8 +143,8 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Seq(
-          Attachment(attachmentId1, "name", None, "url", Privacy.Public, "mime", 1L),
-          Attachment(attachmentId2, "name", None, "url", Privacy.Public, "mime", 2L)
+          Attachment(attachmentId1, "name1", None, "attachments/applicationId/url1", Privacy.Public, "application/pdf", 1L),
+          Attachment(attachmentId2, "name2", None, "attachments/applicationId/url2", Privacy.Public, "image/jpeg", 2L)
         ),
         submissionReference = submissionReference,
         created = fixedInstant,
@@ -151,6 +157,8 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
       verify(mockCounterRepo, times(1)).nextId(eqTo(CounterId.ApplicationId))
       verify(mockApplicationRepo, times(1)).set(eqTo(expectedApplication))
       verify(mockCounterRepo, times(2)).nextId(eqTo(CounterId.AttachmentId))
+      verify(mockAttachmentsService, times(1)).copyAttachment(eqTo(ApplicationId(id)), eqTo("url1"))(any())
+      verify(mockAttachmentsService, times(1)).copyAttachment(eqTo(ApplicationId(id)), eqTo("url2"))(any())
     }
   }
 }

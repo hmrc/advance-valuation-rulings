@@ -16,28 +16,36 @@
 
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
+import cats.implicits._
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import config.Service
-import play.api.Configuration
+import play.api.{Configuration, Logging}
 import play.api.http.Status.ACCEPTED
 import play.api.mvc.MultipartFormData
 import uk.gov.hmrc.advancevaluationrulings.models.Done
+import uk.gov.hmrc.advancevaluationrulings.models.application.Attachment
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
+import uk.gov.hmrc.objectstore.client.Path
+import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
+import uk.gov.hmrc.objectstore.client.play.Implicits._
 
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.{Instant, LocalDateTime, ZoneOffset}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NoStackTrace
+import DmsSubmissionConnector._
 
 @Singleton
 class DmsSubmissionConnector @Inject() (
                                          configuration: Configuration,
+                                         objectStoreClient: PlayObjectStoreClient,
                                          httpClient: HttpClientV2
-                                       )(implicit ec: ExecutionContext) {
+                                       )(implicit ec: ExecutionContext) extends Logging {
 
   private val internalAuthToken: String = configuration.get[String]("internal-auth.token")
 
@@ -50,7 +58,7 @@ class DmsSubmissionConnector @Inject() (
   private val classificationType: String = dmsSubmissionConfig.get[String]("classificationType")
   private val businessArea: String = dmsSubmissionConfig.get[String]("businessArea")
 
-  def submitApplication(eori: String, pdf: Source[ByteString, _], timestamp: Instant, submissionReference: String)(implicit hc: HeaderCarrier): Future[Done] = {
+  def submitApplication(eori: String, pdf: Source[ByteString, _], timestamp: Instant, submissionReference: String, attachments: Seq[Attachment])(implicit hc: HeaderCarrier): Future[Done] = {
 
     val dateOfReceipt = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(
       LocalDateTime.ofInstant(timestamp.truncatedTo(ChronoUnit.SECONDS), ZoneOffset.UTC)
@@ -76,18 +84,41 @@ class DmsSubmissionConnector @Inject() (
       )
     )
 
-    httpClient.post(url"$dmsSubmission/dms-submission/submit")
-      .setHeader("Authorization" -> internalAuthToken)
-      .withBody(
-        Source(
-          dataParts ++ fileParts
-        )
-      ).execute[HttpResponse].flatMap { response =>
+    val attachmentParts = attachments.traverse { attachment =>
+      objectStoreClient.getObject(Path.File(attachment.location)).flatMap {
+        _.map { o =>
+          Future.successful(MultipartFormData.FilePart(
+            key = "attachment",
+            filename = o.location.fileName,
+            contentType = Some(o.metadata.contentType),
+            ref = o.content
+          ))
+        }.getOrElse(Future.failed(AttachmentNotFoundException(attachment.location)))
+      }
+    }
+
+    attachmentParts.flatMap { attachmentParts =>
+      httpClient.post(url"$dmsSubmission/dms-submission/submit")
+        .setHeader("Authorization" -> internalAuthToken)
+        .withBody(
+          Source(
+            dataParts ++ fileParts ++ attachmentParts
+          )
+        ).execute[HttpResponse].flatMap { response =>
         if (response.status == ACCEPTED) {
           Future.successful(Done)
         } else {
+          logger.warn(s"dms-submission failed with response body: ${response.body}")
           Future.failed(UpstreamErrorResponse("Unexpected response from dms-submission", response.status, reportAs = 500))
         }
       }
+    }
+  }
+}
+
+object DmsSubmissionConnector {
+
+  final case class AttachmentNotFoundException(file: String) extends Exception with NoStackTrace {
+    override def getMessage: String = super.getMessage
   }
 }
