@@ -111,7 +111,7 @@ class DmsSubmissionServiceSpec extends AnyFreeSpec with Matchers with ScalaFutur
       service.submitApplication(application, submissionReference)(hc).futureValue
 
       verify(mockFopService).render(eqTo(expectedXml))
-      verify(mockDmsSubmissionConnector).submitApplication(eqTo("applicantEori"), sourceCaptor.capture(), eqTo(application.created), eqTo(submissionReference), any())(eqTo(hc))
+      verify(mockDmsSubmissionConnector).submitApplication(eqTo("applicantEori"), sourceCaptor.capture(), eqTo(application.created), eqTo(submissionReference), eqTo(application.attachments))(eqTo(hc))
 
       val result = sourceCaptor.getValue().toMat(Sink.fold(ByteString.emptyByteString)(_ ++ _))(Keep.right).run().futureValue
 
