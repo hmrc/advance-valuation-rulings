@@ -3,7 +3,7 @@ import sbt._
 object AppDependencies {
 
   private val AllTestScope     = "test, it"
-  private val bootstrapVersion = "7.14.0"
+  private val bootstrapVersion = "7.15.0"
   private val hmrcMongoVersion = "1.1.0"
 
   val compile: Seq[ModuleID] = Seq(
@@ -12,6 +12,7 @@ object AppDependencies {
     "com.beachape"            %% "enumeratum-play-json"         % "1.6.3",
     "org.typelevel"           %% "cats-core"                    % "2.9.0",
     "uk.gov.hmrc"             %% "internal-auth-client-play-28" % "1.2.0",
+    "uk.gov.hmrc.objectstore" %% "object-store-client-play-28"  % "1.0.0",
     "org.apache.xmlgraphics"  %  "fop"                          % "2.8"
   )
 

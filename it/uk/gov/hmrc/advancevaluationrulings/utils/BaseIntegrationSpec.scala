@@ -73,9 +73,9 @@ trait BaseIntegrationSpec
 
   def etmpQueryUrl(query: Query): String =
     s"$ETMPEndpoint?" +
-      s"regime=${URLEncoder.encode(query.regime.entryName, StandardCharsets.UTF_8)}" +
-      s"&acknowledgementReference=${URLEncoder.encode(query.acknowledgementReference, StandardCharsets.UTF_8)}" +
-      s"&EORI=${URLEncoder.encode(query.EORI.value, StandardCharsets.UTF_8)}"
+      s"regime=${URLEncoder.encode(query.regime.entryName, "UTF-8")}" +
+      s"&acknowledgementReference=${URLEncoder.encode(query.acknowledgementReference, "UTF-8")}" +
+      s"&EORI=${URLEncoder.encode(query.EORI.value, "UTF-8")}"
 
   val statusCodes: TableFor1[Int] = Table(
     "statusCodes",
@@ -91,6 +91,6 @@ trait BaseIntegrationSpec
   )
 
   def traderDetailsRequestUrl(acknowledgementReference: String, eoriNumber: String): String =
-    s"$traderDetailsEndpoint/${URLEncoder.encode(acknowledgementReference, StandardCharsets.UTF_8)}/${URLEncoder
-        .encode(eoriNumber, StandardCharsets.UTF_8)}"
+    s"$traderDetailsEndpoint/${URLEncoder.encode(acknowledgementReference, "UTF-8")}/${URLEncoder
+        .encode(eoriNumber, "UTF-8")}"
 }

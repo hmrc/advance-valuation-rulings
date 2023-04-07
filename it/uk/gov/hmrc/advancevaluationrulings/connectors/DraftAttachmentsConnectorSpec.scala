@@ -3,6 +3,7 @@ package uk.gov.hmrc.advancevaluationrulings.connectors
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
+import cats.implicits.toFoldableOps
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.Fault
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
@@ -12,10 +13,11 @@ import org.scalatest.matchers.must.Matchers
 import play.api.Application
 import play.api.http.Status.{NOT_FOUND, OK}
 import play.api.inject.guice.GuiceApplicationBuilder
+import uk.gov.hmrc.advancevaluationrulings.connectors.DraftAttachmentsConnector.DraftAttachmentsConnectorException
 import uk.gov.hmrc.advancevaluationrulings.utils.WireMockHelper
 import uk.gov.hmrc.http.HeaderCarrier
 
-class AttachmentsConnectorSpec
+class DraftAttachmentsConnectorSpec
   extends AnyFreeSpec
     with WireMockHelper
     with ScalaFutures
@@ -49,7 +51,7 @@ class AttachmentsConnectorSpec
       )
       .build()
 
-  private lazy val connector: AttachmentsConnector = app.injector.instanceOf[AttachmentsConnector]
+  private lazy val connector: DraftAttachmentsConnector = app.injector.instanceOf[DraftAttachmentsConnector]
   private implicit lazy val mat: Materializer = app.injector.instanceOf[Materializer]
 
   "get" - {
@@ -61,15 +63,76 @@ class AttachmentsConnectorSpec
           .willReturn(
             aResponse()
               .withStatus(OK)
+              .withHeader("Content-Type", "application/pdf")
+              .withHeader("Digest", "md5=grtBN0au5C+J3qK1lhT57w==")
               .withBody("Hello, World!")
           )
       )
 
       val result = connector.get("foobar").futureValue
+
+      result.contentType mustEqual "application/pdf"
+      result.contentMd5 mustEqual "grtBN0au5C+J3qK1lhT57w=="
+
+      val content = result.content
         .runWith(Sink.reduce[ByteString](_ ++ _)).futureValue
         .decodeString("UTF-8")
+      content mustEqual "Hello, World!"
+    }
 
-      result mustEqual "Hello, World!"
+    "must fail when the server doesn't return a content-type header" in {
+
+      wireMockServer.stubFor(
+        get(urlPathEqualTo("/attachments/foobar"))
+          .willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withHeader("Digest", "md5=contentMd5")
+              .withBody("Hello, World!")
+          )
+      )
+
+      val error = connector.get("foobar").failed.futureValue
+      error mustBe an[DraftAttachmentsConnectorException]
+
+      error.asInstanceOf[DraftAttachmentsConnectorException].errors.toList must contain only "Content-Type header missing"
+    }
+
+    "must fail when the server doesn't return a digest header" in {
+
+      wireMockServer.stubFor(
+        get(urlPathEqualTo("/attachments/foobar"))
+          .willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withHeader("Content-Type", "application/pdf")
+              .withBody("Hello, World!")
+          )
+      )
+
+      val error = connector.get("foobar").failed.futureValue
+      error mustBe an[DraftAttachmentsConnectorException]
+
+      error.asInstanceOf[DraftAttachmentsConnectorException].errors.toList must contain only "Digest header missing"
+    }
+
+    "must fail when the server returns a digest which is not md5" in {
+
+      wireMockServer.stubFor(
+        get(urlPathEqualTo("/attachments/foobar"))
+          .willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withHeader("Content-Type", "application/pdf")
+              .withHeader("Digest", "sha1=contentMd5")
+              .withBody("Hello, World!")
+          )
+      )
+
+      val error = connector.get("foobar").failed.futureValue
+      error mustBe an[DraftAttachmentsConnectorException]
+
+      error.asInstanceOf[DraftAttachmentsConnectorException].errors.toList must contain only "Digest algorithm must be md5"
     }
 
     "must fail when the server returns NOT_FOUND" in {
