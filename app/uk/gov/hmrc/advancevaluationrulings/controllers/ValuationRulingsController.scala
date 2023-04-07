@@ -17,11 +17,10 @@
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
 import javax.inject.{Inject, Singleton}
-
 import scala.concurrent.ExecutionContext
-
-import play.api.libs.json.{Json, JsValue}
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import uk.gov.hmrc.advancevaluationrulings.controllers.actions.IdentifierAction
 import uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger
 import uk.gov.hmrc.advancevaluationrulings.models.ValuationRulingsApplication
 import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
@@ -33,7 +32,8 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 class ValuationRulingsController @Inject() (
   cc: ControllerComponents,
   traderDetailsService: TraderDetailsService,
-  valuationRulingsService: ValuationRulingsService
+  valuationRulingsService: ValuationRulingsService,
+  identify: IdentifierAction
 ) extends BackendController(cc) {
 
   protected lazy val logger: RequestAwareLogger = new RequestAwareLogger(this.getClass)
@@ -44,14 +44,14 @@ class ValuationRulingsController @Inject() (
     acknowledgementReference: String,
     eoriNumber: String
   ): Action[AnyContent] =
-    Action.async {
+    identify.async {
       implicit request =>
         traderDetailsService
           .getTraderDetails(
             AcknowledgementReference(acknowledgementReference),
             eoriNumber = EoriNumber(eoriNumber)
           )
-          .toResult
+          .map(x => Ok(Json.toJson(x)))
     }
 
   def submitAnswers(): Action[JsValue] =

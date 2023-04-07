@@ -56,9 +56,9 @@ class ETMPConnectorIntegrationSpec extends BaseIntegrationSpec with WireMockHelp
             requestHeaders
           )
 
-          val response = testETMPConnector.getSubscriptionDetails(request).value.futureValue
+          val response = testETMPConnector.getSubscriptionDetails(request).futureValue
 
-          response.value mustBe successResponse
+          response mustBe successResponse
       }
     }
 
@@ -73,15 +73,13 @@ class ETMPConnectorIntegrationSpec extends BaseIntegrationSpec with WireMockHelp
             requestHeaders
           )
 
-          val response = testETMPConnector.getSubscriptionDetails(etmpQuery).value.futureValue
-
-          response.left.value mustBe errorResponse
+          testETMPConnector.getSubscriptionDetails(etmpQuery).failed.futureValue
       }
     }
 
     forAll(statusCodes) {
       statusCode =>
-        s"return a ParseError when unable to parse ETMP response with statusCode $statusCode" in {
+        s"return a failed future when unable to parse ETMP response with statusCode $statusCode" in {
           ScalaCheckPropertyChecks.forAll(queryGen) {
             etmpQuery =>
               stubGet(
@@ -91,13 +89,11 @@ class ETMPConnectorIntegrationSpec extends BaseIntegrationSpec with WireMockHelp
                 requestHeaders
               )
 
-              val response = testETMPConnector.getSubscriptionDetails(etmpQuery).value.futureValue
-
-              response.left.value mustBe a[ParseError]
+              testETMPConnector.getSubscriptionDetails(etmpQuery).failed.futureValue
           }
         }
 
-        s"return a JsonSerializationError when ETMP returns an invalid json with statusCode $statusCode" in {
+        s"return a failed future when ETMP returns an invalid json with statusCode $statusCode" in {
           ScalaCheckPropertyChecks.forAll(queryGen) {
             etmpQuery =>
               stubGet(
@@ -107,9 +103,7 @@ class ETMPConnectorIntegrationSpec extends BaseIntegrationSpec with WireMockHelp
                 requestHeaders
               )
 
-              val response = testETMPConnector.getSubscriptionDetails(etmpQuery).value.futureValue
-
-              response.left.value mustBe a[JsonSerializationError]
+              testETMPConnector.getSubscriptionDetails(etmpQuery).failed.futureValue
           }
         }
     }

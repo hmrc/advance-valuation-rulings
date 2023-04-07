@@ -16,17 +16,40 @@
 
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
-import scala.concurrent.ExecutionContext
-
-import uk.gov.hmrc.advancevaluationrulings.models.common.Envelope.Envelope
+import play.api.http.MimeTypes
+import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
+import uk.gov.hmrc.advancevaluationrulings.models.common.HeaderNames
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.{ETMPSubscriptionDisplayResponse, Query}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 
-trait ETMPConnector {
+import java.time.format.DateTimeFormatter
+import java.time.{LocalDateTime, ZoneOffset}
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
+@Singleton
+class ETMPConnector @Inject()(httpClient: HttpClientV2, appConfig: AppConfig)(implicit ec: ExecutionContext) {
+
+  private val dateFormat: DateTimeFormatter = DateTimeFormatter.RFC_1123_DATE_TIME
 
   def getSubscriptionDetails(etmpQuery: Query)(implicit
-    headerCarrier: HeaderCarrier,
-    ec: ExecutionContext
-  ): Envelope[ETMPSubscriptionDisplayResponse]
+                                               headerCarrier: HeaderCarrier
+  ): Future[ETMPSubscriptionDisplayResponse] = {
 
+    val baseUrl     = appConfig.integrationFrameworkBaseUrl
+    val path        = appConfig.etmpSubscriptionDisplayEndpoint
+    val queryString = etmpQuery.toQueryParameters.map { case (k, v) => s"$k=$v"}.mkString("&")
+    val fullUrl     = s"$baseUrl$path?$queryString"
+
+    httpClient
+      .get(url"$fullUrl")
+      .setHeader(HeaderNames.Authorization -> s"Bearer ${appConfig.integrationFrameworkToken}")
+      .setHeader(HeaderNames.ForwardedHost -> "MDTP")
+      .setHeader(HeaderNames.CorrelationId -> UUID.randomUUID().toString)
+      .setHeader(HeaderNames.Accept -> MimeTypes.JSON)
+      .setHeader(HeaderNames.Date -> LocalDateTime.now().atOffset(ZoneOffset.UTC).format(dateFormat))
+      .execute[ETMPSubscriptionDisplayResponse]
+  }
 }
