@@ -2,6 +2,7 @@ import play.sbt.routes.RoutesKeys
 
 lazy val microservice = Project("advance-valuation-rulings", file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin, ScalafmtPlugin)
+  .disablePlugins(JUnitXmlReportPlugin)
   .settings(
     majorVersion        := 0,
     scalaVersion        := "2.13.8",
