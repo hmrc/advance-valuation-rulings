@@ -32,6 +32,8 @@ import DraftAttachmentsConnector._
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.advancevaluationrulings.models.application.DraftAttachment
 
+import java.net.URL
+
 @Singleton
 class DraftAttachmentsConnector @Inject()(
                                        httpClient: HttpClientV2,
@@ -41,7 +43,7 @@ class DraftAttachmentsConnector @Inject()(
   private val advanceValuationRulingsFrontend = configuration.get[Service]("microservice.services.advance-valuation-rulings-frontend")
 
   def get(path: String)(implicit hc: HeaderCarrier): Future[DraftAttachment] =
-    httpClient.get(url"$advanceValuationRulingsFrontend/attachments/$path")
+    httpClient.get(new URL(s"$advanceValuationRulingsFrontend/attachments/$path"))
       .stream[HttpResponse].flatMap { response =>
         if (response.status == 200) {
 
