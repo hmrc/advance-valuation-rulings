@@ -92,6 +92,11 @@ class InternalAuthTokenInitialiserImpl @Inject() (
             "resourceType" -> "dms-submission",
             "resourceLocation" -> "submit",
             "actions" -> List("WRITE")
+          ),
+          Json.obj(
+            "resourceType" -> "object-store",
+            "resourceLocation" -> "advance-valuation-rulings",
+            "actions" -> List("READ", "WRITE")
           )
         )
       ))
@@ -113,11 +118,6 @@ class InternalAuthTokenInitialiserImpl @Inject() (
         "token" -> UUID.randomUUID(),
         "principal" -> "dms-submission",
         "permissions" -> Seq(
-          Json.obj(
-            "resourceType" -> "object-store",
-            "resourceLocation" -> "advance-valuation-rulings/attachments",
-            "actions" -> List("READ")
-          ),
           Json.obj(
             "resourceType" -> "advance-valuation-rulings",
             "resourceLocation" -> "dms/callback",
