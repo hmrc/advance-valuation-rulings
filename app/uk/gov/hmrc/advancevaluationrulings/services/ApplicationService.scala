@@ -17,14 +17,15 @@
 package uk.gov.hmrc.advancevaluationrulings.services
 
 import cats.implicits._
+import uk.gov.hmrc.advancevaluationrulings.controllers.actions.IdentifierRequest
 import uk.gov.hmrc.advancevaluationrulings.models.application._
+import uk.gov.hmrc.advancevaluationrulings.models.audit.ApplicationSubmissionEvent
 import uk.gov.hmrc.advancevaluationrulings.repositories.{ApplicationRepository, CounterRepository}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.{Clock, Instant}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Random
 
 @Singleton
 class ApplicationService @Inject()(
@@ -33,16 +34,19 @@ class ApplicationService @Inject()(
                                     dmsSubmissionService: DmsSubmissionService,
                                     submissionReferenceService: SubmissionReferenceService,
                                     attachmentsService: AttachmentsService,
+                                    auditService: AuditService,
                                     clock: Clock
                                   )(implicit ec: ExecutionContext) {
 
-  def save(applicantEori: String, request: ApplicationRequest)(implicit hc: HeaderCarrier): Future[ApplicationId] =
+  def save(request: IdentifierRequest[ApplicationRequest])(implicit hc: HeaderCarrier): Future[ApplicationId] =
     for {
       appId               <- counterRepository.nextId(CounterId.ApplicationId).map(ApplicationId(_))
-      attachments         <- buildAttachments(appId, request.attachments)
+      attachments         <- buildAttachments(appId, request.body.attachments)
       submissionReference =  submissionReferenceService.random()
-      application         <- saveApplication(applicantEori, request, appId, attachments, submissionReference)
+      application         <- saveApplication(request.eori, request.body, appId, attachments, submissionReference)
       _                   <- dmsSubmissionService.submitApplication(application, submissionReference)
+      event               =  ApplicationSubmissionEvent(request.internalId, request.affinityGroup, request.credentialRole, application)
+      _                   =  auditService.auditSubmitRequest(event)
     } yield appId
 
   private def saveApplication(applicantEori: String, request: ApplicationRequest, appId: ApplicationId, attachments: Seq[Attachment], submissionReference: String): Future[Application] = {

@@ -37,7 +37,7 @@ class ApplicationController @Inject()(
   def submit: Action[ApplicationRequest] = identify(parse.json[ApplicationRequest]).async {
     implicit request =>
       applicationService
-        .save(request.eori, request.body)
+        .save(request)
         .map { id =>
           Ok(Json.toJson(ApplicationSubmissionResponse(id)))
       }
