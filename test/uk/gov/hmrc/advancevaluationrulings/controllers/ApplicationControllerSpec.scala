@@ -19,10 +19,10 @@ package uk.gov.hmrc.advancevaluationrulings.controllers
 import generators.ModelGenerators
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.{Mockito, MockitoSugar}
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import org.mockito.MockitoSugar
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
@@ -31,7 +31,8 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.repositories.ApplicationRepository
 import uk.gov.hmrc.advancevaluationrulings.services.ApplicationService
-import uk.gov.hmrc.auth.core.{AuthConnector, Enrolment, EnrolmentIdentifier, Enrolments}
+import uk.gov.hmrc.auth.core.retrieve.~
+import uk.gov.hmrc.auth.core._
 
 import java.time.{Clock, Instant, ZoneId}
 import scala.concurrent.Future
@@ -61,8 +62,7 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
       ).build()
 
   override def beforeEach(): Unit = {
-    Mockito.reset(mockApplicationService)
-    Mockito.reset(mockApplicationRepository)
+    reset(mockApplicationService, mockApplicationRepository, mockAuthConnector)
     super.beforeEach()
   }
 
@@ -72,7 +72,8 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
 
       val id = 123L
 
-      when(mockAuthConnector.authorise[Enrolments](any(), any())(any(), any())) thenReturn Future.successful(atarEnrolment)
+      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
+        .thenReturn(Future.successful(new ~(new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)), Some(Assistant))))
       when(mockApplicationService.save(any(), any())(any())) thenReturn Future.successful(ApplicationId(id))
 
       val applicationRequest = ApplicationRequest(
@@ -103,7 +104,8 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
 
       val summary = ApplicationSummary(ApplicationId(1), "name", Instant.now(fixedClock), "eori")
 
-      when(mockAuthConnector.authorise[Enrolments](any(), any())(any(), any())) thenReturn Future.successful(atarEnrolment)
+      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
+        .thenReturn(Future.successful(new ~(new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)), Some(Assistant))))
       when(mockApplicationRepository.summaries(any())).thenReturn(Future.successful(Seq(summary)))
 
       val request = FakeRequest(GET, routes.ApplicationController.summaries.url)
@@ -133,6 +135,8 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
         lastUpdated = Instant.now(fixedClock)
       )
 
+      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
+        .thenReturn(Future.successful(new ~(new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)), Some(Assistant))))
       when(mockApplicationRepository.get(any(), any())).thenReturn(Future.successful(Some(application)))
 
       val request = FakeRequest(GET, routes.ApplicationController.get(applicationId).url)
@@ -144,9 +148,10 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
 
     "must return NotFound when an application cannot be found" in {
 
-
       val applicationId = applicationIdGen.sample.value
 
+      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
+        .thenReturn(Future.successful(new ~(new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)), Some(Assistant))))
       when(mockApplicationRepository.get(any(), any())).thenReturn(Future.successful(None))
 
       val request = FakeRequest(GET, routes.ApplicationController.get(applicationId).url)

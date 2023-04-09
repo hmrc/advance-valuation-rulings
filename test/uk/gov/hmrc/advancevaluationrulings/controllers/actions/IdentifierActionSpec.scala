@@ -18,24 +18,33 @@ package uk.gov.hmrc.advancevaluationrulings.controllers.actions
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar
+import org.scalatest.OptionValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.Json
 import play.api.mvc.Results.Ok
 import play.api.mvc.{Action, AnyContent, BodyParsers}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.{CredentialRole, _}
+import uk.gov.hmrc.auth.core.retrieve.~
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class IdentifierActionSpec extends AnyFreeSpec with Matchers with MockitoSugar {
+class IdentifierActionSpec extends AnyFreeSpec with Matchers with MockitoSugar with OptionValues {
 
   class Harness(identify: IdentifierAction) {
     def onPageLoad(): Action[AnyContent] = identify {
-      request =>
-        Ok(request.eori)
+      request => Ok {
+        Json.obj(
+          "eori" -> request.eori,
+          "internalId" -> request.internalId,
+          "affinityGroup" -> request.affinityGroup,
+          "credentialRole" -> request.credentialRole
+        )
+      }
     }
   }
 
@@ -48,18 +57,50 @@ class IdentifierActionSpec extends AnyFreeSpec with Matchers with MockitoSugar {
 
     "when the user has the correct enrolment" - {
 
-      "must execute the request" in {
+      "and all retrievals" - {
 
-        val atarEnrolment = Enrolments(Set(Enrolment("HMRC-ATAR-ORG", Seq(EnrolmentIdentifier("EORINumber", "eori")), "Activated")))
+        "must execute the request" in {
 
-        when(mockAuthConnector.authorise[Enrolments](any(), any())(any(), any())) thenReturn Future.successful(atarEnrolment)
+          val atarEnrolment = Enrolments(Set(Enrolment("HMRC-ATAR-ORG", Seq(EnrolmentIdentifier("EORINumber", "eori")), "Activated")))
 
-        val identifierAction = new IdentifierAction(mockAuthConnector, bodyParsers)
-        val controller = new Harness(identifierAction)
-        val result = controller.onPageLoad()(FakeRequest())
+          when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
+            .thenReturn(Future.successful(new ~(new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)), Some(Assistant))))
 
-        status(result) mustBe OK
-        contentAsString(result) mustEqual "eori"
+          val identifierAction = new IdentifierAction(mockAuthConnector, bodyParsers)
+          val controller = new Harness(identifierAction)
+          val result = controller.onPageLoad()(FakeRequest())
+
+          status(result) mustBe OK
+
+          val body = contentAsJson(result)
+          (body \ "eori").as[String] mustEqual "eori"
+          (body \ "internalId").as[String] mustEqual "internalId"
+          (body \ "affinityGroup").as[AffinityGroup] mustEqual AffinityGroup.Organisation
+          (body \ "credentialRole").asOpt[CredentialRole].value mustEqual Assistant
+        }
+      }
+
+      "and no credential role" - {
+
+        "must execute the request" in {
+
+          val atarEnrolment = Enrolments(Set(Enrolment("HMRC-ATAR-ORG", Seq(EnrolmentIdentifier("EORINumber", "eori")), "Activated")))
+
+          when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
+            .thenReturn(Future.successful(new ~(new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Individual)), None)))
+
+          val identifierAction = new IdentifierAction(mockAuthConnector, bodyParsers)
+          val controller = new Harness(identifierAction)
+          val result = controller.onPageLoad()(FakeRequest())
+
+          status(result) mustBe OK
+
+          val body = contentAsJson(result)
+          (body \ "eori").as[String] mustEqual "eori"
+          (body \ "internalId").as[String] mustEqual "internalId"
+          (body \ "affinityGroup").as[AffinityGroup] mustEqual AffinityGroup.Individual
+          (body \ "credentialRole").asOpt[CredentialRole] mustBe None
+        }
       }
     }
 
@@ -69,7 +110,42 @@ class IdentifierActionSpec extends AnyFreeSpec with Matchers with MockitoSugar {
 
         val otherEnrolment = Enrolments(Set(Enrolment("FOO", Seq(EnrolmentIdentifier("EORINumber", "eori")), "Activated")))
 
-        when(mockAuthConnector.authorise[Enrolments](any(), any())(any(), any())) thenReturn Future.successful(otherEnrolment)
+        when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
+          .thenReturn(Future.successful(new ~(new ~(new ~(otherEnrolment, Some("internalId")), Some(AffinityGroup.Individual)), None)))
+
+        val identifierAction = new IdentifierAction(mockAuthConnector, bodyParsers)
+        val controller = new Harness(identifierAction)
+        val result = controller.onPageLoad()(FakeRequest())
+
+        status(result) mustBe UNAUTHORIZED
+      }
+    }
+
+    "when the user does not have an affinity group" - {
+
+      "must return Unauthorized" in {
+
+        val atarEnrolment = Enrolments(Set(Enrolment("HMRC-ATAR-ORG", Seq(EnrolmentIdentifier("EORINumber", "eori")), "Activated")))
+
+        when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
+          .thenReturn(Future.successful(new ~(new ~(new ~(atarEnrolment, Some("internalId")), None), None)))
+
+        val identifierAction = new IdentifierAction(mockAuthConnector, bodyParsers)
+        val controller = new Harness(identifierAction)
+        val result = controller.onPageLoad()(FakeRequest())
+
+        status(result) mustBe UNAUTHORIZED
+      }
+    }
+
+    "when the user does not have an internal id" - {
+
+      "must return Unauthorized" in {
+
+        val atarEnrolment = Enrolments(Set(Enrolment("HMRC-ATAR-ORG", Seq(EnrolmentIdentifier("EORINumber", "eori")), "Activated")))
+
+        when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
+          .thenReturn(Future.successful(new ~(new ~(new ~(atarEnrolment, None), Some(AffinityGroup.Individual)), None)))
 
         val identifierAction = new IdentifierAction(mockAuthConnector, bodyParsers)
         val controller = new Harness(identifierAction)
@@ -83,7 +159,8 @@ class IdentifierActionSpec extends AnyFreeSpec with Matchers with MockitoSugar {
 
       "must return Unauthorized" in {
 
-        when(mockAuthConnector.authorise[Enrolments](any(), any())(any(), any())) thenReturn Future.successful(Enrolments(Set.empty))
+        when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
+          .thenReturn(Future.successful(new ~(new ~(new ~(Enrolments(Set.empty), Some("internalId")), Some(AffinityGroup.Individual)), None)))
 
         val identifierAction = new IdentifierAction(mockAuthConnector, bodyParsers)
         val controller = new Harness(identifierAction)

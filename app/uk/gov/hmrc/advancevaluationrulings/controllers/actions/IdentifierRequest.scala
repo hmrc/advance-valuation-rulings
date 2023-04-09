@@ -17,5 +17,12 @@
 package uk.gov.hmrc.advancevaluationrulings.controllers.actions
 
 import play.api.mvc.{Request, WrappedRequest}
+import uk.gov.hmrc.auth.core.{AffinityGroup, CredentialRole}
 
-final case class IdentifierRequest[A](request: Request[A], eori: String) extends WrappedRequest[A](request)
+final case class IdentifierRequest[A](
+                                       request: Request[A],
+                                       eori: String,
+                                       internalId: String,
+                                       affinityGroup: AffinityGroup,
+                                       credentialRole: Option[CredentialRole]
+                                     ) extends WrappedRequest[A](request)
