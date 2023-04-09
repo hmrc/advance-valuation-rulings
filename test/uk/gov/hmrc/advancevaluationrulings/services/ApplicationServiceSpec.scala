@@ -32,6 +32,7 @@ import uk.gov.hmrc.objectstore.client.Path
 import uk.gov.hmrc.advancevaluationrulings.controllers.actions.IdentifierRequest
 import uk.gov.hmrc.advancevaluationrulings.models.audit.ApplicationSubmissionEvent
 import uk.gov.hmrc.auth.core.{AffinityGroup, Assistant}
+import uk.gov.hmrc.advancevaluationrulings.models.audit.AuditMetadata
 
 import java.time.{Clock, Instant, ZoneId}
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -98,9 +99,7 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
         attachments = Nil,
       )
 
-      val request = IdentifierRequest(
-        request = FakeRequest().withBody(applicationRequest),
-        eori = applicantEori,
+      val auditMetadata = AuditMetadata(
         internalId = "internalId",
         affinityGroup = AffinityGroup.Organisation,
         credentialRole = Some(Assistant)
@@ -127,7 +126,7 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
         application = expectedApplication
       )
 
-      val result = service.save(request)(hc).futureValue
+      val result = service.save(applicantEori, applicationRequest, auditMetadata)(hc).futureValue
 
       result mustEqual ApplicationId(id)
       verify(mockCounterRepo, times(1)).nextId(eqTo(CounterId.ApplicationId))
@@ -170,9 +169,7 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
         attachments = Seq(attachmentRequest1, attachmentRequest2),
       )
 
-      val request = IdentifierRequest(
-        request = FakeRequest().withBody(applicationRequest),
-        eori = applicantEori,
+      val auditMetadata = AuditMetadata(
         internalId = "internalId",
         affinityGroup = AffinityGroup.Organisation,
         credentialRole = Some(Assistant)
@@ -195,7 +192,7 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
         lastUpdated = fixedInstant
       )
 
-      val result = service.save(request)(hc).futureValue
+      val result = service.save(applicantEori, applicationRequest, auditMetadata)(hc).futureValue
 
       result mustEqual ApplicationId(id)
       verify(mockCounterRepo, times(1)).nextId(eqTo(CounterId.ApplicationId))

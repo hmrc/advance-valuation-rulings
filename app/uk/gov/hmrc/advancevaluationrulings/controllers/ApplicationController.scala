@@ -18,8 +18,9 @@ package uk.gov.hmrc.advancevaluationrulings.controllers
 
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.advancevaluationrulings.controllers.actions.IdentifierAction
+import uk.gov.hmrc.advancevaluationrulings.controllers.actions.{IdentifierAction, IdentifierRequest}
 import uk.gov.hmrc.advancevaluationrulings.models.application._
+import uk.gov.hmrc.advancevaluationrulings.models.audit.AuditMetadata
 import uk.gov.hmrc.advancevaluationrulings.repositories.ApplicationRepository
 import uk.gov.hmrc.advancevaluationrulings.services.ApplicationService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -37,7 +38,7 @@ class ApplicationController @Inject()(
   def submit: Action[ApplicationRequest] = identify(parse.json[ApplicationRequest]).async {
     implicit request =>
       applicationService
-        .save(request)
+        .save(request.eori, request.body, getAuditMetadata(request))
         .map { id =>
           Ok(Json.toJson(ApplicationSubmissionResponse(id)))
       }
@@ -61,4 +62,11 @@ class ApplicationController @Inject()(
             .getOrElse(NotFound)
         }
   }
+
+  private def getAuditMetadata(request: IdentifierRequest[_]): AuditMetadata =
+    AuditMetadata(
+      internalId = request.internalId,
+      affinityGroup = request.affinityGroup,
+      credentialRole = request.credentialRole
+    )
 }

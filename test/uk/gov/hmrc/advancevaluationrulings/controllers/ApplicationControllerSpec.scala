@@ -18,7 +18,8 @@ package uk.gov.hmrc.advancevaluationrulings.controllers
 
 import generators.ModelGenerators
 import org.mockito.ArgumentMatchers.any
-import org.mockito.{ArgumentCaptor, MockitoSugar}
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.MockitoSugar
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{BeforeAndAfterEach, OptionValues}
@@ -27,8 +28,8 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.advancevaluationrulings.controllers.actions.IdentifierRequest
 import uk.gov.hmrc.advancevaluationrulings.models.application._
+import uk.gov.hmrc.advancevaluationrulings.models.audit.AuditMetadata
 import uk.gov.hmrc.advancevaluationrulings.repositories.ApplicationRepository
 import uk.gov.hmrc.advancevaluationrulings.services.ApplicationService
 import uk.gov.hmrc.auth.core._
@@ -71,12 +72,12 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
     "must save the application and return an application submission response" in {
 
       val id = 123L
-      val requestCaptor: ArgumentCaptor[IdentifierRequest[ApplicationRequest]] =
-        ArgumentCaptor.forClass(classOf[IdentifierRequest[ApplicationRequest]])
 
       when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
         .thenReturn(Future.successful(new ~(new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)), Some(Assistant))))
-      when(mockApplicationService.save(any())(any())) thenReturn Future.successful(ApplicationId(id))
+      when(mockApplicationService.save(any(), any(), any())(any())) thenReturn Future.successful(ApplicationId(id))
+      
+      val expectedMetadata = AuditMetadata(internalId = "internalId", affinityGroup = AffinityGroup.Organisation, credentialRole = Some(Assistant))
 
       val applicationRequest = ApplicationRequest(
         draftId = "foo",
@@ -87,23 +88,16 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
         requestedMethod = method,
         attachments = Nil,
       )
-
+      
       val request =
         FakeRequest(POST, routes.ApplicationController.submit.url)
           .withBody(Json.toJson(applicationRequest))
+          
       val result = route(app, request).value
 
       status(result) mustEqual OK
       contentAsJson(result) mustEqual Json.toJson(ApplicationSubmissionResponse(ApplicationId(id)))
-      verify(mockApplicationService, times(1)).save(requestCaptor.capture())(any())
-
-      val capturedRequest = requestCaptor.getValue
-
-      capturedRequest.body mustEqual applicationRequest
-      capturedRequest.eori mustEqual applicantEori
-      capturedRequest.internalId mustEqual "internalId"
-      capturedRequest.affinityGroup mustEqual AffinityGroup.Organisation
-      capturedRequest.credentialRole.value mustEqual Assistant
+      verify(mockApplicationService, times(1)).save(eqTo(applicantEori), eqTo(applicationRequest), eqTo(expectedMetadata))(any())
     }
   }
 
