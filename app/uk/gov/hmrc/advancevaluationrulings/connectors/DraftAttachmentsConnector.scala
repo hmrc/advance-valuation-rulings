@@ -16,23 +16,20 @@
 
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
-import cats.data.{EitherNec, EitherT, NonEmptyChain}
+import cats.data.{EitherNec, NonEmptyChain}
 import cats.implicits._
 import config.Service
 import play.api.Configuration
+import play.api.http.Status.INTERNAL_SERVER_ERROR
+import uk.gov.hmrc.advancevaluationrulings.connectors.DraftAttachmentsConnector._
+import uk.gov.hmrc.advancevaluationrulings.models.application.DraftAttachment
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 
+import java.net.URL
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
-import DraftAttachmentsConnector._
-import play.api.http.Status.INTERNAL_SERVER_ERROR
-import uk.gov.hmrc.advancevaluationrulings.models.application.DraftAttachment
-
-import java.net.URL
 
 @Singleton
 class DraftAttachmentsConnector @Inject()(
