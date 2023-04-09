@@ -29,12 +29,14 @@ final case class TraderDetail(
                                phoneNumber: Option[String]
                              ) {
 
+  lazy val country: Country = Country.fromCountryCode(countryCode)
+
   lazy val addressLines: Seq[String] = Seq(
     Some(addressLine1),
     addressLine2,
     addressLine3,
     Some(postcode),
-    Some(countryCode)
+    Some(country.name)
   ).flatten
 }
 
