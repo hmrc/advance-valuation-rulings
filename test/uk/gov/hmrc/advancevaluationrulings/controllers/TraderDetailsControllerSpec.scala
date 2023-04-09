@@ -32,7 +32,8 @@ import uk.gov.hmrc.advancevaluationrulings.connectors.ETMPConnector
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.Query
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.Regime.CDS
 import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
-import uk.gov.hmrc.auth.core.{AuthConnector, Enrolment, EnrolmentIdentifier, Enrolments}
+import uk.gov.hmrc.auth.core.retrieve.~
+import uk.gov.hmrc.auth.core.{AffinityGroup, Assistant, AuthConnector, CredentialRole, Enrolment, EnrolmentIdentifier, Enrolments}
 
 import scala.concurrent.Future
 
@@ -70,7 +71,8 @@ class TraderDetailsControllerSpec extends AnyFreeSpec with Matchers with OptionV
         etmpResponse.subscriptionDisplayResponse.responseDetail.contactInformation
       )
 
-      when(mockAuthConnector.authorise[Enrolments](any(), any())(any(), any())) thenReturn Future.successful(atarEnrolment)
+      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
+        .thenReturn(Future.successful(new ~(new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)), Some(Assistant))))
       when(mockConnector.getSubscriptionDetails(eqTo(etmpRequest))(any())).thenReturn(Future.successful(etmpResponse))
 
       val request =

@@ -14,15 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.controllers.actions
+package uk.gov.hmrc.advancevaluationrulings.models.audit
 
-import play.api.mvc.{Request, WrappedRequest}
 import uk.gov.hmrc.auth.core.{AffinityGroup, CredentialRole}
 
-final case class IdentifierRequest[A](
-                                       request: Request[A],
-                                       eori: String,
-                                       internalId: String,
-                                       affinityGroup: AffinityGroup,
-                                       credentialRole: Option[CredentialRole]
-                                     ) extends WrappedRequest[A](request)
+final case class AuditMetadata(internalId: String, affinityGroup: AffinityGroup, credentialRole: Option[CredentialRole])
