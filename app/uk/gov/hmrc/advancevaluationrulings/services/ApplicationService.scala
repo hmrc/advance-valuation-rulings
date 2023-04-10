@@ -20,6 +20,7 @@ import cats.implicits._
 import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.models.audit.{ApplicationSubmissionEvent, AuditMetadata}
 import uk.gov.hmrc.advancevaluationrulings.repositories.{ApplicationRepository, CounterRepository}
+import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.{Clock, Instant}
@@ -44,8 +45,7 @@ class ApplicationService @Inject()(
       submissionReference =  submissionReferenceService.random()
       application         <- saveApplication(eori, request, appId, attachments, submissionReference)
       _                   <- dmsSubmissionService.submitApplication(application, submissionReference)
-      event               =  ApplicationSubmissionEvent(auditMetadata.internalId, auditMetadata.affinityGroup, auditMetadata.credentialRole, application)
-      _                   =  auditService.auditSubmitRequest(event)
+      _                   =  auditService.auditSubmitRequest(buildAudit(application, auditMetadata))
     } yield appId
 
   private def saveApplication(applicantEori: String, request: ApplicationRequest, appId: ApplicationId, attachments: Seq[Attachment], submissionReference: String): Future[Application] = {
@@ -82,4 +82,13 @@ class ApplicationService @Inject()(
         size = request.size
       )
     }
+
+  private def buildAudit(application: Application, auditMetadata: AuditMetadata): ApplicationSubmissionEvent =
+    ApplicationSubmissionEvent(
+      internalId = auditMetadata.internalId,
+      affinityGroup = auditMetadata.affinityGroup,
+      credentialRole = auditMetadata.credentialRole,
+      isAgent = Option.when(auditMetadata.affinityGroup == AffinityGroup.Organisation)(application.agent.isDefined),
+      application = application
+    )
 }
