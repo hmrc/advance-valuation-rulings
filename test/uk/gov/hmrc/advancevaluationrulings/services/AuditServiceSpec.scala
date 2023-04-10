@@ -79,6 +79,7 @@ class AuditServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar with 
         internalId = "internalId",
         affinityGroup = AffinityGroup.Organisation,
         credentialRole = Some(Assistant),
+        isAgent = Some(false),
         application = application
       )
 

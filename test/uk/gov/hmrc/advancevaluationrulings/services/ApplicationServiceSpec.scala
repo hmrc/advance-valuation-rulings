@@ -101,8 +101,8 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
 
       val auditMetadata = AuditMetadata(
         internalId = "internalId",
-        affinityGroup = AffinityGroup.Organisation,
-        credentialRole = Some(Assistant)
+        affinityGroup = AffinityGroup.Individual,
+        credentialRole = None
       )
 
       val expectedApplication = Application(
@@ -121,8 +121,9 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
 
       val expectedAudit = ApplicationSubmissionEvent(
         internalId = "internalId",
-        affinityGroup = AffinityGroup.Organisation,
-        credentialRole = Some(Assistant),
+        affinityGroup = AffinityGroup.Individual,
+        credentialRole = None,
+        isAgent = None,
         application = expectedApplication
       )
 
@@ -200,6 +201,115 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
       verify(mockCounterRepo, times(2)).nextId(eqTo(CounterId.AttachmentId))
       verify(mockAttachmentsService, times(1)).copyAttachment(eqTo(ApplicationId(id)), eqTo("url1"))(any())
       verify(mockAttachmentsService, times(1)).copyAttachment(eqTo(ApplicationId(id)), eqTo("url2"))(any())
+    }
+
+    "must audit `isAgent` = true when a user's affinity group is Organisation and application has an agent section" in {
+
+      val id = 123L
+      val applicantEori = "applicantEori"
+
+      when(mockCounterRepo.nextId(eqTo(CounterId.ApplicationId))) thenReturn Future.successful(id)
+      when(mockSubmissionReferenceService.random()).thenReturn(submissionReference)
+      when(mockApplicationRepo.set(any())) thenReturn Future.successful(Done)
+      when(mockDmsSubmissionService.submitApplication(any(), any())(any())).thenReturn(Future.successful(Done))
+
+      val applicationRequest = ApplicationRequest(
+        draftId = "foo",
+        trader = trader,
+        agent = Some(trader),
+        contact = contact,
+        goodsDetails = goodsDetails,
+        requestedMethod = method,
+        attachments = Nil,
+      )
+
+      val auditMetadata = AuditMetadata(
+        internalId = "internalId",
+        affinityGroup = AffinityGroup.Organisation,
+        credentialRole = Some(Assistant)
+      )
+
+      val expectedApplication = Application(
+        id = ApplicationId(id),
+        applicantEori = applicantEori,
+        trader = trader,
+        agent = Some(trader),
+        contact = contact,
+        goodsDetails = goodsDetails,
+        requestedMethod = method,
+        attachments = Nil,
+        submissionReference = submissionReference,
+        created = fixedInstant,
+        lastUpdated = fixedInstant
+      )
+
+      val expectedAudit = ApplicationSubmissionEvent(
+        internalId = "internalId",
+        affinityGroup = AffinityGroup.Organisation,
+        credentialRole = Some(Assistant),
+        isAgent = Some(true),
+        application = expectedApplication
+      )
+
+      service.save(applicantEori, applicationRequest, auditMetadata)(hc).futureValue
+
+      verify(mockApplicationRepo, times(1)).set(eqTo(expectedApplication))
+      verify(mockAuditService, times(1)).auditSubmitRequest(eqTo(expectedAudit))(any())
+    }
+
+    "must audit `isAgent` = false when the user's affinity group is Organisation and application has no agent section" in {
+
+
+      val id = 123L
+      val applicantEori = "applicantEori"
+
+      when(mockCounterRepo.nextId(eqTo(CounterId.ApplicationId))) thenReturn Future.successful(id)
+      when(mockSubmissionReferenceService.random()).thenReturn(submissionReference)
+      when(mockApplicationRepo.set(any())) thenReturn Future.successful(Done)
+      when(mockDmsSubmissionService.submitApplication(any(), any())(any())).thenReturn(Future.successful(Done))
+
+      val applicationRequest = ApplicationRequest(
+        draftId = "foo",
+        trader = trader,
+        agent = None,
+        contact = contact,
+        goodsDetails = goodsDetails,
+        requestedMethod = method,
+        attachments = Nil,
+      )
+
+      val auditMetadata = AuditMetadata(
+        internalId = "internalId",
+        affinityGroup = AffinityGroup.Organisation,
+        credentialRole = Some(Assistant)
+      )
+
+      val expectedApplication = Application(
+        id = ApplicationId(id),
+        applicantEori = applicantEori,
+        trader = trader,
+        agent = None,
+        contact = contact,
+        goodsDetails = goodsDetails,
+        requestedMethod = method,
+        attachments = Nil,
+        submissionReference = submissionReference,
+        created = fixedInstant,
+        lastUpdated = fixedInstant
+      )
+
+      val expectedAudit = ApplicationSubmissionEvent(
+        internalId = "internalId",
+        affinityGroup = AffinityGroup.Organisation,
+        credentialRole = Some(Assistant),
+        isAgent = Some(false),
+        application = expectedApplication
+      )
+
+      service.save(applicantEori, applicationRequest, auditMetadata)(hc).futureValue
+
+      verify(mockApplicationRepo, times(1)).set(eqTo(expectedApplication))
+      verify(mockAuditService, times(1)).auditSubmitRequest(eqTo(expectedAudit))(any())
     }
   }
 }

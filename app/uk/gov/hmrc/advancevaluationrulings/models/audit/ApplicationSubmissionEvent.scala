@@ -24,6 +24,7 @@ final case class ApplicationSubmissionEvent(
                                              internalId: String,
                                              affinityGroup: AffinityGroup,
                                              credentialRole: Option[CredentialRole],
+                                             isAgent: Option[Boolean],
                                              application: Application
                                            )
 
