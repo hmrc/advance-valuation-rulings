@@ -29,5 +29,5 @@ class AuditService @Inject()(
                             )(implicit ec: ExecutionContext) {
 
   def auditSubmitRequest(event: ApplicationSubmissionEvent)(implicit hc: HeaderCarrier): Unit =
-    auditConnector.sendExplicitAudit("ApplicationSubmissionEvent", event)
+    auditConnector.sendExplicitAudit("ApplicationSubmission", event)
 }
