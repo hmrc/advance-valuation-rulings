@@ -4,6 +4,11 @@
     header: PageHeader,
     footer: PageFooter,
     methodOneSnippet: MethodOneSnippet,
+    methodTwoSnippet: MethodTwoSnippet,
+    methodThreeSnippet: MethodThreeSnippet,
+    methodFourSnippet: MethodFourSnippet,
+    methodFiveSnippet: MethodFiveSnippet,
+    methodSixSnippet: MethodSixSnippet,
     line: Line
 )
 
@@ -26,6 +31,21 @@
             @{application.requestedMethod match {
                 case one: MethodOne =>
                     methodOneSnippet(one)
+
+                case two: MethodTwo =>
+                    methodTwoSnippet(two)
+
+                case three: MethodThree =>
+                    methodThreeSnippet(three)
+
+                case four: MethodFour =>
+                    methodFourSnippet(four)
+
+                case five: MethodFive =>
+                    methodFiveSnippet(five)
+
+                case six: MethodSix =>
+                    methodSixSnippet(six)
             }}
 
             @line(messages("pdf.goodsDescription"), application.goodsDetails.goodsDescription)
