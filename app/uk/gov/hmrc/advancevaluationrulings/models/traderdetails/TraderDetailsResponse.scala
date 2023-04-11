@@ -23,7 +23,8 @@ final case class TraderDetailsResponse(
   EORINo: String,
   CDSFullName: String,
   CDSEstablishmentAddress: CDSEstablishmentAddress,
-  contactInformation: Option[ContactInformation]
+  contactInformation: Option[ContactInformation],
+  consentToDisclosureOfPersonalData: Option[String]
 )
 
 object TraderDetailsResponse {

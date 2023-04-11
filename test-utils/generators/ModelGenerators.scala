@@ -75,18 +75,24 @@ trait ModelGenerators extends Generators {
   )
 
   def responseDetailGen: Gen[ResponseDetail] = for {
-    eoriNo                     <- eoriNumberGen
-    cdsFullName                <- stringsWithMaxLength(512)
-    cdsEstablishmentAddressGen <- CDSEstablishmentAddressGen
-    contactInformation         <- Gen.option(contactInformationGen)
-  } yield ResponseDetail(eoriNo, cdsFullName, cdsEstablishmentAddressGen, contactInformation)
+    eoriNo                            <- eoriNumberGen
+    cdsFullName                       <- stringsWithMaxLength(512)
+    cdsEstablishmentAddressGen        <- CDSEstablishmentAddressGen
+    contactInformation                <- Gen.option(contactInformationGen)
+    consentToDisclosureOfPersonalData <- Gen.option(Gen.oneOf(Seq("0", "1")))
+  } yield ResponseDetail(
+    eoriNo,
+    cdsFullName,
+    cdsEstablishmentAddressGen,
+    contactInformation,
+    consentToDisclosureOfPersonalData
+  )
 
   def subscriptionDisplayResponseGen: Gen[SubscriptionDisplayResponse] =
     responseDetailGen.map(SubscriptionDisplayResponse(_))
 
   def ETMPSubscriptionDisplayResponseGen: Gen[ETMPSubscriptionDisplayResponse] =
     subscriptionDisplayResponseGen.map(ETMPSubscriptionDisplayResponse(_))
-
 
   def registeredDetailsCheckGen: Gen[RegisteredDetailsCheck] = for {
     registeredDetailsAreCorrect <- Arbitrary.arbitrary[Boolean]

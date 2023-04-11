@@ -46,7 +46,8 @@ class TraderDetailsService @Inject() (connector: ETMPConnector) {
             responseDetail.EORINo,
             responseDetail.CDSFullName,
             responseDetail.CDSEstablishmentAddress,
-            responseDetail.contactInformation
+            responseDetail.contactInformation,
+            responseDetail.consentToDisclosureOfPersonalData
           )
       }
 }
