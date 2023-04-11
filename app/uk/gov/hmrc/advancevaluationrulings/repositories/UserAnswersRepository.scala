@@ -23,7 +23,7 @@ import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
 import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
 import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 import java.time.{Clock, Instant}
@@ -48,7 +48,8 @@ class UserAnswersRepository @Inject()(
           .name("last-updated-index")
           .expireAfter(appConfig.userAnswersTtlInDays, TimeUnit.DAYS)
       )
-    )
+    ),
+    extraCodecs = Seq(Codecs.playFormatCodec(DraftId.format))
   ) {
 
   implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat

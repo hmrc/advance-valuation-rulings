@@ -7,3 +7,5 @@ GET         /applications/:applicationId    uk.gov.hmrc.advancevaluationrulings.
 POST        /applications                   uk.gov.hmrc.advancevaluationrulings.controllers.ApplicationController.submit
 
 POST        /dms/callback                   uk.gov.hmrc.advancevaluationrulings.controllers.DmsSubmissionCallbackController.callback
+
+GET         /user-answers/:draftId          uk.gov.hmrc.advancevaluationrulings.controllers.UserAnswersController.get(draftId: DraftId)

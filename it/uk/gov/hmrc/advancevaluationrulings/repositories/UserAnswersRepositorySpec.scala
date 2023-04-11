@@ -94,7 +94,7 @@ class UserAnswersRepositorySpec
 
   ".get" - {
 
-    "when there is a record for this id" - {
+    "when there is a record for this user id and draft id" - {
 
       "must update the lastUpdated time and get the record" in {
 
@@ -107,7 +107,31 @@ class UserAnswersRepositorySpec
       }
     }
 
-    "when there is no record for this id" - {
+    "when there is a record for this user id with a different draft id" - {
+
+      "must return None" in {
+
+        val differentAnswers = answers.copy(draftId = DraftId(2))
+
+        insert(differentAnswers).futureValue
+
+        repository.get("userId", DraftId(1)).futureValue must not be defined
+      }
+    }
+
+    "when there is a record for this draft id for a different user id" - {
+
+      "must return None" in {
+
+        val differentAnswers = answers.copy(userId = "another user id")
+
+        insert(differentAnswers).futureValue
+
+        repository.get("userId", DraftId(1)).futureValue must not be defined
+      }
+    }
+
+    "when there is no record for this user id and draft id" - {
 
       "must return None" in {
 
@@ -140,7 +164,7 @@ class UserAnswersRepositorySpec
 
     "when there is a record for this id" - {
 
-      "must update its lastUpdated to `now` and return true" in {
+      "must update its lastUpdated to `now`" in {
 
         insert(answers).futureValue
 
@@ -148,7 +172,6 @@ class UserAnswersRepositorySpec
 
         val expectedUpdatedAnswers = answers copy (lastUpdated = instant)
 
-        result mustEqual Done
         val updatedAnswers = find(Filters.and(
           Filters.equal("_id", answers.userId),
           Filters.equal("draftId", answers.draftId)
@@ -159,9 +182,9 @@ class UserAnswersRepositorySpec
 
     "when there is no record for this id" - {
 
-      "must return true" in {
+      "must succeed" in {
 
-        repository.keepAlive("user id that does not exist", DraftId(2)).futureValue mustEqual Done
+        repository.keepAlive("user id that does not exist", DraftId(2)).futureValue
       }
     }
   }
