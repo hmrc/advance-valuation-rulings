@@ -85,7 +85,7 @@ class AuditServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar with 
 
       service.auditSubmitRequest(event)(hc)
 
-      verify(mockAuditConnector).sendExplicitAudit(eqTo("ApplicationSubmissionEvent"), eqTo(event))(eqTo(hc), any(), any())
+      verify(mockAuditConnector).sendExplicitAudit(eqTo("ApplicationSubmission"), eqTo(event))(eqTo(hc), any(), any())
     }
   }
 }
