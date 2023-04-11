@@ -11,7 +11,7 @@ import org.scalatest.matchers.must.Matchers
 import play.api.Configuration
 import play.api.libs.json.Json
 import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
-import uk.gov.hmrc.advancevaluationrulings.models.{Done, UserAnswers}
+import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
 import uk.gov.hmrc.crypto.{Decrypter, Encrypter, SymmetricCryptoFactory}
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
@@ -32,7 +32,7 @@ class UserAnswersRepositorySpec
   private val instant = Instant.now.truncatedTo(ChronoUnit.MILLIS)
   private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-  private val answers = UserAnswers("userId", "draftId", Json.obj("foo" -> "bar"), Instant.ofEpochSecond(1))
+  private val answers = UserAnswers("userId", DraftId(1), Json.obj("foo" -> "bar"), Instant.ofEpochSecond(1))
 
   private val mockAppConfig = mock[AppConfig]
   when(mockAppConfig.userAnswersTtlInDays) thenReturn 1
@@ -111,7 +111,7 @@ class UserAnswersRepositorySpec
 
       "must return None" in {
 
-        repository.get("user id that does not exist", "draft id that does not exist").futureValue must not be defined
+        repository.get("user id that does not exist", DraftId(2)).futureValue must not be defined
       }
     }
   }
@@ -130,7 +130,7 @@ class UserAnswersRepositorySpec
 
     "must return Done when there is no record to remove" in {
 
-      val result = repository.clear("user id that does not exist", "draft id that does not exist").futureValue
+      val result = repository.clear("user id that does not exist", DraftId(2)).futureValue
 
       result mustEqual Done
     }
@@ -161,7 +161,7 @@ class UserAnswersRepositorySpec
 
       "must return true" in {
 
-        repository.keepAlive("user id that does not exist", "draft id that does not exist").futureValue mustEqual Done
+        repository.keepAlive("user id that does not exist", DraftId(2)).futureValue mustEqual Done
       }
     }
   }

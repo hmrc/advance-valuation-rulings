@@ -17,6 +17,7 @@
 package generators
 
 import org.scalacheck.{Arbitrary, Gen}
+import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 import uk.gov.hmrc.advancevaluationrulings.models.application.ApplicationId
 import uk.gov.hmrc.advancevaluationrulings.models.common._
 import uk.gov.hmrc.advancevaluationrulings.models.etmp._
@@ -31,6 +32,11 @@ trait ModelGenerators extends Generators {
     for {
       value <- Gen.choose(1, 999999999)
     } yield ApplicationId(value)
+
+  def draftIdGen: Gen[DraftId] =
+    for {
+      value <- Gen.choose(1, 999999999)
+    } yield DraftId(value)
 
   def regimeGen: Gen[Regime] = Gen.oneOf(Regime.values)
 

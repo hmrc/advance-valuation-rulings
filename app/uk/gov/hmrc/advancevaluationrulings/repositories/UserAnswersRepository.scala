@@ -20,7 +20,7 @@ import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model._
 import play.api.libs.json.Format
 import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
-import uk.gov.hmrc.advancevaluationrulings.models.{Done, UserAnswers}
+import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
 import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
@@ -53,13 +53,13 @@ class UserAnswersRepository @Inject()(
 
   implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
 
-  private def byUserIdAndDraftId(userId: String, draftId: String): Bson =
+  private def byUserIdAndDraftId(userId: String, draftId: DraftId): Bson =
     Filters.and(
       Filters.eq("_id", userId),
       Filters.eq("draftId", draftId)
     )
-  
-  def keepAlive(userId: String, draftId: String): Future[Done] =
+
+  def keepAlive(userId: String, draftId: DraftId): Future[Done] =
     collection
       .updateOne(
         filter = byUserIdAndDraftId(userId, draftId),
@@ -68,7 +68,7 @@ class UserAnswersRepository @Inject()(
       .toFuture()
       .map(_ => Done)
 
-  def get(userId: String, draftId: String): Future[Option[UserAnswers]] =
+  def get(userId: String, draftId: DraftId): Future[Option[UserAnswers]] =
     keepAlive(userId, draftId).flatMap {
       _ =>
         collection
@@ -90,7 +90,7 @@ class UserAnswersRepository @Inject()(
       .map(_ => Done)
   }
 
-  def clear(userId: String, draftId: String): Future[Done] =
+  def clear(userId: String, draftId: DraftId): Future[Done] =
     collection
       .deleteOne(byUserIdAndDraftId(userId, draftId))
       .toFuture()

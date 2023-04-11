@@ -27,7 +27,7 @@ import java.time.Instant
 
 final case class UserAnswers(
                               userId: String,
-                              draftId: String,
+                              draftId: DraftId,
                               data: JsObject,
                               lastUpdated: Instant = Instant.now
                             )
@@ -40,7 +40,7 @@ object UserAnswers {
 
     (
       (__ \ "_id").read[String] and
-      (__ \ "draftId").read[String] and
+      (__ \ "draftId").read[DraftId] and
       (__ \ "data").read[JsObject] and
       (__ \ "lastUpdated").read(MongoJavatimeFormats.instantFormat)
     )(UserAnswers.apply _)
@@ -49,7 +49,7 @@ object UserAnswers {
   private val writes: OWrites[UserAnswers] =
     (
       (__ \ "_id").write[String] and
-      (__ \ "draftId").write[String] and
+      (__ \ "draftId").write[DraftId] and
       (__ \ "data").write[JsObject] and
       (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)
     )(unlift(UserAnswers.unapply))
@@ -64,7 +64,7 @@ object UserAnswers {
     val encryptedReads: Reads[UserAnswers] =
       (
         (__ \ "_id").read[String] and
-        (__ \ "draftId").read[String] and
+        (__ \ "draftId").read[DraftId] and
         (__ \ "data").read[SensitiveString] and
         (__ \ "lastUpdated").read(MongoJavatimeFormats.instantFormat)
       )((userId, draftId, data, lastUpdated) => UserAnswers(userId, draftId, Json.parse(data.decryptedValue).as[JsObject], lastUpdated))
@@ -72,7 +72,7 @@ object UserAnswers {
     val encryptedWrites: OWrites[UserAnswers] =
       (
         (__ \ "_id").write[String] and
-        (__ \ "draftId").write[String] and
+        (__ \ "draftId").write[DraftId] and
         (__ \ "data").write[SensitiveString] and
         (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)
       )(ua => (ua.userId, ua.draftId, SensitiveString(Json.stringify(ua.data)), ua.lastUpdated))
