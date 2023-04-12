@@ -68,8 +68,9 @@ class TraderDetailsControllerSpec extends AnyFreeSpec with Matchers with OptionV
         etmpResponse.subscriptionDisplayResponse.responseDetail.EORINo,
         etmpResponse.subscriptionDisplayResponse.responseDetail.CDSFullName,
         etmpResponse.subscriptionDisplayResponse.responseDetail.CDSEstablishmentAddress,
-        etmpResponse.subscriptionDisplayResponse.responseDetail.contactInformation,
-        etmpResponse.subscriptionDisplayResponse.responseDetail.consentToDisclosureOfPersonalData,
+        etmpResponse.subscriptionDisplayResponse.responseDetail.consentToDisclosureOfPersonalData
+          .exists(_.equalsIgnoreCase("1")),
+        etmpResponse.subscriptionDisplayResponse.responseDetail.contactInformation
       )
 
       when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
