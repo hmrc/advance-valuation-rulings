@@ -22,7 +22,7 @@ import play.api.libs.json.JsonConfiguration.Aux
 package object application {
 
   val jsonConfig: Aux[Json.MacroOptions] = JsonConfiguration(
-    discriminator = "_type",
+    discriminator = "type",
     typeNaming =
       JsonNaming(fullName => fullName.slice(1 + fullName.lastIndexOf("."), fullName.length))
   )
