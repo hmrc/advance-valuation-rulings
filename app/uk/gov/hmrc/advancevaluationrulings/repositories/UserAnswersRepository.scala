@@ -47,6 +47,12 @@ class UserAnswersRepository @Inject()(
         IndexOptions()
           .name("last-updated-index")
           .expireAfter(appConfig.userAnswersTtlInDays, TimeUnit.DAYS)
+      ),
+      IndexModel(
+        Indexes.ascending("userId", "draftId"),
+        IndexOptions()
+          .name("id-index")
+          .unique(true)
       )
     ),
     extraCodecs = Seq(Codecs.playFormatCodec(DraftId.format))
@@ -56,7 +62,7 @@ class UserAnswersRepository @Inject()(
 
   private def byUserIdAndDraftId(userId: String, draftId: DraftId): Bson =
     Filters.and(
-      Filters.eq("_id", userId),
+      Filters.eq("userId", userId),
       Filters.eq("draftId", draftId)
     )
 

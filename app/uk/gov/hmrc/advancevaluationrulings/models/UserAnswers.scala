@@ -43,7 +43,7 @@ object UserAnswers {
 
     val encryptedReads: Reads[UserAnswers] =
       (
-        (__ \ "_id").read[String] and
+        (__ \ "userId").read[String] and
         (__ \ "draftId").read[DraftId] and
         (__ \ "data").read[SensitiveString] and
         (__ \ "lastUpdated").read(MongoJavatimeFormats.instantFormat)
@@ -51,7 +51,7 @@ object UserAnswers {
 
     val encryptedWrites: OWrites[UserAnswers] =
       (
-        (__ \ "_id").write[String] and
+        (__ \ "userId").write[String] and
         (__ \ "draftId").write[DraftId] and
         (__ \ "data").write[SensitiveString] and
         (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)

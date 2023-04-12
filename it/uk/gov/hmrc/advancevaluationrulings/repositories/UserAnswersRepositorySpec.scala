@@ -62,7 +62,7 @@ class UserAnswersRepositorySpec
 
       val setResult = repository.set(answers).futureValue
       val updatedRecord = find(Filters.and(
-        Filters.equal("_id", answers.userId),
+        Filters.equal("userId", answers.userId),
         Filters.equal("draftId", answers.draftId)
       )).futureValue.headOption.value
 
@@ -76,7 +76,7 @@ class UserAnswersRepositorySpec
 
       val record = repository.collection
         .find[BsonDocument](Filters.and(
-          Filters.equal("_id", answers.userId),
+          Filters.equal("userId", answers.userId),
           Filters.equal("draftId", answers.draftId)
         ))
         .headOption()
@@ -173,7 +173,7 @@ class UserAnswersRepositorySpec
         val expectedUpdatedAnswers = answers copy (lastUpdated = instant)
 
         val updatedAnswers = find(Filters.and(
-          Filters.equal("_id", answers.userId),
+          Filters.equal("userId", answers.userId),
           Filters.equal("draftId", answers.draftId)
         )).futureValue.headOption.value
         updatedAnswers mustEqual expectedUpdatedAnswers
