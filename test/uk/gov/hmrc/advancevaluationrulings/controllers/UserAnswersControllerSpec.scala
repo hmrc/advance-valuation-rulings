@@ -28,10 +28,10 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.advancevaluationrulings.models.{DraftId, UserAnswers}
+import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
 import uk.gov.hmrc.advancevaluationrulings.repositories.UserAnswersRepository
 import uk.gov.hmrc.auth.core.retrieve.~
-import uk.gov.hmrc.auth.core.{AffinityGroup, Assistant, AuthConnector, CredentialRole, Enrolment, EnrolmentIdentifier, Enrolments}
+import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.http.HeaderNames
 
 import java.time.temporal.ChronoUnit
@@ -95,6 +95,81 @@ class UserAnswersControllerSpec extends AnyFreeSpec with Matchers with MockitoSu
       val result = route(app, request).value
 
       status(result) mustEqual NOT_FOUND
+    }
+  }
+
+  ".set" - {
+
+    "must return No Content when the data is successfully saved" in {
+
+      when(mockRepo.set(any())) thenReturn Future.successful(Done)
+      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
+        .thenReturn(Future.successful(new~(new~(new~(atarEnrolment, Some(userId)), Some(AffinityGroup.Organisation)), Some(Assistant))))
+
+      val request =
+        FakeRequest(POST, routes.UserAnswersController.set().url)
+          .withHeaders(
+            "Content-Type" -> "application/json"
+          )
+          .withBody(Json.toJson(userAnswers).toString)
+
+      val result = route(app, request).value
+
+      status(result) mustEqual NO_CONTENT
+      verify(mockRepo, times(1)).set(eqTo(userAnswers))
+    }
+
+    "must return BadRequest when the data cannot be parsed as UserAnswers" in {
+
+      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
+        .thenReturn(Future.successful(new~(new~(new~(atarEnrolment, Some(userId)), Some(AffinityGroup.Organisation)), Some(Assistant))))
+
+      val request =
+        FakeRequest(POST, routes.UserAnswersController.set().url)
+          .withHeaders(
+            "Content-Type" -> "application/json"
+          )
+          .withBody(Json.obj("foo" -> "bar").toString)
+
+      val result = route(app, request).value
+
+      status(result) mustEqual BAD_REQUEST
+    }
+  }
+
+  ".keepAlive" - {
+
+    "must return NoContent and keep the data alive" in {
+
+      when(mockRepo.keepAlive(any(), any())) thenReturn Future.successful(Done)
+      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
+        .thenReturn(Future.successful(new~(new~(new~(atarEnrolment, Some(userId)), Some(AffinityGroup.Organisation)), Some(Assistant))))
+
+      val request =
+        FakeRequest(POST, routes.UserAnswersController.keepAlive(draftId).url)
+
+      val result = route(app, request).value
+
+      status(result) mustEqual NO_CONTENT
+      verify(mockRepo, times(1)).keepAlive(eqTo(userId), eqTo(draftId))
+    }
+  }
+
+  ".keepAlive" - {
+
+    "must return NoContent and clear the data" in {
+
+      when(mockRepo.clear(any(), any())) thenReturn Future.successful(Done)
+      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
+        .thenReturn(Future.successful(new~(new~(new~(atarEnrolment, Some(userId)), Some(AffinityGroup.Organisation)), Some(Assistant))))
+
+      val request =
+        FakeRequest(DELETE, routes.UserAnswersController.clear(draftId).url)
+
+      val result = route(app, request).value
+
+      status(result) mustEqual NO_CONTENT
+      verify(mockRepo, times(1)).clear(eqTo(userId), eqTo(draftId))
     }
   }
 }

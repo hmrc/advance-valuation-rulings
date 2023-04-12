@@ -19,7 +19,7 @@ package uk.gov.hmrc.advancevaluationrulings.controllers
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.advancevaluationrulings.controllers.actions.IdentifierAction
-import uk.gov.hmrc.advancevaluationrulings.models.DraftId
+import uk.gov.hmrc.advancevaluationrulings.models.{DraftId, UserAnswers}
 import uk.gov.hmrc.advancevaluationrulings.repositories.UserAnswersRepository
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -40,5 +40,26 @@ class UserAnswersController @Inject()(
           _.map(answers => Ok(Json.toJson(answers)))
             .getOrElse(NotFound)
         }
+  }
+
+  def set(): Action[UserAnswers] = identify(parse.json[UserAnswers]).async {
+    implicit request =>
+      repository
+        .set(request.body)
+        .map(_ => NoContent)
+  }
+
+  def keepAlive(draftId: DraftId): Action[AnyContent] = identify.async {
+    implicit request =>
+      repository
+        .keepAlive(request.internalId, draftId)
+        .map(_ => NoContent)
+  }
+
+  def clear(draftId: DraftId): Action[AnyContent] = identify.async {
+    implicit request =>
+      repository
+        .clear(request.internalId, draftId)
+        .map(_ => NoContent)
   }
 }

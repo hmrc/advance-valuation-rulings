@@ -33,12 +33,12 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class UserAnswersRepository @Inject()(
-                                    mongoComponent: MongoComponent,
-                                    appConfig: AppConfig,
-                                    clock: Clock
-                                  )(implicit ec: ExecutionContext, crypto: Encrypter with Decrypter)
+                                       mongoComponent: MongoComponent,
+                                       appConfig: AppConfig,
+                                       clock: Clock
+                                     )(implicit ec: ExecutionContext, crypto: Encrypter with Decrypter)
   extends PlayMongoRepository[UserAnswers](
-    collectionName = "user-data",
+    collectionName = "user-answers",
     mongoComponent = mongoComponent,
     domainFormat   = UserAnswers.encryptedFormat,
     indexes        = Seq(

@@ -39,19 +39,19 @@ object UserAnswers {
     import play.api.libs.functional.syntax._
 
     (
-      (__ \ "_id").read[String] and
+      (__ \ "userId").read[String] and
       (__ \ "draftId").read[DraftId] and
       (__ \ "data").read[JsObject] and
-      (__ \ "lastUpdated").read(MongoJavatimeFormats.instantFormat)
+      (__ \ "lastUpdated").read[Instant]
     )(UserAnswers.apply _)
   }
 
   private val writes: OWrites[UserAnswers] =
     (
-      (__ \ "_id").write[String] and
+      (__ \ "userId").write[String] and
       (__ \ "draftId").write[DraftId] and
       (__ \ "data").write[JsObject] and
-      (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)
+      (__ \ "lastUpdated").write[Instant]
     )(unlift(UserAnswers.unapply))
 
   implicit val format: OFormat[UserAnswers] = OFormat(reads, writes)
