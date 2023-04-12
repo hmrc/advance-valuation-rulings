@@ -49,8 +49,8 @@ object DraftId {
 
       override def bind(key: String, value: String): Either[String, DraftId] =
         fromString(value) match {
-          case Some(applicationId) => Right(applicationId)
-          case None => Left("Invalid application Id")
+          case Some(draftId) => Right(draftId)
+          case None => Left("Invalid draft Id")
         }
 
       override def unbind(key: String, value: DraftId): String =
