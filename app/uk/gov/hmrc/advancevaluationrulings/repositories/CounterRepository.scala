@@ -45,7 +45,7 @@ class CounterRepository @Inject()(
   override lazy val requiresTtlIndex: Boolean = false
 
   private[repositories] val seeds: Seq[CounterWrapper] = Seq(
-    CounterWrapper(CounterId.ApplicationId, 0),
+    CounterWrapper(CounterId.ApplicationId, 2137409L),
     CounterWrapper(CounterId.AttachmentId, 0)
   )
 
