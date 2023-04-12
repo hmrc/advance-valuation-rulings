@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models
 
-import play.api.libs.json._
 import play.api.libs.functional.syntax._
-import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
+import play.api.libs.json._
 import uk.gov.hmrc.crypto.Sensitive.SensitiveString
 import uk.gov.hmrc.crypto.json.JsonEncryption
+import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 import java.time.Instant
@@ -34,27 +34,7 @@ final case class UserAnswers(
 
 object UserAnswers {
 
-  private val reads: Reads[UserAnswers] = {
-
-    import play.api.libs.functional.syntax._
-
-    (
-      (__ \ "userId").read[String] and
-      (__ \ "draftId").read[DraftId] and
-      (__ \ "data").read[JsObject] and
-      (__ \ "lastUpdated").read[Instant]
-    )(UserAnswers.apply _)
-  }
-
-  private val writes: OWrites[UserAnswers] =
-    (
-      (__ \ "userId").write[String] and
-      (__ \ "draftId").write[DraftId] and
-      (__ \ "data").write[JsObject] and
-      (__ \ "lastUpdated").write[Instant]
-    )(unlift(UserAnswers.unapply))
-
-  implicit val format: OFormat[UserAnswers] = OFormat(reads, writes)
+  implicit val format: OFormat[UserAnswers] = Json.format
 
   def encryptedFormat(implicit crypto: Encrypter with Decrypter): OFormat[UserAnswers] = {
 
@@ -77,6 +57,6 @@ object UserAnswers {
         (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)
       )(ua => (ua.userId, ua.draftId, SensitiveString(Json.stringify(ua.data)), ua.lastUpdated))
 
-    OFormat(encryptedReads orElse reads, encryptedWrites)
+    OFormat(encryptedReads orElse format, encryptedWrites)
   }
 }

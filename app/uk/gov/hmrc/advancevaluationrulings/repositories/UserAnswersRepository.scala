@@ -74,7 +74,7 @@ class UserAnswersRepository @Inject()(
       _ =>
         collection
           .find(byUserIdAndDraftId(userId, draftId))
-          .headOption
+          .headOption()
     }
 
   def set(answers: UserAnswers): Future[Done] = {
