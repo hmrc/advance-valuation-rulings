@@ -16,74 +16,74 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
-import generators.ModelGenerators
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.{Mockito, MockitoSugar}
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import scala.concurrent.Future
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.advancevaluationrulings.connectors.ETMPConnector
-import uk.gov.hmrc.advancevaluationrulings.models.etmp.Query
-import uk.gov.hmrc.advancevaluationrulings.models.etmp.Regime.CDS
-import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
+import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
+import uk.gov.hmrc.advancevaluationrulings.services.TraderDetailsService
+import uk.gov.hmrc.auth.core.{AffinityGroup, Assistant, AuthConnector, Enrolment, EnrolmentIdentifier, Enrolments}
 import uk.gov.hmrc.auth.core.retrieve.~
-import uk.gov.hmrc.auth.core.{AffinityGroup, Assistant, AuthConnector, CredentialRole, Enrolment, EnrolmentIdentifier, Enrolments}
+import generators.ModelGenerators
+import org.mockito.MockitoSugar
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
-import scala.concurrent.Future
+class TraderDetailsControllerSpec
+    extends AnyFreeSpec
+    with Matchers
+    with OptionValues
+    with ModelGenerators
+    with MockitoSugar
+    with BeforeAndAfterEach
+    with ScalaCheckPropertyChecks {
 
-class TraderDetailsControllerSpec extends AnyFreeSpec with Matchers with OptionValues with ModelGenerators with MockitoSugar with BeforeAndAfterEach {
+  private val mockAuthConnector        = mock[AuthConnector]
+  private val mockTraderDetailsService = mock[TraderDetailsService]
 
-  private val mockConnector = mock[ETMPConnector]
-  private val mockAuthConnector = mock[AuthConnector]
-
-  private val applicantEori = "applicantEori"
-  private val atarEnrolment = Enrolments(Set(Enrolment("HMRC-ATAR-ORG", Seq(EnrolmentIdentifier("EORINumber", applicantEori)), "Activated")))
+  private val ackRef        = AcknowledgementReference("ackRef")
+  private val eoriNumber    = EoriNumber("applicantEori")
+  private val atarEnrolment =
+    Enrolments(Set(Enrolment("HMRC-ATAR-ORG", Seq(EnrolmentIdentifier("EORINumber", eoriNumber.value)), "Activated")))
 
   private val app =
     GuiceApplicationBuilder()
       .overrides(
-        bind[ETMPConnector].toInstance(mockConnector),
-        bind[AuthConnector].toInstance(mockAuthConnector)
-      ).build()
+        bind[AuthConnector].toInstance(mockAuthConnector),
+        bind[TraderDetailsService].toInstance(mockTraderDetailsService)
+      )
+      .build()
 
   override def beforeEach(): Unit = {
-    Mockito.reset(mockConnector)
-    Mockito.reset(mockAuthConnector)
     super.beforeEach()
+    reset(mockTraderDetailsService, mockAuthConnector)
   }
 
   ".retrieveTraderDetails" - {
 
     "must return trader details" in {
+      forAll(traderDetailsResponseGen) { traderDetails =>
+        val authResult =
+          new ~(new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)), Some(Assistant))
 
-      val etmpRequest = Query(CDS, "foo", EORI = Some("eori"))
-      val etmpResponse = ETMPSubscriptionDisplayResponseGen.sample.value
-      val expectedResult = TraderDetailsResponse(
-        etmpResponse.subscriptionDisplayResponse.responseDetail.EORINo,
-        etmpResponse.subscriptionDisplayResponse.responseDetail.CDSFullName,
-        etmpResponse.subscriptionDisplayResponse.responseDetail.CDSEstablishmentAddress,
-        etmpResponse.subscriptionDisplayResponse.responseDetail.consentToDisclosureOfPersonalData
-          .exists(_.equalsIgnoreCase("1")),
-        etmpResponse.subscriptionDisplayResponse.responseDetail.contactInformation
-      )
+        when(mockAuthConnector.authorise[authResult.type](any(), any())(any(), any())).thenReturn(Future.successful(authResult))
+        when(mockTraderDetailsService.getTraderDetails(eqTo(ackRef), eqTo(eoriNumber))(any(), any()))
+          .thenReturn(Future.successful(traderDetails))
 
-      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
-        .thenReturn(Future.successful(new ~(new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)), Some(Assistant))))
-      when(mockConnector.getSubscriptionDetails(eqTo(etmpRequest))(any())).thenReturn(Future.successful(etmpResponse))
+        val request =
+          FakeRequest(GET, routes.TraderDetailsController.retrieveTraderDetails(ackRef.value, eoriNumber.value).url)
 
-      val request =
-        FakeRequest(GET, routes.TraderDetailsController.retrieveTraderDetails("foo", "eori").url)
+        val result = route(app, request).value
 
-      val result = route(app, request).value
-
-      status(result) mustEqual OK
-      contentAsJson(result) mustEqual Json.toJson(expectedResult)
+        status(result) mustEqual OK
+        contentAsJson(result) mustEqual Json.toJson(traderDetails)
+      }
     }
   }
 }

@@ -18,8 +18,8 @@ package generators
 
 import org.scalacheck.{Arbitrary, Gen}
 import uk.gov.hmrc.advancevaluationrulings.models.application.ApplicationId
-import uk.gov.hmrc.advancevaluationrulings.models.common._
 import uk.gov.hmrc.advancevaluationrulings.models.etmp._
+import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
 import wolfendale.scalacheck.regexp.RegexpGen
 
 import java.time.ZoneOffset
@@ -94,19 +94,17 @@ trait ModelGenerators extends Generators {
   def ETMPSubscriptionDisplayResponseGen: Gen[ETMPSubscriptionDisplayResponse] =
     subscriptionDisplayResponseGen.map(ETMPSubscriptionDisplayResponse(_))
 
-  def registeredDetailsCheckGen: Gen[RegisteredDetailsCheck] = for {
-    registeredDetailsAreCorrect <- Arbitrary.arbitrary[Boolean]
-    registeredDetails           <- ETMPSubscriptionDisplayResponseGen
+  def traderDetailsResponseGen: Gen[TraderDetailsResponse] = for {
+    registeredDetails                 <- ETMPSubscriptionDisplayResponseGen
+    consentToDisclosureOfPersonalData <- Arbitrary.arbitrary[Boolean]
   } yield {
     val responseDetail = registeredDetails.subscriptionDisplayResponse.responseDetail
-    RegisteredDetailsCheck(
-      value = registeredDetailsAreCorrect,
-      eori = responseDetail.EORINo,
-      name = responseDetail.CDSFullName,
-      streetAndNumber = responseDetail.CDSEstablishmentAddress.streetAndNumber,
-      city = responseDetail.CDSEstablishmentAddress.city,
-      country = responseDetail.CDSEstablishmentAddress.countryCode,
-      postalCode = responseDetail.CDSEstablishmentAddress.postalCode
+    TraderDetailsResponse(
+      EORINo = responseDetail.EORINo,
+      CDSFullName = responseDetail.CDSFullName,
+      CDSEstablishmentAddress = responseDetail.CDSEstablishmentAddress,
+      consentToDisclosureOfPersonalData = consentToDisclosureOfPersonalData,
+      contactInformation = responseDetail.contactInformation
     )
   }
 }
