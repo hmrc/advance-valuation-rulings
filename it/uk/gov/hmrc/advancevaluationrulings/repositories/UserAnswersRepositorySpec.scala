@@ -154,9 +154,7 @@ class UserAnswersRepositorySpec
 
     "must return Done when there is no record to remove" in {
 
-      val result = repository.clear("user id that does not exist", DraftId(2)).futureValue
-
-      result mustEqual Done
+      repository.clear("user id that does not exist", DraftId(2)).futureValue
     }
   }
 
@@ -168,7 +166,7 @@ class UserAnswersRepositorySpec
 
         insert(answers).futureValue
 
-        val result = repository.keepAlive(answers.userId, answers.draftId).futureValue
+        repository.keepAlive(answers.userId, answers.draftId).futureValue
 
         val expectedUpdatedAnswers = answers copy (lastUpdated = instant)
 

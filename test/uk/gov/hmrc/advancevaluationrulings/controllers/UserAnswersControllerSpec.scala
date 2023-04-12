@@ -155,7 +155,7 @@ class UserAnswersControllerSpec extends AnyFreeSpec with Matchers with MockitoSu
     }
   }
 
-  ".keepAlive" - {
+  ".clear" - {
 
     "must return NoContent and clear the data" in {
 
