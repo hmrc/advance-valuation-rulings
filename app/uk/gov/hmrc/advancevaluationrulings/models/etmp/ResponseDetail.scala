@@ -22,7 +22,8 @@ final case class ResponseDetail(
   EORINo: String,
   CDSFullName: String,
   CDSEstablishmentAddress: CDSEstablishmentAddress,
-  contactInformation: Option[ContactInformation]
+  contactInformation: Option[ContactInformation],
+  consentToDisclosureOfPersonalData: Option[String]
 )
 
 object ResponseDetail {

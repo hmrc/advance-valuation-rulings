@@ -23,6 +23,7 @@ final case class TraderDetailsResponse(
   EORINo: String,
   CDSFullName: String,
   CDSEstablishmentAddress: CDSEstablishmentAddress,
+  consentToDisclosureOfPersonalData: Boolean,
   contactInformation: Option[ContactInformation]
 )
 

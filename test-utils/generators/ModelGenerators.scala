@@ -18,8 +18,8 @@ package generators
 
 import org.scalacheck.{Arbitrary, Gen}
 import uk.gov.hmrc.advancevaluationrulings.models.application.ApplicationId
-import uk.gov.hmrc.advancevaluationrulings.models.common._
 import uk.gov.hmrc.advancevaluationrulings.models.etmp._
+import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
 import wolfendale.scalacheck.regexp.RegexpGen
 
 import java.time.ZoneOffset
@@ -75,11 +75,18 @@ trait ModelGenerators extends Generators {
   )
 
   def responseDetailGen: Gen[ResponseDetail] = for {
-    eoriNo                     <- eoriNumberGen
-    cdsFullName                <- stringsWithMaxLength(512)
-    cdsEstablishmentAddressGen <- CDSEstablishmentAddressGen
-    contactInformation         <- Gen.option(contactInformationGen)
-  } yield ResponseDetail(eoriNo, cdsFullName, cdsEstablishmentAddressGen, contactInformation)
+    eoriNo                            <- eoriNumberGen
+    cdsFullName                       <- stringsWithMaxLength(512)
+    cdsEstablishmentAddressGen        <- CDSEstablishmentAddressGen
+    contactInformation                <- Gen.option(contactInformationGen)
+    consentToDisclosureOfPersonalData <- Gen.option(Gen.oneOf(Seq("0", "1")))
+  } yield ResponseDetail(
+    eoriNo,
+    cdsFullName,
+    cdsEstablishmentAddressGen,
+    contactInformation,
+    consentToDisclosureOfPersonalData
+  )
 
   def subscriptionDisplayResponseGen: Gen[SubscriptionDisplayResponse] =
     responseDetailGen.map(SubscriptionDisplayResponse(_))
@@ -87,20 +94,17 @@ trait ModelGenerators extends Generators {
   def ETMPSubscriptionDisplayResponseGen: Gen[ETMPSubscriptionDisplayResponse] =
     subscriptionDisplayResponseGen.map(ETMPSubscriptionDisplayResponse(_))
 
-
-  def registeredDetailsCheckGen: Gen[RegisteredDetailsCheck] = for {
-    registeredDetailsAreCorrect <- Arbitrary.arbitrary[Boolean]
-    registeredDetails           <- ETMPSubscriptionDisplayResponseGen
+  def traderDetailsResponseGen: Gen[TraderDetailsResponse] = for {
+    registeredDetails                 <- ETMPSubscriptionDisplayResponseGen
+    consentToDisclosureOfPersonalData <- Arbitrary.arbitrary[Boolean]
   } yield {
     val responseDetail = registeredDetails.subscriptionDisplayResponse.responseDetail
-    RegisteredDetailsCheck(
-      value = registeredDetailsAreCorrect,
-      eori = responseDetail.EORINo,
-      name = responseDetail.CDSFullName,
-      streetAndNumber = responseDetail.CDSEstablishmentAddress.streetAndNumber,
-      city = responseDetail.CDSEstablishmentAddress.city,
-      country = responseDetail.CDSEstablishmentAddress.countryCode,
-      postalCode = responseDetail.CDSEstablishmentAddress.postalCode
+    TraderDetailsResponse(
+      EORINo = responseDetail.EORINo,
+      CDSFullName = responseDetail.CDSFullName,
+      CDSEstablishmentAddress = responseDetail.CDSEstablishmentAddress,
+      consentToDisclosureOfPersonalData = consentToDisclosureOfPersonalData,
+      contactInformation = responseDetail.contactInformation
     )
   }
 }
