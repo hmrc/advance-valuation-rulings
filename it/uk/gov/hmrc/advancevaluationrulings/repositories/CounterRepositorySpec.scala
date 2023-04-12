@@ -1,6 +1,6 @@
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
-import org.scalatest.OptionValues
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -14,15 +14,19 @@ class CounterRepositorySpec
     with Matchers
     with DefaultPlayMongoRepositorySupport[CounterWrapper]
     with OptionValues
-    with ScalaFutures {
+    with ScalaFutures
+    with BeforeAndAfterEach {
 
   protected override val repository = new CounterRepository(mongoComponent)
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    repository.seed.futureValue
+  }
 
   "on startup" - {
 
     "must insert seed records when they do not already exist" in {
-
-      repository.seed.futureValue
 
       findAll().futureValue must contain theSameElementsAs repository.seeds
     }
@@ -32,7 +36,6 @@ class CounterRepositorySpec
 
     "must not fail when records already exist" in {
 
-      repository.seed.futureValue
       repository.seed.futureValue
 
       findAll().futureValue must contain theSameElementsAs repository.seeds
