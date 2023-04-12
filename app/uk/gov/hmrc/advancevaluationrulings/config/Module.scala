@@ -20,6 +20,7 @@ import org.apache.fop.apps.FopFactory
 import play.api.inject.Binding
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.advancevaluationrulings.services.{DefaultDmsSubmissionService, DmsSubmissionService, NoOpDmsSubmissionService}
+import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
 
 import java.time.Clock
 
@@ -41,6 +42,7 @@ class Module extends play.api.inject.Module {
       bind[AppConfig].toSelf.eagerly(),
       bind[Clock].toInstance(Clock.systemUTC()),
       bind[FopFactory].toProvider[FopFactoryProvider].eagerly(),
+      bind[Encrypter with Decrypter].toProvider[CryptoProvider],
       authTokenInitialiserBinding,
       dmsSubmissionServiceBinding
     )

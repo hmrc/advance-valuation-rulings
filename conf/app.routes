@@ -2,8 +2,13 @@
 
 GET        /trader-details/:acknowledgementReference/:eoriNumber             uk.gov.hmrc.advancevaluationrulings.controllers.TraderDetailsController.retrieveTraderDetails(acknowledgementReference: String, eoriNumber: String)
 
-GET         /applications                   uk.gov.hmrc.advancevaluationrulings.controllers.ApplicationController.summaries
-GET         /applications/:applicationId    uk.gov.hmrc.advancevaluationrulings.controllers.ApplicationController.get(applicationId: ApplicationId)
-POST        /applications                   uk.gov.hmrc.advancevaluationrulings.controllers.ApplicationController.submit
+GET         /applications                           uk.gov.hmrc.advancevaluationrulings.controllers.ApplicationController.summaries
+GET         /applications/:applicationId            uk.gov.hmrc.advancevaluationrulings.controllers.ApplicationController.get(applicationId: ApplicationId)
+POST        /applications                           uk.gov.hmrc.advancevaluationrulings.controllers.ApplicationController.submit
 
-POST        /dms/callback                   uk.gov.hmrc.advancevaluationrulings.controllers.DmsSubmissionCallbackController.callback
+POST        /dms/callback                           uk.gov.hmrc.advancevaluationrulings.controllers.DmsSubmissionCallbackController.callback
+
+GET         /user-answers/:draftId                  uk.gov.hmrc.advancevaluationrulings.controllers.UserAnswersController.get(draftId: DraftId)
+POST        /user-answers/                          uk.gov.hmrc.advancevaluationrulings.controllers.UserAnswersController.set()
+DELETE      /user-answers/:draftId                  uk.gov.hmrc.advancevaluationrulings.controllers.UserAnswersController.clear(draftId: DraftId)
+POST        /user-answers/:draftId/keep-alive       uk.gov.hmrc.advancevaluationrulings.controllers.UserAnswersController.keepAlive(draftId: DraftId)

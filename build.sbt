@@ -25,7 +25,11 @@ lazy val microservice = Project("advance-valuation-rulings", file("."))
   .settings(resolvers += Resolver.jcenterRepo)
   .settings(CodeCoverageSettings.settings: _*)
   .settings(scoverageSettings)
-  .settings(RoutesKeys.routesImport ++= Seq("uk.gov.hmrc.advancevaluationrulings.models.application.ApplicationId"))
+  .settings(RoutesKeys.routesImport ++= Seq(
+    "uk.gov.hmrc.advancevaluationrulings.models.application.ApplicationId",
+    "uk.gov.hmrc.advancevaluationrulings.models.DraftId"
+  ))
+
 
 lazy val testSettings: Seq[Def.Setting[_]] = Seq(
   fork := true,

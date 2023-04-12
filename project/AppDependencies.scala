@@ -13,7 +13,8 @@ object AppDependencies {
     "org.typelevel"           %% "cats-core"                    % "2.9.0",
     "uk.gov.hmrc"             %% "internal-auth-client-play-28" % "1.2.0",
     "uk.gov.hmrc.objectstore" %% "object-store-client-play-28"  % "1.0.0",
-    "org.apache.xmlgraphics"  %  "fop"                          % "2.8"
+    "org.apache.xmlgraphics"  %  "fop"                          % "2.8",
+    "uk.gov.hmrc"             %% "crypto-json-play-28"          % "7.3.0",
   )
 
   val test: Seq[ModuleID] = Seq(
