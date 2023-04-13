@@ -18,6 +18,7 @@ package uk.gov.hmrc.advancevaluationrulings.models.application
 
 import play.api.libs.json.{JsSuccess, Json}
 import generators.Generators
+import org.scalacheck.Arbitrary
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
@@ -61,10 +62,13 @@ class ApplicationRequestSpec extends AnyWordSpec with Matchers with ScalaCheckPr
 object ApplicationRequestSpec extends Generators {
   val randomString: String = stringsWithMaxLength(8).sample.getOrElse("random")
 
+  val randomBoolean: Boolean = Arbitrary.arbitrary[Boolean].sample.getOrElse(true)
+
   val draftId: DraftId = DraftId(0)
 
   val eoriDetails = TraderDetail(
     eori = randomString,
+    consentToDisclosureOfPersonalData = randomBoolean,
     businessName = randomString,
     addressLine1 = randomString,
     addressLine2 = Some(randomString),
@@ -106,6 +110,7 @@ object ApplicationRequestSpec extends Generators {
     |"draftId": "$draftId",
     |"trader": {
     |  "eori": "$randomString",
+    |  "consentToDisclosureOfPersonalData": $randomBoolean,
     |  "businessName": "$randomString",
     |  "addressLine1": "$randomString",
     |  "addressLine2": "$randomString",

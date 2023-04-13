@@ -65,7 +65,7 @@ class DmsSubmissionServiceSpec extends AnyFreeSpec with Matchers with ScalaFutur
 
   "submitApplication" - {
 
-    val trader = TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None)
+    val trader = TraderDetail("eori", true, "name", "line1", None, None, "postcode", "GB", None)
     val goodsDetails = GoodsDetails("name", "description", None, None, None)
     val method = MethodOne(None, None, None)
     val contact = ContactDetails("name", "email", None)

@@ -20,6 +20,7 @@ import play.api.libs.json.{Json, OFormat}
 
 final case class TraderDetail(
                                eori: String,
+                               consentToDisclosureOfPersonalData: Boolean,
                                businessName: String,
                                addressLine1: String,
                                addressLine2: Option[String],

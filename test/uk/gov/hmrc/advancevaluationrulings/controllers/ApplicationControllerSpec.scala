@@ -48,7 +48,7 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
 
   private val applicantEori = "applicantEori"
   private val atarEnrolment = Enrolments(Set(Enrolment("HMRC-ATAR-ORG", Seq(EnrolmentIdentifier("EORINumber", applicantEori)), "Activated")))
-  private val trader = TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None)
+  private val trader = TraderDetail("eori", true, "name", "line1", None, None, "postcode", "GB", None)
   private val goodsDetails = GoodsDetails("name", "description", None, None, None)
   private val submissionReference = "submissionReference"
   private val method = MethodOne(None, None, None)

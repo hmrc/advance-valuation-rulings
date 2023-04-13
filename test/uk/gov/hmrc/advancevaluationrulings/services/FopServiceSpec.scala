@@ -50,6 +50,7 @@ class FopServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with In
         applicantEori = "GB905360708861",
         trader = TraderDetail(
           eori = "GB905360708861",
+          consentToDisclosureOfPersonalData = true,
           businessName = "Some business",
           addressLine1 = "1 The Street",
           addressLine2 = Some("Some town"),
@@ -60,6 +61,7 @@ class FopServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with In
         ),
         agent = Some(TraderDetail(
           eori = "GB123123456456",
+          consentToDisclosureOfPersonalData = true,
           businessName = "Some other business",
           addressLine1 = "2 The Street",
           addressLine2 = Some("Some town"),

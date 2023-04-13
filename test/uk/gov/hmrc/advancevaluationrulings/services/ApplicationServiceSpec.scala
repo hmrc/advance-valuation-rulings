@@ -23,13 +23,11 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
-import play.api.test.FakeRequest
 import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId}
 import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.repositories.{ApplicationRepository, CounterRepository}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.objectstore.client.Path
-import uk.gov.hmrc.advancevaluationrulings.controllers.actions.IdentifierRequest
 import uk.gov.hmrc.advancevaluationrulings.models.audit.ApplicationSubmissionEvent
 import uk.gov.hmrc.auth.core.{AffinityGroup, Assistant}
 import uk.gov.hmrc.advancevaluationrulings.models.audit.AuditMetadata
@@ -48,7 +46,7 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
   private val mockAuditService = mock[AuditService]
   private val fixedInstant = Instant.now
   private val fixedClock = Clock.fixed(fixedInstant, ZoneId.systemDefault())
-  private val trader = TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None)
+  private val trader = TraderDetail("eori", true, "name", "line1", None, None, "postcode", "GB", None)
   private val goodsDetails = GoodsDetails("name", "description", None, None, None)
   private val submissionReference = "submissionReference"
   private val method = MethodOne(None, None, None)
