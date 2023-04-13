@@ -24,7 +24,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.test.FakeRequest
-import uk.gov.hmrc.advancevaluationrulings.models.Done
+import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId}
 import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.repositories.{ApplicationRepository, CounterRepository}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -90,7 +90,7 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
       when(mockDmsSubmissionService.submitApplication(any(), any())(any())).thenReturn(Future.successful(Done))
 
       val applicationRequest = ApplicationRequest(
-        draftId = "foo",
+        draftId = DraftId(0),
         trader = trader,
         agent = None,
         contact = contact,
@@ -161,7 +161,7 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
       when(mockDmsSubmissionService.submitApplication(any(), any())(any())).thenReturn(Future.successful(Done))
 
       val applicationRequest = ApplicationRequest(
-        draftId = "foo",
+        draftId = DraftId(0),
         trader = trader,
         agent = None,
         contact = contact,
@@ -214,7 +214,7 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
       when(mockDmsSubmissionService.submitApplication(any(), any())(any())).thenReturn(Future.successful(Done))
 
       val applicationRequest = ApplicationRequest(
-        draftId = "foo",
+        draftId = DraftId(0),
         trader = trader,
         agent = Some(trader),
         contact = contact,
@@ -269,7 +269,7 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
       when(mockDmsSubmissionService.submitApplication(any(), any())(any())).thenReturn(Future.successful(Done))
 
       val applicationRequest = ApplicationRequest(
-        draftId = "foo",
+        draftId = DraftId(0),
         trader = trader,
         agent = None,
         contact = contact,

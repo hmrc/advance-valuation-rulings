@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
-import play.api.libs.json.{Json, JsSuccess}
-
+import play.api.libs.json.{JsSuccess, Json}
 import generators.Generators
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 
 class ApplicationRequestSpec extends AnyWordSpec with Matchers with ScalaCheckPropertyChecks {
 
@@ -61,7 +61,7 @@ class ApplicationRequestSpec extends AnyWordSpec with Matchers with ScalaCheckPr
 object ApplicationRequestSpec extends Generators {
   val randomString: String = stringsWithMaxLength(8).sample.getOrElse("random")
 
-  val draftId: String = "DRAFT"
+  val draftId: DraftId = DraftId(0)
 
   val eoriDetails = TraderDetail(
     eori = randomString,

@@ -17,9 +17,10 @@
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 
 final case class ApplicationRequest(
-                                     draftId: String,
+                                     draftId: DraftId,
                                      trader: TraderDetail,
                                      agent: Option[TraderDetail],
                                      contact: ContactDetails,

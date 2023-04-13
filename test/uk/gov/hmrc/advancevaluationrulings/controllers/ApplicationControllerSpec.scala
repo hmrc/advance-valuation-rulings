@@ -28,6 +28,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.models.audit.AuditMetadata
 import uk.gov.hmrc.advancevaluationrulings.repositories.ApplicationRepository
@@ -80,7 +81,7 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
       val expectedMetadata = AuditMetadata(internalId = "internalId", affinityGroup = AffinityGroup.Organisation, credentialRole = Some(Assistant))
 
       val applicationRequest = ApplicationRequest(
-        draftId = "foo",
+        draftId = DraftId(0),
         trader = trader,
         agent = None,
         contact = contact,
