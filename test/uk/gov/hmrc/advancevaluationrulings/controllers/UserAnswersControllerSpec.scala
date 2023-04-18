@@ -28,6 +28,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.advancevaluationrulings.models.application.{DraftSummary, DraftSummaryResponse}
 import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
 import uk.gov.hmrc.advancevaluationrulings.repositories.UserAnswersRepository
 import uk.gov.hmrc.auth.core.retrieve.~
@@ -170,6 +171,23 @@ class UserAnswersControllerSpec extends AnyFreeSpec with Matchers with MockitoSu
 
       status(result) mustEqual NO_CONTENT
       verify(mockRepo, times(1)).clear(eqTo(userId), eqTo(draftId))
+    }
+  }
+
+  ".summaries" - {
+
+    "must return summaries" in {
+
+      val summaries = Seq(DraftSummary(DraftId(1), None, Instant.now, None))
+      when(mockRepo.summaries(any())) thenReturn Future.successful(summaries)
+      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
+        .thenReturn(Future.successful(new~(new~(new~(atarEnrolment, Some(userId)), Some(AffinityGroup.Organisation)), Some(Assistant))))
+
+      val request = FakeRequest(GET, routes.UserAnswersController.summaries().url)
+
+      val result = route(app, request).value
+      status(result) mustEqual OK
+      contentAsJson(result) mustEqual Json.toJson(DraftSummaryResponse(summaries))
     }
   }
 }
