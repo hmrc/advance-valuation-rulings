@@ -20,6 +20,7 @@ import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model._
 import play.api.libs.json.Format
 import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
+import uk.gov.hmrc.advancevaluationrulings.models.application.DraftSummary
 import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
 import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
 import uk.gov.hmrc.mongo.MongoComponent
@@ -102,4 +103,10 @@ class UserAnswersRepository @Inject()(
       .deleteOne(byUserIdAndDraftId(userId, draftId))
       .toFuture()
       .map(_ => Done)
+
+  def summaries(userId: String): Future[Seq[DraftSummary]] =
+    collection
+      .find(Filters.eq("userId", userId))
+      .toFuture()
+      .map(_.map(DraftSummary.apply))
 }
