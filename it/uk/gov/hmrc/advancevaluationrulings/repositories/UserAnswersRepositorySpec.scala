@@ -11,6 +11,7 @@ import org.scalatest.matchers.must.Matchers
 import play.api.Configuration
 import play.api.libs.json.Json
 import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
+import uk.gov.hmrc.advancevaluationrulings.models.application.DraftSummary
 import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
 import uk.gov.hmrc.crypto.{Decrypter, Encrypter, SymmetricCryptoFactory}
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
@@ -184,6 +185,26 @@ class UserAnswersRepositorySpec
 
         repository.keepAlive("user id that does not exist", DraftId(2)).futureValue
       }
+    }
+  }
+
+  ".summaries" - {
+
+    "must return summaries of all records belonging this user" in {
+
+      val answers2 = answers.copy(draftId = DraftId(2))
+      val answers3 = answers.copy(userId = "other user id", draftId = DraftId(3))
+
+      insert(answers).futureValue
+      insert(answers2).futureValue
+      insert(answers3).futureValue
+
+      val result = repository.summaries("userId").futureValue
+
+      result must contain theSameElementsAs Seq(
+        DraftSummary(DraftId(1), None, Instant.ofEpochSecond(1), None),
+        DraftSummary(DraftId(2), None, Instant.ofEpochSecond(1), None)
+      )
     }
   }
 }
