@@ -54,6 +54,12 @@ class UserAnswersRepository @Inject()(
         IndexOptions()
           .name("id-index")
           .unique(true)
+      ),
+      IndexModel(
+        Indexes.ascending("draftId"),
+        IndexOptions()
+          .name("draft-id-index")
+          .unique(true)
       )
     ),
     extraCodecs = Seq(Codecs.playFormatCodec(DraftId.format))
@@ -83,6 +89,11 @@ class UserAnswersRepository @Inject()(
           .find(byUserIdAndDraftId(userId, draftId))
           .headOption()
     }
+
+  def get(draftId: DraftId): Future[Option[UserAnswers]] =
+    collection
+      .find(Filters.eq("draftId", draftId))
+      .headOption()
 
   def set(answers: UserAnswers): Future[Done] = {
 
