@@ -93,7 +93,7 @@ class UserAnswersRepositorySpec
     }
   }
 
-  ".get" - {
+  ".get (by user id and draft id)" - {
 
     "when there is a record for this user id and draft id" - {
 
@@ -141,7 +141,30 @@ class UserAnswersRepositorySpec
     }
   }
 
-  ".clear" - {
+  ".get (by draft id only)" - {
+
+    "when there is a record for this draft id" - {
+
+      "must get the record" in {
+
+        insert(answers).futureValue
+
+        val result = repository.get(answers.draftId).futureValue
+
+        result.value mustEqual answers
+      }
+    }
+
+    "when there is no record for this user id and draft id" - {
+
+      "must return None" in {
+
+        repository.get(DraftId(2)).futureValue must not be defined
+      }
+    }
+  }
+
+    ".clear" - {
 
     "must remove a record" in {
 
