@@ -50,18 +50,13 @@ class UserAnswersRepository @Inject()(
           .expireAfter(appConfig.userAnswersTtlInDays, TimeUnit.DAYS)
       ),
       IndexModel(
-        Indexes.ascending("userId", "draftId"),
-        IndexOptions()
-          .name("id-index")
-          .unique(true)
-      ),
-      IndexModel(
         Indexes.ascending("draftId"),
         IndexOptions()
           .name("draft-id-index")
           .unique(true)
       )
     ),
+    replaceIndexes = true,
     extraCodecs = Seq(Codecs.playFormatCodec(DraftId.format))
   ) {
 
