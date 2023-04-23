@@ -44,20 +44,45 @@ class CounterRepository @Inject()(
 
   override lazy val requiresTtlIndex: Boolean = false
 
+  val applicationStartingIndex = 2137409L
+
   private[repositories] val seeds: Seq[CounterWrapper] = Seq(
-    CounterWrapper(CounterId.ApplicationId, 2137409L),
+    CounterWrapper(CounterId.ApplicationId, applicationStartingIndex),
     CounterWrapper(CounterId.AttachmentId, 0)
   )
 
   @nowarn
-  private val seedDatabase = seeds // Eagerly call seed to ensure records are created on startup if needed
+  private val seedDatabase = seed // Eagerly call seed to ensure records are created on startup if needed
+
+  def ensureApplicationIdIsCorrect(): Future[Done] =
+    collection
+      .find(byId(CounterId.ApplicationId))
+      .headOption
+      .flatMap(_.map {
+        applicationId =>
+          if (applicationId.index < applicationStartingIndex) {
+            collection
+              .findOneAndUpdate(
+                filter = byId(CounterId.ApplicationId),
+                update = Updates.set("index", applicationStartingIndex),
+                options = FindOneAndUpdateOptions()
+                  .upsert(true)
+                  .bypassDocumentValidation(false)
+              )
+              .toFuture()
+              .map(_ => Done)
+          } else {
+            Future.successful(Done)
+          }
+      }.getOrElse(Future.successful(Done)))
 
   def seed: Future[Done] =
     collection.insertMany(seeds)
       .toFuture()
       .map(_ => Done)
-      .recover {
-        case e: MongoBulkWriteException if e.getWriteErrors.asScala.forall(x => x.getCode == duplicateErrorCode) => Done
+      .recoverWith {
+        case e: MongoBulkWriteException if e.getWriteErrors.asScala.forall(x => x.getCode == duplicateErrorCode) =>
+          ensureApplicationIdIsCorrect()
       }
 
   def nextId(id: CounterId): Future[Long] =
