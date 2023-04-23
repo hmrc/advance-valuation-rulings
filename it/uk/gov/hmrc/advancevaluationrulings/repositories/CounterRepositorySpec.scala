@@ -1,5 +1,6 @@
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
+import org.mongodb.scala.model.{Filters, FindOneAndUpdateOptions, Updates}
 import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
@@ -39,6 +40,53 @@ class CounterRepositorySpec
       repository.seed.futureValue
 
       findAll().futureValue must contain theSameElementsAs repository.seeds
+    }
+  }
+
+  ".ensureApplicationIdIsCorrect" - {
+
+    "must update the application Id index when it is lower than the intended starting index" in {
+
+      repository.seed.futureValue
+
+      repository.collection
+        .findOneAndUpdate(
+          filter = Filters.eq("_id", CounterId.ApplicationId.toString),
+          update = Updates.set("index", 1L),
+          options = FindOneAndUpdateOptions()
+            .upsert(true)
+            .bypassDocumentValidation(false)
+        )
+        .toFuture()
+        .futureValue
+
+      repository.ensureApplicationIdIsCorrect().futureValue
+
+      find(
+        Filters.eq("_id", CounterId.ApplicationId.toString)
+      ).futureValue.head.index mustEqual repository.applicationStartingIndex
+    }
+
+    "must not update the application Id index when it is equal to or greater than the intended starting index" in {
+
+      repository.seed.futureValue
+
+      repository.collection
+        .findOneAndUpdate(
+          filter = Filters.eq("_id", CounterId.ApplicationId.toString),
+          update = Updates.set("index", repository.applicationStartingIndex + 1),
+          options = FindOneAndUpdateOptions()
+            .upsert(true)
+            .bypassDocumentValidation(false)
+        )
+        .toFuture()
+        .futureValue
+
+      repository.ensureApplicationIdIsCorrect().futureValue
+
+      find(
+        Filters.eq("_id", CounterId.ApplicationId.toString)
+      ).futureValue.head.index mustEqual repository.applicationStartingIndex + 1
     }
   }
 
