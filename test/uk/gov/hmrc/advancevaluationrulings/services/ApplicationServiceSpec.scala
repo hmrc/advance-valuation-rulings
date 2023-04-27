@@ -124,7 +124,8 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
         affinityGroup = AffinityGroup.Individual,
         credentialRole = None,
         isAgent = None,
-        application = expectedApplication
+        application = expectedApplication,
+        draftId = applicationRequest.draftId
       )
 
       val result = service.save(applicantEori, applicationRequest, auditMetadata)(hc).futureValue
@@ -248,7 +249,8 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
         affinityGroup = AffinityGroup.Organisation,
         credentialRole = Some(Assistant),
         isAgent = Some(true),
-        application = expectedApplication
+        application = expectedApplication,
+        draftId = applicationRequest.draftId
       )
 
       service.save(applicantEori, applicationRequest, auditMetadata)(hc).futureValue
@@ -303,7 +305,8 @@ class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar
         affinityGroup = AffinityGroup.Organisation,
         credentialRole = Some(Assistant),
         isAgent = Some(false),
-        application = expectedApplication
+        application = expectedApplication,
+        draftId = applicationRequest.draftId
       )
 
       service.save(applicantEori, applicationRequest, auditMetadata)(hc).futureValue

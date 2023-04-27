@@ -24,6 +24,7 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
+import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, ApplicationId, ContactDetails, GoodsDetails, MethodOne, TraderDetail}
 import uk.gov.hmrc.advancevaluationrulings.models.audit.ApplicationSubmissionEvent
 import uk.gov.hmrc.auth.core.{AffinityGroup, Assistant}
@@ -80,7 +81,8 @@ class AuditServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar with 
         affinityGroup = AffinityGroup.Organisation,
         credentialRole = Some(Assistant),
         isAgent = Some(false),
-        application = application
+        application = application,
+        draftId = DraftId(1)
       )
 
       service.auditSubmitRequest(event)(hc)

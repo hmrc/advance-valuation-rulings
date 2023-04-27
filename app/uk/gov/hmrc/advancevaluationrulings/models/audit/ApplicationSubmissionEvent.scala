@@ -17,6 +17,7 @@
 package uk.gov.hmrc.advancevaluationrulings.models.audit
 
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 import uk.gov.hmrc.advancevaluationrulings.models.application.Application
 import uk.gov.hmrc.auth.core.{AffinityGroup, CredentialRole}
 
@@ -25,7 +26,8 @@ final case class ApplicationSubmissionEvent(
                                              affinityGroup: AffinityGroup,
                                              credentialRole: Option[CredentialRole],
                                              isAgent: Option[Boolean],
-                                             application: Application
+                                             application: Application,
+                                             draftId: DraftId
                                            )
 
 object ApplicationSubmissionEvent {
