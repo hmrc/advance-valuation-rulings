@@ -17,6 +17,7 @@
 package uk.gov.hmrc.advancevaluationrulings.services
 
 import cats.implicits._
+import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.models.audit.{ApplicationSubmissionEvent, AuditMetadata}
 import uk.gov.hmrc.advancevaluationrulings.repositories.{ApplicationRepository, CounterRepository}
@@ -45,7 +46,7 @@ class ApplicationService @Inject()(
       submissionReference =  submissionReferenceService.random()
       application         <- saveApplication(eori, request, appId, attachments, submissionReference)
       _                   <- dmsSubmissionService.submitApplication(application, submissionReference)
-      _                   =  auditService.auditSubmitRequest(buildAudit(application, auditMetadata))
+      _                   =  auditService.auditSubmitRequest(buildAudit(application, auditMetadata, request.draftId))
     } yield appId
 
   private def saveApplication(applicantEori: String, request: ApplicationRequest, appId: ApplicationId, attachments: Seq[Attachment], submissionReference: String): Future[Application] = {
@@ -83,12 +84,13 @@ class ApplicationService @Inject()(
       )
     }
 
-  private def buildAudit(application: Application, auditMetadata: AuditMetadata): ApplicationSubmissionEvent =
+  private def buildAudit(application: Application, auditMetadata: AuditMetadata, draftId: DraftId): ApplicationSubmissionEvent =
     ApplicationSubmissionEvent(
       internalId = auditMetadata.internalId,
       affinityGroup = auditMetadata.affinityGroup,
       credentialRole = auditMetadata.credentialRole,
       isAgent = Option.when(auditMetadata.affinityGroup == AffinityGroup.Organisation)(application.agent.isDefined),
-      application = application
+      application = application,
+      draftId = draftId
     )
 }
