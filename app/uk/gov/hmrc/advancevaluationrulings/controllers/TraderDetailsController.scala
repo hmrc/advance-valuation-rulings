@@ -31,10 +31,8 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 class TraderDetailsController @Inject() (
   cc: ControllerComponents,
   traderDetailsService: TraderDetailsService,
-  identify: IdentifierAction
-) extends BackendController(cc) {
-
-  implicit val ec: ExecutionContext = cc.executionContext
+  identify: IdentifierAction,
+)(implicit ec: ExecutionContext) extends BackendController(cc) {
 
   def retrieveTraderDetails(
     acknowledgementReference: String,
@@ -49,4 +47,5 @@ class TraderDetailsController @Inject() (
           )
           .map(x => Ok(Json.toJson(x)))
     }
+
 }
