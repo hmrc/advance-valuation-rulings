@@ -1,15 +1,5 @@
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
-import akka.stream.Materializer
-import akka.stream.scaladsl.Sink
-import akka.util.ByteString
-import cats.implicits.toFoldableOps
-import com.github.tomakehurst.wiremock.client.WireMock._
-import com.github.tomakehurst.wiremock.http.Fault
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
 import play.api.Application
 import play.api.http.Status.{NOT_FOUND, OK}
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -17,8 +7,20 @@ import uk.gov.hmrc.advancevaluationrulings.connectors.DraftAttachmentsConnector.
 import uk.gov.hmrc.advancevaluationrulings.utils.WireMockHelper
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
+import cats.implicits.toFoldableOps
+
+import akka.stream.Materializer
+import akka.stream.scaladsl.Sink
+import akka.util.ByteString
+import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.http.Fault
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
+
 class DraftAttachmentsConnectorSpec
-  extends AnyFreeSpec
+    extends AnyFreeSpec
     with WireMockHelper
     with ScalaFutures
     with Matchers
@@ -47,12 +49,13 @@ class DraftAttachmentsConnectorSpec
     GuiceApplicationBuilder()
       .configure(
         "microservice.services.advance-valuation-rulings-frontend.port" -> wireMockServer.port,
-        "internal-auth.token" -> "authKey"
+        "internal-auth.token"                                           -> "authKey"
       )
       .build()
 
-  private lazy val connector: DraftAttachmentsConnector = app.injector.instanceOf[DraftAttachmentsConnector]
-  private implicit lazy val mat: Materializer = app.injector.instanceOf[Materializer]
+  private lazy val connector: DraftAttachmentsConnector =
+    app.injector.instanceOf[DraftAttachmentsConnector]
+  private implicit lazy val mat: Materializer           = app.injector.instanceOf[Materializer]
 
   "get" - {
 
@@ -75,7 +78,8 @@ class DraftAttachmentsConnectorSpec
       result.contentMd5 mustEqual "grtBN0au5C+J3qK1lhT57w=="
 
       val content = result.content
-        .runWith(Sink.reduce[ByteString](_ ++ _)).futureValue
+        .runWith(Sink.reduce[ByteString](_ ++ _))
+        .futureValue
         .decodeString("UTF-8")
       content mustEqual "Hello, World!"
     }
@@ -95,7 +99,10 @@ class DraftAttachmentsConnectorSpec
       val error = connector.get("foobar").failed.futureValue
       error mustBe an[DraftAttachmentsConnectorException]
 
-      error.asInstanceOf[DraftAttachmentsConnectorException].errors.toList must contain only "Content-Type header missing"
+      error
+        .asInstanceOf[DraftAttachmentsConnectorException]
+        .errors
+        .toList must contain only "Content-Type header missing"
     }
 
     "must fail when the server doesn't return a digest header" in {
@@ -113,7 +120,10 @@ class DraftAttachmentsConnectorSpec
       val error = connector.get("foobar").failed.futureValue
       error mustBe an[DraftAttachmentsConnectorException]
 
-      error.asInstanceOf[DraftAttachmentsConnectorException].errors.toList must contain only "Digest header missing"
+      error
+        .asInstanceOf[DraftAttachmentsConnectorException]
+        .errors
+        .toList must contain only "Digest header missing"
     }
 
     "must fail when the server returns a digest which is not md5" in {
@@ -132,7 +142,10 @@ class DraftAttachmentsConnectorSpec
       val error = connector.get("foobar").failed.futureValue
       error mustBe an[DraftAttachmentsConnectorException]
 
-      error.asInstanceOf[DraftAttachmentsConnectorException].errors.toList must contain only "Digest algorithm must be md5"
+      error
+        .asInstanceOf[DraftAttachmentsConnectorException]
+        .errors
+        .toList must contain only "Digest algorithm must be md5"
     }
 
     "must fail when the server returns NOT_FOUND" in {

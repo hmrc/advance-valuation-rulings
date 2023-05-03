@@ -16,48 +16,58 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers.actions
 
-import play.api.mvc.Results.Unauthorized
+import javax.inject.Inject
+
+import scala.concurrent.{ExecutionContext, Future}
+
 import play.api.mvc._
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.auth.core.retrieve.~
+import play.api.mvc.Results.Unauthorized
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment, Enrolments}
+import uk.gov.hmrc.auth.core.retrieve.~
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
-import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
-
-class IdentifierAction @Inject()(
-                                  val authConnector: AuthConnector,
-                                  val parser: BodyParsers.Default
-                                )(implicit val executionContext: ExecutionContext)
-  extends ActionBuilder[IdentifierRequest, AnyContent] with ActionFunction[Request, IdentifierRequest] with AuthorisedFunctions {
+class IdentifierAction @Inject() (
+  val authConnector: AuthConnector,
+  val parser: BodyParsers.Default
+)(implicit val executionContext: ExecutionContext)
+    extends ActionBuilder[IdentifierRequest, AnyContent]
+    with ActionFunction[Request, IdentifierRequest]
+    with AuthorisedFunctions {
 
   private val retrievals =
     Retrievals.authorisedEnrolments and
-    Retrievals.internalId and
-    Retrievals.affinityGroup and
-    Retrievals.credentialRole
+      Retrievals.internalId and
+      Retrievals.affinityGroup and
+      Retrievals.credentialRole
 
-  override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
+  override def invokeBlock[A](
+    request: Request[A],
+    block: IdentifierRequest[A] => Future[Result]
+  ): Future[Result] = {
 
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
     authorised(Enrolment(enrolmentKey)).retrieve(retrievals) {
       case allEnrolments ~ Some(internalId) ~ Some(affinityGroup) ~ credentialRole =>
-        getEori(allEnrolments).map(eori => block(IdentifierRequest(request, eori, internalId, affinityGroup, credentialRole)))
+        getEori(allEnrolments)
+          .map(
+            eori =>
+              block(IdentifierRequest(request, eori, internalId, affinityGroup, credentialRole))
+          )
           .getOrElse(Future.successful(Unauthorized))
-      case _ =>
+      case _                                                                       =>
         Future.successful(Unauthorized)
     }
   }
 
   private val enrolmentKey: String = "HMRC-ATAR-ORG"
-  private val enrolmentId: String = "EORINumber"
+  private val enrolmentId: String  = "EORINumber"
 
   private def getEori(enrolments: Enrolments): Option[String] =
     for {
-      enrolment <- enrolments.getEnrolment(enrolmentKey)
+      enrolment  <- enrolments.getEnrolment(enrolmentKey)
       identifier <- enrolment.getIdentifier(enrolmentId)
     } yield identifier.value
 }

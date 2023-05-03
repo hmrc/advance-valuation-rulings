@@ -16,15 +16,16 @@
 
 package generators
 
-import org.scalacheck.{Arbitrary, Gen}
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+
 import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 import uk.gov.hmrc.advancevaluationrulings.models.application.ApplicationId
 import uk.gov.hmrc.advancevaluationrulings.models.etmp._
 import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
-import wolfendale.scalacheck.regexp.RegexpGen
 
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
+import org.scalacheck.{Arbitrary, Gen}
+import wolfendale.scalacheck.regexp.RegexpGen
 
 trait ModelGenerators extends Generators {
 

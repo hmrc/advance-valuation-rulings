@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.libs.json.Json
 import uk.gov.hmrc.advancevaluationrulings.utils.{BaseIntegrationSpec, WireMockHelper}
+
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 class ETMPConnectorIntegrationSpec extends BaseIntegrationSpec with WireMockHelper {
 

@@ -18,7 +18,9 @@ package uk.gov.hmrc.advancevaluationrulings.utils
 
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+
 import scala.concurrent.ExecutionContext
+
 import play.api.Application
 import play.api.http.Status
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -26,14 +28,15 @@ import play.api.libs.ws.WSClient
 import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.Query
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
+
 import generators.ModelGenerators
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, EitherValues}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor1}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import uk.gov.hmrc.http.client.HttpClientV2
 
 trait BaseIntegrationSpec
     extends PlaySpec
@@ -61,7 +64,7 @@ trait BaseIntegrationSpec
 
   implicit lazy val ec: ExecutionContext = fakeApplication().injector.instanceOf[ExecutionContext]
   lazy val wsClient: WSClient            = fakeApplication().injector.instanceOf[WSClient]
-  lazy val httpClient: HttpClientV2 = fakeApplication().injector.instanceOf[HttpClientV2]
+  lazy val httpClient: HttpClientV2      = fakeApplication().injector.instanceOf[HttpClientV2]
   lazy val appConfig: AppConfig          = fakeApplication().injector.instanceOf[AppConfig]
   lazy val ETMPEndpoint: String          = appConfig.etmpSubscriptionDisplayEndpoint
 

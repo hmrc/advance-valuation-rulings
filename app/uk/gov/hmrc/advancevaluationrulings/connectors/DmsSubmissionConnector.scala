@@ -16,49 +16,61 @@
 
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
-import cats.implicits._
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
-import config.Service
+import java.time.{Instant, LocalDateTime, ZoneOffset}
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import javax.inject.{Inject, Singleton}
+
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NoStackTrace
+
 import play.api.{Configuration, Logging}
 import play.api.http.Status.ACCEPTED
 import play.api.mvc.MultipartFormData
 import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application.Attachment
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.objectstore.client.Path
-import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
 import uk.gov.hmrc.objectstore.client.play.Implicits._
+import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
 
-import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
-import java.time.{Instant, LocalDateTime, ZoneOffset}
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.control.NoStackTrace
+import cats.implicits._
+
 import DmsSubmissionConnector._
+import akka.stream.scaladsl.Source
+import akka.util.ByteString
+import config.Service
 
 @Singleton
 class DmsSubmissionConnector @Inject() (
-                                         configuration: Configuration,
-                                         objectStoreClient: PlayObjectStoreClient,
-                                         httpClient: HttpClientV2
-                                       )(implicit ec: ExecutionContext) extends Logging {
+  configuration: Configuration,
+  objectStoreClient: PlayObjectStoreClient,
+  httpClient: HttpClientV2
+)(implicit ec: ExecutionContext)
+    extends Logging {
 
   private val internalAuthToken: String = configuration.get[String]("internal-auth.token")
 
-  private val dmsSubmission: Service = configuration.get[Service]("microservice.services.dms-submission")
+  private val dmsSubmission: Service =
+    configuration.get[Service]("microservice.services.dms-submission")
 
-  private val dmsSubmissionConfig: Configuration = configuration.get[Configuration]("microservice.services.dms-submission")
-  private val callbackUrl: String = dmsSubmissionConfig.get[String]("callbackUrl")
-  private val source: String = dmsSubmissionConfig.get[String]("source")
-  private val formId: String = dmsSubmissionConfig.get[String]("formId")
-  private val classificationType: String = dmsSubmissionConfig.get[String]("classificationType")
-  private val businessArea: String = dmsSubmissionConfig.get[String]("businessArea")
+  private val dmsSubmissionConfig: Configuration =
+    configuration.get[Configuration]("microservice.services.dms-submission")
+  private val callbackUrl: String                = dmsSubmissionConfig.get[String]("callbackUrl")
+  private val source: String                     = dmsSubmissionConfig.get[String]("source")
+  private val formId: String                     = dmsSubmissionConfig.get[String]("formId")
+  private val classificationType: String         = dmsSubmissionConfig.get[String]("classificationType")
+  private val businessArea: String               = dmsSubmissionConfig.get[String]("businessArea")
 
-  def submitApplication(eori: String, pdf: Source[ByteString, _], timestamp: Instant, submissionReference: String, attachments: Seq[Attachment])(implicit hc: HeaderCarrier): Future[Done] = {
+  def submitApplication(
+    eori: String,
+    pdf: Source[ByteString, _],
+    timestamp: Instant,
+    submissionReference: String,
+    attachments: Seq[Attachment]
+  )(implicit hc: HeaderCarrier): Future[Done] = {
 
     val dateOfReceipt = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(
       LocalDateTime.ofInstant(timestamp.truncatedTo(ChronoUnit.SECONDS), ZoneOffset.UTC)
@@ -72,7 +84,7 @@ class DmsSubmissionConnector @Inject() (
       MultipartFormData.DataPart("metadata.formId", formId),
       MultipartFormData.DataPart("metadata.customerId", eori),
       MultipartFormData.DataPart("metadata.classificationType", classificationType),
-      MultipartFormData.DataPart("metadata.businessArea", businessArea),
+      MultipartFormData.DataPart("metadata.businessArea", businessArea)
     )
 
     val fileParts = Seq(
@@ -80,38 +92,53 @@ class DmsSubmissionConnector @Inject() (
         key = "form",
         filename = "application.pdf",
         contentType = Some("application/pdf"),
-        ref = pdf,
+        ref = pdf
       )
     )
 
-    val attachmentParts = attachments.traverse { attachment =>
-      objectStoreClient.getObject(Path.File(attachment.location)).flatMap {
-        _.map { o =>
-          Future.successful(MultipartFormData.FilePart(
-            key = "attachment",
-            filename = o.location.fileName,
-            contentType = Some(o.metadata.contentType),
-            ref = o.content
-          ))
-        }.getOrElse(Future.failed(AttachmentNotFoundException(attachment.location)))
-      }
+    val attachmentParts = attachments.traverse {
+      attachment =>
+        objectStoreClient.getObject(Path.File(attachment.location)).flatMap {
+          _.map {
+            o =>
+              Future.successful(
+                MultipartFormData.FilePart(
+                  key = "attachment",
+                  filename = o.location.fileName,
+                  contentType = Some(o.metadata.contentType),
+                  ref = o.content
+                )
+              )
+          }.getOrElse(Future.failed(AttachmentNotFoundException(attachment.location)))
+        }
     }
 
-    attachmentParts.flatMap { attachmentParts =>
-      httpClient.post(url"$dmsSubmission/dms-submission/submit")
-        .setHeader("Authorization" -> internalAuthToken)
-        .withBody(
-          Source(
-            dataParts ++ fileParts ++ attachmentParts
+    attachmentParts.flatMap {
+      attachmentParts =>
+        httpClient
+          .post(url"$dmsSubmission/dms-submission/submit")
+          .setHeader("Authorization" -> internalAuthToken)
+          .withBody(
+            Source(
+              dataParts ++ fileParts ++ attachmentParts
+            )
           )
-        ).execute[HttpResponse].flatMap { response =>
-        if (response.status == ACCEPTED) {
-          Future.successful(Done)
-        } else {
-          logger.warn(s"dms-submission failed with response body: ${response.body}")
-          Future.failed(UpstreamErrorResponse("Unexpected response from dms-submission", response.status, reportAs = 500))
-        }
-      }
+          .execute[HttpResponse]
+          .flatMap {
+            response =>
+              if (response.status == ACCEPTED) {
+                Future.successful(Done)
+              } else {
+                logger.warn(s"dms-submission failed with response body: ${response.body}")
+                Future.failed(
+                  UpstreamErrorResponse(
+                    "Unexpected response from dms-submission",
+                    response.status,
+                    reportAs = 500
+                  )
+                )
+              }
+          }
     }
   }
 }

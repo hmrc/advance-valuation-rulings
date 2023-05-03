@@ -1,5 +1,20 @@
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
+import java.security.SecureRandom
+import java.time.{Clock, Instant, ZoneId}
+import java.time.temporal.ChronoUnit
+import java.util.Base64
+
+import scala.concurrent.ExecutionContext.Implicits.global
+
+import play.api.Configuration
+import play.api.libs.json.Json
+import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
+import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
+import uk.gov.hmrc.advancevaluationrulings.models.application.DraftSummary
+import uk.gov.hmrc.crypto.{Decrypter, Encrypter, SymmetricCryptoFactory}
+import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
+
 import com.fasterxml.jackson.core.JsonParseException
 import org.mockito.MockitoSugar
 import org.mongodb.scala.bson.BsonDocument
@@ -8,32 +23,20 @@ import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
-import play.api.Configuration
-import play.api.libs.json.Json
-import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
-import uk.gov.hmrc.advancevaluationrulings.models.application.DraftSummary
-import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
-import uk.gov.hmrc.crypto.{Decrypter, Encrypter, SymmetricCryptoFactory}
-import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
-
-import java.security.SecureRandom
-import java.time.temporal.ChronoUnit
-import java.time.{Clock, Instant, ZoneId}
-import java.util.Base64
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class UserAnswersRepositorySpec
-  extends AnyFreeSpec
+    extends AnyFreeSpec
     with Matchers
     with DefaultPlayMongoRepositorySupport[UserAnswers]
     with MockitoSugar
     with OptionValues
     with ScalaFutures {
 
-  private val instant = Instant.now.truncatedTo(ChronoUnit.MILLIS)
+  private val instant          = Instant.now.truncatedTo(ChronoUnit.MILLIS)
   private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-  private val answers = UserAnswers("userId", DraftId(1), Json.obj("foo" -> "bar"), Instant.ofEpochSecond(1))
+  private val answers =
+    UserAnswers("userId", DraftId(1), Json.obj("foo" -> "bar"), Instant.ofEpochSecond(1))
 
   private val mockAppConfig = mock[AppConfig]
   when(mockAppConfig.userAnswersTtlInDays) thenReturn 1
@@ -61,11 +64,13 @@ class UserAnswersRepositorySpec
 
       val expectedResult = answers copy (lastUpdated = instant)
 
-      val setResult = repository.set(answers).futureValue
-      val updatedRecord = find(Filters.and(
-        Filters.equal("userId", answers.userId),
-        Filters.equal("draftId", answers.draftId)
-      )).futureValue.headOption.value
+      val setResult     = repository.set(answers).futureValue
+      val updatedRecord = find(
+        Filters.and(
+          Filters.equal("userId", answers.userId),
+          Filters.equal("draftId", answers.draftId)
+        )
+      ).futureValue.headOption.value
 
       setResult mustEqual Done
       updatedRecord mustEqual expectedResult
@@ -76,10 +81,12 @@ class UserAnswersRepositorySpec
       repository.set(answers).futureValue
 
       val record = repository.collection
-        .find[BsonDocument](Filters.and(
-          Filters.equal("userId", answers.userId),
-          Filters.equal("draftId", answers.draftId)
-        ))
+        .find[BsonDocument](
+          Filters.and(
+            Filters.equal("userId", answers.userId),
+            Filters.equal("draftId", answers.draftId)
+          )
+        )
         .headOption()
         .futureValue
         .value
@@ -101,7 +108,7 @@ class UserAnswersRepositorySpec
 
         insert(answers).futureValue
 
-        val result = repository.get(answers.userId, answers.draftId).futureValue
+        val result         = repository.get(answers.userId, answers.draftId).futureValue
         val expectedResult = answers copy (lastUpdated = instant)
 
         result.value mustEqual expectedResult
@@ -164,7 +171,7 @@ class UserAnswersRepositorySpec
     }
   }
 
-    ".clear" - {
+  ".clear" - {
 
     "must remove a record" in {
 
@@ -194,10 +201,12 @@ class UserAnswersRepositorySpec
 
         val expectedUpdatedAnswers = answers copy (lastUpdated = instant)
 
-        val updatedAnswers = find(Filters.and(
-          Filters.equal("userId", answers.userId),
-          Filters.equal("draftId", answers.draftId)
-        )).futureValue.headOption.value
+        val updatedAnswers = find(
+          Filters.and(
+            Filters.equal("userId", answers.userId),
+            Filters.equal("draftId", answers.draftId)
+          )
+        ).futureValue.headOption.value
         updatedAnswers mustEqual expectedUpdatedAnswers
       }
     }

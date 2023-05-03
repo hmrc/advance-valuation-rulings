@@ -16,19 +16,20 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
+import javax.inject.{Inject, Singleton}
+
 import play.api.Logging
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.advancevaluationrulings.models.dms.{NotificationRequest, SubmissionItemStatus}
 import uk.gov.hmrc.internalauth.client.{BackendAuthComponents, IAAction, Predicate, Resource, ResourceLocation, ResourceType}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 
-import javax.inject.{Inject, Singleton}
-
 @Singleton
 class DmsSubmissionCallbackController @Inject() (
-                                                  override val controllerComponents: ControllerComponents,
-                                                  auth: BackendAuthComponents
-                                                ) extends BackendBaseController with Logging {
+  override val controllerComponents: ControllerComponents,
+  auth: BackendAuthComponents
+) extends BackendBaseController
+    with Logging {
 
   private val predicate = Predicate.Permission(
     resource = Resource(
@@ -40,16 +41,21 @@ class DmsSubmissionCallbackController @Inject() (
 
   private val authorised = auth.authorizedAction(predicate)
 
-  def callback = authorised(parse.json[NotificationRequest]) { implicit request =>
+  def callback = authorised(parse.json[NotificationRequest]) {
+    implicit request =>
+      val notification = request.body
 
-    val notification = request.body
+      if (notification.status == SubmissionItemStatus.Failed) {
+        logger.error(
+          s"DMS notification received for ${notification.id} failed with error: ${notification.failureReason
+              .getOrElse("")}"
+        )
+      } else {
+        logger.info(
+          s"DMS notification received for ${notification.id} with status ${notification.status}"
+        )
+      }
 
-    if (notification.status == SubmissionItemStatus.Failed) {
-      logger.error(s"DMS notification received for ${notification.id} failed with error: ${notification.failureReason.getOrElse("")}")
-    } else {
-      logger.info(s"DMS notification received for ${notification.id} with status ${notification.status}")
-    }
-
-    Ok
+      Ok
   }
 }

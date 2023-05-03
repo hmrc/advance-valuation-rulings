@@ -16,16 +16,22 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models
 
+import play.api.libs.json.{Json, JsString, JsSuccess}
+import play.api.mvc.PathBindable
+
 import generators.ModelGenerators
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import play.api.libs.json.{JsString, JsSuccess, Json}
-import play.api.mvc.PathBindable
 
-class DraftIdSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyChecks with ModelGenerators with EitherValues {
+class DraftIdSpec
+    extends AnyFreeSpec
+    with Matchers
+    with ScalaCheckPropertyChecks
+    with ModelGenerators
+    with EitherValues {
 
   "an draft Id" - {
 
@@ -34,16 +40,14 @@ class DraftIdSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyCheck
     "must bind from a url" in {
 
       forAll(arbitrary[String], draftIdGen) {
-        (key, value) =>
-          pathBindable.bind(key, value.toString).value mustEqual value
+        (key, value) => pathBindable.bind(key, value.toString).value mustEqual value
       }
     }
 
     "must unbind to a url" in {
 
       forAll(arbitrary[String], draftIdGen) {
-        (key, value) =>
-          pathBindable.unbind(key, value) mustEqual value.toString
+        (key, value) => pathBindable.unbind(key, value) mustEqual value.toString
       }
     }
 
@@ -51,7 +55,6 @@ class DraftIdSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyCheck
 
       forAll(draftIdGen) {
         draftId =>
-
           val json = Json.toJson(draftId)
           json mustEqual JsString(draftId.toString)
           json.validate[DraftId] mustEqual JsSuccess(draftId)

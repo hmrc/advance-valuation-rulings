@@ -16,17 +16,17 @@
 
 package uk.gov.hmrc.advancevaluationrulings.config
 
-import org.apache.fop.apps.{FopFactory, FopFactoryBuilder}
+import javax.inject.{Inject, Provider, Singleton}
+
 import play.api.Environment
 
-import javax.inject.{Inject, Provider, Singleton}
+import org.apache.fop.apps.{FopFactory, FopFactoryBuilder}
 
 @Singleton
 class FopFactoryProvider @Inject() (
-                                     environment: Environment
-                                   ) extends Provider[FopFactory] {
-  override def get(): FopFactory = {
+  environment: Environment
+) extends Provider[FopFactory] {
+  override def get(): FopFactory =
     new FopFactoryBuilder(environment.rootPath.toURI)
       .build()
-  }
 }

@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import play.api.libs.json.{JsSuccess, Json}
+import java.time.Instant
+
+import play.api.libs.json.{Json, JsSuccess}
 import uk.gov.hmrc.advancevaluationrulings.models.{DraftId, UserAnswers}
 
-import java.time.Instant
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
 
 class DraftSummarySpec extends AnyFreeSpec with Matchers {
 
@@ -40,8 +41,8 @@ class DraftSummarySpec extends AnyFreeSpec with Matchers {
     "must return a DraftSummary when optional fields have been answered" in {
 
       val draftId = DraftId(0)
-      val data = Json.obj(
-        "goodsDescription" -> "goods",
+      val data    = Json.obj(
+        "goodsDescription"       -> "goods",
         "checkRegisteredDetails" -> Json.obj(
           "eori" -> "eori"
         )

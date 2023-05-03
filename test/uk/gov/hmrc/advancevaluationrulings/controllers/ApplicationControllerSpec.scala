@@ -16,13 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
-import generators.ModelGenerators
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import java.time.{Clock, Instant, ZoneId}
+
+import scala.concurrent.Future
+
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
@@ -36,23 +33,38 @@ import uk.gov.hmrc.advancevaluationrulings.services.ApplicationService
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.~
 
-import java.time.{Clock, Instant, ZoneId}
-import scala.concurrent.Future
+import generators.ModelGenerators
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.MockitoSugar
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
 
-class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionValues with ModelGenerators with MockitoSugar with BeforeAndAfterEach {
+class ApplicationControllerSpec
+    extends AnyFreeSpec
+    with Matchers
+    with OptionValues
+    with ModelGenerators
+    with MockitoSugar
+    with BeforeAndAfterEach {
 
-  private val fixedClock = Clock.fixed(Instant.now, ZoneId.systemDefault)
-  private val mockApplicationService = mock[ApplicationService]
+  private val fixedClock                = Clock.fixed(Instant.now, ZoneId.systemDefault)
+  private val mockApplicationService    = mock[ApplicationService]
   private val mockApplicationRepository = mock[ApplicationRepository]
-  private val mockAuthConnector = mock[AuthConnector]
+  private val mockAuthConnector         = mock[AuthConnector]
 
-  private val applicantEori = "applicantEori"
-  private val atarEnrolment = Enrolments(Set(Enrolment("HMRC-ATAR-ORG", Seq(EnrolmentIdentifier("EORINumber", applicantEori)), "Activated")))
-  private val trader = TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None)
-  private val goodsDetails = GoodsDetails("name", "description", None, None, None)
+  private val applicantEori       = "applicantEori"
+  private val atarEnrolment       = Enrolments(
+    Set(
+      Enrolment("HMRC-ATAR-ORG", Seq(EnrolmentIdentifier("EORINumber", applicantEori)), "Activated")
+    )
+  )
+  private val trader              = TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None)
+  private val goodsDetails        = GoodsDetails("name", "description", None, None, None)
   private val submissionReference = "submissionReference"
-  private val method = MethodOne(None, None, None)
-  private val contact = ContactDetails("name", "email", None)
+  private val method              = MethodOne(None, None, None)
+  private val contact             = ContactDetails("name", "email", None)
 
   private val app =
     GuiceApplicationBuilder()
@@ -61,7 +73,8 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
         bind[ApplicationService].toInstance(mockApplicationService),
         bind[ApplicationRepository].toInstance(mockApplicationRepository),
         bind[AuthConnector].toInstance(mockAuthConnector)
-      ).build()
+      )
+      .build()
 
   override def beforeEach(): Unit = {
     reset(mockApplicationService, mockApplicationRepository, mockAuthConnector)
@@ -74,11 +87,30 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
 
       val id = 123L
 
-      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
-        .thenReturn(Future.successful(new ~(new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)), Some(Assistant))))
-      when(mockApplicationService.save(any(), any(), any())(any())) thenReturn Future.successful(ApplicationId(id))
-      
-      val expectedMetadata = AuditMetadata(internalId = "internalId", affinityGroup = AffinityGroup.Organisation, credentialRole = Some(Assistant))
+      when(
+        mockAuthConnector
+          .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](
+            any(),
+            any()
+          )(any(), any())
+      )
+        .thenReturn(
+          Future.successful(
+            new ~(
+              new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)),
+              Some(Assistant)
+            )
+          )
+        )
+      when(mockApplicationService.save(any(), any(), any())(any())) thenReturn Future.successful(
+        ApplicationId(id)
+      )
+
+      val expectedMetadata = AuditMetadata(
+        internalId = "internalId",
+        affinityGroup = AffinityGroup.Organisation,
+        credentialRole = Some(Assistant)
+      )
 
       val applicationRequest = ApplicationRequest(
         draftId = DraftId(0),
@@ -87,18 +119,22 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
         contact = contact,
         goodsDetails = goodsDetails,
         requestedMethod = method,
-        attachments = Nil,
+        attachments = Nil
       )
-      
+
       val request =
         FakeRequest(POST, routes.ApplicationController.submit.url)
           .withBody(Json.toJson(applicationRequest))
-          
+
       val result = route(app, request).value
 
       status(result) mustEqual OK
       contentAsJson(result) mustEqual Json.toJson(ApplicationSubmissionResponse(ApplicationId(id)))
-      verify(mockApplicationService, times(1)).save(eqTo(applicantEori), eqTo(applicationRequest), eqTo(expectedMetadata))(any())
+      verify(mockApplicationService, times(1)).save(
+        eqTo(applicantEori),
+        eqTo(applicationRequest),
+        eqTo(expectedMetadata)
+      )(any())
     }
   }
 
@@ -108,12 +144,25 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
 
       val summary = ApplicationSummary(ApplicationId(1), "name", Instant.now(fixedClock), "eori")
 
-      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
-        .thenReturn(Future.successful(new ~(new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)), Some(Assistant))))
+      when(
+        mockAuthConnector
+          .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](
+            any(),
+            any()
+          )(any(), any())
+      )
+        .thenReturn(
+          Future.successful(
+            new ~(
+              new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)),
+              Some(Assistant)
+            )
+          )
+        )
       when(mockApplicationRepository.summaries(any())).thenReturn(Future.successful(Seq(summary)))
 
       val request = FakeRequest(GET, routes.ApplicationController.summaries.url)
-      val result = route(app, request).value
+      val result  = route(app, request).value
 
       status(result) mustEqual OK
       contentAsJson(result) mustEqual Json.toJson(ApplicationSummaryResponse(Seq(summary)))
@@ -125,7 +174,7 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
     "must return Ok when an application can be found" in {
 
       val applicationId = applicationIdGen.sample.value
-      val application = Application(
+      val application   = Application(
         id = applicationId,
         applicantEori = applicantEori,
         trader = trader,
@@ -139,12 +188,26 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
         lastUpdated = Instant.now(fixedClock)
       )
 
-      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
-        .thenReturn(Future.successful(new ~(new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)), Some(Assistant))))
-      when(mockApplicationRepository.get(any(), any())).thenReturn(Future.successful(Some(application)))
+      when(
+        mockAuthConnector
+          .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](
+            any(),
+            any()
+          )(any(), any())
+      )
+        .thenReturn(
+          Future.successful(
+            new ~(
+              new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)),
+              Some(Assistant)
+            )
+          )
+        )
+      when(mockApplicationRepository.get(any(), any()))
+        .thenReturn(Future.successful(Some(application)))
 
       val request = FakeRequest(GET, routes.ApplicationController.get(applicationId).url)
-      val result = route(app, request).value
+      val result  = route(app, request).value
 
       status(result) mustEqual OK
       contentAsJson(result) mustEqual Json.toJson(application)
@@ -154,12 +217,25 @@ class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionVal
 
       val applicationId = applicationIdGen.sample.value
 
-      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
-        .thenReturn(Future.successful(new ~(new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)), Some(Assistant))))
+      when(
+        mockAuthConnector
+          .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](
+            any(),
+            any()
+          )(any(), any())
+      )
+        .thenReturn(
+          Future.successful(
+            new ~(
+              new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)),
+              Some(Assistant)
+            )
+          )
+        )
       when(mockApplicationRepository.get(any(), any())).thenReturn(Future.successful(None))
 
       val request = FakeRequest(GET, routes.ApplicationController.get(applicationId).url)
-      val result = route(app, request).value
+      val result  = route(app, request).value
 
       status(result) mustEqual NOT_FOUND
     }

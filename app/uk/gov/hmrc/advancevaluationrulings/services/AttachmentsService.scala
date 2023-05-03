@@ -16,37 +16,47 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import akka.stream.Materializer
-import cats.implicits._
+import javax.inject.{Inject, Singleton}
+
+import scala.concurrent.{ExecutionContext, Future}
+
 import uk.gov.hmrc.advancevaluationrulings.connectors.DraftAttachmentsConnector
 import uk.gov.hmrc.advancevaluationrulings.models.application.{ApplicationId, DraftAttachment}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.objectstore.client.{Md5Hash, Path}
 import uk.gov.hmrc.objectstore.client.play.Implicits._
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
-import uk.gov.hmrc.objectstore.client.{Md5Hash, Path}
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import cats.implicits._
+
+import akka.stream.Materializer
 
 @Singleton
 class AttachmentsService @Inject() (
-                                     draftAttachmentsConnector: DraftAttachmentsConnector,
-                                     objectStoreClient: PlayObjectStoreClient
-                                   )(implicit ec: ExecutionContext, mat: Materializer) {
+  draftAttachmentsConnector: DraftAttachmentsConnector,
+  objectStoreClient: PlayObjectStoreClient
+)(implicit ec: ExecutionContext, mat: Materializer) {
 
-  def copyAttachment(applicationId: ApplicationId, path: String)(implicit hc: HeaderCarrier): Future[Path] =
+  def copyAttachment(applicationId: ApplicationId, path: String)(implicit
+    hc: HeaderCarrier
+  ): Future[Path] =
     for {
       attachment <- draftAttachmentsConnector.get(path)
       path       <- putAttachment(applicationId.toString, path, attachment)
     } yield path
 
-  private def putAttachment(applicationId: String, path: String, attachment: DraftAttachment)(implicit hc: HeaderCarrier): Future[Path] = {
-    val objectStorePath = Path.Directory(s"attachments/$applicationId").file(Path.File(path).fileName)
-    objectStoreClient.putObject(
-      path = objectStorePath,
-      content = attachment.content,
-      contentType = Some(attachment.contentType),
-      contentMd5 = Some(Md5Hash(attachment.contentMd5))
-    ).as(objectStorePath)
+  private def putAttachment(applicationId: String, path: String, attachment: DraftAttachment)(
+    implicit hc: HeaderCarrier
+  ): Future[Path] = {
+    val objectStorePath =
+      Path.Directory(s"attachments/$applicationId").file(Path.File(path).fileName)
+    objectStoreClient
+      .putObject(
+        path = objectStorePath,
+        content = attachment.content,
+        contentType = Some(attachment.contentType),
+        contentMd5 = Some(Md5Hash(attachment.contentMd5))
+      )
+      .as(objectStorePath)
   }
 }

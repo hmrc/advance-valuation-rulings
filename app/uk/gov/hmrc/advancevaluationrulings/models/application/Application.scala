@@ -16,23 +16,23 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
-import play.api.libs.json.{Format, Json, OFormat}
-
 import java.time.Instant
 
+import play.api.libs.json.{Format, Json, OFormat}
+
 final case class Application(
-                              id: ApplicationId,
-                              applicantEori: String,
-                              trader: TraderDetail,
-                              agent: Option[TraderDetail],
-                              contact: ContactDetails,
-                              requestedMethod: RequestedMethod,
-                              goodsDetails: GoodsDetails,
-                              attachments: Seq[Attachment],
-                              submissionReference: String,
-                              created: Instant,
-                              lastUpdated: Instant
-                            )
+  id: ApplicationId,
+  applicantEori: String,
+  trader: TraderDetail,
+  agent: Option[TraderDetail],
+  contact: ContactDetails,
+  requestedMethod: RequestedMethod,
+  goodsDetails: GoodsDetails,
+  attachments: Seq[Attachment],
+  submissionReference: String,
+  created: Instant,
+  lastUpdated: Instant
+)
 
 object Application {
 

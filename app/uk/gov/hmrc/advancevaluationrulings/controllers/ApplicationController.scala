@@ -16,6 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
+import javax.inject.Inject
+
+import scala.concurrent.ExecutionContext
+
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.advancevaluationrulings.controllers.actions.{IdentifierAction, IdentifierRequest}
@@ -25,32 +29,26 @@ import uk.gov.hmrc.advancevaluationrulings.repositories.ApplicationRepository
 import uk.gov.hmrc.advancevaluationrulings.services.ApplicationService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import javax.inject.Inject
-import scala.concurrent.ExecutionContext
-
-class ApplicationController @Inject()(
-                                       cc: ControllerComponents,
-                                       applicationService: ApplicationService,
-                                       applicationRepository: ApplicationRepository,
-                                       identify: IdentifierAction
-                                     )(implicit ec: ExecutionContext) extends BackendController(cc) {
+class ApplicationController @Inject() (
+  cc: ControllerComponents,
+  applicationService: ApplicationService,
+  applicationRepository: ApplicationRepository,
+  identify: IdentifierAction
+)(implicit ec: ExecutionContext)
+    extends BackendController(cc) {
 
   def submit: Action[ApplicationRequest] = identify(parse.json[ApplicationRequest]).async {
     implicit request =>
       applicationService
         .save(request.eori, request.body, getAuditMetadata(request))
-        .map { id =>
-          Ok(Json.toJson(ApplicationSubmissionResponse(id)))
-      }
+        .map(id => Ok(Json.toJson(ApplicationSubmissionResponse(id))))
   }
 
   def summaries: Action[AnyContent] = identify.async {
     implicit request =>
       applicationRepository
         .summaries(request.eori)
-        .map { summaries =>
-          Ok(Json.toJson(ApplicationSummaryResponse(summaries)))
-        }
+        .map(summaries => Ok(Json.toJson(ApplicationSummaryResponse(summaries))))
   }
 
   def get(applicationId: ApplicationId): Action[AnyContent] = identify.async {

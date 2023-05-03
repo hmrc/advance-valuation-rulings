@@ -1,18 +1,20 @@
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+
+import scala.concurrent.ExecutionContext.Implicits.global
+
+import uk.gov.hmrc.advancevaluationrulings.models.application._
+import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
+
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
-import uk.gov.hmrc.advancevaluationrulings.models.application._
-import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
-
-import java.time.Instant
-import java.time.temporal.ChronoUnit
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class ApplicationRepositorySpec
-  extends AnyFreeSpec
+    extends AnyFreeSpec
     with Matchers
     with DefaultPlayMongoRepositorySupport[Application]
     with OptionValues
@@ -20,12 +22,12 @@ class ApplicationRepositorySpec
 
   protected override val repository = new ApplicationRepository(mongoComponent)
 
-  private val trader = TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None)
-  private val goodsDetails = GoodsDetails("name", "description", None, None, None)
+  private val trader              = TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None)
+  private val goodsDetails        = GoodsDetails("name", "description", None, None, None)
   private val submissionReference = "submissionReference"
-  private val method = MethodOne(None, None, None)
-  private val contact = ContactDetails("name", "email", None)
-  private val now = Instant.now.truncatedTo(ChronoUnit.MILLIS)
+  private val method              = MethodOne(None, None, None)
+  private val contact             = ContactDetails("name", "email", None)
+  private val now                 = Instant.now.truncatedTo(ChronoUnit.MILLIS)
 
   ".set" - {
 
@@ -119,23 +121,59 @@ class ApplicationRepositorySpec
       result must not be defined
     }
   }
-  
+
   ".summaries" - {
-    
+
     "must return summaries of all applications for the given eori" in {
 
-      val eori1 = "eori 1"
-      val eori2 = "eori2"
-      val application1 = Application(ApplicationId(1), eori1, trader, None, contact, method, goodsDetails, Nil, submissionReference, now, now)
-      val application2 = Application(ApplicationId(2), eori1, trader, None, contact, method, goodsDetails, Nil, submissionReference, now, now)
-      val application3 = Application(ApplicationId(3), eori2, trader, None, contact, method, goodsDetails, Nil, submissionReference, now, now)
+      val eori1        = "eori 1"
+      val eori2        = "eori2"
+      val application1 = Application(
+        ApplicationId(1),
+        eori1,
+        trader,
+        None,
+        contact,
+        method,
+        goodsDetails,
+        Nil,
+        submissionReference,
+        now,
+        now
+      )
+      val application2 = Application(
+        ApplicationId(2),
+        eori1,
+        trader,
+        None,
+        contact,
+        method,
+        goodsDetails,
+        Nil,
+        submissionReference,
+        now,
+        now
+      )
+      val application3 = Application(
+        ApplicationId(3),
+        eori2,
+        trader,
+        None,
+        contact,
+        method,
+        goodsDetails,
+        Nil,
+        submissionReference,
+        now,
+        now
+      )
 
       insert(application1).futureValue
       insert(application2).futureValue
       insert(application3).futureValue
-      
+
       val result = repository.summaries(eori1).futureValue
-      
+
       result must contain theSameElementsAs Seq(
         ApplicationSummary(ApplicationId(1), "name", now, "eori"),
         ApplicationSummary(ApplicationId(2), "name", now, "eori")

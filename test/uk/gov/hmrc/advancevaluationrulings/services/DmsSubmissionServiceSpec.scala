@@ -16,15 +16,11 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import akka.stream.Materializer
-import akka.stream.scaladsl.{Keep, Sink, Source}
-import akka.util.ByteString
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.{ArgumentCaptor, MockitoSugar}
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+
+import scala.concurrent.Future
+
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -34,18 +30,30 @@ import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.views.xml.ApplicationPdf
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.Instant
-import java.time.temporal.ChronoUnit
-import scala.concurrent.Future
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Keep, Sink, Source}
+import akka.util.ByteString
+import org.mockito.{ArgumentCaptor, MockitoSugar}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
 
-class DmsSubmissionServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with OptionValues with MockitoSugar with BeforeAndAfterEach {
+class DmsSubmissionServiceSpec
+    extends AnyFreeSpec
+    with Matchers
+    with ScalaFutures
+    with OptionValues
+    with MockitoSugar
+    with BeforeAndAfterEach {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockFopService, mockDmsSubmissionConnector)
   }
 
-  private val mockFopService = mock[FopService]
+  private val mockFopService             = mock[FopService]
   private val mockDmsSubmissionConnector = mock[DmsSubmissionConnector]
 
   private lazy val app = GuiceApplicationBuilder()
@@ -58,19 +66,20 @@ class DmsSubmissionServiceSpec extends AnyFreeSpec with Matchers with ScalaFutur
     )
     .build()
 
-  private lazy val service = app.injector.instanceOf[DmsSubmissionService]
-  private lazy val applicationTemplate = app.injector.instanceOf[ApplicationPdf]
-  private implicit lazy val mat: Materializer = app.injector.instanceOf[Materializer]
-  private implicit lazy val messages: Messages = app.injector.instanceOf[MessagesApi].preferred(Seq.empty)
+  private lazy val service                     = app.injector.instanceOf[DmsSubmissionService]
+  private lazy val applicationTemplate         = app.injector.instanceOf[ApplicationPdf]
+  private implicit lazy val mat: Materializer  = app.injector.instanceOf[Materializer]
+  private implicit lazy val messages: Messages =
+    app.injector.instanceOf[MessagesApi].preferred(Seq.empty)
 
   "submitApplication" - {
 
-    val trader = TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None)
-    val goodsDetails = GoodsDetails("name", "description", None, None, None)
-    val method = MethodOne(None, None, None)
-    val contact = ContactDetails("name", "email", None)
+    val trader              = TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None)
+    val goodsDetails        = GoodsDetails("name", "description", None, None, None)
+    val method              = MethodOne(None, None, None)
+    val contact             = ContactDetails("name", "email", None)
     val submissionReference = "submissionReference"
-    val now = Instant.now.truncatedTo(ChronoUnit.MILLIS)
+    val now                 = Instant.now.truncatedTo(ChronoUnit.MILLIS)
 
     val attachment = Attachment(
       id = 1,
@@ -100,20 +109,32 @@ class DmsSubmissionServiceSpec extends AnyFreeSpec with Matchers with ScalaFutur
 
     "must create a PDF from the application and send it to DMS Submission" in {
 
-      val bytes = "Hello, World!".getBytes("UTF-8")
-      val sourceCaptor: ArgumentCaptor[Source[ByteString, _]] = ArgumentCaptor.forClass(classOf[Source[ByteString, _]])
+      val bytes                                               = "Hello, World!".getBytes("UTF-8")
+      val sourceCaptor: ArgumentCaptor[Source[ByteString, _]] =
+        ArgumentCaptor.forClass(classOf[Source[ByteString, _]])
 
       when(mockFopService.render(any())).thenReturn(Future.successful(bytes))
-      when(mockDmsSubmissionConnector.submitApplication(any(), any(), any(), any(), any())(any())).thenReturn(Future.successful(Done))
+      when(mockDmsSubmissionConnector.submitApplication(any(), any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(Done))
 
       val expectedXml = applicationTemplate(application).body
 
       service.submitApplication(application, submissionReference)(hc).futureValue
 
       verify(mockFopService).render(eqTo(expectedXml))
-      verify(mockDmsSubmissionConnector).submitApplication(eqTo("applicantEori"), sourceCaptor.capture(), eqTo(application.created), eqTo(submissionReference), eqTo(application.attachments))(eqTo(hc))
+      verify(mockDmsSubmissionConnector).submitApplication(
+        eqTo("applicantEori"),
+        sourceCaptor.capture(),
+        eqTo(application.created),
+        eqTo(submissionReference),
+        eqTo(application.attachments)
+      )(eqTo(hc))
 
-      val result = sourceCaptor.getValue().toMat(Sink.fold(ByteString.emptyByteString)(_ ++ _))(Keep.right).run().futureValue
+      val result = sourceCaptor
+        .getValue()
+        .toMat(Sink.fold(ByteString.emptyByteString)(_ ++ _))(Keep.right)
+        .run()
+        .futureValue
 
       result.decodeString("UTF-8") mustEqual "Hello, World!"
     }
@@ -124,13 +145,20 @@ class DmsSubmissionServiceSpec extends AnyFreeSpec with Matchers with ScalaFutur
 
       service.submitApplication(application, submissionReference)(hc).failed.futureValue
 
-      verify(mockDmsSubmissionConnector, never).submitApplication(any(), any(), any(), any(), any())(any())
+      verify(mockDmsSubmissionConnector, never).submitApplication(
+        any(),
+        any(),
+        any(),
+        any(),
+        any()
+      )(any())
     }
 
     "must fail if the dms submission connector fails" in {
 
       when(mockFopService.render(any())).thenReturn(Future.successful(Array.emptyByteArray))
-      when(mockDmsSubmissionConnector.submitApplication(any(), any(), any(), any(), any())(any())).thenReturn(Future.failed(new RuntimeException()))
+      when(mockDmsSubmissionConnector.submitApplication(any(), any(), any(), any(), any())(any()))
+        .thenReturn(Future.failed(new RuntimeException()))
 
       service.submitApplication(application, submissionReference)(hc).failed.futureValue
     }

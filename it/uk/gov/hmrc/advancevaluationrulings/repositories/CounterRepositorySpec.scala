@@ -1,17 +1,18 @@
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
+import uk.gov.hmrc.advancevaluationrulings.models.application.{CounterId, CounterWrapper}
+import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
+
 import org.mongodb.scala.model.{Filters, FindOneAndUpdateOptions, Updates}
 import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
-import uk.gov.hmrc.advancevaluationrulings.models.application.{CounterId, CounterWrapper}
-import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class CounterRepositorySpec
-  extends AnyFreeSpec
+    extends AnyFreeSpec
     with Matchers
     with DefaultPlayMongoRepositorySupport[CounterWrapper]
     with OptionValues
@@ -94,12 +95,20 @@ class CounterRepositorySpec
 
     "must return sequential ids from the correct record" in {
 
-      val applicationIdStartingValue = repository.seeds.find(_._id == CounterId.ApplicationId).head.index
-      val attachmentIdStartingValue = repository.seeds.find(_._id == CounterId.AttachmentId).head.index
+      val applicationIdStartingValue =
+        repository.seeds.find(_._id == CounterId.ApplicationId).head.index
+      val attachmentIdStartingValue  =
+        repository.seeds.find(_._id == CounterId.AttachmentId).head.index
 
-      repository.nextId(CounterId.ApplicationId).futureValue mustEqual applicationIdStartingValue + 1
-      repository.nextId(CounterId.ApplicationId).futureValue mustEqual applicationIdStartingValue + 2
-      repository.nextId(CounterId.ApplicationId).futureValue mustEqual applicationIdStartingValue + 3
+      repository
+        .nextId(CounterId.ApplicationId)
+        .futureValue mustEqual applicationIdStartingValue + 1
+      repository
+        .nextId(CounterId.ApplicationId)
+        .futureValue mustEqual applicationIdStartingValue + 2
+      repository
+        .nextId(CounterId.ApplicationId)
+        .futureValue mustEqual applicationIdStartingValue + 3
 
       repository.nextId(CounterId.AttachmentId).futureValue mustEqual attachmentIdStartingValue + 1
       repository.nextId(CounterId.AttachmentId).futureValue mustEqual attachmentIdStartingValue + 2

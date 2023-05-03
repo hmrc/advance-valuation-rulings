@@ -16,54 +16,68 @@
 
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
-import cats.data.{EitherNec, NonEmptyChain}
-import cats.implicits._
-import config.Service
+import java.net.URL
+import javax.inject.{Inject, Singleton}
+
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NoStackTrace
+
 import play.api.Configuration
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.advancevaluationrulings.connectors.DraftAttachmentsConnector._
 import uk.gov.hmrc.advancevaluationrulings.models.application.DraftAttachment
-import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
 
-import java.net.URL
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.control.NoStackTrace
+import cats.data.{EitherNec, NonEmptyChain}
+import cats.implicits._
+
+import config.Service
 
 @Singleton
-class DraftAttachmentsConnector @Inject()(
-                                       httpClient: HttpClientV2,
-                                       configuration: Configuration
-                                     )(implicit ec: ExecutionContext) {
+class DraftAttachmentsConnector @Inject() (
+  httpClient: HttpClientV2,
+  configuration: Configuration
+)(implicit ec: ExecutionContext) {
 
-  private val advanceValuationRulingsFrontend = configuration.get[Service]("microservice.services.advance-valuation-rulings-frontend")
+  private val advanceValuationRulingsFrontend =
+    configuration.get[Service]("microservice.services.advance-valuation-rulings-frontend")
 
   def get(path: String)(implicit hc: HeaderCarrier): Future[DraftAttachment] =
-    httpClient.get(new URL(s"$advanceValuationRulingsFrontend/attachments/$path"))
-      .stream[HttpResponse].flatMap { response =>
-        if (response.status == 200) {
+    httpClient
+      .get(new URL(s"$advanceValuationRulingsFrontend/attachments/$path"))
+      .stream[HttpResponse]
+      .flatMap {
+        response =>
+          if (response.status == 200) {
 
-          val result = (getContentType(response), getContentMd5(response)).parMapN {
-            DraftAttachment(response.bodyAsSource, _, _)
+            val result = (getContentType(response), getContentMd5(response)).parMapN {
+              DraftAttachment(response.bodyAsSource, _, _)
+            }
+
+            result.fold(
+              errors => Future.failed(DraftAttachmentsConnectorException(errors)),
+              result => Future.successful(result)
+            )
+          } else {
+            Future.failed(
+              UpstreamErrorResponse(
+                "Unexpected response from advance-valuation-rulings-frontend",
+                response.status,
+                INTERNAL_SERVER_ERROR
+              )
+            )
           }
-
-          result.fold(
-            errors => Future.failed(DraftAttachmentsConnectorException(errors)),
-            result => Future.successful(result)
-          )
-        } else {
-          Future.failed(UpstreamErrorResponse("Unexpected response from advance-valuation-rulings-frontend", response.status, INTERNAL_SERVER_ERROR))
-        }
       }
 
   private def getContentType(response: HttpResponse): EitherNec[String, String] =
     response.header("Content-Type").toRightNec("Content-Type header missing")
 
   private def getContentMd5(response: HttpResponse): EitherNec[String, String] =
-    response.header("Digest").toRightNec("Digest header missing").flatMap { digest =>
-      val DigestPattern(alg, value) = digest
-      if (alg == "md5") value.rightNec else "Digest algorithm must be md5".leftNec
+    response.header("Digest").toRightNec("Digest header missing").flatMap {
+      digest =>
+        val DigestPattern(alg, value) = digest
+        if (alg == "md5") value.rightNec else "Digest algorithm must be md5".leftNec
     }
 
   private val DigestPattern = """^([^=]+)=(.+)$""".r
@@ -71,7 +85,9 @@ class DraftAttachmentsConnector @Inject()(
 
 object DraftAttachmentsConnector {
 
-  final case class DraftAttachmentsConnectorException(errors: NonEmptyChain[String]) extends Exception with NoStackTrace {
+  final case class DraftAttachmentsConnectorException(errors: NonEmptyChain[String])
+      extends Exception
+      with NoStackTrace {
     override def getMessage: String = errors.toList.mkString("Errors: ", ", ", "")
   }
 }

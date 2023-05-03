@@ -17,10 +17,11 @@
 package uk.gov.hmrc.advancevaluationrulings.services
 
 import javax.inject.{Inject, Singleton}
+
 import scala.util.Random
 
 @Singleton
-class SubmissionReferenceService @Inject()() {
+class SubmissionReferenceService @Inject() () {
 
   def random(): String =
     Random.alphanumeric

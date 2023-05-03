@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
-import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
 import play.api.libs.json.{Json, OFormat}
+
+import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
 
 sealed trait RequestedMethod
 
@@ -27,10 +28,10 @@ object RequestedMethod {
 }
 
 final case class MethodOne(
-                      saleBetweenRelatedParties: Option[String],
-                      goodsRestrictions: Option[String],
-                      saleConditions: Option[String]
-                    ) extends RequestedMethod
+  saleBetweenRelatedParties: Option[String],
+  goodsRestrictions: Option[String],
+  saleConditions: Option[String]
+) extends RequestedMethod
 
 object MethodOne {
 
@@ -38,9 +39,9 @@ object MethodOne {
 }
 
 final case class MethodTwo(
-                            whyNotOtherMethods: String,
-                            previousIdenticalGoods: String
-                          ) extends RequestedMethod
+  whyNotOtherMethods: String,
+  previousIdenticalGoods: String
+) extends RequestedMethod
 
 object MethodTwo {
 
@@ -48,9 +49,9 @@ object MethodTwo {
 }
 
 final case class MethodThree(
-                              whyNotOtherMethods: String,
-                              previousSimilarGoods: String
-                            ) extends RequestedMethod
+  whyNotOtherMethods: String,
+  previousSimilarGoods: String
+) extends RequestedMethod
 
 object MethodThree {
 
@@ -58,9 +59,9 @@ object MethodThree {
 }
 
 final case class MethodFour(
-                             whyNotOtherMethods: String,
-                             deductiveMethod: String
-                           ) extends RequestedMethod
+  whyNotOtherMethods: String,
+  deductiveMethod: String
+) extends RequestedMethod
 
 object MethodFour {
 
@@ -68,9 +69,9 @@ object MethodFour {
 }
 
 final case class MethodFive(
-                             whyNotOtherMethods: String,
-                             computedValue: String
-                           ) extends RequestedMethod
+  whyNotOtherMethods: String,
+  computedValue: String
+) extends RequestedMethod
 
 object MethodFive {
 
@@ -78,10 +79,10 @@ object MethodFive {
 }
 
 final case class MethodSix(
-                            whyNotOtherMethods: String,
-                            adaptedMethod: AdaptedMethod,
-                            valuationDescription: String
-                          ) extends RequestedMethod
+  whyNotOtherMethods: String,
+  adaptedMethod: AdaptedMethod,
+  valuationDescription: String
+) extends RequestedMethod
 
 object MethodSix {
 
