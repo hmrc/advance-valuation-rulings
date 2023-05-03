@@ -16,17 +16,18 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
+import javax.inject.{Inject, Singleton}
+
+import scala.concurrent.ExecutionContext
+
 import uk.gov.hmrc.advancevaluationrulings.models.audit.ApplicationSubmissionEvent
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
-import javax.inject.{Singleton, Inject}
-import scala.concurrent.ExecutionContext
-
 @Singleton
-class AuditService @Inject()(
-                              auditConnector: AuditConnector
-                            )(implicit ec: ExecutionContext) {
+class AuditService @Inject() (
+  auditConnector: AuditConnector
+)(implicit ec: ExecutionContext) {
 
   def auditSubmitRequest(event: ApplicationSubmissionEvent)(implicit hc: HeaderCarrier): Unit =
     auditConnector.sendExplicitAudit("ApplicationSubmission", event)

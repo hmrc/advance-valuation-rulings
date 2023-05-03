@@ -16,17 +16,17 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
+import java.time.Instant
+
 import play.api.libs.json._
 import uk.gov.hmrc.advancevaluationrulings.models.{DraftId, UserAnswers}
 
-import java.time.Instant
-
 final case class DraftSummary(
-                               id: DraftId,
-                               goodsName: Option[String],
-                               lastUpdated: Instant,
-                               eoriNumber: Option[String]
-                             )
+  id: DraftId,
+  goodsName: Option[String],
+  lastUpdated: Instant,
+  eoriNumber: Option[String]
+)
 
 object DraftSummary {
 
@@ -35,8 +35,14 @@ object DraftSummary {
   def apply(answers: UserAnswers): DraftSummary =
     DraftSummary(
       id = answers.draftId,
-      goodsName = Reads.optionNoError(Reads.at[String](JsPath \ "goodsDescription")).reads(answers.data).getOrElse(None),
+      goodsName = Reads
+        .optionNoError(Reads.at[String](JsPath \ "goodsDescription"))
+        .reads(answers.data)
+        .getOrElse(None),
       lastUpdated = answers.lastUpdated,
-      eoriNumber = Reads.optionNoError(Reads.at[String](JsPath \ "checkRegisteredDetails" \ "eori")).reads(answers.data).getOrElse(None)
+      eoriNumber = Reads
+        .optionNoError(Reads.at[String](JsPath \ "checkRegisteredDetails" \ "eori"))
+        .reads(answers.data)
+        .getOrElse(None)
     )
 }

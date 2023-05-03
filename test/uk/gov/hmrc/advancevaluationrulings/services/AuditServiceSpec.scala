@@ -16,12 +16,9 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.advancevaluationrulings.models.DraftId
@@ -31,8 +28,12 @@ import uk.gov.hmrc.auth.core.{AffinityGroup, Assistant}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
-import java.time.Instant
-import java.time.temporal.ChronoUnit
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.MockitoSugar
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
 
 class AuditServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar with BeforeAndAfterEach {
 
@@ -46,17 +47,18 @@ class AuditServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar with 
   private lazy val app = GuiceApplicationBuilder()
     .overrides(
       bind[AuditConnector].toInstance(mockAuditConnector)
-    ).build()
+    )
+    .build()
 
   private lazy val service: AuditService = app.injector.instanceOf[AuditService]
 
   private val hc: HeaderCarrier = HeaderCarrier()
 
-  private val trader = TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None)
+  private val trader       = TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None)
   private val goodsDetails = GoodsDetails("name", "description", None, None, None)
-  private val method = MethodOne(None, None, None)
-  private val contact = ContactDetails("name", "email", None)
-  private val now = Instant.now.truncatedTo(ChronoUnit.MILLIS)
+  private val method       = MethodOne(None, None, None)
+  private val contact      = ContactDetails("name", "email", None)
+  private val now          = Instant.now.truncatedTo(ChronoUnit.MILLIS)
 
   private val application = Application(
     id = ApplicationId(1),
@@ -87,7 +89,11 @@ class AuditServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar with 
 
       service.auditSubmitRequest(event)(hc)
 
-      verify(mockAuditConnector).sendExplicitAudit(eqTo("ApplicationSubmission"), eqTo(event))(eqTo(hc), any(), any())
+      verify(mockAuditConnector).sendExplicitAudit(eqTo("ApplicationSubmission"), eqTo(event))(
+        eqTo(hc),
+        any(),
+        any()
+      )
     }
   }
 }

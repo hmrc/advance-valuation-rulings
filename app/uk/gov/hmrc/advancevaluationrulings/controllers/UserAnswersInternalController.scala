@@ -16,23 +16,25 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
+import javax.inject.Inject
+
+import scala.concurrent.ExecutionContext
+
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.advancevaluationrulings.controllers.actions.IdentifierAction
-import uk.gov.hmrc.advancevaluationrulings.models.application.DraftSummaryResponse
 import uk.gov.hmrc.advancevaluationrulings.models.{DraftId, UserAnswers}
+import uk.gov.hmrc.advancevaluationrulings.models.application.DraftSummaryResponse
 import uk.gov.hmrc.advancevaluationrulings.repositories.UserAnswersRepository
 import uk.gov.hmrc.internalauth.client.{BackendAuthComponents, IAAction, Predicate, Resource, ResourceLocation, ResourceType}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import javax.inject.Inject
-import scala.concurrent.ExecutionContext
-
-class UserAnswersInternalController @Inject()(
-                                               cc: ControllerComponents,
-                                               repository: UserAnswersRepository,
-                                               auth: BackendAuthComponents
-                                             )(implicit ec: ExecutionContext) extends BackendController(cc) {
+class UserAnswersInternalController @Inject() (
+  cc: ControllerComponents,
+  repository: UserAnswersRepository,
+  auth: BackendAuthComponents
+)(implicit ec: ExecutionContext)
+    extends BackendController(cc) {
 
   private def predicate(action: IAAction) = Predicate.Permission(
     resource = Resource(

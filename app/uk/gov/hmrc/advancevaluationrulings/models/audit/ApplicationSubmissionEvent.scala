@@ -22,13 +22,13 @@ import uk.gov.hmrc.advancevaluationrulings.models.application.Application
 import uk.gov.hmrc.auth.core.{AffinityGroup, CredentialRole}
 
 final case class ApplicationSubmissionEvent(
-                                             internalId: String,
-                                             affinityGroup: AffinityGroup,
-                                             credentialRole: Option[CredentialRole],
-                                             isAgent: Option[Boolean],
-                                             application: Application,
-                                             draftId: DraftId
-                                           )
+  internalId: String,
+  affinityGroup: AffinityGroup,
+  credentialRole: Option[CredentialRole],
+  isAgent: Option[Boolean],
+  application: Application,
+  draftId: DraftId
+)
 
 object ApplicationSubmissionEvent {
 

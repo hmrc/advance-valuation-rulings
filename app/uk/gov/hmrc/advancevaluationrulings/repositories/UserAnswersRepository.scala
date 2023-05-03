@@ -16,54 +16,56 @@
 
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
-import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model._
+import java.time.{Clock, Instant}
+import java.util.concurrent.TimeUnit
+import javax.inject.{Inject, Singleton}
+
+import scala.concurrent.{ExecutionContext, Future}
+
 import play.api.libs.json.Format
 import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
-import uk.gov.hmrc.advancevaluationrulings.models.application.DraftSummary
 import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
+import uk.gov.hmrc.advancevaluationrulings.models.application.DraftSummary
 import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
-import java.time.{Clock, Instant}
-import java.util.concurrent.TimeUnit
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import org.mongodb.scala.bson.conversions.Bson
+import org.mongodb.scala.model._
 
 @Singleton
-class UserAnswersRepository @Inject()(
-                                       mongoComponent: MongoComponent,
-                                       appConfig: AppConfig,
-                                       clock: Clock
-                                     )(implicit ec: ExecutionContext, crypto: Encrypter with Decrypter)
-  extends PlayMongoRepository[UserAnswers](
-    collectionName = "user-answers",
-    mongoComponent = mongoComponent,
-    domainFormat   = UserAnswers.encryptedFormat,
-    indexes        = Seq(
-      IndexModel(
-        Indexes.ascending("lastUpdated"),
-        IndexOptions()
-          .name("last-updated-index")
-          .expireAfter(appConfig.userAnswersTtlInDays, TimeUnit.DAYS)
+class UserAnswersRepository @Inject() (
+  mongoComponent: MongoComponent,
+  appConfig: AppConfig,
+  clock: Clock
+)(implicit ec: ExecutionContext, crypto: Encrypter with Decrypter)
+    extends PlayMongoRepository[UserAnswers](
+      collectionName = "user-answers",
+      mongoComponent = mongoComponent,
+      domainFormat = UserAnswers.encryptedFormat,
+      indexes = Seq(
+        IndexModel(
+          Indexes.ascending("lastUpdated"),
+          IndexOptions()
+            .name("last-updated-index")
+            .expireAfter(appConfig.userAnswersTtlInDays, TimeUnit.DAYS)
+        ),
+        IndexModel(
+          Indexes.ascending("userId", "draftId"),
+          IndexOptions()
+            .name("id-index")
+            .unique(true)
+        ),
+        IndexModel(
+          Indexes.ascending("draftId"),
+          IndexOptions()
+            .name("draft-id-index")
+            .unique(true)
+        )
       ),
-      IndexModel(
-        Indexes.ascending("userId", "draftId"),
-        IndexOptions()
-          .name("id-index")
-          .unique(true)
-      ),
-      IndexModel(
-        Indexes.ascending("draftId"),
-        IndexOptions()
-          .name("draft-id-index")
-          .unique(true)
-      )
-    ),
-    extraCodecs = Seq(Codecs.playFormatCodec(DraftId.format))
-  ) {
+      extraCodecs = Seq(Codecs.playFormatCodec(DraftId.format))
+    ) {
 
   implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
 
@@ -77,7 +79,7 @@ class UserAnswersRepository @Inject()(
     collection
       .updateOne(
         filter = byUserIdAndDraftId(userId, draftId),
-        update = Updates.set("lastUpdated", Instant.now(clock)),
+        update = Updates.set("lastUpdated", Instant.now(clock))
       )
       .toFuture()
       .map(_ => Done)

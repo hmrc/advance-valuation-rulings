@@ -16,16 +16,9 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import akka.actor.ActorSystem
-import akka.stream.scaladsl.{Sink, Source}
-import akka.util.ByteString
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, OptionValues}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -39,10 +32,26 @@ import uk.gov.hmrc.objectstore.client.play.Implicits._
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
 import uk.gov.hmrc.objectstore.client.play.test.stub
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import akka.actor.ActorSystem
+import akka.stream.scaladsl.{Sink, Source}
+import akka.util.ByteString
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.MockitoSugar
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, OptionValues}
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
 
-class AttachmentsServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with IntegrationPatience with OptionValues with MockitoSugar with BeforeAndAfterEach with BeforeAndAfterAll {
+class AttachmentsServiceSpec
+    extends AnyFreeSpec
+    with Matchers
+    with ScalaFutures
+    with IntegrationPatience
+    with OptionValues
+    with MockitoSugar
+    with BeforeAndAfterEach
+    with BeforeAndAfterAll {
 
   private implicit lazy val as: ActorSystem = ActorSystem()
 
@@ -56,10 +65,10 @@ class AttachmentsServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures
     super.afterAll()
   }
 
-  private val baseUrl = "baseUrl"
-  private val owner = "owner"
-  private val token = "token"
-  private val config = ObjectStoreClientConfig(baseUrl, owner, token, OneWeek)
+  private val baseUrl         = "baseUrl"
+  private val owner           = "owner"
+  private val token           = "token"
+  private val config          = ObjectStoreClientConfig(baseUrl, owner, token, OneWeek)
   private val objectStoreStub = new stub.StubPlayObjectStoreClient(config)
 
   private val mockAttachmentsConnector = mock[DraftAttachmentsConnector]
@@ -75,10 +84,11 @@ class AttachmentsServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures
 
   private implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  private val fileContent = "Hello, World"
-  private val source = Source.single(ByteString.fromString(fileContent))
-  private val frontendAttachment = DraftAttachment(source, "application/pdf", "grtBN0au5C+J3qK1lhT57w==")
-  private val applicationId = ApplicationId(1337)
+  private val fileContent        = "Hello, World"
+  private val source             = Source.single(ByteString.fromString(fileContent))
+  private val frontendAttachment =
+    DraftAttachment(source, "application/pdf", "grtBN0au5C+J3qK1lhT57w==")
+  private val applicationId      = ApplicationId(1337)
 
   "copyAttachment" - {
 
@@ -89,7 +99,9 @@ class AttachmentsServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures
       when(mockAttachmentsConnector.get(any())(any()))
         .thenReturn(Future.successful(frontendAttachment))
 
-      service.copyAttachment(applicationId, "path/to/file.pdf")(hc).futureValue mustEqual expectedPath
+      service
+        .copyAttachment(applicationId, "path/to/file.pdf")(hc)
+        .futureValue mustEqual expectedPath
 
       verify(mockAttachmentsConnector).get(eqTo("path/to/file.pdf"))(eqTo(hc))
 
@@ -98,7 +110,8 @@ class AttachmentsServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures
       savedObject.metadata.contentType mustEqual "application/pdf"
       savedObject.metadata.contentMd5.value mustEqual "grtBN0au5C+J3qK1lhT57w=="
 
-      val result = savedObject.content.runWith(Sink.reduce[ByteString](_ ++ _)).futureValue.utf8String
+      val result =
+        savedObject.content.runWith(Sink.reduce[ByteString](_ ++ _)).futureValue.utf8String
       result mustEqual fileContent
     }
 

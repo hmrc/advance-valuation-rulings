@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
-import play.api.libs.json.{JsSuccess, Json}
+import play.api.libs.json.{Json, JsSuccess}
+import uk.gov.hmrc.advancevaluationrulings.models.DraftId
+
 import generators.Generators
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 
 class ApplicationRequestSpec extends AnyWordSpec with Matchers with ScalaCheckPropertyChecks {
 

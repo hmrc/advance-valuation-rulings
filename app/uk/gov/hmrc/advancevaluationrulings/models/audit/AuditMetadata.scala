@@ -18,4 +18,8 @@ package uk.gov.hmrc.advancevaluationrulings.models.audit
 
 import uk.gov.hmrc.auth.core.{AffinityGroup, CredentialRole}
 
-final case class AuditMetadata(internalId: String, affinityGroup: AffinityGroup, credentialRole: Option[CredentialRole])
+final case class AuditMetadata(
+  internalId: String,
+  affinityGroup: AffinityGroup,
+  credentialRole: Option[CredentialRole]
+)

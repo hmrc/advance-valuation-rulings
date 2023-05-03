@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
+import scala.util.Try
+
 import play.api.libs.json._
 import play.api.mvc.PathBindable
-
-import scala.util.Try
 
 case class ApplicationId(value: Long) {
 
@@ -64,7 +64,7 @@ object ApplicationId {
           fromString(string.value) match {
             case Some(applicationId) => JsSuccess(applicationId)
             case None                => JsError("Invalid application Id")
-        }
+          }
 
         case _ =>
           JsError("Invalid application Id")

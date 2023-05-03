@@ -16,13 +16,12 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.{Mockito, MockitoSugar}
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import java.time.{Clock, Instant, ZoneId}
+import java.time.temporal.ChronoUnit
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
@@ -30,18 +29,27 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
 import uk.gov.hmrc.advancevaluationrulings.repositories.UserAnswersRepository
-import uk.gov.hmrc.internalauth.client.test.{BackendAuthComponentsStub, StubBehaviour}
 import uk.gov.hmrc.internalauth.client._
+import uk.gov.hmrc.internalauth.client.test.{BackendAuthComponentsStub, StubBehaviour}
 
-import java.time.temporal.ChronoUnit
-import java.time.{Clock, Instant, ZoneId}
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import org.mockito.{Mockito, MockitoSugar}
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
 
-class UserAnswersInternalControllerSpec extends AnyFreeSpec with Matchers with MockitoSugar with OptionValues with ScalaFutures with BeforeAndAfterEach {
+class UserAnswersInternalControllerSpec
+    extends AnyFreeSpec
+    with Matchers
+    with MockitoSugar
+    with OptionValues
+    with ScalaFutures
+    with BeforeAndAfterEach {
 
-  private val mockRepo = mock[UserAnswersRepository]
-  private val mockStubBehaviour = mock[StubBehaviour]
+  private val mockRepo                  = mock[UserAnswersRepository]
+  private val mockStubBehaviour         = mock[StubBehaviour]
   private val stubBackendAuthComponents =
     BackendAuthComponentsStub(mockStubBehaviour)(stubControllerComponents(), implicitly)
 
@@ -58,13 +66,19 @@ class UserAnswersInternalControllerSpec extends AnyFreeSpec with Matchers with M
     super.beforeEach()
   }
 
-  private val writePredicate = Predicate.Permission(Resource(ResourceType("advance-valuation-rulings"), ResourceLocation("user-answers")), IAAction("WRITE"))
-  private val readPredicate = Predicate.Permission(Resource(ResourceType("advance-valuation-rulings"), ResourceLocation("user-answers")), IAAction("READ"))
+  private val writePredicate = Predicate.Permission(
+    Resource(ResourceType("advance-valuation-rulings"), ResourceLocation("user-answers")),
+    IAAction("WRITE")
+  )
+  private val readPredicate  = Predicate.Permission(
+    Resource(ResourceType("advance-valuation-rulings"), ResourceLocation("user-answers")),
+    IAAction("READ")
+  )
 
-  private val instant = Instant.now.truncatedTo(ChronoUnit.MILLIS)
-  private val stubClock = Clock.fixed(instant, ZoneId.systemDefault)
-  private val userId = "foo"
-  private val draftId = DraftId(0)
+  private val instant     = Instant.now.truncatedTo(ChronoUnit.MILLIS)
+  private val stubClock   = Clock.fixed(instant, ZoneId.systemDefault)
+  private val userId      = "foo"
+  private val draftId     = DraftId(0)
   private val userAnswers = UserAnswers(userId, draftId, Json.obj(), Instant.now(stubClock))
 
   ".get" - {
@@ -102,14 +116,16 @@ class UserAnswersInternalControllerSpec extends AnyFreeSpec with Matchers with M
 
     "must fail for an unauthenticated call" in {
 
-      val request = FakeRequest(GET, routes.UserAnswersInternalController.get(draftId).url) // No auth token
+      val request =
+        FakeRequest(GET, routes.UserAnswersInternalController.get(draftId).url) // No auth token
 
       route(app, request).value.failed.futureValue
     }
 
     "must fail for an unauthorised call" in {
 
-      when(mockStubBehaviour.stubAuth[Unit](any(), any())).thenReturn(Future.failed(new RuntimeException()))
+      when(mockStubBehaviour.stubAuth[Unit](any(), any()))
+        .thenReturn(Future.failed(new RuntimeException()))
 
       val request = FakeRequest(GET, routes.UserAnswersInternalController.get(draftId).url)
         .withHeaders(AUTHORIZATION -> "Some auth token")
@@ -158,7 +174,8 @@ class UserAnswersInternalControllerSpec extends AnyFreeSpec with Matchers with M
 
     "must fail for an unauthorised call" in {
 
-      when(mockStubBehaviour.stubAuth[Unit](any(), any())).thenReturn(Future.failed(new RuntimeException()))
+      when(mockStubBehaviour.stubAuth[Unit](any(), any()))
+        .thenReturn(Future.failed(new RuntimeException()))
 
       val request = FakeRequest(POST, routes.UserAnswersInternalController.set().url)
         .withHeaders(AUTHORIZATION -> "Some auth token")

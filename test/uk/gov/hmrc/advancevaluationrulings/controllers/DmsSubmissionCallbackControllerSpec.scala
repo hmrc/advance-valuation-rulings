@@ -16,42 +16,52 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
+import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.Json
+import play.api.test.FakeRequest
+import play.api.test.Helpers._
+import uk.gov.hmrc.advancevaluationrulings.models.dms.{NotificationRequest, SubmissionItemStatus}
+import uk.gov.hmrc.internalauth.client.{BackendAuthComponents, IAAction, Predicate, Resource, ResourceLocation, ResourceType, Retrieval}
+import uk.gov.hmrc.internalauth.client.test.{BackendAuthComponentsStub, StubBehaviour}
+
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
-import play.api.test.Helpers._
-import play.api.inject.bind
-import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.Json
-import play.api.test.FakeRequest
-import uk.gov.hmrc.advancevaluationrulings.models.dms.{NotificationRequest, SubmissionItemStatus}
-import uk.gov.hmrc.internalauth.client.{BackendAuthComponents, IAAction, Predicate, Resource, ResourceLocation, ResourceType, Retrieval}
-import uk.gov.hmrc.internalauth.client.test.{BackendAuthComponentsStub, StubBehaviour}
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-
-class DmsSubmissionCallbackControllerSpec extends AnyFreeSpec with Matchers with OptionValues with ScalaFutures with MockitoSugar with BeforeAndAfterEach {
+class DmsSubmissionCallbackControllerSpec
+    extends AnyFreeSpec
+    with Matchers
+    with OptionValues
+    with ScalaFutures
+    with MockitoSugar
+    with BeforeAndAfterEach {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockStubBehaviour)
   }
 
-  private val mockStubBehaviour = mock[StubBehaviour]
+  private val mockStubBehaviour         = mock[StubBehaviour]
   private val stubBackendAuthComponents =
     BackendAuthComponentsStub(mockStubBehaviour)(stubControllerComponents(), implicitly)
 
   private val app = GuiceApplicationBuilder()
     .overrides(
-      bind[BackendAuthComponents].toInstance(stubBackendAuthComponents),
+      bind[BackendAuthComponents].toInstance(stubBackendAuthComponents)
     )
     .build()
 
-  private val predicate = Predicate.Permission(Resource(ResourceType("advance-valuation-rulings"), ResourceLocation("dms/callback")), IAAction("WRITE"))
+  private val predicate = Predicate.Permission(
+    Resource(ResourceType("advance-valuation-rulings"), ResourceLocation("dms/callback")),
+    IAAction("WRITE")
+  )
 
   private val notification = NotificationRequest(
     id = "id",
@@ -97,7 +107,8 @@ class DmsSubmissionCallbackControllerSpec extends AnyFreeSpec with Matchers with
 
     "must fail when the user is not authorised" in {
 
-      when(mockStubBehaviour.stubAuth[Unit](any(), any())).thenReturn(Future.failed(new RuntimeException()))
+      when(mockStubBehaviour.stubAuth[Unit](any(), any()))
+        .thenReturn(Future.failed(new RuntimeException()))
 
       val request = FakeRequest(POST, routes.DmsSubmissionCallbackController.callback.url)
         .withHeaders(AUTHORIZATION -> "Some auth token")

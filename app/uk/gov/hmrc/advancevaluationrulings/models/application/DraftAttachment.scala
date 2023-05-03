@@ -19,4 +19,8 @@ package uk.gov.hmrc.advancevaluationrulings.models.application
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 
-final case class DraftAttachment(content: Source[ByteString, _], contentType: String, contentMd5: String)
+final case class DraftAttachment(
+  content: Source[ByteString, _],
+  contentType: String,
+  contentMd5: String
+)

@@ -19,15 +19,15 @@ package uk.gov.hmrc.advancevaluationrulings.models.application
 import play.api.libs.json.{Json, OFormat}
 
 final case class TraderDetail(
-                               eori: String,
-                               businessName: String,
-                               addressLine1: String,
-                               addressLine2: Option[String],
-                               addressLine3: Option[String],
-                               postcode: String,
-                               countryCode: String,
-                               phoneNumber: Option[String]
-                             ) {
+  eori: String,
+  businessName: String,
+  addressLine1: String,
+  addressLine2: Option[String],
+  addressLine3: Option[String],
+  postcode: String,
+  countryCode: String,
+  phoneNumber: Option[String]
+) {
 
   lazy val country: Country = Country.fromCountryCode(countryCode)
 

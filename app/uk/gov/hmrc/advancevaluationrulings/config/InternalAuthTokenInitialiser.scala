@@ -16,19 +16,21 @@
 
 package uk.gov.hmrc.advancevaluationrulings.config
 
-import akka.actor.ActorSystem
-import config.Service
-import play.api.libs.json.Json
-import play.api.{Configuration, Logging}
-import uk.gov.hmrc.advancevaluationrulings.models.Done
-import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
-import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
-
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.duration.{DurationInt, FiniteDuration}
+
 import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
+
+import play.api.{Configuration, Logging}
+import play.api.libs.json.Json
+import uk.gov.hmrc.advancevaluationrulings.models.Done
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+import uk.gov.hmrc.http.client.HttpClientV2
+
+import akka.actor.ActorSystem
+import config.Service
 
 abstract class InternalAuthTokenInitialiser {
   val initialised: Future[Done]
@@ -41,10 +43,12 @@ class NoOpInternalAuthTokenInitialiser @Inject() () extends InternalAuthTokenIni
 
 @Singleton
 class InternalAuthTokenInitialiserImpl @Inject() (
-                                               configuration: Configuration,
-                                               httpClient: HttpClientV2,
-                                               actorSystem: ActorSystem
-                                             )(implicit ec: ExecutionContext) extends InternalAuthTokenInitialiser with Logging {
+  configuration: Configuration,
+  httpClient: HttpClientV2,
+  actorSystem: ActorSystem
+)(implicit ec: ExecutionContext)
+    extends InternalAuthTokenInitialiser
+    with Logging {
 
   private val internalAuthService: Service =
     configuration.get[Service]("microservice.services.internal-auth")
@@ -70,75 +74,84 @@ class InternalAuthTokenInitialiserImpl @Inject() (
     _ <- addDmsSubmissionAttachmentGrants()
   } yield Done
 
-  private def ensureAuthToken(): Future[Done] = {
-    authTokenIsValid.flatMap { isValid =>
-      if (isValid) {
-        logger.info("Auth token is already valid")
-        Future.successful(Done)
-      } else {
-        createClientAuthToken()
-      }
+  private def ensureAuthToken(): Future[Done] =
+    authTokenIsValid.flatMap {
+      isValid =>
+        if (isValid) {
+          logger.info("Auth token is already valid")
+          Future.successful(Done)
+        } else {
+          createClientAuthToken()
+        }
     }
-  }
 
   private def createClientAuthToken(): Future[Done] = {
     logger.info("Initialising auth token")
-    httpClient.post(url"${internalAuthService.baseUrl}/test-only/token")(HeaderCarrier())
-      .withBody(Json.obj(
-        "token" -> authToken,
-        "principal" -> appName,
-        "permissions" -> Seq(
-          Json.obj(
-            "resourceType" -> "dms-submission",
-            "resourceLocation" -> "submit",
-            "actions" -> List("WRITE")
-          ),
-          Json.obj(
-            "resourceType" -> "object-store",
-            "resourceLocation" -> "advance-valuation-rulings",
-            "actions" -> List("READ", "WRITE")
+    httpClient
+      .post(url"${internalAuthService.baseUrl}/test-only/token")(HeaderCarrier())
+      .withBody(
+        Json.obj(
+          "token"       -> authToken,
+          "principal"   -> appName,
+          "permissions" -> Seq(
+            Json.obj(
+              "resourceType"     -> "dms-submission",
+              "resourceLocation" -> "submit",
+              "actions"          -> List("WRITE")
+            ),
+            Json.obj(
+              "resourceType"     -> "object-store",
+              "resourceLocation" -> "advance-valuation-rulings",
+              "actions"          -> List("READ", "WRITE")
+            )
           )
         )
-      ))
+      )
       .execute
-      .flatMap { response =>
-        if (response.status == 201) {
-          logger.info("Auth token initialised")
-          Future.successful(Done)
-        } else {
-          Future.failed(new RuntimeException("Unable to initialise internal-auth token"))
-        }
+      .flatMap {
+        response =>
+          if (response.status == 201) {
+            logger.info("Auth token initialised")
+            Future.successful(Done)
+          } else {
+            Future.failed(new RuntimeException("Unable to initialise internal-auth token"))
+          }
       }
   }
 
   private def addDmsSubmissionAttachmentGrants(): Future[Done] = {
     logger.info("Initialising dms-submission grants")
-    httpClient.post(url"${internalAuthService.baseUrl}/test-only/token")(HeaderCarrier())
-      .withBody(Json.obj(
-        "token" -> UUID.randomUUID(),
-        "principal" -> "dms-submission",
-        "permissions" -> Seq(
-          Json.obj(
-            "resourceType" -> "advance-valuation-rulings",
-            "resourceLocation" -> "dms/callback",
-            "actions" -> List("WRITE")
+    httpClient
+      .post(url"${internalAuthService.baseUrl}/test-only/token")(HeaderCarrier())
+      .withBody(
+        Json.obj(
+          "token"       -> UUID.randomUUID(),
+          "principal"   -> "dms-submission",
+          "permissions" -> Seq(
+            Json.obj(
+              "resourceType"     -> "advance-valuation-rulings",
+              "resourceLocation" -> "dms/callback",
+              "actions"          -> List("WRITE")
+            )
           )
         )
-      ))
+      )
       .execute
-      .flatMap { response =>
-        if (response.status == 201) {
-          logger.info("dms-submission grants added")
-          Future.successful(Done)
-        } else {
-          Future.failed(new RuntimeException("Unable to add dms-submission grants"))
-        }
+      .flatMap {
+        response =>
+          if (response.status == 201) {
+            logger.info("dms-submission grants added")
+            Future.successful(Done)
+          } else {
+            Future.failed(new RuntimeException("Unable to add dms-submission grants"))
+          }
       }
   }
 
   private def authTokenIsValid: Future[Boolean] = {
     logger.info("Checking auth token")
-    httpClient.get(url"${internalAuthService.baseUrl}/test-only/token")(HeaderCarrier())
+    httpClient
+      .get(url"${internalAuthService.baseUrl}/test-only/token")(HeaderCarrier())
       .setHeader("Authorization" -> authToken)
       .execute
       .map(_.status == 200)

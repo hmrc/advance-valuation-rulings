@@ -16,11 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models
 
+import scala.util.Try
 
 import play.api.libs.json._
 import play.api.mvc.PathBindable
-
-import scala.util.Try
 
 final case class DraftId(value: Long) {
   override val toString: String = s"DRAFT%09d".format(value)
@@ -50,7 +49,7 @@ object DraftId {
       override def bind(key: String, value: String): Either[String, DraftId] =
         fromString(value) match {
           case Some(draftId) => Right(draftId)
-          case None => Left("Invalid draft Id")
+          case None          => Left("Invalid draft Id")
         }
 
       override def unbind(key: String, value: DraftId): String =
@@ -63,7 +62,7 @@ object DraftId {
         case string: JsString =>
           fromString(string.value) match {
             case Some(draftId) => JsSuccess(draftId)
-            case None => JsError("Invalid draft Id")
+            case None          => JsError("Invalid draft Id")
           }
 
         case _ =>

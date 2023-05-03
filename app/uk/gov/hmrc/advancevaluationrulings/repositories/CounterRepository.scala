@@ -16,30 +16,32 @@
 
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
-import org.mongodb.scala.MongoBulkWriteException
-import org.mongodb.scala.model.{Filters, FindOneAndUpdateOptions, ReturnDocument, Updates}
+import javax.inject.{Inject, Singleton}
+
+import scala.annotation.nowarn
+import scala.concurrent.{ExecutionContext, Future}
+import scala.jdk.CollectionConverters._
+
 import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application.{CounterId, CounterWrapper}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
-import javax.inject.{Inject, Singleton}
-import scala.annotation.nowarn
-import scala.concurrent.{ExecutionContext, Future}
-import scala.jdk.CollectionConverters._
+import org.mongodb.scala.MongoBulkWriteException
+import org.mongodb.scala.model.{Filters, FindOneAndUpdateOptions, ReturnDocument, Updates}
 
 @Singleton
-class CounterRepository @Inject()(
-                                   mongoComponent: MongoComponent
-                                 )(implicit ec: ExecutionContext)
-  extends PlayMongoRepository[CounterWrapper](
-    collectionName = "counters",
-    mongoComponent = mongoComponent,
-    domainFormat   = CounterWrapper.format,
-    indexes        = Nil
-  ) {
+class CounterRepository @Inject() (
+  mongoComponent: MongoComponent
+)(implicit ec: ExecutionContext)
+    extends PlayMongoRepository[CounterWrapper](
+      collectionName = "counters",
+      mongoComponent = mongoComponent,
+      domainFormat = CounterWrapper.format,
+      indexes = Nil
+    ) {
 
-  private val duplicateErrorCode = 11000
+  private val duplicateErrorCode  = 11000
   private def byId(id: CounterId) = Filters.eq("_id", id.toString)
 
   override lazy val requiresTtlIndex: Boolean = false
@@ -52,7 +54,8 @@ class CounterRepository @Inject()(
   )
 
   @nowarn
-  private val seedDatabase = seed // Eagerly call seed to ensure records are created on startup if needed
+  private val seedDatabase =
+    seed // Eagerly call seed to ensure records are created on startup if needed
 
   def ensureApplicationIdIsCorrect(): Future[Done] =
     collection
@@ -77,11 +80,13 @@ class CounterRepository @Inject()(
       }.getOrElse(Future.successful(Done)))
 
   def seed: Future[Done] =
-    collection.insertMany(seeds)
+    collection
+      .insertMany(seeds)
       .toFuture()
       .map(_ => Done)
       .recoverWith {
-        case e: MongoBulkWriteException if e.getWriteErrors.asScala.forall(x => x.getCode == duplicateErrorCode) =>
+        case e: MongoBulkWriteException
+            if e.getWriteErrors.asScala.forall(x => x.getCode == duplicateErrorCode) =>
           ensureApplicationIdIsCorrect()
       }
 

@@ -16,17 +16,21 @@
 
 package uk.gov.hmrc.advancevaluationrulings.config
 
-import org.apache.fop.apps.FopFactory
-import play.api.inject.Binding
+import java.time.Clock
+
 import play.api.{Configuration, Environment}
+import play.api.inject.Binding
 import uk.gov.hmrc.advancevaluationrulings.services.{DefaultDmsSubmissionService, DmsSubmissionService, NoOpDmsSubmissionService}
 import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
 
-import java.time.Clock
+import org.apache.fop.apps.FopFactory
 
 class Module extends play.api.inject.Module {
 
-  override def bindings(environment: Environment, configuration: Configuration): collection.Seq[Binding[_]] = {
+  override def bindings(
+    environment: Environment,
+    configuration: Configuration
+  ): collection.Seq[Binding[_]] = {
 
     val authTokenInitialiserBinding: Binding[InternalAuthTokenInitialiser] =
       if (configuration.get[Boolean]("internal-auth-token-initialiser.enabled")) {

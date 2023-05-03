@@ -16,41 +16,53 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import java.time.{Clock, Instant, ZoneId}
+import java.time.temporal.ChronoUnit
+
+import scala.concurrent.Future
+
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.advancevaluationrulings.models.application.{DraftSummary, DraftSummaryResponse}
 import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
+import uk.gov.hmrc.advancevaluationrulings.models.application.{DraftSummary, DraftSummaryResponse}
 import uk.gov.hmrc.advancevaluationrulings.repositories.UserAnswersRepository
-import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.http.HeaderNames
 
-import java.time.temporal.ChronoUnit
-import java.time.{Clock, Instant, ZoneId}
-import scala.concurrent.Future
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.MockitoSugar
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
 
-class UserAnswersControllerSpec extends AnyFreeSpec with Matchers with MockitoSugar with OptionValues with ScalaFutures with BeforeAndAfterEach {
+class UserAnswersControllerSpec
+    extends AnyFreeSpec
+    with Matchers
+    with MockitoSugar
+    with OptionValues
+    with ScalaFutures
+    with BeforeAndAfterEach {
 
-  private val mockRepo = mock[UserAnswersRepository]
+  private val mockRepo          = mock[UserAnswersRepository]
   private val mockAuthConnector = mock[AuthConnector]
 
-  private val instant = Instant.now.truncatedTo(ChronoUnit.MILLIS)
-  private val stubClock = Clock.fixed(instant, ZoneId.systemDefault)
-  private val userId = "foo"
-  private val draftId = DraftId(0)
-  private val userAnswers = UserAnswers(userId, draftId, Json.obj(), Instant.now(stubClock))
+  private val instant       = Instant.now.truncatedTo(ChronoUnit.MILLIS)
+  private val stubClock     = Clock.fixed(instant, ZoneId.systemDefault)
+  private val userId        = "foo"
+  private val draftId       = DraftId(0)
+  private val userAnswers   = UserAnswers(userId, draftId, Json.obj(), Instant.now(stubClock))
   private val applicantEori = "applicantEori"
-  private val atarEnrolment = Enrolments(Set(Enrolment("HMRC-ATAR-ORG", Seq(EnrolmentIdentifier("EORINumber", applicantEori)), "Activated")))
+  private val atarEnrolment = Enrolments(
+    Set(
+      Enrolment("HMRC-ATAR-ORG", Seq(EnrolmentIdentifier("EORINumber", applicantEori)), "Activated")
+    )
+  )
 
   override def beforeEach(): Unit = {
     reset(mockRepo, mockAuthConnector)
@@ -69,9 +81,24 @@ class UserAnswersControllerSpec extends AnyFreeSpec with Matchers with MockitoSu
 
     "must return data when it exists for this userId and draftId" in {
 
-      when(mockRepo.get(eqTo(userId), eqTo(draftId))) thenReturn Future.successful(Some(userAnswers))
-      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
-        .thenReturn(Future.successful(new~(new~(new~(atarEnrolment, Some(userId)), Some(AffinityGroup.Organisation)), Some(Assistant))))
+      when(mockRepo.get(eqTo(userId), eqTo(draftId))) thenReturn Future.successful(
+        Some(userAnswers)
+      )
+      when(
+        mockAuthConnector
+          .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](
+            any(),
+            any()
+          )(any(), any())
+      )
+        .thenReturn(
+          Future.successful(
+            new ~(
+              new ~(new ~(atarEnrolment, Some(userId)), Some(AffinityGroup.Organisation)),
+              Some(Assistant)
+            )
+          )
+        )
 
       val request =
         FakeRequest(GET, routes.UserAnswersController.get(draftId).url)
@@ -86,8 +113,21 @@ class UserAnswersControllerSpec extends AnyFreeSpec with Matchers with MockitoSu
     "must return Not Found when data cannot be found for this user id and draft id" in {
 
       when(mockRepo.get(eqTo(userId), eqTo(draftId))) thenReturn Future.successful(None)
-      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
-        .thenReturn(Future.successful(new~(new~(new~(atarEnrolment, Some(userId)), Some(AffinityGroup.Organisation)), Some(Assistant))))
+      when(
+        mockAuthConnector
+          .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](
+            any(),
+            any()
+          )(any(), any())
+      )
+        .thenReturn(
+          Future.successful(
+            new ~(
+              new ~(new ~(atarEnrolment, Some(userId)), Some(AffinityGroup.Organisation)),
+              Some(Assistant)
+            )
+          )
+        )
 
       val request =
         FakeRequest(GET, routes.UserAnswersController.get(draftId).url)
@@ -104,8 +144,21 @@ class UserAnswersControllerSpec extends AnyFreeSpec with Matchers with MockitoSu
     "must return No Content when the data is successfully saved" in {
 
       when(mockRepo.set(any())) thenReturn Future.successful(Done)
-      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
-        .thenReturn(Future.successful(new~(new~(new~(atarEnrolment, Some(userId)), Some(AffinityGroup.Organisation)), Some(Assistant))))
+      when(
+        mockAuthConnector
+          .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](
+            any(),
+            any()
+          )(any(), any())
+      )
+        .thenReturn(
+          Future.successful(
+            new ~(
+              new ~(new ~(atarEnrolment, Some(userId)), Some(AffinityGroup.Organisation)),
+              Some(Assistant)
+            )
+          )
+        )
 
       val request =
         FakeRequest(POST, routes.UserAnswersController.set().url)
@@ -122,8 +175,21 @@ class UserAnswersControllerSpec extends AnyFreeSpec with Matchers with MockitoSu
 
     "must return BadRequest when the data cannot be parsed as UserAnswers" in {
 
-      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
-        .thenReturn(Future.successful(new~(new~(new~(atarEnrolment, Some(userId)), Some(AffinityGroup.Organisation)), Some(Assistant))))
+      when(
+        mockAuthConnector
+          .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](
+            any(),
+            any()
+          )(any(), any())
+      )
+        .thenReturn(
+          Future.successful(
+            new ~(
+              new ~(new ~(atarEnrolment, Some(userId)), Some(AffinityGroup.Organisation)),
+              Some(Assistant)
+            )
+          )
+        )
 
       val request =
         FakeRequest(POST, routes.UserAnswersController.set().url)
@@ -143,8 +209,21 @@ class UserAnswersControllerSpec extends AnyFreeSpec with Matchers with MockitoSu
     "must return NoContent and keep the data alive" in {
 
       when(mockRepo.keepAlive(any(), any())) thenReturn Future.successful(Done)
-      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
-        .thenReturn(Future.successful(new~(new~(new~(atarEnrolment, Some(userId)), Some(AffinityGroup.Organisation)), Some(Assistant))))
+      when(
+        mockAuthConnector
+          .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](
+            any(),
+            any()
+          )(any(), any())
+      )
+        .thenReturn(
+          Future.successful(
+            new ~(
+              new ~(new ~(atarEnrolment, Some(userId)), Some(AffinityGroup.Organisation)),
+              Some(Assistant)
+            )
+          )
+        )
 
       val request =
         FakeRequest(POST, routes.UserAnswersController.keepAlive(draftId).url)
@@ -161,8 +240,21 @@ class UserAnswersControllerSpec extends AnyFreeSpec with Matchers with MockitoSu
     "must return NoContent and clear the data" in {
 
       when(mockRepo.clear(any(), any())) thenReturn Future.successful(Done)
-      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
-        .thenReturn(Future.successful(new~(new~(new~(atarEnrolment, Some(userId)), Some(AffinityGroup.Organisation)), Some(Assistant))))
+      when(
+        mockAuthConnector
+          .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](
+            any(),
+            any()
+          )(any(), any())
+      )
+        .thenReturn(
+          Future.successful(
+            new ~(
+              new ~(new ~(atarEnrolment, Some(userId)), Some(AffinityGroup.Organisation)),
+              Some(Assistant)
+            )
+          )
+        )
 
       val request =
         FakeRequest(DELETE, routes.UserAnswersController.clear(draftId).url)
@@ -180,8 +272,21 @@ class UserAnswersControllerSpec extends AnyFreeSpec with Matchers with MockitoSu
 
       val summaries = Seq(DraftSummary(DraftId(1), None, Instant.now, None))
       when(mockRepo.summaries(any())) thenReturn Future.successful(summaries)
-      when(mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](any(), any())(any(), any()))
-        .thenReturn(Future.successful(new~(new~(new~(atarEnrolment, Some(userId)), Some(AffinityGroup.Organisation)), Some(Assistant))))
+      when(
+        mockAuthConnector
+          .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](
+            any(),
+            any()
+          )(any(), any())
+      )
+        .thenReturn(
+          Future.successful(
+            new ~(
+              new ~(new ~(atarEnrolment, Some(userId)), Some(AffinityGroup.Organisation)),
+              Some(Assistant)
+            )
+          )
+        )
 
       val request = FakeRequest(GET, routes.UserAnswersController.summaries().url)
 

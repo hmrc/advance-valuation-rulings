@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
+import javax.inject.{Inject, Singleton}
+
+import scala.concurrent.{ExecutionContext, Future}
+
 import play.api.i18n.{Messages, MessagesApi}
 import uk.gov.hmrc.advancevaluationrulings.connectors.DmsSubmissionConnector
 import uk.gov.hmrc.advancevaluationrulings.models.Done
@@ -25,38 +27,49 @@ import uk.gov.hmrc.advancevaluationrulings.models.application.Application
 import uk.gov.hmrc.advancevaluationrulings.views.xml.ApplicationPdf
 import uk.gov.hmrc.http.HeaderCarrier
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import akka.stream.scaladsl.Source
+import akka.util.ByteString
 
 abstract class DmsSubmissionService {
 
-  def submitApplication(application: Application, submissionReference: String)(implicit hc: HeaderCarrier): Future[Done]
+  def submitApplication(application: Application, submissionReference: String)(implicit
+    hc: HeaderCarrier
+  ): Future[Done]
 }
 
 @Singleton
 class NoOpDmsSubmissionService @Inject() () extends DmsSubmissionService {
-  override def submitApplication(application: Application, submissionReference: String)(implicit hc: HeaderCarrier): Future[Done] =
+  override def submitApplication(application: Application, submissionReference: String)(implicit
+    hc: HeaderCarrier
+  ): Future[Done] =
     Future.successful(Done)
 }
 
 @Singleton
 class DefaultDmsSubmissionService @Inject() (
-                                       dmsConnector: DmsSubmissionConnector,
-                                       fopService: FopService,
-                                       pdfTemplate: ApplicationPdf,
-                                       messagesApi: MessagesApi
-                                     )(implicit ec: ExecutionContext) extends DmsSubmissionService {
+  dmsConnector: DmsSubmissionConnector,
+  fopService: FopService,
+  pdfTemplate: ApplicationPdf,
+  messagesApi: MessagesApi
+)(implicit ec: ExecutionContext)
+    extends DmsSubmissionService {
 
   private implicit val messages: Messages =
     messagesApi.preferred(Seq.empty)
 
-  override def submitApplication(application: Application, submissionReference: String)(implicit hc: HeaderCarrier): Future[Done] =
+  override def submitApplication(application: Application, submissionReference: String)(implicit
+    hc: HeaderCarrier
+  ): Future[Done] =
     for {
       pdfBytes <- fopService.render(pdfTemplate(application).body)
       _        <- submitToDms(application, pdfBytes, submissionReference)
     } yield Done
 
-  private def submitToDms(application: Application, pdfBytes: Array[Byte], submissionReference: String)(implicit hc: HeaderCarrier): Future[Done] =
+  private def submitToDms(
+    application: Application,
+    pdfBytes: Array[Byte],
+    submissionReference: String
+  )(implicit hc: HeaderCarrier): Future[Done] =
     dmsConnector.submitApplication(
       eori = application.applicantEori,
       pdf = Source.single(ByteString(pdfBytes)),

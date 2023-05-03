@@ -41,8 +41,8 @@ object CounterId {
     override def reads(json: JsValue): JsResult[CounterId] =
       json match {
         case JsString(ApplicationId.toString) => JsSuccess(ApplicationId)
-        case JsString(AttachmentId.toString) => JsSuccess(AttachmentId)
-        case _ => JsError("Invalid counter id")
+        case JsString(AttachmentId.toString)  => JsSuccess(AttachmentId)
+        case _                                => JsError("Invalid counter id")
       }
 
     override def writes(o: CounterId): JsValue =

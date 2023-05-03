@@ -17,6 +17,7 @@
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
 import scala.concurrent.Future
+
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
@@ -26,10 +27,11 @@ import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReferen
 import uk.gov.hmrc.advancevaluationrulings.services.TraderDetailsService
 import uk.gov.hmrc.auth.core.{AffinityGroup, Assistant, AuthConnector, Enrolment, EnrolmentIdentifier, Enrolments}
 import uk.gov.hmrc.auth.core.retrieve.~
+
 import generators.ModelGenerators
-import org.mockito.MockitoSugar
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -50,7 +52,15 @@ class TraderDetailsControllerSpec
   private val ackRef        = AcknowledgementReference("ackRef")
   private val eoriNumber    = EoriNumber("applicantEori")
   private val atarEnrolment =
-    Enrolments(Set(Enrolment("HMRC-ATAR-ORG", Seq(EnrolmentIdentifier("EORINumber", eoriNumber.value)), "Activated")))
+    Enrolments(
+      Set(
+        Enrolment(
+          "HMRC-ATAR-ORG",
+          Seq(EnrolmentIdentifier("EORINumber", eoriNumber.value)),
+          "Activated"
+        )
+      )
+    )
 
   private val app =
     GuiceApplicationBuilder()
@@ -68,21 +78,33 @@ class TraderDetailsControllerSpec
   ".retrieveTraderDetails" - {
 
     "must return trader details" in {
-      forAll(traderDetailsResponseGen) { traderDetails =>
-        val authResult =
-          new ~(new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)), Some(Assistant))
+      forAll(traderDetailsResponseGen) {
+        traderDetails =>
+          val authResult =
+            new ~(
+              new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)),
+              Some(Assistant)
+            )
 
-        when(mockAuthConnector.authorise[authResult.type](any(), any())(any(), any())).thenReturn(Future.successful(authResult))
-        when(mockTraderDetailsService.getTraderDetails(eqTo(ackRef), eqTo(eoriNumber))(any(), any()))
-          .thenReturn(Future.successful(traderDetails))
+          when(mockAuthConnector.authorise[authResult.type](any(), any())(any(), any()))
+            .thenReturn(Future.successful(authResult))
+          when(
+            mockTraderDetailsService.getTraderDetails(eqTo(ackRef), eqTo(eoriNumber))(any(), any())
+          )
+            .thenReturn(Future.successful(traderDetails))
 
-        val request =
-          FakeRequest(GET, routes.TraderDetailsController.retrieveTraderDetails(ackRef.value, eoriNumber.value).url)
+          val request =
+            FakeRequest(
+              GET,
+              routes.TraderDetailsController
+                .retrieveTraderDetails(ackRef.value, eoriNumber.value)
+                .url
+            )
 
-        val result = route(app, request).value
+          val result = route(app, request).value
 
-        status(result) mustEqual OK
-        contentAsJson(result) mustEqual Json.toJson(traderDetails)
+          status(result) mustEqual OK
+          contentAsJson(result) mustEqual Json.toJson(traderDetails)
       }
     }
   }

@@ -16,27 +16,27 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
-import play.api.libs.json._
-import play.api.libs.functional.syntax._
-import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
-
 import java.time.Instant
 
+import play.api.libs.functional.syntax._
+import play.api.libs.json._
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
+
 final case class ApplicationSummary(
-                                     id: ApplicationId,
-                                     goodsName: String,
-                                     dateSubmitted: Instant,
-                                     eoriNumber: String
-                                   )
+  id: ApplicationId,
+  goodsName: String,
+  dateSubmitted: Instant,
+  eoriNumber: String
+)
 
 object ApplicationSummary {
 
   val mongoReads: Reads[ApplicationSummary] =
     (
       (__ \ "id").read[ApplicationId] and
-      (__ \ "goodsDetails" \ "goodsName").read[String] and
-      (__ \ "created").read[Instant](MongoJavatimeFormats.instantFormat) and
-      (__ \ "trader" \ "eori").read[String]
+        (__ \ "goodsDetails" \ "goodsName").read[String] and
+        (__ \ "created").read[Instant](MongoJavatimeFormats.instantFormat) and
+        (__ \ "trader" \ "eori").read[String]
     )(ApplicationSummary.apply _)
 
   val mongoFormat: OFormat[ApplicationSummary] = OFormat(mongoReads, format)

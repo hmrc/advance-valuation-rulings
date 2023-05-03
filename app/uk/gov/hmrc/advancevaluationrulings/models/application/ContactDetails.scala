@@ -19,10 +19,10 @@ package uk.gov.hmrc.advancevaluationrulings.models.application
 import play.api.libs.json.{Json, OFormat}
 
 final case class ContactDetails(
-                           name: String,
-                           email: String,
-                           phone: Option[String]
-                         )
+  name: String,
+  email: String,
+  phone: Option[String]
+)
 
 object ContactDetails {
 
