@@ -22,12 +22,13 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import uk.gov.hmrc.advancevaluationrulings.connectors.ETMPConnector
 import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
-import uk.gov.hmrc.advancevaluationrulings.models.etmp.{Query, Regime, ResponseDetail}
+import uk.gov.hmrc.advancevaluationrulings.models.etmp.{Query, Regime}
 import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
+import uk.gov.hmrc.advancevaluationrulings.repositories.TraderDetailsRepository
 import uk.gov.hmrc.http.HeaderCarrier
 
 @Singleton
-class TraderDetailsService @Inject() (connector: ETMPConnector)(implicit ec: ExecutionContext) {
+class TraderDetailsService @Inject()(connector: ETMPConnector, repository: TraderDetailsRepository)(implicit ec: ExecutionContext) {
 
   def getTraderDetails(
     acknowledgementReference: AcknowledgementReference,
@@ -35,9 +36,26 @@ class TraderDetailsService @Inject() (connector: ETMPConnector)(implicit ec: Exe
   )(implicit
     hc: HeaderCarrier
   ): Future[TraderDetailsResponse] = {
-    connector
-      .getSubscriptionDetails(Query(Regime.CDS, acknowledgementReference.value, EORI = Option(eoriNumber.value)))
-      .map(response => TraderDetailsResponse(response.subscriptionDisplayResponse.responseDetail))
+    lazy val query = Query(Regime.CDS, acknowledgementReference.value, EORI = Option(eoriNumber.value))
+
+    getCache(eoriNumber).flatMap {
+        cacheResult =>
+          cacheResult.map(Future.successful).getOrElse {
+            for {
+              response <- fetchRemote(query)
+              _ <- saveCache(response)
+            } yield response
+          }
+    }
   }
+  private def getCache(eoriNumber: EoriNumber) =
+    repository.get(eoriNumber.value)
+
+  private def saveCache(traderDetails: TraderDetailsResponse) =
+    repository.set(traderDetails)
+  private def fetchRemote(query: Query)(implicit hc: HeaderCarrier) =
+    connector
+      .getSubscriptionDetails(query)
+      .map(response => TraderDetailsResponse(response.subscriptionDisplayResponse.responseDetail))
 
 }
