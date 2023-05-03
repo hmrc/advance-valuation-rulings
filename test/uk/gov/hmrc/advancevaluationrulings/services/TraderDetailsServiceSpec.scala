@@ -19,8 +19,6 @@ package uk.gov.hmrc.advancevaluationrulings.services
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-import play.api.inject
-import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.advancevaluationrulings.connectors.ETMPConnector
 import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.{ETMPSubscriptionDisplayResponse, Query, SubscriptionDisplayResponse}
@@ -57,11 +55,7 @@ class TraderDetailsServiceSpec
     reset(mockConnector)
   }
 
-  private val app = GuiceApplicationBuilder()
-    .overrides(inject.bind[ETMPConnector].toInstance(mockConnector))
-    .build()
-
-  private lazy val service = app.injector.instanceOf[TraderDetailsService]
+  private lazy val service = new TraderDetailsService(mockConnector)
 
   ".getTraderDetails" - {
 

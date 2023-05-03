@@ -22,33 +22,22 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import uk.gov.hmrc.advancevaluationrulings.connectors.ETMPConnector
 import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
-import uk.gov.hmrc.advancevaluationrulings.models.etmp.{Query, Regime}
+import uk.gov.hmrc.advancevaluationrulings.models.etmp.{Query, Regime, ResponseDetail}
 import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
 import uk.gov.hmrc.http.HeaderCarrier
 
 @Singleton
-class TraderDetailsService @Inject() (connector: ETMPConnector) {
+class TraderDetailsService @Inject() (connector: ETMPConnector)(implicit ec: ExecutionContext) {
 
   def getTraderDetails(
     acknowledgementReference: AcknowledgementReference,
     eoriNumber: EoriNumber
   )(implicit
-    ec: ExecutionContext,
     hc: HeaderCarrier
-  ): Future[TraderDetailsResponse] =
+  ): Future[TraderDetailsResponse] = {
     connector
-      .getSubscriptionDetails(
-        Query(Regime.CDS, acknowledgementReference.value, EORI = Option(eoriNumber.value))
-      )
-      .map {
-        response =>
-          val responseDetail = response.subscriptionDisplayResponse.responseDetail
-          TraderDetailsResponse(
-            responseDetail.EORINo,
-            responseDetail.CDSFullName,
-            responseDetail.CDSEstablishmentAddress,
-            responseDetail.consentToDisclosureOfPersonalData.exists(_.equalsIgnoreCase("1")),
-            responseDetail.contactInformation
-          )
-      }
+      .getSubscriptionDetails(Query(Regime.CDS, acknowledgementReference.value, EORI = Option(eoriNumber.value)))
+      .map(response => TraderDetailsResponse(response.subscriptionDisplayResponse.responseDetail))
+  }
+
 }

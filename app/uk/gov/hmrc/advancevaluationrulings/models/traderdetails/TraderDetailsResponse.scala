@@ -17,7 +17,7 @@
 package uk.gov.hmrc.advancevaluationrulings.models.traderdetails
 
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.advancevaluationrulings.models.etmp.{CDSEstablishmentAddress, ContactInformation}
+import uk.gov.hmrc.advancevaluationrulings.models.etmp.{CDSEstablishmentAddress, ContactInformation, ResponseDetail}
 
 final case class TraderDetailsResponse(
   EORINo: String,
@@ -29,4 +29,13 @@ final case class TraderDetailsResponse(
 
 object TraderDetailsResponse {
   implicit val format: OFormat[TraderDetailsResponse] = Json.format[TraderDetailsResponse]
+
+  def apply(responseDetail: ResponseDetail): TraderDetailsResponse =
+    TraderDetailsResponse(
+      responseDetail.EORINo,
+      responseDetail.CDSFullName,
+      responseDetail.CDSEstablishmentAddress,
+      responseDetail.consentToDisclosureOfPersonalData.exists(_.equalsIgnoreCase("1")),
+      responseDetail.contactInformation
+    )
 }

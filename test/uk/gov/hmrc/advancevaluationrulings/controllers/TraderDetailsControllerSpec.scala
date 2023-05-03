@@ -89,7 +89,7 @@ class TraderDetailsControllerSpec
           when(mockAuthConnector.authorise[authResult.type](any(), any())(any(), any()))
             .thenReturn(Future.successful(authResult))
           when(
-            mockTraderDetailsService.getTraderDetails(eqTo(ackRef), eqTo(eoriNumber))(any(), any())
+            mockTraderDetailsService.getTraderDetails(eqTo(ackRef), eqTo(eoriNumber))(any())
           )
             .thenReturn(Future.successful(traderDetails))
 
