@@ -18,6 +18,7 @@ package uk.gov.hmrc.advancevaluationrulings.repositories
 
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model._
+import play.api.Logging
 import play.api.libs.json._
 import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
 import uk.gov.hmrc.advancevaluationrulings.models.Done
@@ -57,7 +58,7 @@ class TraderDetailsRepository @Inject()(
           .unique(true)
       ),
     )
-  ) {
+  ) with Logging {
 
   implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
 
@@ -80,10 +81,14 @@ class TraderDetailsRepository @Inject()(
     for {
       _ <- keepAlive(eori)
       e <- collection.find(byEori(eori)).headOption()
-    } yield e.map(_.data)
+    } yield {
+      logger.debug("Retrieving value from cache")
+      e.map(_.data)
+    }
   }
 
   def set(traderDetails: TraderDetailsResponse): Future[Done] = {
+    logger.debug("Adding value to cache")
     val cacheValue = CachedTraderDetails(
       index = traderDetails.EORINo,
       data = traderDetails,
@@ -104,6 +109,9 @@ class TraderDetailsRepository @Inject()(
     collection
       .deleteOne(byEori(eori))
       .toFuture()
-      .map(_ => Done)
+      .map(_ => {
+        logger.debug("Clearing value from cache")
+        Done
+      })
 
 }
