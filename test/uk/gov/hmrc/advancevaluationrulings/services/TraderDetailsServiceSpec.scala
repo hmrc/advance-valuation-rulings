@@ -33,6 +33,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
 import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.repositories.TraderDetailsRepository
 
@@ -48,6 +49,7 @@ class TraderDetailsServiceSpec
 
   private val mockConnector = mock[ETMPConnector]
   private val mockRepository = mock[TraderDetailsRepository]
+  private val mockAppConfig = mock[AppConfig]
   private val ackRef        = AcknowledgementReference("achRef")
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
@@ -57,43 +59,57 @@ class TraderDetailsServiceSpec
     reset(mockConnector, mockRepository)
   }
 
-  private lazy val service = new TraderDetailsService(mockConnector, mockRepository)
+  private lazy val service = new TraderDetailsService(mockConnector, mockRepository, mockAppConfig)
 
   ".getTraderDetails" - {
+    val responseDetail = responseDetailGen.sample.get
+    val eoriNumber   = EoriNumber(responseDetail.EORINo)
+    val etmpRequest  = Query(CDS, ackRef.value, EORI = Option(responseDetail.EORINo))
+    val etmpResponse = ETMPSubscriptionDisplayResponse(SubscriptionDisplayResponse(responseDetail))
 
-    "when the data has not been cached, must return the trader details from the connector call and save data to cache" in {
-      val responseDetail = responseDetailGen.sample.get
+    val traderDetails = TraderDetailsResponse(responseDetail)
 
-      val eoriNumber   = EoriNumber(responseDetail.EORINo)
-      val etmpRequest  = Query(CDS, ackRef.value, EORI = Option(responseDetail.EORINo))
-      val etmpResponse = ETMPSubscriptionDisplayResponse(SubscriptionDisplayResponse(responseDetail))
+    "when caching is enabled" - {
+      "when there is a cached value, must return the trader details from the connector call and save data to cache" in {
+        when(mockRepository.get(any())).thenReturn(Future.successful(None))
+        when(mockConnector.getSubscriptionDetails(eqTo(etmpRequest))(any()))
+          .thenReturn(Future.successful(etmpResponse))
+        when(mockRepository.set(any())).thenReturn(Future.successful(Done))
+        when(mockAppConfig.traderDetailsCacheEnabled).thenReturn(true)
 
-      val expectedResult = TraderDetailsResponse(responseDetail)
+        val result = service.getTraderDetails(ackRef, eoriNumber).futureValue
 
-      when(mockRepository.get(any())).thenReturn(Future.successful(None))
-      when(mockConnector.getSubscriptionDetails(eqTo(etmpRequest))(any()))
-        .thenReturn(Future.successful(etmpResponse))
-      when(mockRepository.set(any())).thenReturn(Future.successful(Done))
+        result mustEqual traderDetails
+        verify(mockRepository, times(1)).set(eqTo(traderDetails))
+      }
 
-      val result = service.getTraderDetails(ackRef, eoriNumber).futureValue
+      "when the cache is empty, must return the trader details from the cache" in {
+        val traderDetails = TraderDetailsResponse(responseDetailGen.sample.get)
 
-      result mustEqual expectedResult
-      verify(mockRepository, times(1)).set(eqTo(expectedResult))
+        when(mockRepository.get(eqTo(traderDetails.EORINo))).thenReturn(Future.successful(Some(traderDetails)))
+        when(mockAppConfig.traderDetailsCacheEnabled).thenReturn(true)
+
+        val result = service.getTraderDetails(ackRef, EoriNumber(traderDetails.EORINo)).futureValue
+        verify(mockConnector, never).getSubscriptionDetails(any())(any())
+        verify(mockRepository, never).set(any())
+
+        result mustEqual traderDetails
+      }
     }
 
+    "when caching is disabled" - {
+      "when the cache is empty, must return the trader details from the cache" in {
+        when(mockAppConfig.traderDetailsCacheEnabled).thenReturn(false)
+        when(mockConnector.getSubscriptionDetails(eqTo(etmpRequest))(any()))
+          .thenReturn(Future.successful(etmpResponse))
+        when(mockRepository.set(any())).thenReturn(Future.successful(Done))
 
-    "when the data has been cached, must return the trader details from the cache" in {
-      val traderDetails = TraderDetailsResponse(responseDetailGen.sample.get)
+        val result = service.getTraderDetails(ackRef, EoriNumber(traderDetails.EORINo)).futureValue
+        verify(mockRepository, never).get(any())
 
-      when(mockRepository.get(eqTo(traderDetails.EORINo))).thenReturn(Future.successful(Some(traderDetails)))
-
-      verify(mockConnector, never).getSubscriptionDetails(any())(any())
-
-      val result = service.getTraderDetails(ackRef, EoriNumber(traderDetails.EORINo)).futureValue
-
-      result mustEqual traderDetails
+        result mustEqual traderDetails
+      }
     }
-
   }
 
 }

@@ -17,12 +17,11 @@
 package uk.gov.hmrc.advancevaluationrulings.config
 
 import javax.inject.{Inject, Singleton}
-
-import play.api.Configuration
+import play.api.{Configuration, Logging}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
-class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig) {
+class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig) extends Logging {
 
   val appName: String = config.get[String]("appName")
 
@@ -40,4 +39,14 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
 
   val userAnswersTtlInDays: Int = config.get[Int]("mongodb.userAnswersTtlInDays")
   val traderDetailsTtlInSeconds: Int = config.get[Int]("mongodb.traderDetailsTtlInSeconds")
+
+  val traderDetailsCacheEnabled: Boolean = {
+    val path = "features.traderDetailsCacheEnabled"
+    config.getOptional[Boolean](path)
+      .getOrElse {
+        logger.error(s"Missing config key for config value $path")
+        false
+      }
+  }
+
 }
