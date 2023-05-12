@@ -28,9 +28,7 @@ class CountrySpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyCheck
 
     "must return a country when given a known country code" in {
 
-      forAll(Gen.oneOf(Country.allCountries)) {
-        country => Country.fromCountryCode(country.code) mustEqual country
-      }
+      forAll(Gen.oneOf(Country.allCountries))(country => Country.fromCountryCode(country.code) mustEqual country)
     }
 
     "must return a country with name `Unknown` when given a country code that isn't known" in {
@@ -38,9 +36,7 @@ class CountrySpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyCheck
       val unknownCodes =
         arbitrary[String].suchThat(string => !Country.allCountries.map(_.code).contains(string))
 
-      forAll(unknownCodes) {
-        code => Country.fromCountryCode(code) mustEqual Country(code, "Unknown")
-      }
+      forAll(unknownCodes)(code => Country.fromCountryCode(code) mustEqual Country(code, "Unknown"))
     }
   }
 }

@@ -52,10 +52,7 @@ class IdentifierAction @Inject() (
     authorised(Enrolment(enrolmentKey)).retrieve(retrievals) {
       case allEnrolments ~ Some(internalId) ~ Some(affinityGroup) ~ credentialRole =>
         getEori(allEnrolments)
-          .map(
-            eori =>
-              block(IdentifierRequest(request, eori, internalId, affinityGroup, credentialRole))
-          )
+          .map(eori => block(IdentifierRequest(request, eori, internalId, affinityGroup, credentialRole)))
           .getOrElse(Future.successful(Unauthorized))
       case _                                                                       =>
         Future.successful(Unauthorized)

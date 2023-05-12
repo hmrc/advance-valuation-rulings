@@ -40,13 +40,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 
-class ApplicationServiceSpec
-    extends AnyFreeSpec
-    with Matchers
-    with MockitoSugar
-    with BeforeAndAfterEach
-    with ScalaFutures
-    with IntegrationPatience {
+class ApplicationServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar with BeforeAndAfterEach with ScalaFutures with IntegrationPatience {
 
   private val mockCounterRepo                = mock[CounterRepository]
   private val mockApplicationRepo            = mock[ApplicationRepository]

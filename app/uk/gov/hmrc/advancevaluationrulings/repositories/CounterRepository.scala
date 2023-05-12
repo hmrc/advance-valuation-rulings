@@ -85,8 +85,7 @@ class CounterRepository @Inject() (
       .toFuture()
       .map(_ => Done)
       .recoverWith {
-        case e: MongoBulkWriteException
-            if e.getWriteErrors.asScala.forall(x => x.getCode == duplicateErrorCode) =>
+        case e: MongoBulkWriteException if e.getWriteErrors.asScala.forall(x => x.getCode == duplicateErrorCode) =>
           ensureApplicationIdIsCorrect()
       }
 

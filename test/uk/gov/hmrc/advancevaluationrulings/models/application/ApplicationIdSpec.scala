@@ -26,12 +26,7 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
-class ApplicationIdSpec
-    extends AnyFreeSpec
-    with Matchers
-    with ScalaCheckPropertyChecks
-    with ModelGenerators
-    with EitherValues {
+class ApplicationIdSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyChecks with ModelGenerators with EitherValues {
 
   "an application Id" - {
 
@@ -39,16 +34,12 @@ class ApplicationIdSpec
 
     "must bind from a url" in {
 
-      forAll(arbitrary[String], applicationIdGen) {
-        (key, value) => pathBindable.bind(key, value.toString).value mustEqual value
-      }
+      forAll(arbitrary[String], applicationIdGen)((key, value) => pathBindable.bind(key, value.toString).value mustEqual value)
     }
 
     "must unbind to a url" in {
 
-      forAll(arbitrary[String], applicationIdGen) {
-        (key, value) => pathBindable.unbind(key, value) mustEqual value.toString
-      }
+      forAll(arbitrary[String], applicationIdGen)((key, value) => pathBindable.unbind(key, value) mustEqual value.toString)
     }
 
     "must serialise and deserialise to / from JSON" in {

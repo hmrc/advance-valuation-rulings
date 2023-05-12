@@ -23,7 +23,6 @@ package object application {
 
   val jsonConfig: Aux[Json.MacroOptions] = JsonConfiguration(
     discriminator = "type",
-    typeNaming =
-      JsonNaming(fullName => fullName.slice(1 + fullName.lastIndexOf("."), fullName.length))
+    typeNaming = JsonNaming(fullName => fullName.slice(1 + fullName.lastIndexOf("."), fullName.length))
   )
 }

@@ -78,8 +78,8 @@ class ApplicationService @Inject() (
     applicationRepository.set(application).as(application)
   }
 
-  private def buildAttachments(applicationId: ApplicationId, requests: Seq[AttachmentRequest])(
-    implicit hc: HeaderCarrier
+  private def buildAttachments(applicationId: ApplicationId, requests: Seq[AttachmentRequest])(implicit
+    hc: HeaderCarrier
   ): Future[Seq[Attachment]] =
     requests.traverse {
       request =>

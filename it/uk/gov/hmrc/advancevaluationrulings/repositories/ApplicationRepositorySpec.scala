@@ -13,12 +13,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 
-class ApplicationRepositorySpec
-    extends AnyFreeSpec
-    with Matchers
-    with DefaultPlayMongoRepositorySupport[Application]
-    with OptionValues
-    with ScalaFutures {
+class ApplicationRepositorySpec extends AnyFreeSpec with Matchers with DefaultPlayMongoRepositorySupport[Application] with OptionValues with ScalaFutures {
 
   protected override val repository = new ApplicationRepository(mongoComponent)
 

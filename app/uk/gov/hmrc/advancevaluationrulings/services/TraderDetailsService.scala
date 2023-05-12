@@ -37,19 +37,19 @@ class TraderDetailsService @Inject() (connector: ETMPConnector, repository: Trad
 
     getCache(eoriNumber).flatMap {
       _.fold {
-          logger.debug("Cache value not found. Fetching value")
-          for {
-            response <- fetchRemote(query)
-            _        <- saveCache(response)
-          } yield response
-        } {
-          cacheValue =>
-            logger.debug("Using cached value")
-            Future.successful(cacheValue)
-        }
+        logger.debug("Cache value not found. Fetching value")
+        for {
+          response <- fetchRemote(query)
+          _        <- saveCache(response)
+        } yield response
+      } {
+        cacheValue =>
+          logger.debug("Using cached value")
+          Future.successful(cacheValue)
+      }
     }
   }
-  private def getCache(eoriNumber: EoriNumber) =
+  private def getCache(eoriNumber: EoriNumber)                                                                                                                =
     if (appConfig.traderDetailsCacheEnabled) repository.get(eoriNumber.value) else Future.successful(None)
 
   private def saveCache(traderDetails: TraderDetailsResponse) = repository.set(traderDetails)

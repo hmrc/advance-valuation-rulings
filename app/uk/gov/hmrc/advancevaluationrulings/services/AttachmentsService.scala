@@ -45,8 +45,8 @@ class AttachmentsService @Inject() (
       path       <- putAttachment(applicationId.toString, path, attachment)
     } yield path
 
-  private def putAttachment(applicationId: String, path: String, attachment: DraftAttachment)(
-    implicit hc: HeaderCarrier
+  private def putAttachment(applicationId: String, path: String, attachment: DraftAttachment)(implicit
+    hc: HeaderCarrier
   ): Future[Path] = {
     val objectStorePath =
       Path.Directory(s"attachments/$applicationId").file(Path.File(path).fileName)

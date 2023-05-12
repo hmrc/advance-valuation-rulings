@@ -41,13 +41,7 @@ import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 
-class ApplicationControllerSpec
-    extends AnyFreeSpec
-    with Matchers
-    with OptionValues
-    with ModelGenerators
-    with MockitoSugar
-    with BeforeAndAfterEach {
+class ApplicationControllerSpec extends AnyFreeSpec with Matchers with OptionValues with ModelGenerators with MockitoSugar with BeforeAndAfterEach {
 
   private val fixedClock                = Clock.fixed(Instant.now, ZoneId.systemDefault)
   private val mockApplicationService    = mock[ApplicationService]

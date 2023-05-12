@@ -16,18 +16,16 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.traderdetails
 
-import play.api.libs.json._
-import play.api.libs.functional.syntax._
-import uk.gov.hmrc.crypto.Sensitive.SensitiveString
-import uk.gov.hmrc.crypto.json.JsonEncryption
-import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
-import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
-
 import java.time.Instant
 
-final case class CachedTraderDetails(index: String,
-                                     data: TraderDetailsResponse,
-                                     lastUpdated: Instant)
+import play.api.libs.functional.syntax._
+import play.api.libs.json._
+import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
+import uk.gov.hmrc.crypto.Sensitive.SensitiveString
+import uk.gov.hmrc.crypto.json.JsonEncryption
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
+
+final case class CachedTraderDetails(index: String, data: TraderDetailsResponse, lastUpdated: Instant)
 
 object CachedTraderDetails {
 
@@ -40,14 +38,14 @@ object CachedTraderDetails {
         (__ \ "index").read[String] and // TODO: Hash this?
           (__ \ "data").read[SensitiveString] and
           (__ \ "lastUpdated").read(MongoJavatimeFormats.instantFormat)
-        )((index, value, lastUpdated) => CachedTraderDetails(index, Json.parse(value.decryptedValue).as[TraderDetailsResponse], lastUpdated))
+      )((index, value, lastUpdated) => CachedTraderDetails(index, Json.parse(value.decryptedValue).as[TraderDetailsResponse], lastUpdated))
 
     val encryptedWrites: OWrites[CachedTraderDetails] =
       (
         (__ \ "index").write[String] and
           (__ \ "data").write[SensitiveString] and
           (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)
-        )(x => (x.index, SensitiveString(Json.stringify(Json.toJsObject(x.data))), x.lastUpdated))
+      )(x => (x.index, SensitiveString(Json.stringify(Json.toJsObject(x.data))), x.lastUpdated))
 
     OFormat(encryptedReads, encryptedWrites)
   }

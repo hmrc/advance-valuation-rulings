@@ -41,13 +41,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 
-class UserAnswersControllerSpec
-    extends AnyFreeSpec
-    with Matchers
-    with MockitoSugar
-    with OptionValues
-    with ScalaFutures
-    with BeforeAndAfterEach {
+class UserAnswersControllerSpec extends AnyFreeSpec with Matchers with MockitoSugar with OptionValues with ScalaFutures with BeforeAndAfterEach {
 
   private val mockRepo          = mock[UserAnswersRepository]
   private val mockAuthConnector = mock[AuthConnector]

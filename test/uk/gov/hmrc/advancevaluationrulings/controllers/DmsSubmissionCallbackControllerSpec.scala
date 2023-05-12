@@ -35,13 +35,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 
-class DmsSubmissionCallbackControllerSpec
-    extends AnyFreeSpec
-    with Matchers
-    with OptionValues
-    with ScalaFutures
-    with MockitoSugar
-    with BeforeAndAfterEach {
+class DmsSubmissionCallbackControllerSpec extends AnyFreeSpec with Matchers with OptionValues with ScalaFutures with MockitoSugar with BeforeAndAfterEach {
 
   override def beforeEach(): Unit = {
     super.beforeEach()

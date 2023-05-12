@@ -1,5 +1,22 @@
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
+import java.security.SecureRandom
+import java.time.{Clock, Instant, ZoneId}
+import java.time.temporal.ChronoUnit
+import java.util.Base64
+
+import scala.concurrent.ExecutionContext.Implicits.global
+
+import play.api.Configuration
+import play.api.libs.json.Json
+import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
+import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
+import uk.gov.hmrc.advancevaluationrulings.models.application.DraftSummary
+import uk.gov.hmrc.advancevaluationrulings.models.etmp.{CDSEstablishmentAddress, ContactInformation}
+import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.{CachedTraderDetails, TraderDetailsResponse}
+import uk.gov.hmrc.crypto.{Decrypter, Encrypter, PlainText, SymmetricCryptoFactory}
+import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
+
 import com.fasterxml.jackson.core.JsonParseException
 import org.mockito.MockitoSugar
 import org.mongodb.scala.bson.BsonDocument
@@ -8,31 +25,16 @@ import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
-import play.api.Configuration
-import play.api.libs.json.Json
-import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
-import uk.gov.hmrc.advancevaluationrulings.models.application.DraftSummary
-import uk.gov.hmrc.advancevaluationrulings.models.etmp.{CDSEstablishmentAddress, ContactInformation}
-import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.{CachedTraderDetails, TraderDetailsResponse}
-import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
-import uk.gov.hmrc.crypto.{Decrypter, Encrypter, PlainText, SymmetricCryptoFactory}
-import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
-
-import java.security.SecureRandom
-import java.time.temporal.ChronoUnit
-import java.time.{Clock, Instant, ZoneId}
-import java.util.Base64
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class TraderDetailsRepositorySpec
-  extends AnyFreeSpec
+    extends AnyFreeSpec
     with Matchers
     with DefaultPlayMongoRepositorySupport[CachedTraderDetails]
     with MockitoSugar
     with OptionValues
     with ScalaFutures {
 
-  private val instant = Instant.now.truncatedTo(ChronoUnit.MILLIS)
+  private val instant          = Instant.now.truncatedTo(ChronoUnit.MILLIS)
   private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
   private val mockAppConfig = mock[AppConfig]
@@ -48,18 +50,20 @@ class TraderDetailsRepositorySpec
       Some("postalCodeValue")
     ),
     true,
-    Some(ContactInformation(
-      Some("personOfContactValue"),
-      Some(true),
-      Some("streetAndNumberValue"),
-      Some("cityValue"),
-      Some("postalCodeValue"),
-      Some("countryCodeValue"),
-      Some("telephoneNumberValue"),
-      Some("faxNumberValue"),
-      Some("emailAddressValue"),
-      Some("emailVerificationTimestampValue")
-    ))
+    Some(
+      ContactInformation(
+        Some("personOfContactValue"),
+        Some(true),
+        Some("streetAndNumberValue"),
+        Some("cityValue"),
+        Some("postalCodeValue"),
+        Some("countryCodeValue"),
+        Some("telephoneNumberValue"),
+        Some("faxNumberValue"),
+        Some("emailAddressValue"),
+        Some("emailVerificationTimestampValue")
+      )
+    )
   )
 
   val cachedTraderDetails = CachedTraderDetails(
@@ -91,9 +95,9 @@ class TraderDetailsRepositorySpec
 
       val expectedResult = traderDetails
 
-      val setResult = repository.set(traderDetails).futureValue
+      val setResult     = repository.set(traderDetails).futureValue
       val updatedRecord = find(
-          Filters.equal("index", traderDetails.EORINo)
+        Filters.equal("index", traderDetails.EORINo)
       ).futureValue.headOption.value
 
       setResult mustEqual Done
@@ -106,7 +110,7 @@ class TraderDetailsRepositorySpec
 
       val record = repository.collection
         .find[BsonDocument](
-            Filters.equal("index", traderDetails.EORINo)
+          Filters.equal("index", traderDetails.EORINo)
         )
         .headOption()
         .futureValue
@@ -126,11 +130,11 @@ class TraderDetailsRepositorySpec
     "when there is a record for this user id and draft id" - {
 
       "must update the lastUpdated time and get the record" in {
-         val data = CachedTraderDetails(
-            index = traderDetails.EORINo,
-            data = traderDetails,
-            lastUpdated = instant.minusSeconds(60)
-         )
+        val data = CachedTraderDetails(
+          index = traderDetails.EORINo,
+          data = traderDetails,
+          lastUpdated = instant.minusSeconds(60)
+        )
 
         insert(data).futureValue
 

@@ -18,12 +18,17 @@ package uk.gov.hmrc.advancevaluationrulings.services
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+
+import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
 import uk.gov.hmrc.advancevaluationrulings.connectors.ETMPConnector
+import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.{ETMPSubscriptionDisplayResponse, Query, ResponseDetail, SubscriptionDisplayResponse}
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.Regime.CDS
 import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
+import uk.gov.hmrc.advancevaluationrulings.repositories.TraderDetailsRepository
 import uk.gov.hmrc.http.HeaderCarrier
+
 import generators.ModelGenerators
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
@@ -33,9 +38,6 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
-import uk.gov.hmrc.advancevaluationrulings.models.Done
-import uk.gov.hmrc.advancevaluationrulings.repositories.TraderDetailsRepository
 
 class TraderDetailsServiceSpec
     extends AnyFreeSpec
@@ -47,10 +49,10 @@ class TraderDetailsServiceSpec
     with ModelGenerators
     with ScalaCheckPropertyChecks {
 
-  private val mockConnector = mock[ETMPConnector]
+  private val mockConnector  = mock[ETMPConnector]
   private val mockRepository = mock[TraderDetailsRepository]
-  private val mockAppConfig = mock[AppConfig]
-  private val ackRef        = AcknowledgementReference("achRef")
+  private val mockAppConfig  = mock[AppConfig]
+  private val ackRef         = AcknowledgementReference("achRef")
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
@@ -63,9 +65,9 @@ class TraderDetailsServiceSpec
 
   ".getTraderDetails" - {
     val responseDetail = responseDetailGen.sample.get
-    val eoriNumber   = EoriNumber(responseDetail.EORINo)
-    val etmpRequest  = Query(CDS, ackRef.value, EORI = Option(responseDetail.EORINo))
-    val etmpResponse = ETMPSubscriptionDisplayResponse(SubscriptionDisplayResponse(responseDetail))
+    val eoriNumber     = EoriNumber(responseDetail.EORINo)
+    val etmpRequest    = Query(CDS, ackRef.value, EORI = Option(responseDetail.EORINo))
+    val etmpResponse   = ETMPSubscriptionDisplayResponse(SubscriptionDisplayResponse(responseDetail))
 
     val traderDetails = TraderDetailsResponse(responseDetail)
 

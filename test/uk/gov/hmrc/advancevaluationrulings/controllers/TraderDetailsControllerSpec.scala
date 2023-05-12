@@ -37,14 +37,7 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
-class TraderDetailsControllerSpec
-    extends AnyFreeSpec
-    with Matchers
-    with OptionValues
-    with ModelGenerators
-    with MockitoSugar
-    with BeforeAndAfterEach
-    with ScalaCheckPropertyChecks {
+class TraderDetailsControllerSpec extends AnyFreeSpec with Matchers with OptionValues with ModelGenerators with MockitoSugar with BeforeAndAfterEach with ScalaCheckPropertyChecks {
 
   private val mockAuthConnector        = mock[AuthConnector]
   private val mockTraderDetailsService = mock[TraderDetailsService]

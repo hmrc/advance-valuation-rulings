@@ -85,9 +85,7 @@ class DraftAttachmentsConnector @Inject() (
 
 object DraftAttachmentsConnector {
 
-  final case class DraftAttachmentsConnectorException(errors: NonEmptyChain[String])
-      extends Exception
-      with NoStackTrace {
+  final case class DraftAttachmentsConnectorException(errors: NonEmptyChain[String]) extends Exception with NoStackTrace {
     override def getMessage: String = errors.toList.mkString("Errors: ", ", ", "")
   }
 }

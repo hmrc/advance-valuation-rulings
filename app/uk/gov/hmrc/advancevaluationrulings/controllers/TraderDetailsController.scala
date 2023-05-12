@@ -31,8 +31,9 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 class TraderDetailsController @Inject() (
   cc: ControllerComponents,
   traderDetailsService: TraderDetailsService,
-  identify: IdentifierAction,
-)(implicit ec: ExecutionContext) extends BackendController(cc) {
+  identify: IdentifierAction
+)(implicit ec: ExecutionContext)
+    extends BackendController(cc) {
 
   def retrieveTraderDetails(
     acknowledgementReference: String,

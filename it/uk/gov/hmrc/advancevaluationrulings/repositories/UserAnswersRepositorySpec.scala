@@ -24,13 +24,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 
-class UserAnswersRepositorySpec
-    extends AnyFreeSpec
-    with Matchers
-    with DefaultPlayMongoRepositorySupport[UserAnswers]
-    with MockitoSugar
-    with OptionValues
-    with ScalaFutures {
+class UserAnswersRepositorySpec extends AnyFreeSpec with Matchers with DefaultPlayMongoRepositorySupport[UserAnswers] with MockitoSugar with OptionValues with ScalaFutures {
 
   private val instant          = Instant.now.truncatedTo(ChronoUnit.MILLIS)
   private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)

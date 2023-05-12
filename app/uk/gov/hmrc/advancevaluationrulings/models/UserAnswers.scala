@@ -47,10 +47,7 @@ object UserAnswers {
           (__ \ "draftId").read[DraftId] and
           (__ \ "data").read[SensitiveString] and
           (__ \ "lastUpdated").read(MongoJavatimeFormats.instantFormat)
-      )(
-        (userId, draftId, data, lastUpdated) =>
-          UserAnswers(userId, draftId, Json.parse(data.decryptedValue).as[JsObject], lastUpdated)
-      )
+      )((userId, draftId, data, lastUpdated) => UserAnswers(userId, draftId, Json.parse(data.decryptedValue).as[JsObject], lastUpdated))
 
     val encryptedWrites: OWrites[UserAnswers] =
       (

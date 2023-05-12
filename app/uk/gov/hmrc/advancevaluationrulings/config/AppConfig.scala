@@ -17,6 +17,7 @@
 package uk.gov.hmrc.advancevaluationrulings.config
 
 import javax.inject.{Inject, Singleton}
+
 import play.api.{Configuration, Logging}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
@@ -37,12 +38,13 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
     servicesConfig
       .getConfString(confKey, throw new RuntimeException(s"Could not find config key '$confKey'"))
 
-  val userAnswersTtlInDays: Int = config.get[Int]("mongodb.userAnswersTtlInDays")
+  val userAnswersTtlInDays: Int      = config.get[Int]("mongodb.userAnswersTtlInDays")
   val traderDetailsTtlInSeconds: Int = config.get[Int]("mongodb.traderDetailsTtlInSeconds")
 
   val traderDetailsCacheEnabled: Boolean = {
     val path = "features.traderDetailsCacheEnabled"
-    config.getOptional[Boolean](path)
+    config
+      .getOptional[Boolean](path)
       .getOrElse {
         logger.error(s"Missing config key for config value $path")
         false

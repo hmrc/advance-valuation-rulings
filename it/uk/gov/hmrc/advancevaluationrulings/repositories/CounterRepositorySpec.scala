@@ -11,13 +11,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 
-class CounterRepositorySpec
-    extends AnyFreeSpec
-    with Matchers
-    with DefaultPlayMongoRepositorySupport[CounterWrapper]
-    with OptionValues
-    with ScalaFutures
-    with BeforeAndAfterEach {
+class CounterRepositorySpec extends AnyFreeSpec with Matchers with DefaultPlayMongoRepositorySupport[CounterWrapper] with OptionValues with ScalaFutures with BeforeAndAfterEach {
 
   protected override val repository = new CounterRepository(mongoComponent)
 
