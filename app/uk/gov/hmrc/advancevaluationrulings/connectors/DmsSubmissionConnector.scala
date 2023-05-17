@@ -28,7 +28,7 @@ import play.api.{Configuration, Logging}
 import play.api.http.Status.ACCEPTED
 import play.api.mvc.MultipartFormData
 import uk.gov.hmrc.advancevaluationrulings.models.Done
-import uk.gov.hmrc.advancevaluationrulings.models.application.Attachment
+import uk.gov.hmrc.advancevaluationrulings.models.application.{Attachment, Privacy}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -63,6 +63,11 @@ class DmsSubmissionConnector @Inject() (
   private val formId: String                     = dmsSubmissionConfig.get[String]("formId")
   private val classificationType: String         = dmsSubmissionConfig.get[String]("classificationType")
   private val businessArea: String               = dmsSubmissionConfig.get[String]("businessArea")
+
+  private def fileName(attachment: Attachment, name: String): String = attachment.privacy match {
+    case Privacy.Confidential => s"CONFIDENTIAL_$name"
+    case _                    => name
+  }
 
   def submitApplication(
     eori: String,
@@ -104,7 +109,7 @@ class DmsSubmissionConnector @Inject() (
               Future.successful(
                 MultipartFormData.FilePart(
                   key = "attachment",
-                  filename = o.location.fileName,
+                  filename = fileName(attachment, o.location.fileName),
                   contentType = Some(o.metadata.contentType),
                   ref = o.content
                 )
