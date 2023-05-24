@@ -35,7 +35,7 @@ object CachedTraderDetails {
 
     val encryptedReads: Reads[CachedTraderDetails] =
       (
-        (__ \ "index").read[String] and // TODO: Hash this?
+        (__ \ "index").read[String] and
           (__ \ "data").read[SensitiveString] and
           (__ \ "lastUpdated").read(MongoJavatimeFormats.instantFormat)
       )((index, value, lastUpdated) => CachedTraderDetails(index, Json.parse(value.decryptedValue).as[TraderDetailsResponse], lastUpdated))
