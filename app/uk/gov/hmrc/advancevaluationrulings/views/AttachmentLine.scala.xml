@@ -1,0 +1,47 @@
+@import uk.gov.hmrc.advancevaluationrulings.models.application._
+
+        @this()
+
+        @(key: String, attachments: Seq[Attachment])(implicit messages: Messages)
+
+<fo:block border-bottom-width="1pt" border-bottom-style="solid" margin-top="1mm" margin-bottom="1mm"
+          border-bottom-color="gray" padding-top="1mm" padding-bottom="1mm">
+
+    <fo:inline-container width="5cm">
+        <fo:block font-weight="bold">@messages(key)</fo:block>
+    </fo:inline-container>
+
+    <fo:inline-container width="12cm" margin-left="1cm">
+        <fo:block>
+            <fo:table>
+                <fo:table-body>
+
+                    <fo:table-row>
+                        <fo:table-cell width="6cm">
+                            <fo:block font-weight="bold">File name</fo:block>
+                            <!-- en: First Cell -->
+                        </fo:table-cell>
+                        <fo:table-cell width="6cm">
+                            <fo:block font-weight="bold">Confidentiality</fo:block>
+                            <!-- Second Cell -->
+                        </fo:table-cell>
+                    </fo:table-row>
+
+                    @attachments.map { att =>
+                    <fo:table-row>
+                        <fo:table-cell width="6cm">
+                            <fo:block wrap-option="wrap" keep-together="auto">@(att.name)</fo:block>
+                        </fo:table-cell>
+                        <fo:table-cell width="6cm">
+                            <fo:block wrap-option="wrap" keep-together="auto">@(att.privacy)</fo:block>
+                        </fo:table-cell>
+                    </fo:table-row>
+                    }
+
+                </fo:table-body>
+            </fo:table>
+        </fo:block>
+    </fo:inline-container>
+
+</fo:block>
+
