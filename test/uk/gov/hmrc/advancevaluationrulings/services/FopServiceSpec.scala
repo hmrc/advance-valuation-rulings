@@ -18,26 +18,53 @@ package uk.gov.hmrc.advancevaluationrulings.services
 
 import java.nio.file.{Files, Paths}
 import java.time.Instant
+
 import scala.io.Source
+
 import play.api.i18n.MessagesApi
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import uk.gov.hmrc.advancevaluationrulings.models.application._
+import uk.gov.hmrc.advancevaluationrulings.models.application.Privacy.{Confidential, Public}
 import uk.gov.hmrc.advancevaluationrulings.views.xml.ApplicationPdf
+
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
-import uk.gov.hmrc.advancevaluationrulings.models.application.Privacy.{Confidential, Public}
 
 class FopServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with IntegrationPatience {
 
-  private val app = GuiceApplicationBuilder().build()
+  private val app        = GuiceApplicationBuilder().build()
   private val fopService = app.injector.instanceOf[FopService]
-  val attmts = Seq(
-    Attachment(12345, "SomeFile1", Some("description of file"), "someLocation", Confidential, "pdf", 12345),
-    Attachment(12345, "SomeFile2", Some("description of file"), "someLocation", Public, "pdf", 12345),
-    Attachment(12345, "SomeFile3", Some("description of file"), "someLocation", Confidential, "pdf", 12345)
+  val attmts             = Seq(
+    Attachment(
+      12345,
+      "SomeFile1",
+      Some("description of file"),
+      "someLocation",
+      Confidential,
+      "pdf",
+      12345
+    ),
+    Attachment(
+      12345,
+      "SomeFile2",
+      Some("description of file"),
+      "someLocation",
+      Public,
+      "pdf",
+      12345
+    ),
+    Attachment(
+      12345,
+      "SomeFile3",
+      Some("description of file"),
+      "someLocation",
+      Confidential,
+      "pdf",
+      12345
+    )
   )
 
   "render" - {
@@ -109,7 +136,7 @@ class FopServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with In
       val view      = app.injector.instanceOf[ApplicationPdf]
       val messages  = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
       val xmlString = view.render(application, messages).body
-      val result = fopService.render(xmlString).futureValue
+      val result    = fopService.render(xmlString).futureValue
 
       val fileName = "test/resources/fop/test.pdf"
       Files.write(Paths.get(fileName), result)
