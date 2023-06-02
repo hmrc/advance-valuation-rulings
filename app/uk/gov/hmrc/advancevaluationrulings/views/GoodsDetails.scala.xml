@@ -9,7 +9,8 @@
     methodFourSnippet: MethodFourSnippet,
     methodFiveSnippet: MethodFiveSnippet,
     methodSixSnippet: MethodSixSnippet,
-    line: Line
+    line: Line,
+    attachmentLine: AttachmentLine
 )
 
 @(application: Application)(implicit messages: Messages)
@@ -71,6 +72,7 @@
             }.getOrElse {
                 @line(messages("pdf.confidentialInformation"), messages("pdf.no"))
             }
+            @attachmentLine("pdf.attachments", application.attachments)
 
             <fo:block id="FinalElement">
 

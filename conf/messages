@@ -65,3 +65,4 @@ pdf.knownLegalProceedings = Have the goods been subject to any legal challenges?
 pdf.knownLegalProceedingsDescription = Description of legal challenges
 pdf.confidentialInformation = Do you want to add any confidential information about the goods?
 pdf.confidentialInformationDescription = Description of confidential information
+pdf.attachments = Uploaded files

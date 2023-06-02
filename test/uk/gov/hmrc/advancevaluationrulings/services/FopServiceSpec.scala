@@ -25,6 +25,7 @@ import play.api.i18n.MessagesApi
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import uk.gov.hmrc.advancevaluationrulings.models.application._
+import uk.gov.hmrc.advancevaluationrulings.models.application.Privacy.{Confidential, Public}
 import uk.gov.hmrc.advancevaluationrulings.views.xml.ApplicationPdf
 
 import org.apache.pdfbox.pdmodel.PDDocument
@@ -36,6 +37,35 @@ class FopServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with In
 
   private val app        = GuiceApplicationBuilder().build()
   private val fopService = app.injector.instanceOf[FopService]
+  val attmts             = Seq(
+    Attachment(
+      12345,
+      "SomeFile1",
+      Some("description of file"),
+      "someLocation",
+      Confidential,
+      "pdf",
+      12345
+    ),
+    Attachment(
+      12345,
+      "SomeFile2",
+      Some("description of file"),
+      "someLocation",
+      Public,
+      "pdf",
+      12345
+    ),
+    Attachment(
+      12345,
+      "SomeFile3",
+      Some("description of file"),
+      "someLocation",
+      Confidential,
+      "pdf",
+      12345
+    )
+  )
 
   "render" - {
 
@@ -97,7 +127,7 @@ class FopServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with In
           ),
           confidentialInformation = Some("Some confidential information")
         ),
-        attachments = Nil,
+        attachments = attmts,
         submissionReference = "submissionReference",
         created = Instant.now,
         lastUpdated = Instant.now
