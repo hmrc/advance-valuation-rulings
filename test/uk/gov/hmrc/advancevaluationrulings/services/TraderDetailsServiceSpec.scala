@@ -16,29 +16,30 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import generators.ModelGenerators
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
 import play.api.inject
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.advancevaluationrulings.connectors.ETMPConnector
 import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
-import uk.gov.hmrc.advancevaluationrulings.models.etmp.Regime.CDS
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.{ETMPSubscriptionDisplayResponse, Query, ResponseCommon, SubscriptionDisplayResponse}
+import uk.gov.hmrc.advancevaluationrulings.models.etmp.Regime.CDS
 import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import generators.ModelGenerators
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.MockitoSugar
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 class TraderDetailsServiceSpec
-  extends AnyFreeSpec
+    extends AnyFreeSpec
     with Matchers
     with ScalaFutures
     with OptionValues
@@ -48,10 +49,9 @@ class TraderDetailsServiceSpec
     with ScalaCheckPropertyChecks {
 
   private val mockConnector = mock[ETMPConnector]
-  private val ackRef = AcknowledgementReference("achRef")
+  private val ackRef        = AcknowledgementReference("achRef")
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
-
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -83,19 +83,20 @@ class TraderDetailsServiceSpec
 
             forAll(responseDetailGen) {
               responseDetail =>
-                val eoriNumber = EoriNumber(responseDetail.EORINo)
-                val etmpRequest = Query(CDS, ackRef.value, EORI = Option(eoriNumber.value))
+                val eoriNumber   = EoriNumber(responseDetail.EORINo)
+                val etmpRequest  = Query(CDS, ackRef.value, EORI = Option(eoriNumber.value))
                 val etmpResponse = ETMPSubscriptionDisplayResponse(
-                  SubscriptionDisplayResponse(responseCommon,
+                  SubscriptionDisplayResponse(
+                    responseCommon,
                     Some(responseDetail.copy(consentToDisclosureOfPersonalData = stubValue))
-
                   )
                 )
 
                 when(mockConnector.getSubscriptionDetails(eqTo(etmpRequest))(any()))
                   .thenReturn(Future.successful(etmpResponse))
 
-                val result: TraderDetailsResponse = service.getTraderDetails(ackRef, eoriNumber).futureValue.get
+                val result: TraderDetailsResponse =
+                  service.getTraderDetails(ackRef, eoriNumber).futureValue.get
 
                 result.EORINo mustBe responseDetail.EORINo
                 result.CDSFullName mustBe responseDetail.CDSFullName

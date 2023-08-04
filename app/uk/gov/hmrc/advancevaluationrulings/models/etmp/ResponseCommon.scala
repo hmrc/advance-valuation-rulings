@@ -19,9 +19,9 @@ package uk.gov.hmrc.advancevaluationrulings.models.etmp
 import play.api.libs.json.{Json, OFormat}
 
 case class ResponseCommon(
-                           status: String,
-                           statusText: Option[String] = None,
-                         )
+  status: String,
+  statusText: Option[String] = None
+)
 
 object ResponseCommon {
   implicit val format: OFormat[ResponseCommon] =

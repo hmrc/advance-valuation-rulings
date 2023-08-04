@@ -16,6 +16,19 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
+import java.time.{Clock, Instant, ZoneId}
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
+import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId}
+import uk.gov.hmrc.advancevaluationrulings.models.application._
+import uk.gov.hmrc.advancevaluationrulings.models.audit.{ApplicationSubmissionEvent, AuditMetadata}
+import uk.gov.hmrc.advancevaluationrulings.repositories.{ApplicationRepository, CounterRepository}
+import uk.gov.hmrc.auth.core.{AffinityGroup, Assistant}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.objectstore.client.Path
+
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.MockitoSugar
@@ -23,17 +36,6 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
-import uk.gov.hmrc.advancevaluationrulings.models.application._
-import uk.gov.hmrc.advancevaluationrulings.models.audit.{ApplicationSubmissionEvent, AuditMetadata}
-import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId}
-import uk.gov.hmrc.advancevaluationrulings.repositories.{ApplicationRepository, CounterRepository}
-import uk.gov.hmrc.auth.core.{AffinityGroup, Assistant}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.objectstore.client.Path
-
-import java.time.{Clock, Instant, ZoneId}
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 class ApplicationServiceSpec
     extends AnyFreeSpec

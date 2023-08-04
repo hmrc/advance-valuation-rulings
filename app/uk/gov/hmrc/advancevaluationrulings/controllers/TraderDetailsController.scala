@@ -16,6 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
+import javax.inject.{Inject, Singleton}
+
+import scala.concurrent.ExecutionContext
+
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.advancevaluationrulings.controllers.actions.IdentifierAction
@@ -23,22 +27,19 @@ import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReferen
 import uk.gov.hmrc.advancevaluationrulings.services.TraderDetailsService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
-
 @Singleton()
-class TraderDetailsController @Inject()(
-                                         cc: ControllerComponents,
-                                         traderDetailsService: TraderDetailsService,
-                                         identify: IdentifierAction
-                                       ) extends BackendController(cc) {
+class TraderDetailsController @Inject() (
+  cc: ControllerComponents,
+  traderDetailsService: TraderDetailsService,
+  identify: IdentifierAction
+) extends BackendController(cc) {
 
   implicit val ec: ExecutionContext = cc.executionContext
 
   def retrieveTraderDetails(
-                             acknowledgementReference: String,
-                             eoriNumber: String
-                           ): Action[AnyContent] =
+    acknowledgementReference: String,
+    eoriNumber: String
+  ): Action[AnyContent] =
     identify.async {
       implicit request =>
         traderDetailsService
@@ -47,7 +48,7 @@ class TraderDetailsController @Inject()(
             eoriNumber = EoriNumber(eoriNumber)
           )
           .map {
-            case None => NotFound
+            case None                        => NotFound
             case Some(traderDetailsResponse) => Ok(Json.toJson(traderDetailsResponse))
           }
 
