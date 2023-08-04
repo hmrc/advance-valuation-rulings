@@ -19,6 +19,7 @@ package generators
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
+import play.api.http.Status.OK
 import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 import uk.gov.hmrc.advancevaluationrulings.models.application.ApplicationId
 import uk.gov.hmrc.advancevaluationrulings.models.etmp._
@@ -96,7 +97,7 @@ trait ModelGenerators extends Generators {
   )
 
   def subscriptionDisplayResponseGen: Gen[SubscriptionDisplayResponse] =
-    responseDetailGen.map(SubscriptionDisplayResponse(_))
+    responseDetailGen.map(rd => SubscriptionDisplayResponse(ResponseCommon(OK.toString), Some(rd)))
 
   def ETMPSubscriptionDisplayResponseGen: Gen[ETMPSubscriptionDisplayResponse] =
     subscriptionDisplayResponseGen.map(ETMPSubscriptionDisplayResponse(_))
@@ -105,7 +106,7 @@ trait ModelGenerators extends Generators {
     registeredDetails                 <- ETMPSubscriptionDisplayResponseGen
     consentToDisclosureOfPersonalData <- Arbitrary.arbitrary[Boolean]
   } yield {
-    val responseDetail = registeredDetails.subscriptionDisplayResponse.responseDetail
+    val responseDetail = registeredDetails.subscriptionDisplayResponse.responseDetail.get
     TraderDetailsResponse(
       EORINo = responseDetail.EORINo,
       CDSFullName = responseDetail.CDSFullName,

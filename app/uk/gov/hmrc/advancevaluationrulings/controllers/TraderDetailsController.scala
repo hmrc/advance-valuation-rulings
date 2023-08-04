@@ -47,6 +47,11 @@ class TraderDetailsController @Inject() (
             AcknowledgementReference(acknowledgementReference),
             eoriNumber = EoriNumber(eoriNumber)
           )
-          .map(x => Ok(Json.toJson(x)))
+          .map {
+            case None                        => NotFound
+            case Some(traderDetailsResponse) => Ok(Json.toJson(traderDetailsResponse))
+          }
+
     }
+
 }

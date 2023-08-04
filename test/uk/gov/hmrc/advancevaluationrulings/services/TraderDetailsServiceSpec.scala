@@ -23,8 +23,9 @@ import play.api.inject
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.advancevaluationrulings.connectors.ETMPConnector
 import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
-import uk.gov.hmrc.advancevaluationrulings.models.etmp.{ETMPSubscriptionDisplayResponse, Query, SubscriptionDisplayResponse}
+import uk.gov.hmrc.advancevaluationrulings.models.etmp.{ETMPSubscriptionDisplayResponse, Query, ResponseCommon, SubscriptionDisplayResponse}
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.Regime.CDS
+import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
 import uk.gov.hmrc.http.HeaderCarrier
 
 import generators.ModelGenerators
@@ -65,6 +66,8 @@ class TraderDetailsServiceSpec
 
   ".getTraderDetails" - {
 
+    val responseCommon = ResponseCommon("OK", Some("Test Response Common"))
+
     "must get trader details" - {
 
       val consentToDisclosureOfPersonalDataScenarios = Table(
@@ -84,14 +87,16 @@ class TraderDetailsServiceSpec
                 val etmpRequest  = Query(CDS, ackRef.value, EORI = Option(eoriNumber.value))
                 val etmpResponse = ETMPSubscriptionDisplayResponse(
                   SubscriptionDisplayResponse(
-                    responseDetail.copy(consentToDisclosureOfPersonalData = stubValue)
+                    responseCommon,
+                    Some(responseDetail.copy(consentToDisclosureOfPersonalData = stubValue))
                   )
                 )
 
                 when(mockConnector.getSubscriptionDetails(eqTo(etmpRequest))(any()))
                   .thenReturn(Future.successful(etmpResponse))
 
-                val result = service.getTraderDetails(ackRef, eoriNumber).futureValue
+                val result: TraderDetailsResponse =
+                  service.getTraderDetails(ackRef, eoriNumber).futureValue.get
 
                 result.EORINo mustBe responseDetail.EORINo
                 result.CDSFullName mustBe responseDetail.CDSFullName

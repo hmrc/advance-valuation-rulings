@@ -21,12 +21,9 @@ import java.time.{Clock, Instant, ZoneId}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-import play.api.test.FakeRequest
-import uk.gov.hmrc.advancevaluationrulings.controllers.actions.IdentifierRequest
 import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId}
 import uk.gov.hmrc.advancevaluationrulings.models.application._
-import uk.gov.hmrc.advancevaluationrulings.models.audit.ApplicationSubmissionEvent
-import uk.gov.hmrc.advancevaluationrulings.models.audit.AuditMetadata
+import uk.gov.hmrc.advancevaluationrulings.models.audit.{ApplicationSubmissionEvent, AuditMetadata}
 import uk.gov.hmrc.advancevaluationrulings.repositories.{ApplicationRepository, CounterRepository}
 import uk.gov.hmrc.auth.core.{AffinityGroup, Assistant}
 import uk.gov.hmrc.http.HeaderCarrier

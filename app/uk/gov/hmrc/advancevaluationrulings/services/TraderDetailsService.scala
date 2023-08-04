@@ -35,20 +35,23 @@ class TraderDetailsService @Inject() (connector: ETMPConnector) {
   )(implicit
     ec: ExecutionContext,
     hc: HeaderCarrier
-  ): Future[TraderDetailsResponse] =
+  ): Future[Option[TraderDetailsResponse]] =
     connector
       .getSubscriptionDetails(
         Query(Regime.CDS, acknowledgementReference.value, EORI = Option(eoriNumber.value))
       )
       .map {
         response =>
-          val responseDetail = response.subscriptionDisplayResponse.responseDetail
-          TraderDetailsResponse(
-            responseDetail.EORINo,
-            responseDetail.CDSFullName,
-            responseDetail.CDSEstablishmentAddress,
-            responseDetail.consentToDisclosureOfPersonalData.exists(_.equalsIgnoreCase("1")),
-            responseDetail.contactInformation
+          response.subscriptionDisplayResponse.responseDetail.map(
+            responseDetail =>
+              TraderDetailsResponse(
+                responseDetail.EORINo,
+                responseDetail.CDSFullName,
+                responseDetail.CDSEstablishmentAddress,
+                responseDetail.consentToDisclosureOfPersonalData.exists(_.equalsIgnoreCase("1")),
+                responseDetail.contactInformation
+              )
           )
       }
+
 }

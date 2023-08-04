@@ -18,7 +18,7 @@ package uk.gov.hmrc.advancevaluationrulings.models.application
 
 import java.time.Instant
 
-import play.api.libs.json.{Json, JsSuccess}
+import play.api.libs.json.Json
 import uk.gov.hmrc.advancevaluationrulings.models.{DraftId, UserAnswers}
 
 import org.scalatest.freespec.AnyFreeSpec
