@@ -18,13 +18,12 @@ package generators
 
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-
 import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 import uk.gov.hmrc.advancevaluationrulings.models.application.ApplicationId
 import uk.gov.hmrc.advancevaluationrulings.models.etmp._
 import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
-
 import org.scalacheck.{Arbitrary, Gen}
+import play.api.http.Status.OK
 import wolfendale.scalacheck.regexp.RegexpGen
 
 trait ModelGenerators extends Generators {
@@ -44,29 +43,29 @@ trait ModelGenerators extends Generators {
   def eoriNumberGen: Gen[String] = RegexpGen.from("^[A-Z]{2}[0-9A-Z]{12}$")
 
   def queryGen: Gen[Query] = for {
-    regime                   <- regimeGen
+    regime <- regimeGen
     acknowledgementReference <- stringsWithMaxLength(32)
-    eori                     <- eoriNumberGen
+    eori <- eoriNumberGen
   } yield Query(regime, acknowledgementReference, taxPayerID = None, EORI = Option(eori))
 
   def CDSEstablishmentAddressGen: Gen[CDSEstablishmentAddress] = for {
     streetAndNumber <- stringsWithMaxLength(70)
-    city            <- stringsWithMaxLength(35)
-    countryCode     <- stringsWithMaxLength(2)
-    postalCode      <- Gen.option(stringsWithMaxLength(9))
+    city <- stringsWithMaxLength(35)
+    countryCode <- stringsWithMaxLength(2)
+    postalCode <- Gen.option(stringsWithMaxLength(9))
   } yield CDSEstablishmentAddress(streetAndNumber, city, countryCode, postalCode)
 
   def contactInformationGen: Gen[ContactInformation] = for {
-    personOfContact           <- Gen.option(stringsWithMaxLength(70))
-    streetAndNumber           <- Gen.option(stringsWithMaxLength(70))
-    sepCorrAddrIndicator      <- Gen.option(Gen.oneOf(true, false))
-    city                      <- Gen.option(stringsWithMaxLength(35))
-    postalCode                <- Gen.option(stringsWithMaxLength(9))
-    countryCode               <- Gen.option(stringsWithMaxLength(2))
-    telephoneNumber           <- Gen.option(stringsWithMaxLength(50))
-    faxNumber                 <- Gen.option(stringsWithMaxLength(50))
-    emailAddress              <- Gen.option(stringsWithMaxLength(50))
-    instant                   <- Gen.option(localDateTimeGen.map(_.toInstant(ZoneOffset.UTC)))
+    personOfContact <- Gen.option(stringsWithMaxLength(70))
+    streetAndNumber <- Gen.option(stringsWithMaxLength(70))
+    sepCorrAddrIndicator <- Gen.option(Gen.oneOf(true, false))
+    city <- Gen.option(stringsWithMaxLength(35))
+    postalCode <- Gen.option(stringsWithMaxLength(9))
+    countryCode <- Gen.option(stringsWithMaxLength(2))
+    telephoneNumber <- Gen.option(stringsWithMaxLength(50))
+    faxNumber <- Gen.option(stringsWithMaxLength(50))
+    emailAddress <- Gen.option(stringsWithMaxLength(50))
+    instant <- Gen.option(localDateTimeGen.map(_.toInstant(ZoneOffset.UTC)))
     emailVerificationTimestamp = instant.map(DateTimeFormatter.ISO_INSTANT.format(_))
   } yield ContactInformation(
     personOfContact,
@@ -82,10 +81,10 @@ trait ModelGenerators extends Generators {
   )
 
   def responseDetailGen: Gen[ResponseDetail] = for {
-    eoriNo                            <- eoriNumberGen
-    cdsFullName                       <- stringsWithMaxLength(512)
-    cdsEstablishmentAddressGen        <- CDSEstablishmentAddressGen
-    contactInformation                <- Gen.option(contactInformationGen)
+    eoriNo <- eoriNumberGen
+    cdsFullName <- stringsWithMaxLength(512)
+    cdsEstablishmentAddressGen <- CDSEstablishmentAddressGen
+    contactInformation <- Gen.option(contactInformationGen)
     consentToDisclosureOfPersonalData <- Gen.option(Gen.oneOf(Seq("0", "1")))
   } yield ResponseDetail(
     eoriNo,
@@ -96,16 +95,16 @@ trait ModelGenerators extends Generators {
   )
 
   def subscriptionDisplayResponseGen: Gen[SubscriptionDisplayResponse] =
-    responseDetailGen.map(SubscriptionDisplayResponse(_))
+    responseDetailGen.map(rd => SubscriptionDisplayResponse(ResponseCommon(OK.toString), Some(rd)))
 
   def ETMPSubscriptionDisplayResponseGen: Gen[ETMPSubscriptionDisplayResponse] =
     subscriptionDisplayResponseGen.map(ETMPSubscriptionDisplayResponse(_))
 
   def traderDetailsResponseGen: Gen[TraderDetailsResponse] = for {
-    registeredDetails                 <- ETMPSubscriptionDisplayResponseGen
+    registeredDetails <- ETMPSubscriptionDisplayResponseGen
     consentToDisclosureOfPersonalData <- Arbitrary.arbitrary[Boolean]
   } yield {
-    val responseDetail = registeredDetails.subscriptionDisplayResponse.responseDetail
+    val responseDetail = registeredDetails.subscriptionDisplayResponse.responseDetail.get
     TraderDetailsResponse(
       EORINo = responseDetail.EORINo,
       CDSFullName = responseDetail.CDSFullName,

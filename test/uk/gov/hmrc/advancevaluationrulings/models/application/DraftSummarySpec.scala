@@ -16,13 +16,12 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
-import java.time.Instant
-
-import play.api.libs.json.{Json, JsSuccess}
-import uk.gov.hmrc.advancevaluationrulings.models.{DraftId, UserAnswers}
-
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import play.api.libs.json.Json
+import uk.gov.hmrc.advancevaluationrulings.models.{DraftId, UserAnswers}
+
+import java.time.Instant
 
 class DraftSummarySpec extends AnyFreeSpec with Matchers {
 

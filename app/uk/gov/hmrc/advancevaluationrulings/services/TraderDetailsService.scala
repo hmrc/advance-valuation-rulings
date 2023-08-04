@@ -27,28 +27,27 @@ import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsRes
 import uk.gov.hmrc.http.HeaderCarrier
 
 @Singleton
-class TraderDetailsService @Inject() (connector: ETMPConnector) {
+class TraderDetailsService @Inject()(connector: ETMPConnector) {
 
   def getTraderDetails(
-    acknowledgementReference: AcknowledgementReference,
-    eoriNumber: EoriNumber
-  )(implicit
-    ec: ExecutionContext,
-    hc: HeaderCarrier
-  ): Future[TraderDetailsResponse] =
+                        acknowledgementReference: AcknowledgementReference,
+                        eoriNumber: EoriNumber
+                      )(implicit
+                        ec: ExecutionContext,
+                        hc: HeaderCarrier
+                      ): Future[Option[TraderDetailsResponse]] =
     connector
       .getSubscriptionDetails(
         Query(Regime.CDS, acknowledgementReference.value, EORI = Option(eoriNumber.value))
       )
       .map {
         response =>
-          val responseDetail = response.subscriptionDisplayResponse.responseDetail
-          TraderDetailsResponse(
+          response.subscriptionDisplayResponse.responseDetail.map(responseDetail => TraderDetailsResponse(
             responseDetail.EORINo,
             responseDetail.CDSFullName,
             responseDetail.CDSEstablishmentAddress,
             responseDetail.consentToDisclosureOfPersonalData.exists(_.equalsIgnoreCase("1")),
-            responseDetail.contactInformation
-          )
+            responseDetail.contactInformation))
       }
+
 }

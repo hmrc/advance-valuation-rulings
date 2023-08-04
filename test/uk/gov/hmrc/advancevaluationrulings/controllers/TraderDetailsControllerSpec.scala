@@ -91,7 +91,7 @@ class TraderDetailsControllerSpec
           when(
             mockTraderDetailsService.getTraderDetails(eqTo(ackRef), eqTo(eoriNumber))(any(), any())
           )
-            .thenReturn(Future.successful(traderDetails))
+            .thenReturn(Future.successful(Some(traderDetails)))
 
           val request =
             FakeRequest(
