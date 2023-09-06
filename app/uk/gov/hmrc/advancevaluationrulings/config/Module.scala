@@ -20,7 +20,7 @@ import java.time.Clock
 
 import play.api.{Configuration, Environment}
 import play.api.inject.Binding
-import uk.gov.hmrc.advancevaluationrulings.services.{DefaultDmsSubmissionService, DmsSubmissionService, NoOpDmsSubmissionService}
+import uk.gov.hmrc.advancevaluationrulings.services.{DefaultDmsSubmissionService, DmsSubmissionService, SaveFileDmsSubmissionService}
 import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
 
 import org.apache.fop.apps.FopFactory
@@ -40,7 +40,7 @@ class Module extends play.api.inject.Module {
     val dmsSubmissionServiceBinding: Binding[DmsSubmissionService] =
       if (configuration.get[Boolean]("dms-submission.enabled")) {
         bind[DmsSubmissionService].to[DefaultDmsSubmissionService].eagerly()
-      } else bind[DmsSubmissionService].to[NoOpDmsSubmissionService].eagerly()
+      } else bind[DmsSubmissionService].to[SaveFileDmsSubmissionService].eagerly()
 
     Seq(
       bind[AppConfig].toSelf.eagerly(),

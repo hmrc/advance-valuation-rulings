@@ -17,18 +17,17 @@
 package uk.gov.hmrc.advancevaluationrulings.services
 
 import javax.inject.{Inject, Singleton}
-
 import scala.concurrent.{ExecutionContext, Future}
-
 import play.api.i18n.{Messages, MessagesApi}
 import uk.gov.hmrc.advancevaluationrulings.connectors.DmsSubmissionConnector
 import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application.Application
 import uk.gov.hmrc.advancevaluationrulings.views.xml.ApplicationPdf
 import uk.gov.hmrc.http.HeaderCarrier
-
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
+
+import java.nio.file.{Files, Path, Paths}
 
 abstract class DmsSubmissionService {
 
@@ -38,11 +37,28 @@ abstract class DmsSubmissionService {
 }
 
 @Singleton
-class NoOpDmsSubmissionService @Inject() () extends DmsSubmissionService {
+class SaveFileDmsSubmissionService @Inject() (
+  fopService: FopService,
+  pdfTemplate: ApplicationPdf,
+  messagesApi: MessagesApi) (implicit ec: ExecutionContext) extends DmsSubmissionService {
+
+
+  private implicit val messages: Messages =
+    messagesApi.preferred(Seq.empty)
+
   override def submitApplication(application: Application, submissionReference: String)(implicit
     hc: HeaderCarrier
   ): Future[Done] =
-    Future.successful(Done)
+    for {
+      pdfBytes <- fopService.render(pdfTemplate(application).body)
+      _ <- writeFile(pdfBytes, submissionReference)
+    } yield Done
+
+  private def writeFile(pdfBytes: Array[Byte], submissionReference: String): Future[String] = {
+    val fileName = "applications/" + submissionReference + ".pdf"
+    Files.write(Paths.get(fileName), pdfBytes)
+    Future.successful(fileName)
+  }
 }
 
 @Singleton
@@ -77,4 +93,5 @@ class DefaultDmsSubmissionService @Inject() (
       submissionReference = submissionReference,
       attachments = application.attachments
     )
+
 }
