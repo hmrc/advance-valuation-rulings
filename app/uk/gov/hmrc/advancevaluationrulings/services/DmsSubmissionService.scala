@@ -55,7 +55,7 @@ class SaveFileDmsSubmissionService @Inject() (
     } yield Done
 
   private def writeFile(pdfBytes: Array[Byte], submissionReference: String): Future[String] = {
-    val fileName = "applications/" + submissionReference + ".pdf"
+    val fileName = "applications/" + "application.pdf"
     Files.write(Paths.get(fileName), pdfBytes)
     Future.successful(fileName)
   }
