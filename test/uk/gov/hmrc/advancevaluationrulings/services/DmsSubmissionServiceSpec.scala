@@ -100,7 +100,7 @@ class DmsSubmissionServiceSpec
       goodsDetails = goodsDetails,
       requestedMethod = method,
       attachments = Seq(attachment),
-      whatIsYourRoleResponse = Some(WhatIsYourRoleResponse.EmployeeOrg),
+      whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
       submissionReference = submissionReference,
       created = now,
       lastUpdated = now

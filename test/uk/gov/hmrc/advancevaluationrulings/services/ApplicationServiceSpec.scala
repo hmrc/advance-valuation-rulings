@@ -103,7 +103,7 @@ class ApplicationServiceSpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
-        whatIsYourRoleResponse = WhatIsYourRoleResponse.EmployeeOrg
+        whatIsYourRoleResponse = WhatIsYourRole.EmployeeOrg
       )
 
       val auditMetadata = AuditMetadata(
@@ -121,7 +121,7 @@ class ApplicationServiceSpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
-        whatIsYourRoleResponse = Some(WhatIsYourRoleResponse.EmployeeOrg),
+        whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
         submissionReference = submissionReference,
         created = fixedInstant,
         lastUpdated = fixedInstant
@@ -181,7 +181,7 @@ class ApplicationServiceSpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Seq(attachmentRequest1, attachmentRequest2),
-        whatIsYourRoleResponse = WhatIsYourRoleResponse.EmployeeOrg
+        whatIsYourRoleResponse = WhatIsYourRole.EmployeeOrg
       )
 
       val auditMetadata = AuditMetadata(
@@ -218,7 +218,7 @@ class ApplicationServiceSpec
             2L
           )
         ),
-        whatIsYourRoleResponse = Some(WhatIsYourRoleResponse.EmployeeOrg),
+        whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
         submissionReference = submissionReference,
         created = fixedInstant,
         lastUpdated = fixedInstant
@@ -255,7 +255,7 @@ class ApplicationServiceSpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
-        whatIsYourRoleResponse = WhatIsYourRoleResponse.EmployeeOrg
+        whatIsYourRoleResponse = WhatIsYourRole.EmployeeOrg
       )
 
       val auditMetadata = AuditMetadata(
@@ -273,7 +273,7 @@ class ApplicationServiceSpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
-        whatIsYourRoleResponse = Some(WhatIsYourRoleResponse.EmployeeOrg),
+        whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
         submissionReference = submissionReference,
         created = fixedInstant,
         lastUpdated = fixedInstant
@@ -313,7 +313,7 @@ class ApplicationServiceSpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
-        whatIsYourRoleResponse = WhatIsYourRoleResponse.EmployeeOrg
+        whatIsYourRoleResponse = WhatIsYourRole.EmployeeOrg
       )
 
       val auditMetadata = AuditMetadata(
@@ -331,7 +331,7 @@ class ApplicationServiceSpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
-        whatIsYourRoleResponse = Some(WhatIsYourRoleResponse.EmployeeOrg),
+        whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
         submissionReference = submissionReference,
         created = fixedInstant,
         lastUpdated = fixedInstant

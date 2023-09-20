@@ -27,7 +27,7 @@ final case class ApplicationRequest(
   requestedMethod: RequestedMethod,
   goodsDetails: GoodsDetails,
   attachments: Seq[AttachmentRequest],
-  whatIsYourRoleResponse: WhatIsYourRoleResponse
+  whatIsYourRoleResponse: WhatIsYourRole
 )
 
 object ApplicationRequest {
