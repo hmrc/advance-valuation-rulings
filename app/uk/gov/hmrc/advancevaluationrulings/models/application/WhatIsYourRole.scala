@@ -16,16 +16,12 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
-
 import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
 
 sealed abstract class WhatIsYourRole(override val entryName: String) extends EnumEntry
 
-object WhatIsYourRole
-  extends Enum[WhatIsYourRole]
-    with PlayJsonEnum[WhatIsYourRole] {
+object WhatIsYourRole extends Enum[WhatIsYourRole] with PlayJsonEnum[WhatIsYourRole] {
   val values: IndexedSeq[WhatIsYourRole] = findValues
-
 
   case object EmployeeOrg extends WhatIsYourRole("EmployeeOrg")
 

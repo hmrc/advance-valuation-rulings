@@ -66,7 +66,7 @@ class DmsSubmissionConnector @Inject() (
 
   private def fileName(attachment: Attachment, name: String): String = attachment.privacy match {
 
-    //TODO LOA logic
+    // TODO LOA logic
     case Privacy.Confidential => s"CONFIDENTIAL_$name"
     case _                    => name
   }
