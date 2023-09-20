@@ -29,6 +29,7 @@ final case class Application(
   requestedMethod: RequestedMethod,
   goodsDetails: GoodsDetails,
   attachments: Seq[Attachment],
+  whatIsYourRoleResponse: Option[WhatIsYourRoleResponse],
   submissionReference: String,
   created: Instant,
   lastUpdated: Instant

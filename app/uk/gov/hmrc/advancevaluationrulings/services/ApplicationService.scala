@@ -70,6 +70,7 @@ class ApplicationService @Inject() (
       goodsDetails = request.goodsDetails,
       requestedMethod = request.requestedMethod,
       attachments = attachments,
+      whatIsYourRoleResponse = Some(request.whatIsYourRoleResponse),
       submissionReference = submissionReference,
       created = Instant.now(clock),
       lastUpdated = Instant.now(clock)

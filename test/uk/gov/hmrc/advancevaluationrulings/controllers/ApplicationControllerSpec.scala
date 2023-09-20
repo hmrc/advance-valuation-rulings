@@ -119,7 +119,8 @@ class ApplicationControllerSpec
         contact = contact,
         goodsDetails = goodsDetails,
         requestedMethod = method,
-        attachments = Nil
+        attachments = Nil,
+        whatIsYourRoleResponse = WhatIsYourRoleResponse.EmployeeOrg
       )
 
       val request =
@@ -183,6 +184,7 @@ class ApplicationControllerSpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
+        whatIsYourRoleResponse = Some(WhatIsYourRoleResponse.EmployeeOrg),
         submissionReference = submissionReference,
         created = Instant.now(fixedClock),
         lastUpdated = Instant.now(fixedClock)

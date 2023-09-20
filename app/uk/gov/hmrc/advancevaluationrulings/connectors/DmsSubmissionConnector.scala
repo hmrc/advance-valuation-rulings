@@ -65,6 +65,8 @@ class DmsSubmissionConnector @Inject() (
   private val businessArea: String               = dmsSubmissionConfig.get[String]("businessArea")
 
   private def fileName(attachment: Attachment, name: String): String = attachment.privacy match {
+
+    //TODO LOA logic
     case Privacy.Confidential => s"CONFIDENTIAL_$name"
     case _                    => name
   }

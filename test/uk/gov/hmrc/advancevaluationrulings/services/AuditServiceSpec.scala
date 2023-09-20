@@ -18,16 +18,14 @@ package uk.gov.hmrc.advancevaluationrulings.services
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.advancevaluationrulings.models.DraftId
-import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, ApplicationId, ContactDetails, GoodsDetails, MethodOne, TraderDetail}
+import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, ApplicationId, ContactDetails, GoodsDetails, MethodOne, TraderDetail, WhatIsYourRoleResponse}
 import uk.gov.hmrc.advancevaluationrulings.models.audit.ApplicationSubmissionEvent
 import uk.gov.hmrc.auth.core.{AffinityGroup, Assistant}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.MockitoSugar
@@ -69,6 +67,7 @@ class AuditServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar with 
     goodsDetails = goodsDetails,
     requestedMethod = method,
     attachments = Nil,
+    whatIsYourRoleResponse = Some(WhatIsYourRoleResponse.EmployeeOrg),
     submissionReference = "submissionReference",
     created = now,
     lastUpdated = now

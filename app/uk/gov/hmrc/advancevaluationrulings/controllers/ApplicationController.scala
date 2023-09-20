@@ -17,11 +17,9 @@
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
 import javax.inject.Inject
-
 import scala.concurrent.ExecutionContext
-
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import uk.gov.hmrc.advancevaluationrulings.controllers.actions.{IdentifierAction, IdentifierRequest}
 import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.models.audit.AuditMetadata
@@ -56,9 +54,16 @@ class ApplicationController @Inject() (
       applicationRepository
         .get(applicationId, request.eori)
         .map {
-          _.map(application => Ok(Json.toJson(application)))
+          _.map(application => {
+            val seralized: Result = seraliseApplicationToJSON(application)
+            seralized
+          })
             .getOrElse(NotFound)
         }
+  }
+
+  private def seraliseApplicationToJSON(application: Application) = {
+    Ok(Json.toJson(application))
   }
 
   private def getAuditMetadata(request: IdentifierRequest[_]): AuditMetadata =

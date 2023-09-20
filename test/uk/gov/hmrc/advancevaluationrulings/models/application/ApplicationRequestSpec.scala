@@ -38,7 +38,8 @@ class ApplicationRequestSpec extends AnyWordSpec with Matchers with ScalaCheckPr
           contact = contact,
           requestedMethod = requestedMethod,
           goodsDetails,
-          attachments = Seq.empty
+          attachments = Seq.empty,
+          whatIsYourRoleResponse = WhatIsYourRoleResponse.EmployeeOrg
         )
       )
     }
@@ -52,7 +53,8 @@ class ApplicationRequestSpec extends AnyWordSpec with Matchers with ScalaCheckPr
           contact = contact,
           requestedMethod = requestedMethod,
           goodsDetails = goodsDetails,
-          attachments = Seq.empty
+          attachments = Seq.empty,
+          whatIsYourRoleResponse = WhatIsYourRoleResponse.EmployeeOrg
         )
       ) shouldBe Json.parse(body)
     }
@@ -131,6 +133,7 @@ object ApplicationRequestSpec extends Generators {
     |  "knownLegalProceedings": "$randomString",
     |  "confidentialInformation": "$randomString"
     |},
-    |"attachments": []
+    |"attachments": [],
+    |"whatIsYourRoleResponse": "${WhatIsYourRoleResponse.EmployeeOrg.entryName}"
     }""".stripMargin
 }
