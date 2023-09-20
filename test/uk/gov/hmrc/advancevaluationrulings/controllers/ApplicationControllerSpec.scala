@@ -120,7 +120,7 @@ class ApplicationControllerSpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
-        whatIsYourRoleResponse = WhatIsYourRole.EmployeeOrg
+        whatIsYourRole = WhatIsYourRole.EmployeeOrg
       )
 
       val request =

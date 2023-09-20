@@ -103,7 +103,7 @@ class ApplicationServiceSpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
-        whatIsYourRoleResponse = WhatIsYourRole.EmployeeOrg
+        whatIsYourRole = WhatIsYourRole.EmployeeOrg
       )
 
       val auditMetadata = AuditMetadata(
@@ -181,7 +181,7 @@ class ApplicationServiceSpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Seq(attachmentRequest1, attachmentRequest2),
-        whatIsYourRoleResponse = WhatIsYourRole.EmployeeOrg
+        whatIsYourRole = WhatIsYourRole.EmployeeOrg
       )
 
       val auditMetadata = AuditMetadata(
@@ -255,7 +255,7 @@ class ApplicationServiceSpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
-        whatIsYourRoleResponse = WhatIsYourRole.EmployeeOrg
+        whatIsYourRole = WhatIsYourRole.EmployeeOrg
       )
 
       val auditMetadata = AuditMetadata(
@@ -313,7 +313,7 @@ class ApplicationServiceSpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
-        whatIsYourRoleResponse = WhatIsYourRole.EmployeeOrg
+        whatIsYourRole = WhatIsYourRole.EmployeeOrg
       )
 
       val auditMetadata = AuditMetadata(

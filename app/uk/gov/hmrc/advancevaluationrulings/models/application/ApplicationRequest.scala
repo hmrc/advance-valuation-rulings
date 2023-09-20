@@ -20,14 +20,14 @@ import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 
 final case class ApplicationRequest(
-  draftId: DraftId,
-  trader: TraderDetail,
-  agent: Option[TraderDetail],
-  contact: ContactDetails,
-  requestedMethod: RequestedMethod,
-  goodsDetails: GoodsDetails,
-  attachments: Seq[AttachmentRequest],
-  whatIsYourRoleResponse: WhatIsYourRole
+                                     draftId: DraftId,
+                                     trader: TraderDetail,
+                                     agent: Option[TraderDetail],
+                                     contact: ContactDetails,
+                                     requestedMethod: RequestedMethod,
+                                     goodsDetails: GoodsDetails,
+                                     attachments: Seq[AttachmentRequest],
+                                     whatIsYourRole: WhatIsYourRole
 )
 
 object ApplicationRequest {

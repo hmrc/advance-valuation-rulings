@@ -39,7 +39,7 @@ class ApplicationRequestSpec extends AnyWordSpec with Matchers with ScalaCheckPr
           requestedMethod = requestedMethod,
           goodsDetails,
           attachments = Seq.empty,
-          whatIsYourRoleResponse = WhatIsYourRole.EmployeeOrg
+          whatIsYourRole = WhatIsYourRole.EmployeeOrg
         )
       )
     }
@@ -54,7 +54,7 @@ class ApplicationRequestSpec extends AnyWordSpec with Matchers with ScalaCheckPr
           requestedMethod = requestedMethod,
           goodsDetails = goodsDetails,
           attachments = Seq.empty,
-          whatIsYourRoleResponse = WhatIsYourRole.EmployeeOrg
+          whatIsYourRole = WhatIsYourRole.EmployeeOrg
         )
       ) shouldBe Json.parse(body)
     }
