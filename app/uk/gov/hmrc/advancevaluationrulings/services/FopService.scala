@@ -38,7 +38,11 @@ class FopService @Inject() (
 
     Using.resource(new ByteArrayOutputStream()) {
       out =>
-        val fop = fopFactory.newFop(MimeConstants.MIME_PDF, out)
+        // Turn on accessibility features
+        val userAgent = fopFactory.newFOUserAgent();
+        userAgent.setAccessibility(true);
+
+        val fop = fopFactory.newFop(MimeConstants.MIME_PDF, userAgent, out)
 
         val transformerFactory = TransformerFactory.newInstance()
         val transformer        = transformerFactory.newTransformer()
