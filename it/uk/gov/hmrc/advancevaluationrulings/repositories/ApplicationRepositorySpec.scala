@@ -42,6 +42,7 @@ class ApplicationRepositorySpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
+        whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
         submissionReference = "submissionReference",
         created = now,
         lastUpdated = now
@@ -62,6 +63,7 @@ class ApplicationRepositorySpec
         requestedMethod = method,
         attachments = Nil,
         submissionReference = "submissionReference",
+        whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
         created = now,
         lastUpdated = now
       )
@@ -84,6 +86,7 @@ class ApplicationRepositorySpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
+        whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
         submissionReference = "submissionReference",
         created = now,
         lastUpdated = now
@@ -105,6 +108,7 @@ class ApplicationRepositorySpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
+        whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
         submissionReference = "submissionReference",
         created = now,
         lastUpdated = now
@@ -137,6 +141,7 @@ class ApplicationRepositorySpec
         method,
         goodsDetails,
         Nil,
+        Some(WhatIsYourRole.EmployeeOrg),
         submissionReference,
         now,
         now
@@ -150,6 +155,7 @@ class ApplicationRepositorySpec
         method,
         goodsDetails,
         Nil,
+        Some(WhatIsYourRole.EmployeeOrg),
         submissionReference,
         now,
         now
@@ -163,6 +169,7 @@ class ApplicationRepositorySpec
         method,
         goodsDetails,
         Nil,
+        Some(WhatIsYourRole.EmployeeOrg),
         submissionReference,
         now,
         now

@@ -16,21 +16,18 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
-import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.advancevaluationrulings.models.DraftId
+import enumeratum.{Enum, EnumEntry, PlayJsonEnum}
 
-final case class ApplicationRequest(
-  draftId: DraftId,
-  trader: TraderDetail,
-  agent: Option[TraderDetail],
-  contact: ContactDetails,
-  requestedMethod: RequestedMethod,
-  goodsDetails: GoodsDetails,
-  attachments: Seq[AttachmentRequest],
-  whatIsYourRole: WhatIsYourRole
-)
+sealed abstract class WhatIsYourRole(override val entryName: String) extends EnumEntry
 
-object ApplicationRequest {
+object WhatIsYourRole extends Enum[WhatIsYourRole] with PlayJsonEnum[WhatIsYourRole] {
+  val values: IndexedSeq[WhatIsYourRole] = findValues
 
-  implicit lazy val format: OFormat[ApplicationRequest] = Json.format
+  case object EmployeeOrg extends WhatIsYourRole("EmployeeOrg")
+
+  case object AgentOrg extends WhatIsYourRole("AgentOrg")
+
+  case object AgentTrader extends WhatIsYourRole("AgentTrader")
+
+  case object UnansweredLegacySupport extends WhatIsYourRole("UnansweredLegacySupport")
 }

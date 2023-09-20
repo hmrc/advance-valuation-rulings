@@ -102,7 +102,8 @@ class ApplicationServiceSpec
         contact = contact,
         goodsDetails = goodsDetails,
         requestedMethod = method,
-        attachments = Nil
+        attachments = Nil,
+        whatIsYourRole = WhatIsYourRole.EmployeeOrg
       )
 
       val auditMetadata = AuditMetadata(
@@ -120,6 +121,7 @@ class ApplicationServiceSpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
+        whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
         submissionReference = submissionReference,
         created = fixedInstant,
         lastUpdated = fixedInstant
@@ -178,7 +180,8 @@ class ApplicationServiceSpec
         contact = contact,
         goodsDetails = goodsDetails,
         requestedMethod = method,
-        attachments = Seq(attachmentRequest1, attachmentRequest2)
+        attachments = Seq(attachmentRequest1, attachmentRequest2),
+        whatIsYourRole = WhatIsYourRole.EmployeeOrg
       )
 
       val auditMetadata = AuditMetadata(
@@ -215,6 +218,7 @@ class ApplicationServiceSpec
             2L
           )
         ),
+        whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
         submissionReference = submissionReference,
         created = fixedInstant,
         lastUpdated = fixedInstant
@@ -250,7 +254,8 @@ class ApplicationServiceSpec
         contact = contact,
         goodsDetails = goodsDetails,
         requestedMethod = method,
-        attachments = Nil
+        attachments = Nil,
+        whatIsYourRole = WhatIsYourRole.EmployeeOrg
       )
 
       val auditMetadata = AuditMetadata(
@@ -268,6 +273,7 @@ class ApplicationServiceSpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
+        whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
         submissionReference = submissionReference,
         created = fixedInstant,
         lastUpdated = fixedInstant
@@ -306,7 +312,8 @@ class ApplicationServiceSpec
         contact = contact,
         goodsDetails = goodsDetails,
         requestedMethod = method,
-        attachments = Nil
+        attachments = Nil,
+        whatIsYourRole = WhatIsYourRole.EmployeeOrg
       )
 
       val auditMetadata = AuditMetadata(
@@ -324,6 +331,7 @@ class ApplicationServiceSpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
+        whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
         submissionReference = submissionReference,
         created = fixedInstant,
         lastUpdated = fixedInstant

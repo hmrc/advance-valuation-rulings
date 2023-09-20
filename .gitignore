@@ -2,6 +2,7 @@
 
 !.gitignore
 !.scalafmt.conf
+applications
 bin
 .bloop/
 .cache
