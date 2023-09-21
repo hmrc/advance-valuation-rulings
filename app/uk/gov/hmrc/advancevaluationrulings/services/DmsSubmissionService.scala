@@ -57,20 +57,17 @@ class SaveFileDmsSubmissionService @Inject() (
   ): Future[Done] =
     for {
       pdfBytes <- fopService.render(pdfTemplate(application).body)
-      _        <- writeFile(pdfBytes)
-    } yield Done
+    } yield writeFile(pdfBytes)
 
-  private def writeFile(pdfBytes: Array[Byte]): Future[String] = {
+  private def writeFile(pdfBytes: Array[Byte]): Done = {
     val fileName = "applications/" + "application.pdf"
     try {
-
       Files.write(Paths.get(fileName), pdfBytes)
-      Future.successful(fileName)
+      Done
     } catch {
       case e: IOException =>
         logger.error("Failed to write local file of application")
-        Future.failed(e)
-
+        Done
     }
   }
 }
