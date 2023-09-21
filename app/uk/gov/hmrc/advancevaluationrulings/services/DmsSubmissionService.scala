@@ -65,9 +65,9 @@ class SaveFileDmsSubmissionService @Inject() (
       Future.successful(fileName)
     }
     catch {
-      case _: IOException =>
-        logger.info("Failed to write local file")
-        Future.never
+      case e: IOException =>
+        logger.error("Failed to write local file of application")
+        Future.failed(e)
 
     }
   }
