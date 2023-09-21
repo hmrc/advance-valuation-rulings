@@ -16,20 +16,22 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
+import java.io.IOException
 import java.nio.file.{Files, Path, Paths}
 import javax.inject.{Inject, Singleton}
+
 import scala.concurrent.{ExecutionContext, Future}
+
+import play.api.Logging
 import play.api.i18n.{Messages, MessagesApi}
 import uk.gov.hmrc.advancevaluationrulings.connectors.DmsSubmissionConnector
 import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application.Application
 import uk.gov.hmrc.advancevaluationrulings.views.xml.ApplicationPdf
 import uk.gov.hmrc.http.HeaderCarrier
+
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
-import play.api.Logging
-
-import java.io.IOException
 
 abstract class DmsSubmissionService {
 
@@ -44,7 +46,8 @@ class SaveFileDmsSubmissionService @Inject() (
   pdfTemplate: ApplicationPdf,
   messagesApi: MessagesApi
 )(implicit ec: ExecutionContext)
-    extends DmsSubmissionService with Logging {
+    extends DmsSubmissionService
+    with Logging {
 
   private implicit val messages: Messages =
     messagesApi.preferred(Seq.empty)
@@ -54,17 +57,16 @@ class SaveFileDmsSubmissionService @Inject() (
   ): Future[Done] =
     for {
       pdfBytes <- fopService.render(pdfTemplate(application).body)
-      _        <- writeFile(pdfBytes, submissionReference)
+      _        <- writeFile(pdfBytes)
     } yield Done
 
-  private def writeFile(pdfBytes: Array[Byte], submissionReference: String): Future[String] = {
+  private def writeFile(pdfBytes: Array[Byte]): Future[String] = {
     val fileName = "applications/" + "application.pdf"
     try {
 
       Files.write(Paths.get(fileName), pdfBytes)
       Future.successful(fileName)
-    }
-    catch {
+    } catch {
       case e: IOException =>
         logger.error("Failed to write local file of application")
         Future.failed(e)
