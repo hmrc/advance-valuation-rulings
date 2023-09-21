@@ -57,7 +57,7 @@ class ApplicationServiceSpec
   private val goodsDetails                   = GoodsDetails("name", "description", None, None, None)
   private val submissionReference            = "submissionReference"
   private val method                         = MethodOne(None, None, None)
-  private val contact                        = ContactDetails("name", "email", None)
+  private val contact                        = ContactDetails("name", "email", None, None)
   private val hc: HeaderCarrier              = HeaderCarrier()
 
   private val service = new ApplicationService(
@@ -103,7 +103,8 @@ class ApplicationServiceSpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
-        whatIsYourRole = WhatIsYourRole.EmployeeOrg
+        whatIsYourRole = WhatIsYourRole.EmployeeOrg,
+        letterOfAuthority = None
       )
 
       val auditMetadata = AuditMetadata(
@@ -181,7 +182,8 @@ class ApplicationServiceSpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Seq(attachmentRequest1, attachmentRequest2),
-        whatIsYourRole = WhatIsYourRole.EmployeeOrg
+        whatIsYourRole = WhatIsYourRole.EmployeeOrg,
+        letterOfAuthority = None
       )
 
       val auditMetadata = AuditMetadata(
@@ -255,7 +257,8 @@ class ApplicationServiceSpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
-        whatIsYourRole = WhatIsYourRole.EmployeeOrg
+        whatIsYourRole = WhatIsYourRole.EmployeeOrg,
+        letterOfAuthority = None
       )
 
       val auditMetadata = AuditMetadata(
@@ -313,7 +316,8 @@ class ApplicationServiceSpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
-        whatIsYourRole = WhatIsYourRole.EmployeeOrg
+        whatIsYourRole = WhatIsYourRole.EmployeeOrg,
+        letterOfAuthority = None
       )
 
       val auditMetadata = AuditMetadata(

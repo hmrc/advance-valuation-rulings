@@ -64,7 +64,7 @@ class ApplicationControllerSpec
   private val goodsDetails        = GoodsDetails("name", "description", None, None, None)
   private val submissionReference = "submissionReference"
   private val method              = MethodOne(None, None, None)
-  private val contact             = ContactDetails("name", "email", None)
+  private val contact             = ContactDetails("name", "email", None, None)
 
   private val app =
     GuiceApplicationBuilder()
@@ -120,7 +120,8 @@ class ApplicationControllerSpec
         goodsDetails = goodsDetails,
         requestedMethod = method,
         attachments = Nil,
-        whatIsYourRole = WhatIsYourRole.EmployeeOrg
+        whatIsYourRole = WhatIsYourRole.EmployeeOrg,
+        letterOfAuthority = None
       )
 
       val request =

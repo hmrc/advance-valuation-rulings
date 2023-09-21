@@ -39,7 +39,8 @@ class ApplicationRequestSpec extends AnyWordSpec with Matchers with ScalaCheckPr
           requestedMethod = requestedMethod,
           goodsDetails,
           attachments = Seq.empty,
-          whatIsYourRole = WhatIsYourRole.EmployeeOrg
+          whatIsYourRole = WhatIsYourRole.EmployeeOrg,
+          letterOfAuthority = None
         )
       )
     }
@@ -54,7 +55,8 @@ class ApplicationRequestSpec extends AnyWordSpec with Matchers with ScalaCheckPr
           requestedMethod = requestedMethod,
           goodsDetails = goodsDetails,
           attachments = Seq.empty,
-          whatIsYourRole = WhatIsYourRole.EmployeeOrg
+          whatIsYourRole = WhatIsYourRole.EmployeeOrg,
+          letterOfAuthority = None
         )
       ) shouldBe Json.parse(body)
     }
@@ -80,7 +82,8 @@ object ApplicationRequestSpec extends Generators {
   val contact = ContactDetails(
     name = randomString,
     email = randomString,
-    phone = Some(randomString)
+    phone = Some(randomString),
+    companyName = Some(randomString)
   )
 
   val requestedMethod = MethodThree(
@@ -119,7 +122,8 @@ object ApplicationRequestSpec extends Generators {
     |"contact": {
     |  "name": "$randomString",
     |  "email": "$randomString",
-    |  "phone": "$randomString"
+    |  "phone": "$randomString",
+    |  "companyName": "$randomString"
     |},
     |"requestedMethod" : {
     |  "whyNotOtherMethods" : "$randomString",
