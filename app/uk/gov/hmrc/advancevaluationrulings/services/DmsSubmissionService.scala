@@ -18,18 +18,18 @@ package uk.gov.hmrc.advancevaluationrulings.services
 
 import java.nio.file.{Files, Path, Paths}
 import javax.inject.{Inject, Singleton}
-
 import scala.concurrent.{ExecutionContext, Future}
-
 import play.api.i18n.{Messages, MessagesApi}
 import uk.gov.hmrc.advancevaluationrulings.connectors.DmsSubmissionConnector
 import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application.Application
 import uk.gov.hmrc.advancevaluationrulings.views.xml.ApplicationPdf
 import uk.gov.hmrc.http.HeaderCarrier
-
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
+import play.api.Logging
+
+import java.io.IOException
 
 abstract class DmsSubmissionService {
 
@@ -44,7 +44,7 @@ class SaveFileDmsSubmissionService @Inject() (
   pdfTemplate: ApplicationPdf,
   messagesApi: MessagesApi
 )(implicit ec: ExecutionContext)
-    extends DmsSubmissionService {
+    extends DmsSubmissionService with Logging {
 
   private implicit val messages: Messages =
     messagesApi.preferred(Seq.empty)
@@ -59,8 +59,17 @@ class SaveFileDmsSubmissionService @Inject() (
 
   private def writeFile(pdfBytes: Array[Byte], submissionReference: String): Future[String] = {
     val fileName = "applications/" + "application.pdf"
-    Files.write(Paths.get(fileName), pdfBytes)
-    Future.successful(fileName)
+    try {
+
+      Files.write(Paths.get(fileName), pdfBytes)
+      Future.successful(fileName)
+    }
+    catch {
+      case _: IOException =>
+        logger.info("Failed to write local file")
+        Future.never
+
+    }
   }
 }
 
