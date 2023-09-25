@@ -156,7 +156,7 @@ class ApplicationServiceSpec
         AttachmentRequest("name1", None, "url1", Privacy.Public, "application/pdf", 1L)
       val attachmentRequest2 =
         AttachmentRequest("name2", None, "url2", Privacy.Public, "image/jpeg", 2L)
-      val loa =
+      val loa                =
         AttachmentRequest("loa", None, "url3", Privacy.Public, "image/jpeg", 3L)
       val attachmentId1      = 1L
       val attachmentId2      = 2L

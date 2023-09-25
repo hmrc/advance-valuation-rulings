@@ -46,7 +46,8 @@ class ApplicationService @Inject() (
   ): Future[ApplicationId] =
     for {
       appId              <- counterRepository.nextId(CounterId.ApplicationId).map(ApplicationId(_))
-      attachments        <- buildAttachments(appId, Seq(request.attachments, request.letterOfAuthority).flatten)
+      attachments        <-
+        buildAttachments(appId, Seq(request.attachments, request.letterOfAuthority).flatten)
       submissionReference = submissionReferenceService.random()
       application        <- saveApplication(eori, request, appId, attachments, submissionReference)
       _                  <- dmsSubmissionService.submitApplication(application, submissionReference)
