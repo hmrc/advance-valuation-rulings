@@ -91,6 +91,16 @@ class DmsSubmissionServiceSpec
       size = 1337
     )
 
+    val letterOfAuthority = Attachment(
+      id = 2,
+      name = "loa",
+      description = None,
+      location = "some/location.pdf",
+      privacy = Privacy.Public,
+      mimeType = "application/pdf",
+      size = 1323
+    )
+
     val application = Application(
       id = ApplicationId(1),
       applicantEori = "applicantEori",
@@ -101,6 +111,7 @@ class DmsSubmissionServiceSpec
       requestedMethod = method,
       attachments = Seq(attachment),
       whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
+      letterOfAuthority = Some(letterOfAuthority),
       submissionReference = submissionReference,
       created = now,
       lastUpdated = now

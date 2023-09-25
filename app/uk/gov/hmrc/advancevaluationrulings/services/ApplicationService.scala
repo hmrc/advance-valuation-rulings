@@ -48,7 +48,15 @@ class ApplicationService @Inject() (
       appId              <- counterRepository.nextId(CounterId.ApplicationId).map(ApplicationId(_))
       attachments        <- buildAttachments(appId, request.attachments)
       submissionReference = submissionReferenceService.random()
-      application        <- saveApplication(eori, request, appId, attachments, submissionReference)
+      letterOfAuthority  <- buildLetterOfAuthority(appId, request.letterOfAuthority)
+      application        <- saveApplication(
+                              eori,
+                              request,
+                              appId,
+                              attachments,
+                              letterOfAuthority,
+                              submissionReference
+                            )
       _                  <- dmsSubmissionService.submitApplication(application, submissionReference)
       _                   = auditService.auditSubmitRequest(buildAudit(application, auditMetadata, request.draftId))
     } yield appId
@@ -58,6 +66,7 @@ class ApplicationService @Inject() (
     request: ApplicationRequest,
     appId: ApplicationId,
     attachments: Seq[Attachment],
+    letterOfAuthority: Option[Attachment],
     submissionReference: String
   ): Future[Application] = {
 
@@ -72,6 +81,7 @@ class ApplicationService @Inject() (
       attachments = attachments,
       whatIsYourRoleResponse = Some(request.whatIsYourRole),
       submissionReference = submissionReference,
+      letterOfAuthority = letterOfAuthority,
       created = Instant.now(clock),
       lastUpdated = Instant.now(clock)
     )
@@ -82,21 +92,31 @@ class ApplicationService @Inject() (
   private def buildAttachments(applicationId: ApplicationId, requests: Seq[AttachmentRequest])(
     implicit hc: HeaderCarrier
   ): Future[Seq[Attachment]] =
-    requests.traverse {
-      request =>
-        for {
-          id  <- counterRepository.nextId(CounterId.AttachmentId)
-          url <- attachmentsService.copyAttachment(applicationId, request.url)
-        } yield Attachment(
-          id = id,
-          name = request.name,
-          description = request.description,
-          location = url.asUri,
-          privacy = request.privacy,
-          mimeType = request.mimeType,
-          size = request.size
-        )
-    }
+    requests.traverse(request => buildAttachment(applicationId, request))
+
+  private def buildLetterOfAuthority(
+    applicationId: ApplicationId,
+    request: Option[AttachmentRequest]
+  )(implicit
+    hc: HeaderCarrier
+  ): Future[Option[Attachment]] =
+    request.traverse(buildAttachment(applicationId, _))
+
+  private def buildAttachment(applicationId: ApplicationId, request: AttachmentRequest)(implicit
+    hc: HeaderCarrier
+  ) =
+    for {
+      id  <- counterRepository.nextId(CounterId.AttachmentId)
+      url <- attachmentsService.copyAttachment(applicationId, request.url)
+    } yield Attachment(
+      id = id,
+      name = request.name,
+      description = request.description,
+      location = url.asUri,
+      privacy = request.privacy,
+      mimeType = request.mimeType,
+      size = request.size
+    )
 
   private def buildAudit(
     application: Application,

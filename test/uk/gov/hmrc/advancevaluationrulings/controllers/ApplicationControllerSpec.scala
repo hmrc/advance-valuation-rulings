@@ -186,6 +186,7 @@ class ApplicationControllerSpec
         requestedMethod = method,
         attachments = Nil,
         whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
+        letterOfAuthority = None,
         submissionReference = submissionReference,
         created = Instant.now(fixedClock),
         lastUpdated = Instant.now(fixedClock)

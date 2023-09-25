@@ -123,6 +123,7 @@ class ApplicationServiceSpec
         requestedMethod = method,
         attachments = Nil,
         whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
+        letterOfAuthority = None,
         submissionReference = submissionReference,
         created = fixedInstant,
         lastUpdated = fixedInstant
@@ -152,24 +153,30 @@ class ApplicationServiceSpec
       val id            = 123L
       val applicantEori = "applicantEori"
 
+      val attachmentId1 = 1L
+      val attachmentId2 = 2L
+      val attachmentId3 = 3L
+
       val attachmentRequest1 =
-        AttachmentRequest("name1", None, "url1", Privacy.Public, "application/pdf", 1L)
+        AttachmentRequest("name1", None, "url1", Privacy.Public, "application/pdf", attachmentId1)
       val attachmentRequest2 =
-        AttachmentRequest("name2", None, "url2", Privacy.Public, "image/jpeg", 2L)
-      val attachmentId1      = 1L
-      val attachmentId2      = 2L
+        AttachmentRequest("name2", None, "url2", Privacy.Public, "image/jpeg", attachmentId2)
+
+      val letterOfAuthority = Some(AttachmentRequest("name1", None, "url1", Privacy.Public, "application/pdf", 3L))
 
       when(mockCounterRepo.nextId(eqTo(CounterId.ApplicationId))).thenReturn(Future.successful(id))
       when(mockCounterRepo.nextId(eqTo(CounterId.AttachmentId))).thenReturn(
         Future.successful(attachmentId1),
-        Future.successful(attachmentId2)
+        Future.successful(attachmentId2),
+        Future.successful(attachmentId3)
       )
       when(mockSubmissionReferenceService.random()).thenReturn(submissionReference)
       when(mockApplicationRepo.set(any())).thenReturn(Future.successful(Done))
       when(mockAttachmentsService.copyAttachment(any(), any())(any()))
         .thenReturn(
           Future.successful(Path.File("attachments/applicationId/url1")),
-          Future.successful(Path.File("attachments/applicationId/url2"))
+          Future.successful(Path.File("attachments/applicationId/url2")),
+          Future.successful(Path.File("attachments/applicationId/url3"))
         )
       when(mockDmsSubmissionService.submitApplication(any(), any())(any()))
         .thenReturn(Future.successful(Done))
@@ -221,6 +228,7 @@ class ApplicationServiceSpec
           )
         ),
         whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
+        letterOfAuthority = None,
         submissionReference = submissionReference,
         created = fixedInstant,
         lastUpdated = fixedInstant
@@ -277,6 +285,7 @@ class ApplicationServiceSpec
         requestedMethod = method,
         attachments = Nil,
         whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
+        letterOfAuthority = None,
         submissionReference = submissionReference,
         created = fixedInstant,
         lastUpdated = fixedInstant
@@ -336,6 +345,7 @@ class ApplicationServiceSpec
         requestedMethod = method,
         attachments = Nil,
         whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
+        letterOfAuthority = None,
         submissionReference = submissionReference,
         created = fixedInstant,
         lastUpdated = fixedInstant

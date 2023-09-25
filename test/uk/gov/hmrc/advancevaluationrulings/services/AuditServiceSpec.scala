@@ -70,6 +70,7 @@ class AuditServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar with 
     requestedMethod = method,
     attachments = Nil,
     whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
+    letterOfAuthority = None,
     submissionReference = "submissionReference",
     created = now,
     lastUpdated = now
