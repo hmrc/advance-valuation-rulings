@@ -105,7 +105,8 @@ class FopServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with In
         contact = ContactDetails(
           name = "Contact name",
           email = "contact.email@example.com",
-          phone = Some("0191 1919191")
+          phone = Some("0191 1919191"),
+          companyName = Some("Bob Inc")
         ),
         requestedMethod = MethodOne(
           saleBetweenRelatedParties = Some(
