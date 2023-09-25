@@ -162,7 +162,9 @@ class ApplicationServiceSpec
       val attachmentRequest2 =
         AttachmentRequest("name2", None, "url2", Privacy.Public, "image/jpeg", attachmentId2)
 
-      val letterOfAuthority = Some(AttachmentRequest("name1", None, "url1", Privacy.Public, "application/pdf", 3L))
+      val letterOfAuthority = Some(
+        AttachmentRequest("loa", None, "url3", Privacy.Public, "image/jpeg", attachmentId3)
+      )
 
       when(mockCounterRepo.nextId(eqTo(CounterId.ApplicationId))).thenReturn(Future.successful(id))
       when(mockCounterRepo.nextId(eqTo(CounterId.AttachmentId))).thenReturn(
@@ -190,7 +192,7 @@ class ApplicationServiceSpec
         requestedMethod = method,
         attachments = Seq(attachmentRequest1, attachmentRequest2),
         whatIsYourRole = WhatIsYourRole.EmployeeOrg,
-        letterOfAuthority = None
+        letterOfAuthority = letterOfAuthority
       )
 
       val auditMetadata = AuditMetadata(
@@ -228,7 +230,17 @@ class ApplicationServiceSpec
           )
         ),
         whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
-        letterOfAuthority = None,
+        letterOfAuthority = Some(
+          Attachment(
+            attachmentId3,
+            "loa",
+            None,
+            "attachments/applicationId/url3",
+            Privacy.Public,
+            "image/jpeg",
+            3L
+          )
+        ),
         submissionReference = submissionReference,
         created = fixedInstant,
         lastUpdated = fixedInstant
@@ -239,11 +251,13 @@ class ApplicationServiceSpec
       result mustEqual ApplicationId(id)
       verify(mockCounterRepo, times(1)).nextId(eqTo(CounterId.ApplicationId))
       verify(mockApplicationRepo, times(1)).set(eqTo(expectedApplication))
-      verify(mockCounterRepo, times(2)).nextId(eqTo(CounterId.AttachmentId))
+      verify(mockCounterRepo, times(3)).nextId(eqTo(CounterId.AttachmentId))
       verify(mockAttachmentsService, times(1))
         .copyAttachment(eqTo(ApplicationId(id)), eqTo("url1"))(any())
       verify(mockAttachmentsService, times(1))
         .copyAttachment(eqTo(ApplicationId(id)), eqTo("url2"))(any())
+      verify(mockAttachmentsService, times(1))
+        .copyAttachment(eqTo(ApplicationId(id)), eqTo("url3"))(any())
     }
 
     "must audit `isAgent` = true when a user's affinity group is Organisation and application has an agent section" in {

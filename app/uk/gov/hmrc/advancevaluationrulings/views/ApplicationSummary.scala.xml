@@ -6,6 +6,7 @@
     header: PageHeader,
     footer: PageFooter,
     line: Line,
+    descriptionOfRole: DescriptionOfRole,
     traderDetail: TraderDetail,
     agentDetail: AgentDetail
 )
@@ -34,6 +35,10 @@
             @line(messages("pdf.submitted"), DateTimeFormatter.ofPattern("d MMMM yyyy").withZone(ZoneId.systemDefault()).format(application.created))
 
             @traderDetail(application)
+
+            @application.whatIsYourRoleResponse.map { role =>
+                @descriptionOfRole(role.entryName)
+            }
 
             @application.agent.map { agent =>
                 @agentDetail(agent, application.contact)
