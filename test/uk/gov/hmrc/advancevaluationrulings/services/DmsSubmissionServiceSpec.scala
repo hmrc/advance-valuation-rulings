@@ -126,7 +126,7 @@ class DmsSubmissionServiceSpec
         ArgumentCaptor.forClass(classOf[Source[ByteString, _]])
 
       when(mockFopService.render(any())).thenReturn(Future.successful(bytes))
-      when(mockDmsSubmissionConnector.submitApplication(any(), any(), any(), any(), any())(any()))
+      when(mockDmsSubmissionConnector.submitApplication(any(), any(), any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(Done))
 
       val expectedXml = applicationTemplate(application).body
@@ -139,7 +139,8 @@ class DmsSubmissionServiceSpec
         sourceCaptor.capture(),
         eqTo(application.created),
         eqTo(submissionReference),
-        eqTo(application.attachments)
+        eqTo(application.attachments),
+        eqTo(application.letterOfAuthority)
       )(eqTo(hc))
 
       val result = sourceCaptor
@@ -162,6 +163,7 @@ class DmsSubmissionServiceSpec
         any(),
         any(),
         any(),
+        any(),
         any()
       )(any())
     }
@@ -169,7 +171,7 @@ class DmsSubmissionServiceSpec
     "must fail if the dms submission connector fails" in {
 
       when(mockFopService.render(any())).thenReturn(Future.successful(Array.emptyByteArray))
-      when(mockDmsSubmissionConnector.submitApplication(any(), any(), any(), any(), any())(any()))
+      when(mockDmsSubmissionConnector.submitApplication(any(), any(), any(), any(), any(), any())(any()))
         .thenReturn(Future.failed(new RuntimeException()))
 
       service.submitApplication(application, submissionReference)(hc).failed.futureValue

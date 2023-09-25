@@ -32,6 +32,7 @@ import uk.gov.hmrc.advancevaluationrulings.models.application.{Attachment, Priva
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.objectstore.client
 import uk.gov.hmrc.objectstore.client.Path
 import uk.gov.hmrc.objectstore.client.play.Implicits._
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
@@ -39,9 +40,11 @@ import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
 import cats.implicits._
 
 import DmsSubmissionConnector._
+import akka.NotUsed
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import config.Service
+import org.apache.commons.io.FilenameUtils
 
 @Singleton
 class DmsSubmissionConnector @Inject() (
@@ -64,24 +67,35 @@ class DmsSubmissionConnector @Inject() (
   private val classificationType: String         = dmsSubmissionConfig.get[String]("classificationType")
   private val businessArea: String               = dmsSubmissionConfig.get[String]("businessArea")
 
-  private def fileName(attachment: Attachment, name: String): String = attachment.privacy match {
+  private def fileName(attachment: DmsAttachment, name: String): String =
+    (attachment.privacy, attachment.isLetterOfAuthority) match {
 
-    // TODO LOA logic
-    case Privacy.Confidential => s"CONFIDENTIAL_$name"
-    case _                    => name
-  }
+      // TODO LOA logic
+      case (_, true)                 => "Letter_of_authority." + FilenameUtils.getExtension(name)
+      case (Privacy.Confidential, _) => s"CONFIDENTIAL_$name"
+      case _                         => name
+    }
 
   def submitApplication(
     eori: String,
     pdf: Source[ByteString, _],
     timestamp: Instant,
     submissionReference: String,
-    attachments: Seq[Attachment]
+    attachments: Seq[Attachment],
+    letterOfAuthority: Option[Attachment]
   )(implicit hc: HeaderCarrier): Future[Done] = {
 
     val dateOfReceipt = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(
       LocalDateTime.ofInstant(timestamp.truncatedTo(ChronoUnit.SECONDS), ZoneOffset.UTC)
     )
+
+    val dmsAttachments = attachments.map(
+      attachment =>
+        DmsAttachment(
+          attachment,
+          false
+        )
+    ) ++ letterOfAuthority.map(loa => DmsAttachment(loa, true))
 
     val dataParts = Seq(
       MultipartFormData.DataPart("callbackUrl", callbackUrl),
@@ -103,7 +117,7 @@ class DmsSubmissionConnector @Inject() (
       )
     )
 
-    val attachmentParts = attachments.traverse {
+    val attachmentParts = dmsAttachments.traverse {
       attachment =>
         objectStoreClient.getObject(Path.File(attachment.location)).flatMap {
           _.map {
@@ -148,6 +162,7 @@ class DmsSubmissionConnector @Inject() (
           }
     }
   }
+
 }
 
 object DmsSubmissionConnector {
@@ -155,4 +170,29 @@ object DmsSubmissionConnector {
   final case class AttachmentNotFoundException(file: String) extends Exception with NoStackTrace {
     override def getMessage: String = super.getMessage
   }
+}
+
+case class DmsAttachment(
+  id: Long,
+  name: String,
+  description: Option[String],
+  location: String,
+  privacy: Privacy,
+  mimeType: String,
+  size: Long,
+  isLetterOfAuthority: Boolean
+)
+
+object DmsAttachment {
+  def apply(attachment: Attachment, isLetterOfAuthority: Boolean): DmsAttachment =
+    DmsAttachment(
+      attachment.id,
+      attachment.name,
+      attachment.description,
+      attachment.location,
+      attachment.privacy,
+      attachment.mimeType,
+      attachment.size,
+      isLetterOfAuthority
+    )
 }
