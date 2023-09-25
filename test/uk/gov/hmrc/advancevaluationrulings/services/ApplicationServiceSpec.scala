@@ -156,20 +156,25 @@ class ApplicationServiceSpec
         AttachmentRequest("name1", None, "url1", Privacy.Public, "application/pdf", 1L)
       val attachmentRequest2 =
         AttachmentRequest("name2", None, "url2", Privacy.Public, "image/jpeg", 2L)
+      val loa =
+        AttachmentRequest("loa", None, "url3", Privacy.Public, "image/jpeg", 3L)
       val attachmentId1      = 1L
       val attachmentId2      = 2L
+      val attachmentId3      = 3L
 
       when(mockCounterRepo.nextId(eqTo(CounterId.ApplicationId))).thenReturn(Future.successful(id))
       when(mockCounterRepo.nextId(eqTo(CounterId.AttachmentId))).thenReturn(
         Future.successful(attachmentId1),
-        Future.successful(attachmentId2)
+        Future.successful(attachmentId2),
+        Future.successful(attachmentId3)
       )
       when(mockSubmissionReferenceService.random()).thenReturn(submissionReference)
       when(mockApplicationRepo.set(any())).thenReturn(Future.successful(Done))
       when(mockAttachmentsService.copyAttachment(any(), any())(any()))
         .thenReturn(
           Future.successful(Path.File("attachments/applicationId/url1")),
-          Future.successful(Path.File("attachments/applicationId/url2"))
+          Future.successful(Path.File("attachments/applicationId/url2")),
+          Future.successful(Path.File("attachments/applicationId/url3"))
         )
       when(mockDmsSubmissionService.submitApplication(any(), any())(any()))
         .thenReturn(Future.successful(Done))
@@ -183,7 +188,7 @@ class ApplicationServiceSpec
         requestedMethod = method,
         attachments = Seq(attachmentRequest1, attachmentRequest2),
         whatIsYourRole = WhatIsYourRole.EmployeeOrg,
-        letterOfAuthority = None
+        letterOfAuthority = Some(loa)
       )
 
       val auditMetadata = AuditMetadata(
@@ -218,6 +223,15 @@ class ApplicationServiceSpec
             Privacy.Public,
             "image/jpeg",
             2L
+          ),
+          Attachment(
+            attachmentId3,
+            "loa",
+            None,
+            "attachments/applicationId/url3",
+            Privacy.Public,
+            "image/jpeg",
+            3L
           )
         ),
         whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
@@ -231,11 +245,13 @@ class ApplicationServiceSpec
       result mustEqual ApplicationId(id)
       verify(mockCounterRepo, times(1)).nextId(eqTo(CounterId.ApplicationId))
       verify(mockApplicationRepo, times(1)).set(eqTo(expectedApplication))
-      verify(mockCounterRepo, times(2)).nextId(eqTo(CounterId.AttachmentId))
+      verify(mockCounterRepo, times(3)).nextId(eqTo(CounterId.AttachmentId))
       verify(mockAttachmentsService, times(1))
         .copyAttachment(eqTo(ApplicationId(id)), eqTo("url1"))(any())
       verify(mockAttachmentsService, times(1))
         .copyAttachment(eqTo(ApplicationId(id)), eqTo("url2"))(any())
+      verify(mockAttachmentsService, times(1))
+        .copyAttachment(eqTo(ApplicationId(id)), eqTo("url3"))(any())
     }
 
     "must audit `isAgent` = true when a user's affinity group is Organisation and application has an agent section" in {
