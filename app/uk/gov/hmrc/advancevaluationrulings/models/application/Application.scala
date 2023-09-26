@@ -30,6 +30,7 @@ final case class Application(
   goodsDetails: GoodsDetails,
   attachments: Seq[Attachment],
   whatIsYourRoleResponse: Option[WhatIsYourRole],
+  letterOfAuthority: Option[Attachment],
   submissionReference: String,
   created: Instant,
   lastUpdated: Instant

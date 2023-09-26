@@ -67,6 +67,16 @@ class FopServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with In
     )
   )
 
+  val letterOfAuthority = Attachment(
+    12345,
+    "SomeFile3",
+    Some("description of file"),
+    "someLocation",
+    Confidential,
+    "pdf",
+    12345
+  )
+
   "render" - {
 
     "must render some fop content as a pdf" in {
@@ -130,6 +140,7 @@ class FopServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with In
         ),
         attachments = attmts,
         whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
+        letterOfAuthority = Some(letterOfAuthority),
         submissionReference = "submissionReference",
         created = Instant.now,
         lastUpdated = Instant.now

@@ -112,12 +112,30 @@ class DmsSubmissionConnectorSpec
       size = 1337
     )
 
+    val letterOfAuthority = Attachment(
+      id = 2,
+      name = "attachment2",
+      description = None,
+      location = "foo/bar2.pdf",
+      privacy = Privacy.Public,
+      mimeType = "application/pdf",
+      size = 1337
+    )
+
     "must return Done when the server returns ACCEPTED" - {
-      "when the file is Public" in {
+      "when the file is Public and there is a LOA" in {
         objectStoreStub
           .putObject(
             path = Path.File("foo/bar.pdf"),
             content = Source.single(ByteString.fromString("Attachment 1")),
+            contentType = Some("application/pdf")
+          )
+          .futureValue
+
+        objectStoreStub
+          .putObject(
+            path = Path.File("foo/bar2.pdf"),
+            content = Source.single(ByteString.fromString("Letter of Authority")),
             contentType = Some("application/pdf")
           )
           .futureValue
@@ -166,6 +184,16 @@ class DmsSubmissionConnectorSpec
                 .withHeader("Content-Disposition", containing("""filename="bar.pdf""""))
                 .withHeader("Content-Type", equalTo("application/pdf"))
             )
+            .withMultipartRequestBody(
+              aMultipart()
+                .withName("attachment")
+                .withBody(equalTo("Letter of Authority"))
+                .withHeader(
+                  "Content-Disposition",
+                  containing("""filename="Letter_of_authority.pdf"""")
+                )
+                .withHeader("Content-Type", equalTo("application/pdf"))
+            )
             .willReturn(
               aResponse()
                 .withStatus(ACCEPTED)
@@ -174,7 +202,14 @@ class DmsSubmissionConnectorSpec
         )
 
         connector
-          .submitApplication(eori, source, timestamp, submissionReference, Seq(attachment))(hc)
+          .submitApplication(
+            eori,
+            source,
+            timestamp,
+            submissionReference,
+            Seq(attachment),
+            Some(letterOfAuthority)
+          )(hc)
           .futureValue
       }
 
@@ -257,7 +292,8 @@ class DmsSubmissionConnectorSpec
             source,
             timestamp,
             submissionReference,
-            Seq(confidentialAttachment)
+            Seq(confidentialAttachment),
+            None
           )(hc)
           .futureValue
       }
@@ -274,7 +310,7 @@ class DmsSubmissionConnectorSpec
       )
 
       val error = connector
-        .submitApplication(eori, source, timestamp, submissionReference, Seq(attachment))(hc)
+        .submitApplication(eori, source, timestamp, submissionReference, Seq(attachment), None)(hc)
         .failed
         .futureValue
       error mustBe an[DmsSubmissionConnector.AttachmentNotFoundException]
@@ -295,7 +331,7 @@ class DmsSubmissionConnectorSpec
       )
 
       connector
-        .submitApplication(eori, source, timestamp, submissionReference, Seq())(hc)
+        .submitApplication(eori, source, timestamp, submissionReference, Seq(), None)(hc)
         .failed
         .futureValue
     }
