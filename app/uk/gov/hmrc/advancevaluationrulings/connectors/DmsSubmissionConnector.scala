@@ -69,7 +69,7 @@ class DmsSubmissionConnector @Inject() (
 
   private def fileName(attachment: DmsAttachment, name: String): String =
     (attachment.privacy, attachment.isLetterOfAuthority) match {
-      
+
       case (_, true)                 => "Letter_of_authority." + FilenameUtils.getExtension(name)
       case (Privacy.Confidential, _) => s"CONFIDENTIAL_$name"
       case _                         => name
