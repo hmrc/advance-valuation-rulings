@@ -29,6 +29,10 @@
         @application.contact.phone.map { phone =>
             @line(messages("pdf.applicantPhone"), phone)
         }
+
+        @application.contact.companyName.map { companyName =>
+            @line(messages("pdf.agent.businessName"), companyName)
+        }
     }
 
 </fo:block-container>
