@@ -1,0 +1,10 @@
+@this(line: Line)
+
+@(role: String)(implicit messages: Messages)
+
+@{role match {
+    case "AgentOrg" =>
+    case "EmployeeOrg" => line(messages("pdf.whatIsYourRole.label"), messages("pdf.whatIsYourRole.employeeOrg"))
+    case "AgentTrader" =>
+    case _ => line(messages("pdf.whatIsYourRole.label"), messages("pdf.whatIsYourRole.unansweredLegacySupport"))
+}}

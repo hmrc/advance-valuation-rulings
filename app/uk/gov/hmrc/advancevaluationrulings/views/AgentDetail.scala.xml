@@ -1,11 +1,12 @@
-@import uk.gov.hmrc.advancevaluationrulings.models.application.{ContactDetails, TraderDetail}
+@import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, ContactDetails, TraderDetail}
 
 @this(
     line: Line,
-    addressLine: AddressLine
+    addressLine: AddressLine,
+    describeRoleForAgentRoles: DescribeRoleForAgentRoles
 )
 
-@(agent: TraderDetail, contact: ContactDetails)(implicit messages: Messages)
+@(application: Application, agent: TraderDetail, contact: ContactDetails)(implicit messages: Messages)
 
 
 <fo:block-container>
@@ -15,6 +16,10 @@
         @messages("pdf.agentDetail")
 
     </fo:block>
+
+    @application.whatIsYourRoleResponse.map { role =>
+        @describeRoleForAgentRoles(role.entryName)
+    }
 
     @line(messages("pdf.agent.eori"), agent.eori)
 
