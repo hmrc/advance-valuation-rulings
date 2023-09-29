@@ -1,8 +1,9 @@
-@import uk.gov.hmrc.advancevaluationrulings.models.application.Application
+@import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, RoleHelper}
 
 @this(
     line: Line,
-    addressLine: AddressLine
+    addressLine: AddressLine,
+    roleHelper: RoleHelper
 )
 
 @(application: Application)(implicit messages: Messages)
@@ -16,22 +17,22 @@
 
     </fo:block>
 
-    @line(messages("pdf.trader.businessName"), application.trader.businessName)
+    @line(roleHelper.messagesForAgentTraderOrOtherRole(application, messages("pdf.agentTrader.traderBusinessName"), messages("pdf.trader.businessName")), application.trader.businessName)
 
-    @addressLine(messages("pdf.trader.address"), application.trader.addressLines.mkString("\n"))
+    @addressLine(roleHelper.messagesForAgentTraderOrOtherRole(application, messages("pdf.agentTrader.address"), messages("pdf.trader.address")), application.trader.addressLines.mkString("\n"))
 
     @if(application.agent.isEmpty) {
 
-        @line(messages("pdf.applicantName"), application.contact.name)
+        @line(roleHelper.messagesForAgentTraderOrOtherRole(application, messages("pdf.agentTrader.name"), messages("pdf.applicantName")), application.contact.name)
 
-        @line(messages("pdf.applicantEmail"), application.contact.email)
+        @line(roleHelper.messagesForAgentTraderOrOtherRole(application,messages("pdf.agentTrader.email"), messages("pdf.applicantEmail")), application.contact.email)
 
         @application.contact.phone.map { phone =>
-            @line(messages("pdf.applicantPhone"), phone)
+            @line(roleHelper.messagesForAgentTraderOrOtherRole(application,messages("pdf.agentTrader.phone"), messages("pdf.applicantPhone")), phone)
         }
 
         @application.contact.companyName.map { companyName =>
-            @line(messages("pdf.agent.businessName"), companyName)
+            @line(roleHelper.messagesForAgentTraderOrOtherRole(application,messages("pdf.agentTrader.agentBusinessName"), messages("pdf.agent.businessName")), companyName)
         }
     }
 
