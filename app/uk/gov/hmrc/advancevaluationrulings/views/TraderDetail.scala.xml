@@ -2,7 +2,8 @@
 
 @this(
     line: Line,
-    addressLine: AddressLine
+    addressLine: AddressLine,
+    describeRoleForEmployee: DescribeRoleForEmployee
 )
 
 @(application: Application)(implicit messages: Messages)
@@ -15,6 +16,10 @@
         @messages("pdf.traderDetail")
 
     </fo:block>
+
+    @application.whatIsYourRoleResponse.map { role =>
+        @describeRoleForEmployee(role.entryName)
+    }
 
     @line(messages("pdf.trader.businessName"), application.trader.businessName)
 

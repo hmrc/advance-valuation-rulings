@@ -36,10 +36,6 @@
 
             @traderDetail(application)
 
-            @application.whatIsYourRoleResponse.map { role =>
-                @describeRoleForEmployee(role.entryName)
-            }
-
             @application.agent.map { agent =>
                 @agentDetail(application, agent, application.contact)
             }
