@@ -12,7 +12,7 @@ pdf.traderEori = Registered EORI number
 pdf.applicationId = Application reference number
 pdf.submitted = Date submitted
 
-pdf.agentTraderEori = Trader’s EORI number
+pdf.agentTraderEori = Trader’s registered EORI number
 
 pdf.traderDetail = About the applicant
 pdf.trader.businessName = Registered business name
