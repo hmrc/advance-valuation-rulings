@@ -12,17 +12,29 @@ pdf.traderEori = Registered EORI number
 pdf.applicationId = Application reference number
 pdf.submitted = Date submitted
 
+pdf.agentTraderEori = Trader’s registered EORI number
+
 pdf.traderDetail = About the applicant
 pdf.trader.businessName = Registered business name
 pdf.trader.address = Registered business address
+
 pdf.applicantName = Applicant name
+pdf.agentTrader.name = Agent’s full name
 pdf.applicantEmail = Applicant email address
+pdf.agentTrader.email = Agent’s email address
 pdf.applicantPhone = Applicant telephone number
+
+pdf.agentTrader.phone = Agent’s telephone number
+pdf.agentTrader.email = Agent’s email address
+pdf.agentTrader.traderBusinessName = Trader’s registered business name
+pdf.agentTrader.agentBusinessName = Agent’s company name
+pdf.agentTrader.address = Trader’s registered business address
 
 pdf.agentDetail = About the agent
 pdf.agent.eori = Agent EORI number
 pdf.agent.businessName = Agent business name
 pdf.agent.address = Agent business address
+
 pdf.agentName = Agent name
 pdf.agentEmail = Agent email address
 pdf.agentPhone = Agent telephone number
