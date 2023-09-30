@@ -36,7 +36,7 @@
             @traderDetail(application)
 
             @application.agent.map { agent =>
-                @agentDetail(application, agent, application.contact)
+                @agentDetail(application, agent)
             }
 
         </fo:block-container>
