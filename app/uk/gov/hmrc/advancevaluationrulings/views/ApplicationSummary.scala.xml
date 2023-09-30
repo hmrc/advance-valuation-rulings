@@ -6,7 +6,6 @@
     header: PageHeader,
     footer: PageFooter,
     line: Line,
-    describeRoleForEmployee: DescribeRoleForEmployee,
     traderDetail: TraderDetail,
     agentDetail: AgentDetail
 )
