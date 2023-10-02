@@ -1,13 +1,14 @@
 @import java.time.format.DateTimeFormatter
 @import java.time.ZoneId
-@import uk.gov.hmrc.advancevaluationrulings.models.application.Application
+@import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, RoleHelper}
 
 @this(
     header: PageHeader,
     footer: PageFooter,
     line: Line,
     traderDetail: TraderDetail,
-    agentDetail: AgentDetail
+    agentDetail: AgentDetail,
+    roleHelper: RoleHelper
 )
 
 @(application: Application)(implicit messages: Messages)
@@ -27,7 +28,7 @@
                 @messages("pdf.applicationSummary")
             </fo:block>
 
-            @line(messages("pdf.traderEori"), application.trader.eori)
+            @line(roleHelper.messagesForAgentTraderOrOtherRole(application, messages("pdf.agentTraderEori"), messages("pdf.traderEori")), application.trader.eori)
 
             @line(messages("pdf.applicationId"), application.id.toString)
 
@@ -43,3 +44,6 @@
     </fo:flow>
 
 </fo:page-sequence>
+
+
+def isAgentForTader(application
