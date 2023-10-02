@@ -18,13 +18,13 @@
 
     </fo:block>
 
-    @application.whatIsYourRoleResponse.map { role =>
-        @describeRoleForEmployee(role.entryName)
-    }
+
 
     @line(roleHelper.messagesForAgentTraderOrOtherRole(application, messages("pdf.agentTrader.traderBusinessName"), messages("pdf.trader.businessName")), application.trader.businessName)
 
     @addressLine(roleHelper.messagesForAgentTraderOrOtherRole(application, messages("pdf.agentTrader.address"), messages("pdf.trader.address")), application.trader.addressLines.mkString("\n"))
+
+
 
     @if(application.agent.isEmpty) {
 
@@ -39,6 +39,10 @@
         @application.contact.companyName.map { companyName =>
             @line(roleHelper.messagesForAgentTraderOrOtherRole(application,messages("pdf.agentTrader.agentBusinessName"), messages("pdf.agent.businessName")), companyName)
         }
+    }
+
+    @application.whatIsYourRoleResponse.map { role =>
+        @describeRoleForEmployee(role.entryName)
     }
 
 </fo:block-container>
