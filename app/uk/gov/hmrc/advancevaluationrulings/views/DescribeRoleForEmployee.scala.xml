@@ -5,6 +5,6 @@
 @{role match {
     case "AgentOrg" =>
     case "EmployeeOrg" => line(messages("pdf.whatIsYourRole.label"), messages("pdf.whatIsYourRole.employeeOrg"))
-    case "AgentTrader" =>
+    case "AgentTrader" => line(messages("pdf.whatIsYourRole.label"), messages("pdf.whatIsYourRole.agentTrader"))
     case _ => line(messages("pdf.whatIsYourRole.label"), messages("pdf.whatIsYourRole.unansweredLegacySupport"))
 }}
