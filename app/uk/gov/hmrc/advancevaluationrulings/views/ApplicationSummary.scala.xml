@@ -6,7 +6,6 @@
     header: PageHeader,
     footer: PageFooter,
     line: Line,
-    descriptionOfRole: DescriptionOfRole,
     traderDetail: TraderDetail,
     agentDetail: AgentDetail,
     roleHelper: RoleHelper
@@ -37,12 +36,8 @@
 
             @traderDetail(application)
 
-            @application.whatIsYourRoleResponse.map { role =>
-                @descriptionOfRole(role.entryName)
-            }
-
             @application.agent.map { agent =>
-                @agentDetail(agent, application.contact)
+                @agentDetail(application, agent)
             }
 
         </fo:block-container>

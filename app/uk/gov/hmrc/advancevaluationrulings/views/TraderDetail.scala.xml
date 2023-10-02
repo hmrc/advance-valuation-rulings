@@ -3,6 +3,7 @@
 @this(
     line: Line,
     addressLine: AddressLine,
+    describeRoleForEmployee: DescribeRoleForEmployee,
     roleHelper: RoleHelper
 )
 
@@ -16,6 +17,10 @@
         @messages("pdf.traderDetail")
 
     </fo:block>
+
+    @application.whatIsYourRoleResponse.map { role =>
+        @describeRoleForEmployee(role.entryName)
+    }
 
     @line(roleHelper.messagesForAgentTraderOrOtherRole(application, messages("pdf.agentTrader.traderBusinessName"), messages("pdf.trader.businessName")), application.trader.businessName)
 

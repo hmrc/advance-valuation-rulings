@@ -3,8 +3,8 @@
 @(role: String)(implicit messages: Messages)
 
 @{role match {
-    case "AgentOrg" => line(messages("pdf.whatIsYourRole.label"), messages("pdf.whatIsYourRole.agentOrg"))
+    case "AgentOrg" =>
     case "EmployeeOrg" => line(messages("pdf.whatIsYourRole.label"), messages("pdf.whatIsYourRole.employeeOrg"))
-    case "AgentTrader" => line(messages("pdf.whatIsYourRole.label"), messages("pdf.whatIsYourRole.agentTrader"))
+    case "AgentTrader" =>
     case _ => line(messages("pdf.whatIsYourRole.label"), messages("pdf.whatIsYourRole.unansweredLegacySupport"))
 }}
