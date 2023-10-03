@@ -1,0 +1,35 @@
+@import uk.gov.hmrc.advancevaluationrulings.models.application.Application
+
+@this(
+    line: Line,
+    describeRoleForAgentRoles: DescribeRoleForAgentRoles
+)
+
+@(application: Application)(implicit messages: Messages)
+
+
+<fo:block-container>
+
+    <fo:block role="H2" id="agent-info" font-size="18pt" font-weight="bold" margin-bottom="0.5cm" margin-top="1cm">
+
+        @messages("pdf.agentDetail")
+
+    </fo:block>
+
+    @application.whatIsYourRoleResponse.map { role =>
+        @describeRoleForAgentRoles(role.entryName)
+    }
+
+    @line(messages("pdf.agentTrader.name"), application.contact.name)
+
+    @line(messages("pdf.agentTrader.email"), application.contact.email)
+
+    @application.contact.phone.map { p =>
+        @line(messages("pdf.agentTrader.phone"), p)
+    }
+
+    @application.contact.companyName.map { n =>
+        @line(messages("pdf.agentTrader.agentBusinessName"), n)
+    }
+
+</fo:block-container>

@@ -1,6 +1,6 @@
 @import java.time.format.DateTimeFormatter
 @import java.time.ZoneId
-@import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, RoleHelper}
+@import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, RoleHelper, WhatIsYourRole}
 
 @this(
     header: PageHeader,
@@ -8,6 +8,8 @@
     line: Line,
     traderDetail: TraderDetail,
     agentDetail: AgentDetail,
+    traderInfo: TraderInfo,
+    agentInfo: AgentInfo,
     roleHelper: RoleHelper
 )
 
@@ -34,7 +36,15 @@
 
             @line(messages("pdf.submitted"), DateTimeFormatter.ofPattern("d MMMM yyyy").withZone(ZoneId.systemDefault()).format(application.created))
 
-            @traderDetail(application)
+            @application.whatIsYourRoleResponse.map { role =>
+                    @if(role == WhatIsYourRole.AgentTrader) {
+                        @traderInfo(application)
+                        @agentInfo(application)
+                    } else {
+                        @traderDetail(application)
+                    }
+            }
+
 
             @application.agent.map { agent =>
                 @agentDetail(application, agent)
