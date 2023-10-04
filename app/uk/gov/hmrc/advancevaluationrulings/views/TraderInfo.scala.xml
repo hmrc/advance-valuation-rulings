@@ -1,0 +1,27 @@
+@import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, TraderDetail}
+
+@this(
+    line: Line,
+    addressLine: AddressLine
+)
+
+@(application: Application)(implicit messages: Messages)
+
+
+<fo:block-container>
+
+    <fo:block role="H2" id="trader-info" font-size="18pt" font-weight="bold" margin-bottom="0.5cm" margin-top="1cm">
+
+        @messages("pdf.traderInfo")
+
+    </fo:block>
+
+    @line(messages("pdf.agentTraderEori"), application.trader.eori)
+
+    @line(messages("pdf.agentTrader.traderBusinessName"), application.trader.businessName)
+
+    @addressLine(messages("pdf.agentTrader.address"), application.trader.addressLines.mkString("\n"))
+
+
+
+</fo:block-container>
