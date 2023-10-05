@@ -30,7 +30,12 @@
                 @messages("pdf.applicationSummary")
             </fo:block>
 
-            @line(roleHelper.messagesForAgentTraderOrOtherRole(application, messages("pdf.agentTraderEori"), messages("pdf.traderEori")), application.trader.eori)
+            @application.whatIsYourRoleResponse.map { role =>
+                @if(role != WhatIsYourRole.AgentTrader) {
+                    @line(messages("pdf.traderEori"), application.trader.eori)
+                }
+            }
+
 
             @line(messages("pdf.applicationId"), application.id.toString)
 
