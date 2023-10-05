@@ -76,7 +76,8 @@ object ApplicationRequestSpec extends Generators {
     addressLine3 = None,
     postcode = randomString,
     countryCode = randomString,
-    phoneNumber = Some(randomString)
+    phoneNumber = Some(randomString),
+    isPrivate = Some(true)
   )
 
   val contact = ContactDetails(
@@ -117,7 +118,8 @@ object ApplicationRequestSpec extends Generators {
     |  "addressLine2": "$randomString",
     |  "postcode": "$randomString",
     |  "countryCode": "$randomString",
-    |  "phoneNumber": "$randomString"
+    |  "phoneNumber": "$randomString",
+    |  "isPrivate": true
     |},
     |"contact": {
     |  "name": "$randomString",

@@ -98,7 +98,8 @@ class FopServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with In
           addressLine3 = None,
           postcode = "AA11 1AA",
           countryCode = "GB",
-          phoneNumber = Some("07777 777777")
+          phoneNumber = Some("07777 777777"),
+          isPrivate = Some(true)
         ),
         agent = Some(
           TraderDetail(
@@ -109,7 +110,8 @@ class FopServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with In
             addressLine3 = None,
             postcode = "AA11 1AA",
             countryCode = "GB",
-            phoneNumber = Some("07777 777778")
+            phoneNumber = Some("07777 777778"),
+            isPrivate = None
           )
         ),
         contact = ContactDetails(
