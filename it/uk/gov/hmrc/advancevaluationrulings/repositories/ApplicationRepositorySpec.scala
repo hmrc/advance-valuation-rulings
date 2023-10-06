@@ -26,7 +26,7 @@ class ApplicationRepositorySpec
   private val goodsDetails        = GoodsDetails("name", "description", None, None, None)
   private val submissionReference = "submissionReference"
   private val method              = MethodOne(None, None, None)
-  private val contact             = ContactDetails("name", "email", None, None)
+  private val contact             = ContactDetails("name", "email", None, None, None)
   private val now                 = Instant.now.truncatedTo(ChronoUnit.MILLIS)
 
   ".set" - {
