@@ -57,7 +57,7 @@ class ApplicationServiceSpec
   private val goodsDetails                   = GoodsDetails("name", "description", None, None, None)
   private val submissionReference            = "submissionReference"
   private val method                         = MethodOne(None, None, None)
-  private val contact                        = ContactDetails("name", "email", None, None)
+  private val contact                        = ContactDetails("name", "email", None, None, None)
   private val hc: HeaderCarrier              = HeaderCarrier()
 
   private val service = new ApplicationService(

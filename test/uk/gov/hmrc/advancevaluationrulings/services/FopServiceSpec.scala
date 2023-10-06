@@ -37,7 +37,8 @@ class FopServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with In
 
   private val app        = GuiceApplicationBuilder().build()
   private val fopService = app.injector.instanceOf[FopService]
-  val attmts             = Seq(
+
+  private val attmts: Seq[Attachment] = Seq(
     Attachment(
       12345,
       "SomeFile1",
@@ -67,7 +68,7 @@ class FopServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with In
     )
   )
 
-  val letterOfAuthority = Attachment(
+  private val letterOfAuthority: Attachment = Attachment(
     12345,
     "SomeFile3",
     Some("description of file"),
@@ -116,7 +117,8 @@ class FopServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with In
           name = "Contact name",
           email = "contact.email@example.com",
           phone = Some("0191 1919191"),
-          companyName = Some("Bob Inc")
+          companyName = Some("Bob Inc"),
+          jobTitle = Some("CEO")
         ),
         requestedMethod = MethodOne(
           saleBetweenRelatedParties = Some(

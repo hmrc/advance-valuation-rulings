@@ -68,7 +68,7 @@ object ApplicationRequestSpec extends Generators {
 
   val draftId: DraftId = DraftId(0)
 
-  val eoriDetails = TraderDetail(
+  val eoriDetails: TraderDetail = TraderDetail(
     eori = randomString,
     businessName = randomString,
     addressLine1 = randomString,
@@ -79,19 +79,20 @@ object ApplicationRequestSpec extends Generators {
     phoneNumber = Some(randomString)
   )
 
-  val contact = ContactDetails(
+  val contact: ContactDetails = ContactDetails(
     name = randomString,
     email = randomString,
     phone = Some(randomString),
-    companyName = Some(randomString)
+    companyName = Some(randomString),
+    jobTitle = Some(randomString)
   )
 
-  val requestedMethod = MethodThree(
+  val requestedMethod: MethodThree = MethodThree(
     whyNotOtherMethods = randomString,
     previousSimilarGoods = randomString
   )
 
-  val goodsDetails = GoodsDetails(
+  val goodsDetails: GoodsDetails = GoodsDetails(
     goodsName = randomString,
     goodsDescription = randomString,
     envisagedCommodityCode = Some(randomString),
@@ -99,7 +100,7 @@ object ApplicationRequestSpec extends Generators {
     confidentialInformation = Some(randomString)
   )
 
-  val goodsDetailsNoDetails = GoodsDetails(
+  val goodsDetailsNoDetails: GoodsDetails = GoodsDetails(
     goodsName = randomString,
     goodsDescription = randomString,
     envisagedCommodityCode = None,
@@ -107,7 +108,7 @@ object ApplicationRequestSpec extends Generators {
     confidentialInformation = None
   )
 
-  val body =
+  val body: String =
     s"""{
     |"draftId": "$draftId",
     |"trader": {
@@ -123,7 +124,8 @@ object ApplicationRequestSpec extends Generators {
     |  "name": "$randomString",
     |  "email": "$randomString",
     |  "phone": "$randomString",
-    |  "companyName": "$randomString"
+    |  "companyName": "$randomString",
+    |  "jobTitle": "$randomString"
     |},
     |"requestedMethod" : {
     |  "whyNotOtherMethods" : "$randomString",
