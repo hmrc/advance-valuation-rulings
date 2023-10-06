@@ -26,7 +26,8 @@ final case class TraderDetail(
   addressLine3: Option[String],
   postcode: String,
   countryCode: String,
-  phoneNumber: Option[String]
+  phoneNumber: Option[String],
+  isPrivate: Option[Boolean]
 ) {
 
   lazy val country: Country = Country.fromCountryCode(countryCode)

@@ -18,6 +18,8 @@ package uk.gov.hmrc.advancevaluationrulings.models.application
 
 import play.api.libs.json.{Json, OFormat}
 
+import com.fasterxml.jackson.annotation.JsonIgnore
+
 final case class Attachment(
   id: Long,
   name: String,

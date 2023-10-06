@@ -22,7 +22,8 @@ class ApplicationRepositorySpec
 
   protected override val repository = new ApplicationRepository(mongoComponent)
 
-  private val trader              = TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None)
+  private val trader              =
+    TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None, Some(true))
   private val goodsDetails        = GoodsDetails("name", "description", None, None, None)
   private val submissionReference = "submissionReference"
   private val method              = MethodOne(None, None, None)
