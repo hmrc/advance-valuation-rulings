@@ -37,6 +37,7 @@ class FopServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with In
 
   private val app        = GuiceApplicationBuilder().build()
   private val fopService = app.injector.instanceOf[FopService]
+
   private val attmts: Seq[Attachment] = Seq(
     Attachment(
       12345,
