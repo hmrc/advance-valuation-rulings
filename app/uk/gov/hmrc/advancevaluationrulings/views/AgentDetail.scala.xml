@@ -35,4 +35,8 @@
         @line(messages("pdf.agentPhone"), phone)
     }
 
+    @application.contact.jobTitle.map { jobTitle =>
+        @line(messages("pdf.agentJobTitle"), jobTitle)
+    }
+
 </fo:block-container>

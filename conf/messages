@@ -30,6 +30,7 @@ pdf.agentTrader.email = Agent’s email address
 pdf.agentTrader.traderBusinessName = Trader’s registered business name
 pdf.agentTrader.agentBusinessName = Agent’s company name
 pdf.agentTrader.address = Trader’s registered business address
+pdf.agentTrader.agentJobTitle = Agent’s job title
 
 pdf.agentDetail = About the agent
 pdf.agent.eori = Agent EORI number
@@ -39,6 +40,7 @@ pdf.agent.address = Agent business address
 pdf.agentName = Agent name
 pdf.agentEmail = Agent email address
 pdf.agentPhone = Agent telephone number
+pdf.agentJobTitle = Agent job title
 
 pdf.goodsDetails = About the goods
 pdf.method = Proposed method of valuation
