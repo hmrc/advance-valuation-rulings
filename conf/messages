@@ -24,6 +24,7 @@ pdf.agentTrader.name = Agent’s full name
 pdf.applicantEmail = Applicant email address
 pdf.agentTrader.email = Agent’s email address
 pdf.applicantPhone = Applicant telephone number
+pdf.applicantJobTitle = Applicant job title
 
 pdf.agentTrader.phone = Agent’s telephone number
 pdf.agentTrader.email = Agent’s email address

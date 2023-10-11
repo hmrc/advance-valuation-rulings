@@ -41,7 +41,7 @@
         }
 
         @application.contact.jobTitle.map { jobTitle =>
-            @line(roleHelper.messagesForAgentTraderOrOtherRole(application,messages("pdf.agentTrader.agentJobTitle"), messages("pdf.agent.jobTitle")), jobTitle)
+            @line(roleHelper.messagesForAgentTraderOrOtherRole(application,messages("pdf.agentTrader.agentJobTitle"), messages("pdf.applicantJobTitle")), jobTitle)
         }
     }
 
