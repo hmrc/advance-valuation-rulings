@@ -96,6 +96,8 @@ object ApplicationRequestSpec extends Generators {
   val goodsDetails: GoodsDetails = GoodsDetails(
     goodsName = randomString,
     goodsDescription = randomString,
+    similarRulingGoodsInfo = Some(randomString),
+    similarRulingMethodInfo = Some(randomString),
     envisagedCommodityCode = Some(randomString),
     knownLegalProceedings = Some(randomString),
     confidentialInformation = Some(randomString)
@@ -104,6 +106,8 @@ object ApplicationRequestSpec extends Generators {
   val goodsDetailsNoDetails: GoodsDetails = GoodsDetails(
     goodsName = randomString,
     goodsDescription = randomString,
+    similarRulingGoodsInfo = None,
+    similarRulingMethodInfo = None,
     envisagedCommodityCode = None,
     knownLegalProceedings = None,
     confidentialInformation = None
@@ -139,7 +143,9 @@ object ApplicationRequestSpec extends Generators {
     |  "goodsDescription": "$randomString",
     |  "envisagedCommodityCode": "$randomString",
     |  "knownLegalProceedings": "$randomString",
-    |  "confidentialInformation": "$randomString"
+    |  "confidentialInformation": "$randomString",
+    |  "similarRulingGoodsInfo": "$randomString",
+    |  "similarRulingMethodInfo": "$randomString"
     |},
     |"attachments": [],
     |"whatIsYourRole": "${WhatIsYourRole.EmployeeOrg.entryName}"

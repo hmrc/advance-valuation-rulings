@@ -24,7 +24,7 @@ class ApplicationRepositorySpec
 
   private val trader              =
     TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None, Some(true))
-  private val goodsDetails        = GoodsDetails("name", "description", None, None, None)
+  private val goodsDetails        = GoodsDetails("name", "description", None, None, None, None, None)
   private val submissionReference = "submissionReference"
   private val method              = MethodOne(None, None, None)
   private val contact             = ContactDetails("name", "email", None, None, None)
