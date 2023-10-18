@@ -87,3 +87,5 @@ pdf.whatIsYourRole.agentOrg= Agent acting on behalf of an organisation
 pdf.whatIsYourRole.employeeOrg= An employee of the organisation
 pdf.whatIsYourRole.agentTrader= Agent acting on behalf of a trader
 pdf.whatIsYourRole.unansweredLegacySupport= Unanswered
+pdf.methodRuling = Have you ever received a ruling based on a similar method?
+pdf.goodsRuling = Are you aware of any other rulings that have used a similar method?

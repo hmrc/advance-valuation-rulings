@@ -23,7 +23,9 @@ final case class GoodsDetails(
   goodsDescription: String,
   envisagedCommodityCode: Option[String],
   knownLegalProceedings: Option[String],
-  confidentialInformation: Option[String]
+  confidentialInformation: Option[String],
+  similarRulingGoodsInfo: Option[String],
+  similarRulingMethodInfo: Option[String]
 )
 
 object GoodsDetails {

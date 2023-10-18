@@ -43,7 +43,8 @@ class ApplicationService @Inject() (
 
   def save(eori: String, request: ApplicationRequest, auditMetadata: AuditMetadata)(implicit
     hc: HeaderCarrier
-  ): Future[ApplicationId] =
+  ): Future[ApplicationId] = {
+    println(request.goodsDetails)
     for {
       appId              <- counterRepository.nextId(CounterId.ApplicationId).map(ApplicationId(_))
       attachments        <- buildAttachments(appId, request.attachments)
@@ -60,6 +61,7 @@ class ApplicationService @Inject() (
       _                  <- dmsSubmissionService.submitApplication(application, submissionReference)
       _                   = auditService.auditSubmitRequest(buildAudit(application, auditMetadata, request.draftId))
     } yield appId
+  }
 
   private def saveApplication(
     applicantEori: String,
