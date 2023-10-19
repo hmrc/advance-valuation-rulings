@@ -76,7 +76,7 @@ class DmsSubmissionServiceSpec
 
     val trader              =
       TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None, Some(false))
-    val goodsDetails        = GoodsDetails("name", "description", None, None, None)
+    val goodsDetails        = GoodsDetails("name", "description", None, None, None, None, None)
     val method              = MethodOne(None, None, None)
     val contact             = ContactDetails("name", "email", None, Some("Bob Inc"), Some("CEO"))
     val submissionReference = "submissionReference"

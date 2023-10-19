@@ -136,6 +136,8 @@ class FopServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with In
         goodsDetails = GoodsDetails(
           goodsName = "The name for the goods",
           goodsDescription = "A short description of the goods",
+          similarRulingMethodInfo = Some("method info"),
+          similarRulingGoodsInfo = Some("goods info"),
           envisagedCommodityCode = Some("070190"),
           knownLegalProceedings = Some(
             "Lorem ipsum dolor sit amet. Sed internos corporis qui quod ipsum sit saepe dolores ab quas similique ut commodi tempora et facilis porro ut officiis nihil.\n\nUt eveniet assumenda sit quod fugit ut quae illo est amet iste. Ab nulla quia aut ipsam cumque aut aspernatur enim hic maiores voluptas aut dolores repudiandae eum maxime odio. In nesciunt mollitia quo reprehenderit natus qui soluta sequi."
