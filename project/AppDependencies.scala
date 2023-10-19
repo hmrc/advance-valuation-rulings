@@ -4,7 +4,7 @@ object AppDependencies {
 
   private val AllTestScope     = "test, it"
   private val bootstrapVersion = "7.15.0"
-  private val hmrcMongoVersion = "1.2.0"
+  private val hmrcMongoVersion = "1.3.0"
 
   val compile: Seq[ModuleID] = Seq(
     "uk.gov.hmrc"             %% "bootstrap-backend-play-28"    % bootstrapVersion,
@@ -13,8 +13,8 @@ object AppDependencies {
     "org.typelevel"           %% "cats-core"                    % "2.9.0",
     "uk.gov.hmrc"             %% "internal-auth-client-play-28" % "1.2.0",
     "uk.gov.hmrc.objectstore" %% "object-store-client-play-28"  % "1.0.0",
-    "org.apache.xmlgraphics"  %  "fop"                          % "2.8",
-    "uk.gov.hmrc"             %% "crypto-json-play-28"          % "7.3.0",
+    "org.apache.xmlgraphics"   % "fop"                          % "2.8",
+    "uk.gov.hmrc"             %% "crypto-json-play-28"          % "7.3.0"
   )
 
   val test: Seq[ModuleID] = Seq(
@@ -26,6 +26,6 @@ object AppDependencies {
     "org.scalatestplus"   %% "scalacheck-1-17"         % "3.2.15.0",
     "uk.gov.hmrc.mongo"   %% "hmrc-mongo-test-play-28" % hmrcMongoVersion,
     "org.mockito"         %% "mockito-scala"           % "1.16.42",
-    "org.apache.pdfbox"   %  "pdfbox"                  % "2.0.27"
+    "org.apache.pdfbox"    % "pdfbox"                  % "2.0.27"
   ).map(_ % AllTestScope)
 }
