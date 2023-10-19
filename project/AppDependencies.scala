@@ -11,7 +11,7 @@ object AppDependencies {
     "uk.gov.hmrc.mongo"       %% "hmrc-mongo-play-28"           % hmrcMongoVersion,
     "com.beachape"            %% "enumeratum-play-json"         % "1.6.3",
     "org.typelevel"           %% "cats-core"                    % "2.9.0",
-    "uk.gov.hmrc"             %% "internal-auth-client-play-28" % "1.2.0",
+    "uk.gov.hmrc"             %% "internal-auth-client-play-28" % "1.6.0",
     "uk.gov.hmrc.objectstore" %% "object-store-client-play-28"  % "1.1.0",
     "org.apache.xmlgraphics"   % "fop"                          % "2.8",
     "uk.gov.hmrc"             %% "crypto-json-play-28"          % "7.3.0"
