@@ -57,3 +57,5 @@ lazy val scoverageSettings = {
     coverageMinimumStmtTotal := 50
   )
 }
+
+addCommandAlias("scalastyleAll", "all scalastyle Test/scalastyle IntegrationTest/scalastyle")
