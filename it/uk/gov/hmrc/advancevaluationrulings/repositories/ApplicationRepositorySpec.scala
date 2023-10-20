@@ -5,9 +5,11 @@ import java.time.temporal.ChronoUnit
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
+import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
 import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
+import org.mockito.MockitoSugar.{mock, when}
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
@@ -20,7 +22,10 @@ class ApplicationRepositorySpec
     with OptionValues
     with ScalaFutures {
 
-  protected override val repository = new ApplicationRepository(mongoComponent)
+  private val mockAppConfig = mock[AppConfig]
+  when(mockAppConfig.applicationTtlInDays) thenReturn 1
+
+  protected override val repository = new ApplicationRepository(mongoComponent, mockAppConfig)
 
   private val trader              =
     TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None, Some(true))

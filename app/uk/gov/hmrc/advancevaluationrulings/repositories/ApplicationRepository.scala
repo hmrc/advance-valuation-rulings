@@ -43,7 +43,7 @@ class ApplicationRepository @Inject() (
         IndexModel(
           Indexes.ascending("lastUpdated"),
           IndexOptions()
-            .name("last-updated-index")
+            .name("last-updated-index-applications")
             .expireAfter(appConfig.applicationTtlInDays, TimeUnit.DAYS)
         ),
         IndexModel(
