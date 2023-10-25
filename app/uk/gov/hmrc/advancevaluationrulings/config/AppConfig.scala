@@ -39,4 +39,5 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
       .getConfString(confKey, throw new RuntimeException(s"Could not find config key '$confKey'"))
 
   val userAnswersTtlInDays: Int = config.get[Int]("mongodb.userAnswersTtlInDays")
+  val applicationTtlInDays: Int = config.get[Int]("mongodb.applicationTtlInDays")
 }

@@ -16,10 +16,12 @@
 
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
+import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 
 import scala.concurrent.{ExecutionContext, Future}
 
+import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
 import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, ApplicationId, ApplicationSummary}
 import uk.gov.hmrc.mongo.MongoComponent
@@ -30,13 +32,20 @@ import org.mongodb.scala.model._
 
 @Singleton
 class ApplicationRepository @Inject() (
-  mongoComponent: MongoComponent
+  mongoComponent: MongoComponent,
+  appConfig: AppConfig
 )(implicit ec: ExecutionContext)
     extends PlayMongoRepository[Application](
       collectionName = "applications",
       mongoComponent = mongoComponent,
       domainFormat = Application.format(MongoJavatimeFormats.instantFormat),
       indexes = Seq(
+        IndexModel(
+          Indexes.ascending("lastUpdated"),
+          IndexOptions()
+            .name("last-updated-index-applications")
+            .expireAfter(appConfig.applicationTtlInDays, TimeUnit.DAYS)
+        ),
         IndexModel(
           Indexes.ascending("id"),
           IndexOptions()
