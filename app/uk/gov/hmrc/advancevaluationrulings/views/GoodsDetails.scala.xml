@@ -52,15 +52,19 @@
             @line(messages("pdf.goodsDescription"), application.goodsDetails.goodsDescription)
 
             @application.goodsDetails.similarRulingMethodInfo.map { x =>
+                @line(messages("pdf.methodRulingQuestion"), messages("pdf.yes"))
+
                 @line(messages("pdf.methodRuling"), x)
             }.getOrElse {
-                @line(messages("pdf.methodRuling"), messages("pdf.notProvided"))
+                @line(messages("pdf.methodRulingQuestion"), messages("pdf.no"))
             }
 
             @application.goodsDetails.similarRulingGoodsInfo.map { x =>
+                @line(messages("pdf.goodsRulingQuestion"), messages("pdf.yes"))
+
                 @line(messages("pdf.goodsRuling"), x)
             }.getOrElse {
-                @line(messages("pdf.goodsRuling"), messages("pdf.notProvided"))
+                @line(messages("pdf.goodsRulingQuestion"), messages("pdf.no"))
             }
 
             @application.goodsDetails.envisagedCommodityCode.map { x =>
