@@ -60,7 +60,7 @@ class CounterRepository @Inject() (
   def ensureApplicationIdIsCorrect(): Future[Done] =
     collection
       .find(byId(CounterId.ApplicationId))
-      .headOption
+      .headOption()
       .flatMap(_.map {
         applicationId =>
           if (applicationId.index < applicationStartingIndex) {

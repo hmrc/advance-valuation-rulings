@@ -17,7 +17,7 @@
 package uk.gov.hmrc.advancevaluationrulings.services
 
 import java.io.IOException
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{Files, Paths}
 import javax.inject.{Inject, Singleton}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -65,7 +65,7 @@ class SaveFileDmsSubmissionService @Inject() (
       Files.write(Paths.get(fileName), pdfBytes)
       Done
     } catch {
-      case e: IOException =>
+      case _: IOException =>
         logger.error("Failed to write local file of application")
         Done
     }
