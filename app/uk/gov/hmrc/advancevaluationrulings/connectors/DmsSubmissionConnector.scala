@@ -27,20 +27,18 @@ import scala.util.control.NoStackTrace
 import play.api.{Configuration, Logging}
 import play.api.http.Status.ACCEPTED
 import play.api.mvc.MultipartFormData
+import uk.gov.hmrc.advancevaluationrulings.connectors.DmsSubmissionConnector._
 import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application.{Attachment, Privacy}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.objectstore.client
 import uk.gov.hmrc.objectstore.client.Path
 import uk.gov.hmrc.objectstore.client.play.Implicits._
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
 
 import cats.implicits._
 
-import DmsSubmissionConnector._
-import akka.NotUsed
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import config.Service

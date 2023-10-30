@@ -22,11 +22,9 @@ import scala.concurrent.ExecutionContext
 
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.advancevaluationrulings.controllers.actions.IdentifierAction
 import uk.gov.hmrc.advancevaluationrulings.models.{DraftId, UserAnswers}
-import uk.gov.hmrc.advancevaluationrulings.models.application.DraftSummaryResponse
 import uk.gov.hmrc.advancevaluationrulings.repositories.UserAnswersRepository
-import uk.gov.hmrc.internalauth.client.{BackendAuthComponents, IAAction, Predicate, Resource, ResourceLocation, ResourceType}
+import uk.gov.hmrc.internalauth.client._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 class UserAnswersInternalController @Inject() (
