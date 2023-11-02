@@ -18,16 +18,13 @@ package uk.gov.hmrc.advancevaluationrulings.repositories
 
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
-
 import scala.concurrent.{ExecutionContext, Future}
-
 import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
-import uk.gov.hmrc.advancevaluationrulings.models.Done
+import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId}
 import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, ApplicationId, ApplicationSummary}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
-
 import org.mongodb.scala.model._
 
 @Singleton
@@ -61,6 +58,7 @@ class ApplicationRepository @Inject() (
       ),
       extraCodecs = Seq(
         Codecs.playFormatCodec(ApplicationId.format),
+        Codecs.playFormatCodec(DraftId.format),
         Codecs.playFormatCodec(ApplicationSummary.mongoFormat)
       )
     ) {
@@ -79,6 +77,17 @@ class ApplicationRepository @Inject() (
       Filters.eq("id", id),
       Filters.eq("applicantEori", applicantEori)
     )
+
+    collection
+      .find(filter)
+      .toFuture()
+      .map(_.headOption)
+  }
+
+  def getBasedOnDraftId(draftId: DraftId): Future[Option[Application]] = {
+
+    val filter =
+      Filters.and(Filters.eq("draftId", draftId))
 
     collection
       .find(filter)

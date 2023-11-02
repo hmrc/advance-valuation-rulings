@@ -17,11 +17,12 @@
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
 import java.time.Instant
-
 import play.api.libs.json.{Format, Json, OFormat}
+import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 
 final case class Application(
   id: ApplicationId,
+  draftId: DraftId,
   applicantEori: String,
   trader: TraderDetail,
   agent: Option[TraderDetail],

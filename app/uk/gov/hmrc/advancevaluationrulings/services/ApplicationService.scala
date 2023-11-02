@@ -16,11 +16,7 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import java.time.{Clock, Instant}
-import javax.inject.{Inject, Singleton}
-
-import scala.concurrent.{ExecutionContext, Future}
-
+import cats.implicits._
 import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.models.audit.{ApplicationSubmissionEvent, AuditMetadata}
@@ -28,50 +24,53 @@ import uk.gov.hmrc.advancevaluationrulings.repositories.{ApplicationRepository, 
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.http.HeaderCarrier
 
-import cats.implicits._
+import java.time.{Clock, Instant}
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ApplicationService @Inject() (
-  counterRepository: CounterRepository,
-  applicationRepository: ApplicationRepository,
-  dmsSubmissionService: DmsSubmissionService,
-  submissionReferenceService: SubmissionReferenceService,
-  attachmentsService: AttachmentsService,
-  auditService: AuditService,
-  clock: Clock
-)(implicit ec: ExecutionContext) {
+class ApplicationService @Inject()(
+                                    counterRepository: CounterRepository,
+                                    applicationRepository: ApplicationRepository,
+                                    dmsSubmissionService: DmsSubmissionService,
+                                    submissionReferenceService: SubmissionReferenceService,
+                                    attachmentsService: AttachmentsService,
+                                    auditService: AuditService,
+                                    clock: Clock
+                                  )(implicit ec: ExecutionContext) {
 
-  def save(eori: String, request: ApplicationRequest, auditMetadata: AuditMetadata)(implicit
-    hc: HeaderCarrier
-  ): Future[ApplicationId] =
+  def save(eori: String, request: ApplicationRequest, optApp: Option[Application])(implicit
+                                                                                   hc: HeaderCarrier
+  ): Future[Application] =
     for {
-      appId              <- counterRepository.nextId(CounterId.ApplicationId).map(ApplicationId(_))
-      attachments        <- buildAttachments(appId, request.attachments)
+      appId <- counterRepository.nextId(CounterId.ApplicationId).map(ApplicationId(_))
+      attachments <- buildAttachments(appId, request.attachments)
       submissionReference = submissionReferenceService.random()
-      letterOfAuthority  <- buildLetterOfAuthority(appId, request.letterOfAuthority)
-      application        <- saveApplication(
-                              eori,
-                              request,
-                              appId,
-                              attachments,
-                              letterOfAuthority,
-                              submissionReference
-                            )
-      _                  <- dmsSubmissionService.submitApplication(application, submissionReference)
-      _                   = auditService.auditSubmitRequest(buildAudit(application, auditMetadata, request.draftId))
-    } yield appId
+      letterOfAuthority <- buildLetterOfAuthority(appId, request.letterOfAuthority)
+      application <- saveApplication(
+        eori,
+        request,
+        appId,
+        optApp,
+        attachments,
+        letterOfAuthority,
+        submissionReference
+      )
+    } yield application
 
   private def saveApplication(
-    applicantEori: String,
-    request: ApplicationRequest,
-    appId: ApplicationId,
-    attachments: Seq[Attachment],
-    letterOfAuthority: Option[Attachment],
-    submissionReference: String
-  ): Future[Application] = {
+                               applicantEori: String,
+                               request: ApplicationRequest,
+                               appId: ApplicationId,
+                               optApp: Option[Application],
+                               attachments: Seq[Attachment],
+                               letterOfAuthority: Option[Attachment],
+                               submissionReference: String
+                             ): Future[Application] = {
 
     val application = Application(
       id = appId,
+      draftId = request.draftId,
       applicantEori = applicantEori,
       trader = request.trader,
       agent = request.agent,
@@ -86,7 +85,12 @@ class ApplicationService @Inject() (
       lastUpdated = Instant.now(clock)
     )
 
-    applicationRepository.set(application).as(application)
+    optApp match {
+      case Some(app) =>
+        Future(app)
+      case None =>
+        applicationRepository.set(application).as(application)
+    }
   }
 
   private def buildAttachments(applicationId: ApplicationId, requests: Seq[AttachmentRequest])(
@@ -95,18 +99,18 @@ class ApplicationService @Inject() (
     requests.traverse(request => buildAttachment(applicationId, request))
 
   private def buildLetterOfAuthority(
-    applicationId: ApplicationId,
-    request: Option[AttachmentRequest]
-  )(implicit
-    hc: HeaderCarrier
-  ): Future[Option[Attachment]] =
+                                      applicationId: ApplicationId,
+                                      request: Option[AttachmentRequest]
+                                    )(implicit
+                                      hc: HeaderCarrier
+                                    ): Future[Option[Attachment]] =
     request.traverse(buildAttachment(applicationId, _))
 
   private def buildAttachment(applicationId: ApplicationId, request: AttachmentRequest)(implicit
-    hc: HeaderCarrier
+                                                                                        hc: HeaderCarrier
   ) =
     for {
-      id  <- counterRepository.nextId(CounterId.AttachmentId)
+      id <- counterRepository.nextId(CounterId.AttachmentId)
       url <- attachmentsService.copyAttachment(applicationId, request.url)
     } yield Attachment(
       id = id,
@@ -118,11 +122,11 @@ class ApplicationService @Inject() (
       size = request.size
     )
 
-  private def buildAudit(
-    application: Application,
-    auditMetadata: AuditMetadata,
-    draftId: DraftId
-  ): ApplicationSubmissionEvent =
+  def buildAudit(
+                  application: Application,
+                  auditMetadata: AuditMetadata,
+                  draftId: DraftId
+                ): ApplicationSubmissionEvent =
     ApplicationSubmissionEvent(
       internalId = auditMetadata.internalId,
       affinityGroup = auditMetadata.affinityGroup,
