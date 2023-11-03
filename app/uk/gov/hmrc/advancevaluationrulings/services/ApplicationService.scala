@@ -39,9 +39,9 @@ class ApplicationService @Inject()(
                                     clock: Clock
                                   )(implicit ec: ExecutionContext) {
 
-  def save(eori: String, request: ApplicationRequest, optApp: Option[Application])(implicit
-                                                                                   hc: HeaderCarrier
-  ): Future[Application] =
+  def save(eori: String, request: ApplicationRequest, auditMetadata: AuditMetadata)(implicit
+                                                          hc: HeaderCarrier
+  ): Future[ApplicationId] =
     for {
       appId <- counterRepository.nextId(CounterId.ApplicationId).map(ApplicationId(_))
       attachments <- buildAttachments(appId, request.attachments)
@@ -51,18 +51,18 @@ class ApplicationService @Inject()(
         eori,
         request,
         appId,
-        optApp,
         attachments,
         letterOfAuthority,
         submissionReference
       )
-    } yield application
+      _ <- dmsSubmissionService.submitApplication(application, submissionReference)
+      _ = auditService.auditSubmitRequest(buildAudit(application, auditMetadata, request.draftId))
+    } yield appId
 
   private def saveApplication(
                                applicantEori: String,
                                request: ApplicationRequest,
                                appId: ApplicationId,
-                               optApp: Option[Application],
                                attachments: Seq[Attachment],
                                letterOfAuthority: Option[Attachment],
                                submissionReference: String
@@ -85,12 +85,7 @@ class ApplicationService @Inject()(
       lastUpdated = Instant.now(clock)
     )
 
-    optApp match {
-      case Some(app) =>
-        Future(app)
-      case None =>
-        applicationRepository.set(application).as(application)
-    }
+    applicationRepository.set(application).as(application)
   }
 
   private def buildAttachments(applicationId: ApplicationId, requests: Seq[AttachmentRequest])(

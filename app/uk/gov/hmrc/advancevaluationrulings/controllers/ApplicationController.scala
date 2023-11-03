@@ -40,17 +40,20 @@ class ApplicationController @Inject()(
                                      )(implicit ec: ExecutionContext)
   extends BackendController(cc) {
 
-  def submit: Action[ApplicationRequest] = identify(parse.json[ApplicationRequest]).async {
-    implicit request =>
-      val auditMetadata = getAuditMetadata(request)
-      for {
-        optApp <- applicationRepository.getBasedOnDraftId(request.body.draftId)
-        application <- applicationService.save(request.eori, request.body, optApp)
-        _ <- dmsSubmissionService.submitApplication(application, application.submissionReference)
-        _ = auditService.auditSubmitRequest(applicationService.buildAudit(application, auditMetadata, request.body.draftId))
-      } yield {
-        Ok(Json.toJson(ApplicationSubmissionResponse(application.id)))
-      }
+  def submit: Action[ApplicationRequest] = identify(parse.json[ApplicationRequest]).async { implicit request =>
+
+    val result = applicationRepository.getBasedOnDraftId(request.body.draftId)
+
+    result.flatMap {
+      case Some(application) =>
+        Future.successful(Ok(Json.toJson(ApplicationSubmissionResponse(application.id))))
+      case None =>
+        for {
+          id <- applicationService.save(request.eori, request.body, getAuditMetadata(request))
+        } yield {
+          Ok(Json.toJson(ApplicationSubmissionResponse(id)))
+        }
+    }
   }
 
   def summaries: Action[AnyContent] = identify.async {
