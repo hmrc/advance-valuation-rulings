@@ -17,18 +17,21 @@
 package uk.gov.hmrc.advancevaluationrulings.models
 
 import scala.util.Try
-
 import play.api.libs.json._
 import play.api.mvc.PathBindable
+import uk.gov.hmrc.advancevaluationrulings.models.application.ApplicationId
 
 final case class DraftId(value: Long) {
   override val toString: String = s"DRAFT%09d".format(value)
+
+  def toApplicationId(): Try[ApplicationId] = ApplicationId(value.toString)
 }
 
 object DraftId {
 
   def apply(valueString: String): Try[DraftId] =
     Try(DraftId(valueString.toInt))
+
 
   def fromString(string: String): Option[DraftId] = {
 
