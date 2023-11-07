@@ -45,7 +45,8 @@ class ApplicationService @Inject() (
     hc: HeaderCarrier
   ): Future[ApplicationId] =
     for {
-      appId              <- counterRepository.nextId(CounterId.ApplicationId).map(ApplicationId(_))
+//      appId              <- counterRepository.nextId(CounterId.ApplicationId).map(ApplicationId(_))
+      appId <- Future.fromTry(request.draftId.toApplicationId())
       attachments        <- buildAttachments(appId, request.attachments)
       submissionReference = submissionReferenceService.random()
       letterOfAuthority  <- buildLetterOfAuthority(appId, request.letterOfAuthority)

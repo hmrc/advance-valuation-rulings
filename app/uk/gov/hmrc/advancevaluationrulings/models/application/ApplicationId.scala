@@ -38,7 +38,6 @@ object ApplicationId {
     string match {
       case pattern(value) =>
         ApplicationId(value).toOption
-
       case _ =>
         None
     }
