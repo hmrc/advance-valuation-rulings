@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
+import javax.inject.{Inject, Singleton}
+
 import play.api.Logging
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.advancevaluationrulings.models.dms.{NotificationRequest, SubmissionItemStatus}
 import uk.gov.hmrc.internalauth.client._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
-
-import javax.inject.{Inject, Singleton}
 
 @Singleton
 class DmsSubmissionCallbackController @Inject() (

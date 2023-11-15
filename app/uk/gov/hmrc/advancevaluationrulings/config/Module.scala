@@ -35,12 +35,16 @@ class Module extends play.api.inject.Module {
     val authTokenInitialiserBinding: Binding[InternalAuthTokenInitialiser] =
       if (configuration.get[Boolean]("internal-auth-token-initialiser.enabled")) {
         bind[InternalAuthTokenInitialiser].to[InternalAuthTokenInitialiserImpl].eagerly()
-      } else bind[InternalAuthTokenInitialiser].to[NoOpInternalAuthTokenInitialiser].eagerly()
+      } else {
+        bind[InternalAuthTokenInitialiser].to[NoOpInternalAuthTokenInitialiser].eagerly()
+      }
 
     val dmsSubmissionServiceBinding: Binding[DmsSubmissionService] =
       if (configuration.get[Boolean]("dms-submission.enabled")) {
         bind[DmsSubmissionService].to[DefaultDmsSubmissionService].eagerly()
-      } else bind[DmsSubmissionService].to[SaveFileDmsSubmissionService].eagerly()
+      } else {
+        bind[DmsSubmissionService].to[SaveFileDmsSubmissionService].eagerly()
+      }
 
     Seq(
       bind[AppConfig].toSelf.eagerly(),

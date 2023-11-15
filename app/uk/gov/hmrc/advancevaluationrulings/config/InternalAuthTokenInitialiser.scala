@@ -16,20 +16,22 @@
 
 package uk.gov.hmrc.advancevaluationrulings.config
 
-import akka.actor.ActorSystem
-import config.Service
-import play.api.http.Status.{CREATED, OK}
-import play.api.libs.json.Json
-import play.api.{Configuration, Logging}
-import uk.gov.hmrc.advancevaluationrulings.models.Done
-import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
-import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
-
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.duration.{DurationInt, FiniteDuration}
+
 import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
+
+import play.api.{Configuration, Logging}
+import play.api.http.Status.{CREATED, OK}
+import play.api.libs.json.Json
+import uk.gov.hmrc.advancevaluationrulings.models.Done
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+import uk.gov.hmrc.http.client.HttpClientV2
+
+import akka.actor.ActorSystem
+import config.Service
 
 abstract class InternalAuthTokenInitialiser {
   val initialised: Future[Done]
@@ -110,17 +112,23 @@ class InternalAuthTokenInitialiserImpl @Inject() (
       .flatMap {
         response =>
           if (response.status == CREATED) {
-            logger.info("[InternalAuthTokenInitialiser][createClientAuthToken] Auth token initialised")
+            logger.info(
+              "[InternalAuthTokenInitialiser][createClientAuthToken] Auth token initialised"
+            )
             Future.successful(Done)
           } else {
-            logger.error("[InternalAuthTokenInitialiser][createClientAuthToken] Unable to initialise internal-auth token")
+            logger.error(
+              "[InternalAuthTokenInitialiser][createClientAuthToken] Unable to initialise internal-auth token"
+            )
             Future.failed(new RuntimeException("Unable to initialise internal-auth token"))
           }
       }
   }
 
   private def addDmsSubmissionAttachmentGrants(): Future[Done] = {
-    logger.info("[InternalAuthTokenInitialiser][addDmsSubmissionsAttachmentGrants] Initialising dms-submission grants")
+    logger.info(
+      "[InternalAuthTokenInitialiser][addDmsSubmissionsAttachmentGrants] Initialising dms-submission grants"
+    )
     httpClient
       .post(url"${internalAuthService.baseUrl}/test-only/token")(HeaderCarrier())
       .withBody(
@@ -140,10 +148,14 @@ class InternalAuthTokenInitialiserImpl @Inject() (
       .flatMap {
         response =>
           if (response.status == CREATED) {
-            logger.info("[InternalAuthTokenInitialiser][addDmsSubmissionAttachmentGrants] dms-submission grants added")
+            logger.info(
+              "[InternalAuthTokenInitialiser][addDmsSubmissionAttachmentGrants] dms-submission grants added"
+            )
             Future.successful(Done)
           } else {
-            logger.error("[InternalAuthTokenInitialiser][addDmsSubmissionAttachmentGrants] Unable to add dms-submission grants")
+            logger.error(
+              "[InternalAuthTokenInitialiser][addDmsSubmissionAttachmentGrants] Unable to add dms-submission grants"
+            )
             Future.failed(new RuntimeException("Unable to add dms-submission grants"))
           }
       }
