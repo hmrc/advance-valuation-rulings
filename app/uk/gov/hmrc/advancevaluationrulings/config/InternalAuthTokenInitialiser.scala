@@ -16,21 +16,20 @@
 
 package uk.gov.hmrc.advancevaluationrulings.config
 
-import java.util.UUID
-import javax.inject.{Inject, Singleton}
-
-import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.concurrent.duration.{DurationInt, FiniteDuration}
-
-import play.api.{Configuration, Logging}
-import play.api.libs.json.Json
-import uk.gov.hmrc.advancevaluationrulings.models.Done
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
-import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
-import uk.gov.hmrc.http.client.HttpClientV2
-
 import akka.actor.ActorSystem
 import config.Service
+import play.api.http.Status.{CREATED, OK}
+import play.api.libs.json.Json
+import play.api.{Configuration, Logging}
+import uk.gov.hmrc.advancevaluationrulings.models.Done
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
+
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 abstract class InternalAuthTokenInitialiser {
   val initialised: Future[Done]
@@ -78,7 +77,7 @@ class InternalAuthTokenInitialiserImpl @Inject() (
     authTokenIsValid.flatMap {
       isValid =>
         if (isValid) {
-          logger.info("Auth token is already valid")
+          logger.info("[InternalAuthTokenInitialiser][ensureAuthToken] Auth token is already valid")
           Future.successful(Done)
         } else {
           createClientAuthToken()
@@ -86,7 +85,7 @@ class InternalAuthTokenInitialiserImpl @Inject() (
     }
 
   private def createClientAuthToken(): Future[Done] = {
-    logger.info("Initialising auth token")
+    logger.info("[InternalAuthTokenInitialiser][createClientAuthToken] Initialising auth token")
     httpClient
       .post(url"${internalAuthService.baseUrl}/test-only/token")(HeaderCarrier())
       .withBody(
@@ -110,17 +109,18 @@ class InternalAuthTokenInitialiserImpl @Inject() (
       .execute
       .flatMap {
         response =>
-          if (response.status == 201) {
-            logger.info("Auth token initialised")
+          if (response.status == CREATED) {
+            logger.info("[InternalAuthTokenInitialiser][createClientAuthToken] Auth token initialised")
             Future.successful(Done)
           } else {
+            logger.error("[InternalAuthTokenInitialiser][createClientAuthToken] Unable to initialise internal-auth token")
             Future.failed(new RuntimeException("Unable to initialise internal-auth token"))
           }
       }
   }
 
   private def addDmsSubmissionAttachmentGrants(): Future[Done] = {
-    logger.info("Initialising dms-submission grants")
+    logger.info("[InternalAuthTokenInitialiser][addDmsSubmissionsAttachmentGrants] Initialising dms-submission grants")
     httpClient
       .post(url"${internalAuthService.baseUrl}/test-only/token")(HeaderCarrier())
       .withBody(
@@ -139,21 +139,22 @@ class InternalAuthTokenInitialiserImpl @Inject() (
       .execute
       .flatMap {
         response =>
-          if (response.status == 201) {
-            logger.info("dms-submission grants added")
+          if (response.status == CREATED) {
+            logger.info("[InternalAuthTokenInitialiser][addDmsSubmissionAttachmentGrants] dms-submission grants added")
             Future.successful(Done)
           } else {
+            logger.error("[InternalAuthTokenInitialiser][addDmsSubmissionAttachmentGrants] Unable to add dms-submission grants")
             Future.failed(new RuntimeException("Unable to add dms-submission grants"))
           }
       }
   }
 
   private def authTokenIsValid: Future[Boolean] = {
-    logger.info("Checking auth token")
+    logger.info("[InternalAuthTokenInitialiser][authTokenIsValid] Checking auth token")
     httpClient
       .get(url"${internalAuthService.baseUrl}/test-only/token")(HeaderCarrier())
       .setHeader("Authorization" -> authToken)
       .execute
-      .map(_.status == 200)
+      .map(_.status == OK)
   }
 }
