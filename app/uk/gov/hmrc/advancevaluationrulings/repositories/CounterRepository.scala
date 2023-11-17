@@ -16,19 +16,17 @@
 
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
-import javax.inject.{Inject, Singleton}
-
-import scala.annotation.nowarn
-import scala.concurrent.{ExecutionContext, Future}
-import scala.jdk.CollectionConverters._
-
+import org.mongodb.scala.MongoBulkWriteException
+import org.mongodb.scala.model.{Filters, FindOneAndUpdateOptions, ReturnDocument, Updates}
 import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application.{CounterId, CounterWrapper}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
-import org.mongodb.scala.MongoBulkWriteException
-import org.mongodb.scala.model.{Filters, FindOneAndUpdateOptions, ReturnDocument, Updates}
+import javax.inject.{Inject, Singleton}
+import scala.annotation.nowarn
+import scala.concurrent.{ExecutionContext, Future}
+import scala.jdk.CollectionConverters._
 
 @Singleton
 class CounterRepository @Inject() (
@@ -61,22 +59,21 @@ class CounterRepository @Inject() (
     collection
       .find(byId(CounterId.ApplicationId))
       .headOption()
-      .flatMap(_.map {
-        applicationId =>
-          if (applicationId.index < applicationStartingIndex) {
-            collection
-              .findOneAndUpdate(
-                filter = byId(CounterId.ApplicationId),
-                update = Updates.set("index", applicationStartingIndex),
-                options = FindOneAndUpdateOptions()
-                  .upsert(true)
-                  .bypassDocumentValidation(false)
-              )
-              .toFuture()
-              .map(_ => Done)
-          } else {
-            Future.successful(Done)
-          }
+      .flatMap(_.map { applicationId =>
+        if (applicationId.index < applicationStartingIndex) {
+          collection
+            .findOneAndUpdate(
+              filter = byId(CounterId.ApplicationId),
+              update = Updates.set("index", applicationStartingIndex),
+              options = FindOneAndUpdateOptions()
+                .upsert(true)
+                .bypassDocumentValidation(false)
+            )
+            .toFuture()
+            .map(_ => Done)
+        } else {
+          Future.successful(Done)
+        }
       }.getOrElse(Future.successful(Done)))
 
   def seed: Future[Done] =
@@ -85,8 +82,7 @@ class CounterRepository @Inject() (
       .toFuture()
       .map(_ => Done)
       .recoverWith {
-        case e: MongoBulkWriteException
-            if e.getWriteErrors.asScala.forall(x => x.getCode == duplicateErrorCode) =>
+        case e: MongoBulkWriteException if e.getWriteErrors.asScala.forall(x => x.getCode == duplicateErrorCode) =>
           ensureApplicationIdIsCorrect()
       }
 

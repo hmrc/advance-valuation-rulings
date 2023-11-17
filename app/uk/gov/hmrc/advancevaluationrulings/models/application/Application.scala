@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
-import java.time.Instant
-
 import play.api.libs.json.{Format, Json, OFormat}
+
+import java.time.Instant
 
 final case class Application(
   id: ApplicationId,

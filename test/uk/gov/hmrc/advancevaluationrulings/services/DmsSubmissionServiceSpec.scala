@@ -16,11 +16,15 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import java.time.Instant
-import java.time.temporal.ChronoUnit
-
-import scala.concurrent.Future
-
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Keep, Sink, Source}
+import akka.util.ByteString
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.{ArgumentCaptor, MockitoSugar}
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -30,15 +34,9 @@ import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.views.xml.ApplicationPdf
 import uk.gov.hmrc.http.HeaderCarrier
 
-import akka.stream.Materializer
-import akka.stream.scaladsl.{Keep, Sink, Source}
-import akka.util.ByteString
-import org.mockito.{ArgumentCaptor, MockitoSugar}
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+import scala.concurrent.Future
 
 class DmsSubmissionServiceSpec
     extends AnyFreeSpec

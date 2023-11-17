@@ -16,11 +16,7 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import java.time.{Clock, Instant}
-import javax.inject.{Inject, Singleton}
-
-import scala.concurrent.{ExecutionContext, Future}
-
+import cats.implicits._
 import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.models.audit.{ApplicationSubmissionEvent, AuditMetadata}
@@ -28,7 +24,9 @@ import uk.gov.hmrc.advancevaluationrulings.repositories.{ApplicationRepository, 
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.http.HeaderCarrier
 
-import cats.implicits._
+import java.time.{Clock, Instant}
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ApplicationService @Inject() (
@@ -89,8 +87,8 @@ class ApplicationService @Inject() (
     applicationRepository.set(application).as(application)
   }
 
-  private def buildAttachments(applicationId: ApplicationId, requests: Seq[AttachmentRequest])(
-    implicit hc: HeaderCarrier
+  private def buildAttachments(applicationId: ApplicationId, requests: Seq[AttachmentRequest])(implicit
+    hc: HeaderCarrier
   ): Future[Seq[Attachment]] =
     requests.traverse(request => buildAttachment(applicationId, request))
 

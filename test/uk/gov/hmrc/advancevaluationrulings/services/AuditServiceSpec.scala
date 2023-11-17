@@ -16,24 +16,23 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import java.time.Instant
-import java.time.temporal.ChronoUnit
-
-import play.api.inject.bind
-import play.api.inject.guice.GuiceApplicationBuilder
-import uk.gov.hmrc.advancevaluationrulings.models.DraftId
-import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, ApplicationId, ContactDetails, GoodsDetails, MethodOne, TraderDetail, WhatIsYourRole}
-import uk.gov.hmrc.advancevaluationrulings.models.audit.ApplicationSubmissionEvent
-import uk.gov.hmrc.auth.core.{AffinityGroup, Assistant}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
+import uk.gov.hmrc.advancevaluationrulings.models.DraftId
+import uk.gov.hmrc.advancevaluationrulings.models.application._
+import uk.gov.hmrc.advancevaluationrulings.models.audit.ApplicationSubmissionEvent
+import uk.gov.hmrc.auth.core.{AffinityGroup, Assistant}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 class AuditServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar with BeforeAndAfterEach {
 

@@ -19,9 +19,9 @@ package uk.gov.hmrc.advancevaluationrulings.controllers
 import javax.inject.{Inject, Singleton}
 
 import play.api.Logging
-import play.api.mvc.ControllerComponents
+import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.advancevaluationrulings.models.dms.{NotificationRequest, SubmissionItemStatus}
-import uk.gov.hmrc.internalauth.client.{BackendAuthComponents, IAAction, Predicate, Resource, ResourceLocation, ResourceType}
+import uk.gov.hmrc.internalauth.client._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 
 @Singleton
@@ -41,21 +41,20 @@ class DmsSubmissionCallbackController @Inject() (
 
   private val authorised = auth.authorizedAction(predicate)
 
-  def callback = authorised(parse.json[NotificationRequest]) {
-    implicit request =>
-      val notification = request.body
+  def callback: Action[NotificationRequest] = authorised(parse.json[NotificationRequest]) { implicit request =>
+    val notification = request.body
 
-      if (notification.status == SubmissionItemStatus.Failed) {
-        logger.error(
-          s"DMS notification received for ${notification.id} failed with error: ${notification.failureReason
-              .getOrElse("")}"
-        )
-      } else {
-        logger.info(
-          s"DMS notification received for ${notification.id} with status ${notification.status}"
-        )
-      }
+    if (notification.status == SubmissionItemStatus.Failed) {
+      logger.error(
+        s"[DmsSubmissionCallbackController][callback] DMS notification received for ${notification.id} failed with error: ${notification.failureReason
+          .getOrElse("Error details not provided")}"
+      )
+    } else {
+      logger.info(
+        s"[DmsSubmissionCallbackController][callback] DMS notification received for ${notification.id} with status ${notification.status}"
+      )
+    }
 
-      Ok
+    Ok
   }
 }

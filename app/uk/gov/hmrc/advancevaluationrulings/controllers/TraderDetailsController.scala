@@ -40,17 +40,16 @@ class TraderDetailsController @Inject() (
     acknowledgementReference: String,
     eoriNumber: String
   ): Action[AnyContent] =
-    identify.async {
-      implicit request =>
-        traderDetailsService
-          .getTraderDetails(
-            AcknowledgementReference(acknowledgementReference),
-            eoriNumber = EoriNumber(eoriNumber)
-          )
-          .map {
-            case None                        => NotFound
-            case Some(traderDetailsResponse) => Ok(Json.toJson(traderDetailsResponse))
-          }
+    identify.async { implicit request =>
+      traderDetailsService
+        .getTraderDetails(
+          AcknowledgementReference(acknowledgementReference),
+          eoriNumber = EoriNumber(eoriNumber)
+        )
+        .map {
+          case None                        => NotFound
+          case Some(traderDetailsResponse) => Ok(Json.toJson(traderDetailsResponse))
+        }
 
     }
 

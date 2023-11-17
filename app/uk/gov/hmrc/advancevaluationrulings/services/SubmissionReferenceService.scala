@@ -17,7 +17,6 @@
 package uk.gov.hmrc.advancevaluationrulings.services
 
 import javax.inject.{Inject, Singleton}
-
 import scala.util.Random
 
 @Singleton

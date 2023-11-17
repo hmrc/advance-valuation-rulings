@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.advancevaluationrulings.utils
 
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
-
-import scala.concurrent.ExecutionContext
-
+import generators.ModelGenerators
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor1}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, EitherValues}
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
 import play.api.http.Status
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -29,14 +30,9 @@ import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.Query
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 
-import generators.ModelGenerators
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, EitherValues}
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor1}
-import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import java.net.URLEncoder
+import scala.concurrent.ExecutionContext
 
 trait BaseIntegrationSpec
     extends PlaySpec
@@ -93,5 +89,5 @@ trait BaseIntegrationSpec
 
   def traderDetailsRequestUrl(acknowledgementReference: String, eoriNumber: String): String =
     s"$traderDetailsEndpoint/${URLEncoder.encode(acknowledgementReference, "UTF-8")}/${URLEncoder
-        .encode(eoriNumber, "UTF-8")}"
+      .encode(eoriNumber, "UTF-8")}"
 }

@@ -16,15 +16,14 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
-import play.api.libs.json.{Json, JsString, JsSuccess}
-import play.api.mvc.PathBindable
-
 import generators.ModelGenerators
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import play.api.libs.json.{JsString, JsSuccess, Json}
+import play.api.mvc.PathBindable
 
 class ApplicationIdSpec
     extends AnyFreeSpec
@@ -39,25 +38,24 @@ class ApplicationIdSpec
 
     "must bind from a url" in {
 
-      forAll(arbitrary[String], applicationIdGen) {
-        (key, value) => pathBindable.bind(key, value.toString).value mustEqual value
+      forAll(arbitrary[String], applicationIdGen) { (key, value) =>
+        pathBindable.bind(key, value.toString).value mustEqual value
       }
     }
 
     "must unbind to a url" in {
 
-      forAll(arbitrary[String], applicationIdGen) {
-        (key, value) => pathBindable.unbind(key, value) mustEqual value.toString
+      forAll(arbitrary[String], applicationIdGen) { (key, value) =>
+        pathBindable.unbind(key, value) mustEqual value.toString
       }
     }
 
     "must serialise and deserialise to / from JSON" in {
 
-      forAll(applicationIdGen) {
-        applicationId =>
-          val json = Json.toJson(applicationId)
-          json mustEqual JsString(applicationId.toString)
-          json.validate[ApplicationId] mustEqual JsSuccess(applicationId)
+      forAll(applicationIdGen) { applicationId =>
+        val json = Json.toJson(applicationId)
+        json mustEqual JsString(applicationId.toString)
+        json.validate[ApplicationId] mustEqual JsSuccess(applicationId)
       }
     }
   }

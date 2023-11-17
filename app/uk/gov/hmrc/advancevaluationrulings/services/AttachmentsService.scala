@@ -16,20 +16,17 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import javax.inject.{Inject, Singleton}
-
-import scala.concurrent.{ExecutionContext, Future}
-
+import akka.stream.Materializer
+import cats.implicits._
 import uk.gov.hmrc.advancevaluationrulings.connectors.DraftAttachmentsConnector
 import uk.gov.hmrc.advancevaluationrulings.models.application.{ApplicationId, DraftAttachment}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.objectstore.client.{Md5Hash, Path}
 import uk.gov.hmrc.objectstore.client.play.Implicits._
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
+import uk.gov.hmrc.objectstore.client.{Md5Hash, Path}
 
-import cats.implicits._
-
-import akka.stream.Materializer
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class AttachmentsService @Inject() (
@@ -45,8 +42,8 @@ class AttachmentsService @Inject() (
       path       <- putAttachment(applicationId.toString, path, attachment)
     } yield path
 
-  private def putAttachment(applicationId: String, path: String, attachment: DraftAttachment)(
-    implicit hc: HeaderCarrier
+  private def putAttachment(applicationId: String, path: String, attachment: DraftAttachment)(implicit
+    hc: HeaderCarrier
   ): Future[Path] = {
     val objectStorePath =
       Path.Directory(s"attachments/$applicationId").file(Path.File(path).fileName)

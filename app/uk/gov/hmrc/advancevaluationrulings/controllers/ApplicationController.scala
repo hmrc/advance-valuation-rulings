@@ -37,32 +37,28 @@ class ApplicationController @Inject() (
 )(implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
-  def submit: Action[ApplicationRequest] = identify(parse.json[ApplicationRequest]).async {
-    implicit request =>
-      applicationService
-        .save(request.eori, request.body, getAuditMetadata(request))
-        .map(id => Ok(Json.toJson(ApplicationSubmissionResponse(id))))
+  def submit: Action[ApplicationRequest] = identify(parse.json[ApplicationRequest]).async { implicit request =>
+    applicationService
+      .save(request.eori, request.body, getAuditMetadata(request))
+      .map(id => Ok(Json.toJson(ApplicationSubmissionResponse(id))))
   }
 
-  def summaries: Action[AnyContent] = identify.async {
-    implicit request =>
-      applicationRepository
-        .summaries(request.eori)
-        .map(summaries => Ok(Json.toJson(ApplicationSummaryResponse(summaries))))
+  def summaries: Action[AnyContent] = identify.async { implicit request =>
+    applicationRepository
+      .summaries(request.eori)
+      .map(summaries => Ok(Json.toJson(ApplicationSummaryResponse(summaries))))
   }
 
-  def get(applicationId: ApplicationId): Action[AnyContent] = identify.async {
-    implicit request =>
-      applicationRepository
-        .get(applicationId, request.eori)
-        .map {
-          _.map {
-            application =>
-              val seralized: Result = seraliseApplicationToJSON(application)
-              seralized
-          }
-            .getOrElse(NotFound)
+  def get(applicationId: ApplicationId): Action[AnyContent] = identify.async { implicit request =>
+    applicationRepository
+      .get(applicationId, request.eori)
+      .map {
+        _.map { application =>
+          val seralized: Result = seraliseApplicationToJSON(application)
+          seralized
         }
+          .getOrElse(NotFound)
+      }
   }
 
   private def seraliseApplicationToJSON(application: Application) =

@@ -20,22 +20,25 @@ The service also depends on mongodb.
 ## Running the service
 Using service manager (sm or sm2)
 Use the ARS_ALL profile to bring up all services using the latest tagged releases
-```
+
+```bash
 sm2 --start ARS_ALL
 ```
 
 Run `sm2 -s` to check what services are running.
 
-## Launching the service locally
-To bring up the service on the configured port 12600, use
+### Launching the service locally
 
-```
+To bring up the service on the configured port 12601, use
+
+```bash
 sbt run
 ```
 
 ## Testing the service
-This service uses sbt-scoverage to provide test coverage reports.
 
-## Scalafmt
-To prevent formatting failures in a GitHub pull request,
-run the command ``sbt scalafmtAll`` before pushing to the remote repository.
+Run the unit and integration tests locally with the following script. (_includes SCoverage, Scalastyle, Scalafmt_)
+
+```bash
+./run_all_tests.sh
+```

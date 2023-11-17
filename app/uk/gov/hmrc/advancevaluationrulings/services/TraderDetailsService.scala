@@ -16,15 +16,14 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import javax.inject.{Inject, Singleton}
-
-import scala.concurrent.{ExecutionContext, Future}
-
 import uk.gov.hmrc.advancevaluationrulings.connectors.ETMPConnector
 import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.{Query, Regime}
 import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
 import uk.gov.hmrc.http.HeaderCarrier
+
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TraderDetailsService @Inject() (connector: ETMPConnector) {
@@ -40,18 +39,16 @@ class TraderDetailsService @Inject() (connector: ETMPConnector) {
       .getSubscriptionDetails(
         Query(Regime.CDS, acknowledgementReference.value, EORI = Option(eoriNumber.value))
       )
-      .map {
-        response =>
-          response.subscriptionDisplayResponse.responseDetail.map(
-            responseDetail =>
-              TraderDetailsResponse(
-                responseDetail.EORINo,
-                responseDetail.CDSFullName,
-                responseDetail.CDSEstablishmentAddress,
-                responseDetail.consentToDisclosureOfPersonalData.exists(_.equalsIgnoreCase("1")),
-                responseDetail.contactInformation
-              )
+      .map { response =>
+        response.subscriptionDisplayResponse.responseDetail.map(responseDetail =>
+          TraderDetailsResponse(
+            responseDetail.EORINo,
+            responseDetail.CDSFullName,
+            responseDetail.CDSEstablishmentAddress,
+            responseDetail.consentToDisclosureOfPersonalData.exists(_.equalsIgnoreCase("1")),
+            responseDetail.contactInformation
           )
+        )
       }
 
 }

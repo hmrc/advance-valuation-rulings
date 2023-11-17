@@ -1,35 +1,35 @@
-import play.sbt.routes.RoutesKeys
-
 lazy val microservice = Project("advance-valuation-rulings", file("."))
-  .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin, ScalafmtPlugin)
+  .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
   .disablePlugins(JUnitXmlReportPlugin)
   .settings(
-    majorVersion        := 0,
-    scalaVersion        := "2.13.8",
-    libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
+    majorVersion := 0,
+    scalaVersion := "2.13.12",
+    // To resolve a bug with version 2.x.x of the scoverage plugin - https://github.com/sbt/sbt/issues/6997
+    libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always,
+    libraryDependencies ++= AppDependencies(),
     // https://www.scala-lang.org/2021/01/12/configuring-and-suppressing-warnings.html
     // suppress warnings in generated routes files
     scalacOptions ++= Seq(
       "-Wconf:src=routes/.*:s",
-      "-Ywarn-unused:imports",   // Warn if an import selector is not referenced.
-      "-Ywarn-unused:locals",    // Warn if a local definition is unused.
-      "-Ywarn-unused:params",    // Warn if a value parameter is unused.
-      "-Ywarn-unused:patvars",   // Warn if a variable bound in a pattern is unused.
-      "-Ywarn-unused:privates"   // Warn if a private member is unused.
+      "-Ywarn-unused:imports", // Warn if an import selector is not referenced.
+      "-Ywarn-unused:locals", // Warn if a local definition is unused.
+      "-Ywarn-unused:params", // Warn if a value parameter is unused.
+      "-Ywarn-unused:patvars", // Warn if a variable bound in a pattern is unused.
+      "-Ywarn-unused:privates" // Warn if a private member is unused.
     ),
     PlayKeys.playDefaultPort := 12601
   )
-  .settings(inConfig(Test)(testSettings): _*)
+  .settings(inConfig(Test)(testSettings))
   .configs(IntegrationTest)
-  .settings(inConfig(IntegrationTest)(itSettings): _*)
-  .settings(resolvers += Resolver.jcenterRepo)
-  .settings(CodeCoverageSettings.settings: _*)
+  .settings(inConfig(IntegrationTest)(itSettings))
+  .settings(CodeCoverageSettings.settings)
   .settings(scoverageSettings)
-  .settings(RoutesKeys.routesImport ++= Seq(
-    "uk.gov.hmrc.advancevaluationrulings.models.application.ApplicationId",
-    "uk.gov.hmrc.advancevaluationrulings.models.DraftId"
-  ))
-
+  .settings(
+    play.sbt.routes.RoutesKeys.routesImport ++= Seq(
+      "uk.gov.hmrc.advancevaluationrulings.models.application.ApplicationId",
+      "uk.gov.hmrc.advancevaluationrulings.models.DraftId"
+    )
+  )
 
 lazy val testSettings: Seq[Def.Setting[_]] = Seq(
   fork := true,
@@ -48,7 +48,7 @@ lazy val itSettings = Defaults.itSettings ++ Seq(
   fork := true
 )
 
-lazy val scoverageSettings = {
+lazy val scoverageSettings =
   Seq(
     coverageExcludedPackages := """;uk\.gov\.hmrc\.BuildInfo;.*\.Routes;.*\.RoutesPrefix;.*\.Reverse[^.]*;testonly""",
     coverageExcludedFiles := "<empty>;.*javascript.*;.*Routes.*;.*testonly.*",
@@ -56,6 +56,6 @@ lazy val scoverageSettings = {
     coverageHighlighting := true,
     coverageMinimumStmtTotal := 50
   )
-}
 
+addCommandAlias("scalafmtAll", "all scalafmtSbt scalafmt Test/scalafmt IntegrationTest/scalafmt")
 addCommandAlias("scalastyleAll", "all scalastyle Test/scalastyle IntegrationTest/scalastyle")

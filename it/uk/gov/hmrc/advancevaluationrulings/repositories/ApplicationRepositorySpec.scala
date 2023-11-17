@@ -1,19 +1,17 @@
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
-import java.time.Instant
-import java.time.temporal.ChronoUnit
-
-import scala.concurrent.ExecutionContext.Implicits.global
-
-import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
-import uk.gov.hmrc.advancevaluationrulings.models.application._
-import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
-
 import org.mockito.MockitoSugar.{mock, when}
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
+import uk.gov.hmrc.advancevaluationrulings.models.application._
+import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
+
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class ApplicationRepositorySpec
     extends AnyFreeSpec

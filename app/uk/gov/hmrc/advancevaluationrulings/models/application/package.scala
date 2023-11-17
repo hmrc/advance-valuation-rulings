@@ -16,14 +16,13 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models
 
-import play.api.libs.json.{Json, JsonConfiguration, JsonNaming}
 import play.api.libs.json.JsonConfiguration.Aux
+import play.api.libs.json.{Json, JsonConfiguration, JsonNaming}
 
 package object application {
 
   val jsonConfig: Aux[Json.MacroOptions] = JsonConfiguration(
     discriminator = "type",
-    typeNaming =
-      JsonNaming(fullName => fullName.slice(1 + fullName.lastIndexOf("."), fullName.length))
+    typeNaming = JsonNaming(fullName => fullName.slice(1 + fullName.lastIndexOf("."), fullName.length))
   )
 }

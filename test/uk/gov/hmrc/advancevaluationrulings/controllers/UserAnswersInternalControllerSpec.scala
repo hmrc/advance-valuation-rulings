@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
-import java.time.{Clock, Instant, ZoneId}
-import java.time.temporal.ChronoUnit
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.{Mockito, MockitoSugar}
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
@@ -32,13 +33,10 @@ import uk.gov.hmrc.advancevaluationrulings.repositories.UserAnswersRepository
 import uk.gov.hmrc.internalauth.client._
 import uk.gov.hmrc.internalauth.client.test.{BackendAuthComponentsStub, StubBehaviour}
 
-import org.mockito.{Mockito, MockitoSugar}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
+import java.time.temporal.ChronoUnit
+import java.time.{Clock, Instant, ZoneId}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class UserAnswersInternalControllerSpec
     extends AnyFreeSpec
@@ -91,7 +89,7 @@ class UserAnswersInternalControllerSpec
       val request = FakeRequest(GET, routes.UserAnswersInternalController.get(draftId).url)
         .withHeaders(AUTHORIZATION -> "Some auth token")
 
-      val result = route(app, request).value
+      val result  = route(app, request).value
 
       status(result) mustEqual OK
       contentAsJson(result) mustEqual Json.toJson(userAnswers)
@@ -107,7 +105,7 @@ class UserAnswersInternalControllerSpec
       val request = FakeRequest(GET, routes.UserAnswersInternalController.get(draftId).url)
         .withHeaders(AUTHORIZATION -> "Some auth token")
 
-      val result = route(app, request).value
+      val result  = route(app, request).value
 
       status(result) mustEqual NOT_FOUND
 
@@ -159,7 +157,7 @@ class UserAnswersInternalControllerSpec
         .withHeaders(AUTHORIZATION -> "Some auth token")
         .withJsonBody(Json.obj("foo" -> "bar"))
 
-      val result = route(app, request).value
+      val result  = route(app, request).value
 
       status(result) mustEqual BAD_REQUEST
     }
