@@ -16,10 +16,13 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
-import java.time.{Clock, Instant, ZoneId}
-
-import scala.concurrent.Future
-
+import generators.ModelGenerators
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.MockitoSugar
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
@@ -33,13 +36,8 @@ import uk.gov.hmrc.advancevaluationrulings.services.ApplicationService
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.~
 
-import generators.ModelGenerators
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
+import java.time.{Clock, Instant, ZoneId}
+import scala.concurrent.Future
 
 class ApplicationControllerSpec
     extends AnyFreeSpec

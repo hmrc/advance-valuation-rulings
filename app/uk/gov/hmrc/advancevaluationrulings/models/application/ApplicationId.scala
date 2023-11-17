@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
-import scala.util.Try
-
 import play.api.libs.json._
 import play.api.mvc.PathBindable
+
+import scala.util.Try
 
 case class ApplicationId(value: Long) {
 

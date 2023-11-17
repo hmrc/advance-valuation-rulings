@@ -35,41 +35,36 @@ class UserAnswersController @Inject() (
 )(implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
-  def get(draftId: DraftId): Action[AnyContent] = identify.async {
-    implicit request =>
-      repository
-        .get(request.internalId, draftId)
-        .map {
-          _.map(answers => Ok(Json.toJson(answers)))
-            .getOrElse(NotFound)
-        }
+  def get(draftId: DraftId): Action[AnyContent] = identify.async { implicit request =>
+    repository
+      .get(request.internalId, draftId)
+      .map {
+        _.map(answers => Ok(Json.toJson(answers)))
+          .getOrElse(NotFound)
+      }
   }
 
-  def set(): Action[UserAnswers] = identify(parse.json[UserAnswers]).async {
-    implicit request =>
-      repository
-        .set(request.body)
-        .map(_ => NoContent)
+  def set(): Action[UserAnswers] = identify(parse.json[UserAnswers]).async { implicit request =>
+    repository
+      .set(request.body)
+      .map(_ => NoContent)
   }
 
-  def keepAlive(draftId: DraftId): Action[AnyContent] = identify.async {
-    implicit request =>
-      repository
-        .keepAlive(request.internalId, draftId)
-        .map(_ => NoContent)
+  def keepAlive(draftId: DraftId): Action[AnyContent] = identify.async { implicit request =>
+    repository
+      .keepAlive(request.internalId, draftId)
+      .map(_ => NoContent)
   }
 
-  def clear(draftId: DraftId): Action[AnyContent] = identify.async {
-    implicit request =>
-      repository
-        .clear(request.internalId, draftId)
-        .map(_ => NoContent)
+  def clear(draftId: DraftId): Action[AnyContent] = identify.async { implicit request =>
+    repository
+      .clear(request.internalId, draftId)
+      .map(_ => NoContent)
   }
 
-  def summaries(): Action[AnyContent] = identify.async {
-    implicit request =>
-      repository
-        .summaries(request.internalId)
-        .map(summaries => Ok(Json.toJson(DraftSummaryResponse(summaries))))
+  def summaries(): Action[AnyContent] = identify.async { implicit request =>
+    repository
+      .summaries(request.internalId)
+      .map(summaries => Ok(Json.toJson(DraftSummaryResponse(summaries))))
   }
 }

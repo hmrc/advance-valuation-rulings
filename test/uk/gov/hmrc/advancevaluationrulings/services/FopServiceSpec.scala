@@ -16,22 +16,20 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import java.nio.file.{Files, Paths}
-import java.time.Instant
-
-import scala.io.Source
-
-import play.api.i18n.MessagesApi
-import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.test.FakeRequest
-import uk.gov.hmrc.advancevaluationrulings.models.application._
-import uk.gov.hmrc.advancevaluationrulings.models.application.Privacy.{Confidential, Public}
-import uk.gov.hmrc.advancevaluationrulings.views.xml.ApplicationPdf
-
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import play.api.i18n.MessagesApi
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.test.FakeRequest
+import uk.gov.hmrc.advancevaluationrulings.models.application.Privacy.{Confidential, Public}
+import uk.gov.hmrc.advancevaluationrulings.models.application._
+import uk.gov.hmrc.advancevaluationrulings.views.xml.ApplicationPdf
+
+import java.nio.file.{Files, Paths}
+import java.time.Instant
+import scala.io.Source
 
 class FopServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with IntegrationPatience {
 

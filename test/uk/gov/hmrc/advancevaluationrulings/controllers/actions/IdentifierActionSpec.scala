@@ -16,37 +16,35 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers.actions
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-
-import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, BodyParsers}
-import play.api.mvc.Results.Ok
-import play.api.test.FakeRequest
-import play.api.test.Helpers._
-import uk.gov.hmrc.auth.core.{CredentialRole, _}
-import uk.gov.hmrc.auth.core.retrieve.~
-
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar
 import org.scalatest.OptionValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.Json
+import play.api.mvc.Results.Ok
+import play.api.mvc.{Action, AnyContent, BodyParsers}
+import play.api.test.FakeRequest
+import play.api.test.Helpers._
+import uk.gov.hmrc.auth.core.retrieve.~
+import uk.gov.hmrc.auth.core._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class IdentifierActionSpec extends AnyFreeSpec with Matchers with MockitoSugar with OptionValues {
 
   class Harness(identify: IdentifierAction) {
-    def onPageLoad(): Action[AnyContent] = identify {
-      request =>
-        Ok {
-          Json.obj(
-            "eori"           -> request.eori,
-            "internalId"     -> request.internalId,
-            "affinityGroup"  -> request.affinityGroup,
-            "credentialRole" -> request.credentialRole
-          )
-        }
+    def onPageLoad(): Action[AnyContent] = identify { request =>
+      Ok {
+        Json.obj(
+          "eori"           -> request.eori,
+          "internalId"     -> request.internalId,
+          "affinityGroup"  -> request.affinityGroup,
+          "credentialRole" -> request.credentialRole
+        )
+      }
     }
   }
 

@@ -16,30 +16,28 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
-import java.time.{Clock, Instant, ZoneId}
-import java.time.temporal.ChronoUnit
-
-import scala.concurrent.Future
-
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.MockitoSugar
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
 import uk.gov.hmrc.advancevaluationrulings.models.application.{DraftSummary, DraftSummaryResponse}
+import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
 import uk.gov.hmrc.advancevaluationrulings.repositories.UserAnswersRepository
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.http.HeaderNames
 
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
+import java.time.temporal.ChronoUnit
+import java.time.{Clock, Instant, ZoneId}
+import scala.concurrent.Future
 
 class UserAnswersControllerSpec
     extends AnyFreeSpec
@@ -104,7 +102,7 @@ class UserAnswersControllerSpec
         FakeRequest(GET, routes.UserAnswersController.get(draftId).url)
           .withHeaders(HeaderNames.xSessionId -> userId)
 
-      val result = route(app, request).value
+      val result  = route(app, request).value
 
       status(result) mustEqual OK
       contentAsJson(result) mustEqual Json.toJson(userAnswers)
@@ -133,7 +131,7 @@ class UserAnswersControllerSpec
         FakeRequest(GET, routes.UserAnswersController.get(draftId).url)
           .withHeaders(HeaderNames.xSessionId -> userId)
 
-      val result = route(app, request).value
+      val result  = route(app, request).value
 
       status(result) mustEqual NOT_FOUND
     }
@@ -198,7 +196,7 @@ class UserAnswersControllerSpec
           )
           .withBody(Json.obj("foo" -> "bar").toString)
 
-      val result = route(app, request).value
+      val result  = route(app, request).value
 
       status(result) mustEqual BAD_REQUEST
     }

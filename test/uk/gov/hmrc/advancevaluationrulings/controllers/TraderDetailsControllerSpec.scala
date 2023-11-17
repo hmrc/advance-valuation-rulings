@@ -16,8 +16,14 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
-import scala.concurrent.Future
-
+import generators.ModelGenerators
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.MockitoSugar
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
@@ -25,17 +31,10 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
 import uk.gov.hmrc.advancevaluationrulings.services.TraderDetailsService
-import uk.gov.hmrc.auth.core.{AffinityGroup, Assistant, AuthConnector, Enrolment, EnrolmentIdentifier, Enrolments}
 import uk.gov.hmrc.auth.core.retrieve.~
+import uk.gov.hmrc.auth.core._
 
-import generators.ModelGenerators
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import scala.concurrent.Future
 
 class TraderDetailsControllerSpec
     extends AnyFreeSpec
@@ -78,33 +77,32 @@ class TraderDetailsControllerSpec
   ".retrieveTraderDetails" - {
 
     "must return trader details" in {
-      forAll(traderDetailsResponseGen) {
-        traderDetails =>
-          val authResult =
-            new ~(
-              new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)),
-              Some(Assistant)
-            )
-
-          when(mockAuthConnector.authorise[authResult.type](any(), any())(any(), any()))
-            .thenReturn(Future.successful(authResult))
-          when(
-            mockTraderDetailsService.getTraderDetails(eqTo(ackRef), eqTo(eoriNumber))(any(), any())
+      forAll(traderDetailsResponseGen) { traderDetails =>
+        val authResult =
+          new ~(
+            new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)),
+            Some(Assistant)
           )
-            .thenReturn(Future.successful(Some(traderDetails)))
 
-          val request =
-            FakeRequest(
-              GET,
-              routes.TraderDetailsController
-                .retrieveTraderDetails(ackRef.value, eoriNumber.value)
-                .url
-            )
+        when(mockAuthConnector.authorise[authResult.type](any(), any())(any(), any()))
+          .thenReturn(Future.successful(authResult))
+        when(
+          mockTraderDetailsService.getTraderDetails(eqTo(ackRef), eqTo(eoriNumber))(any(), any())
+        )
+          .thenReturn(Future.successful(Some(traderDetails)))
 
-          val result = route(app, request).value
+        val request =
+          FakeRequest(
+            GET,
+            routes.TraderDetailsController
+              .retrieveTraderDetails(ackRef.value, eoriNumber.value)
+              .url
+          )
 
-          status(result) mustEqual OK
-          contentAsJson(result) mustEqual Json.toJson(traderDetails)
+        val result = route(app, request).value
+
+        status(result) mustEqual OK
+        contentAsJson(result) mustEqual Json.toJson(traderDetails)
       }
     }
   }

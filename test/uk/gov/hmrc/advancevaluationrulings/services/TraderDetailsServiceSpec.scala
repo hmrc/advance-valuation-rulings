@@ -16,27 +16,26 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-
-import play.api.inject
-import play.api.inject.guice.GuiceApplicationBuilder
-import uk.gov.hmrc.advancevaluationrulings.connectors.ETMPConnector
-import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
-import uk.gov.hmrc.advancevaluationrulings.models.etmp.{ETMPSubscriptionDisplayResponse, Query, ResponseCommon, SubscriptionDisplayResponse}
-import uk.gov.hmrc.advancevaluationrulings.models.etmp.Regime.CDS
-import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
-import uk.gov.hmrc.http.HeaderCarrier
-
 import generators.ModelGenerators
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.MockitoSugar
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import play.api.inject
+import play.api.inject.guice.GuiceApplicationBuilder
+import uk.gov.hmrc.advancevaluationrulings.connectors.ETMPConnector
+import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
+import uk.gov.hmrc.advancevaluationrulings.models.etmp.Regime.CDS
+import uk.gov.hmrc.advancevaluationrulings.models.etmp.{ETMPSubscriptionDisplayResponse, Query, ResponseCommon, SubscriptionDisplayResponse}
+import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
+import uk.gov.hmrc.http.HeaderCarrier
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class TraderDetailsServiceSpec
     extends AnyFreeSpec
@@ -77,34 +76,32 @@ class TraderDetailsServiceSpec
         (Option("0"), false)
       )
 
-      forAll(consentToDisclosureOfPersonalDataScenarios) {
-        (stubValue, expected) =>
-          s"when consentToDisclosureOfPersonalData is $stubValue" in {
+      forAll(consentToDisclosureOfPersonalDataScenarios) { (stubValue, expected) =>
+        s"when consentToDisclosureOfPersonalData is $stubValue" in {
 
-            forAll(responseDetailGen) {
-              responseDetail =>
-                val eoriNumber   = EoriNumber(responseDetail.EORINo)
-                val etmpRequest  = Query(CDS, ackRef.value, EORI = Option(eoriNumber.value))
-                val etmpResponse = ETMPSubscriptionDisplayResponse(
-                  SubscriptionDisplayResponse(
-                    responseCommon,
-                    Some(responseDetail.copy(consentToDisclosureOfPersonalData = stubValue))
-                  )
-                )
+          forAll(responseDetailGen) { responseDetail =>
+            val eoriNumber   = EoriNumber(responseDetail.EORINo)
+            val etmpRequest  = Query(CDS, ackRef.value, EORI = Option(eoriNumber.value))
+            val etmpResponse = ETMPSubscriptionDisplayResponse(
+              SubscriptionDisplayResponse(
+                responseCommon,
+                Some(responseDetail.copy(consentToDisclosureOfPersonalData = stubValue))
+              )
+            )
 
-                when(mockConnector.getSubscriptionDetails(eqTo(etmpRequest))(any()))
-                  .thenReturn(Future.successful(etmpResponse))
+            when(mockConnector.getSubscriptionDetails(eqTo(etmpRequest))(any()))
+              .thenReturn(Future.successful(etmpResponse))
 
-                val result: TraderDetailsResponse =
-                  service.getTraderDetails(ackRef, eoriNumber).futureValue.get
+            val result: TraderDetailsResponse =
+              service.getTraderDetails(ackRef, eoriNumber).futureValue.get
 
-                result.EORINo mustBe responseDetail.EORINo
-                result.CDSFullName mustBe responseDetail.CDSFullName
-                result.CDSEstablishmentAddress mustBe responseDetail.CDSEstablishmentAddress
-                result.contactInformation mustBe responseDetail.contactInformation
-                result.consentToDisclosureOfPersonalData mustBe expected
-            }
+            result.EORINo mustBe responseDetail.EORINo
+            result.CDSFullName mustBe responseDetail.CDSFullName
+            result.CDSEstablishmentAddress mustBe responseDetail.CDSEstablishmentAddress
+            result.contactInformation mustBe responseDetail.contactInformation
+            result.consentToDisclosureOfPersonalData mustBe expected
           }
+        }
       }
     }
   }

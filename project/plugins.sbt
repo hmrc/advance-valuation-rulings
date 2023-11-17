@@ -13,7 +13,7 @@ ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" 
 
 addSbtPlugin("uk.gov.hmrc"         % "sbt-auto-build"     % "3.15.0")
 addSbtPlugin("uk.gov.hmrc"         % "sbt-distributables" % "2.2.0")
-addSbtPlugin("com.typesafe.play"   % "sbt-plugin"         % "2.8.20")
+addSbtPlugin("com.typesafe.play"   % "sbt-plugin"         % "2.8.21")
 addSbtPlugin("org.scoverage"       % "sbt-scoverage"      % "2.0.9")
 addSbtPlugin("org.scalameta"       % "sbt-scalafmt"       % "2.5.2")
 addSbtPlugin("com.beautiful-scala" % "sbt-scalastyle"     % "1.5.1")

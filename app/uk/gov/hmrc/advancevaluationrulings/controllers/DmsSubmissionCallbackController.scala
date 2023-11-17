@@ -41,21 +41,20 @@ class DmsSubmissionCallbackController @Inject() (
 
   private val authorised = auth.authorizedAction(predicate)
 
-  def callback: Action[NotificationRequest] = authorised(parse.json[NotificationRequest]) {
-    implicit request =>
-      val notification = request.body
+  def callback: Action[NotificationRequest] = authorised(parse.json[NotificationRequest]) { implicit request =>
+    val notification = request.body
 
-      if (notification.status == SubmissionItemStatus.Failed) {
-        logger.error(
-          s"[DmsSubmissionCallbackController][callback] DMS notification received for ${notification.id} failed with error: ${notification.failureReason
-              .getOrElse("Error details not provided")}"
-        )
-      } else {
-        logger.info(
-          s"[DmsSubmissionCallbackController][callback] DMS notification received for ${notification.id} with status ${notification.status}"
-        )
-      }
+    if (notification.status == SubmissionItemStatus.Failed) {
+      logger.error(
+        s"[DmsSubmissionCallbackController][callback] DMS notification received for ${notification.id} failed with error: ${notification.failureReason
+          .getOrElse("Error details not provided")}"
+      )
+    } else {
+      logger.info(
+        s"[DmsSubmissionCallbackController][callback] DMS notification received for ${notification.id} with status ${notification.status}"
+      )
+    }
 
-      Ok
+    Ok
   }
 }

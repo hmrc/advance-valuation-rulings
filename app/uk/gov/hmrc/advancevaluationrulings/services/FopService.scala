@@ -16,18 +16,17 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
+import org.apache.commons.io.output.ByteArrayOutputStream
+import org.apache.fop.apps.FopFactory
+import org.apache.xmlgraphics.util.MimeConstants
+
 import java.io.StringReader
 import javax.inject.{Inject, Singleton}
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.sax.SAXResult
 import javax.xml.transform.stream.StreamSource
-
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Using
-
-import org.apache.commons.io.output.ByteArrayOutputStream
-import org.apache.fop.apps.FopFactory
-import org.apache.xmlgraphics.util.MimeConstants
 
 @Singleton
 class FopService @Inject() (
@@ -36,23 +35,22 @@ class FopService @Inject() (
 
   def render(input: String): Future[Array[Byte]] = Future {
 
-    Using.resource(new ByteArrayOutputStream()) {
-      out =>
-        // Turn on accessibility features
-        val userAgent = fopFactory.newFOUserAgent();
-        userAgent.setAccessibility(true);
+    Using.resource(new ByteArrayOutputStream()) { out =>
+      // Turn on accessibility features
+      val userAgent = fopFactory.newFOUserAgent();
+      userAgent.setAccessibility(true);
 
-        val fop = fopFactory.newFop(MimeConstants.MIME_PDF, userAgent, out)
+      val fop = fopFactory.newFop(MimeConstants.MIME_PDF, userAgent, out)
 
-        val transformerFactory = TransformerFactory.newInstance()
-        val transformer        = transformerFactory.newTransformer()
+      val transformerFactory = TransformerFactory.newInstance()
+      val transformer        = transformerFactory.newTransformer()
 
-        val source = new StreamSource(new StringReader(input))
-        val result = new SAXResult(fop.getDefaultHandler)
+      val source = new StreamSource(new StringReader(input))
+      val result = new SAXResult(fop.getDefaultHandler)
 
-        transformer.transform(source, result)
+      transformer.transform(source, result)
 
-        out.toByteArray
+      out.toByteArray
     }
   }
 }

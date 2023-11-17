@@ -45,66 +45,61 @@ class ETMPConnectorIntegrationSpec extends BaseIntegrationSpec with WireMockHelp
       ScalaCheckPropertyChecks.forAll(
         queryGen,
         ETMPSubscriptionDisplayResponseGen
-      ) {
-        (request, successResponse) =>
-          val expectedResponse = Json.stringify(Json.toJson(successResponse))
-          stubGet(
-            etmpQueryUrl(request),
-            statusCode = 200,
-            expectedResponse,
-            requestHeaders
-          )
+      ) { (request, successResponse) =>
+        val expectedResponse = Json.stringify(Json.toJson(successResponse))
+        stubGet(
+          etmpQueryUrl(request),
+          statusCode = 200,
+          expectedResponse,
+          requestHeaders
+        )
 
-          val response = testETMPConnector.getSubscriptionDetails(request).futureValue
+        val response = testETMPConnector.getSubscriptionDetails(request).futureValue
 
-          response mustBe successResponse
+        response mustBe successResponse
       }
     }
 
     "handle subscription details error response" in {
-      ScalaCheckPropertyChecks.forAll(queryGen) {
-        etmpQuery =>
-          val expectedResponse = "foo"
+      ScalaCheckPropertyChecks.forAll(queryGen) { etmpQuery =>
+        val expectedResponse = "foo"
+        stubGet(
+          etmpQueryUrl(etmpQuery),
+          statusCode = 500,
+          expectedResponse,
+          requestHeaders
+        )
+
+        testETMPConnector.getSubscriptionDetails(etmpQuery).failed.futureValue
+      }
+    }
+
+    forAll(statusCodes) { statusCode =>
+      s"return a failed future when unable to parse ETMP response with statusCode $statusCode" in {
+        ScalaCheckPropertyChecks.forAll(queryGen) { etmpQuery =>
           stubGet(
             etmpQueryUrl(etmpQuery),
-            statusCode = 500,
-            expectedResponse,
+            statusCode,
+            responseBody = "{}",
             requestHeaders
           )
 
           testETMPConnector.getSubscriptionDetails(etmpQuery).failed.futureValue
+        }
       }
-    }
 
-    forAll(statusCodes) {
-      statusCode =>
-        s"return a failed future when unable to parse ETMP response with statusCode $statusCode" in {
-          ScalaCheckPropertyChecks.forAll(queryGen) {
-            etmpQuery =>
-              stubGet(
-                etmpQueryUrl(etmpQuery),
-                statusCode,
-                responseBody = "{}",
-                requestHeaders
-              )
+      s"return a failed future when ETMP returns an invalid json with statusCode $statusCode" in {
+        ScalaCheckPropertyChecks.forAll(queryGen) { etmpQuery =>
+          stubGet(
+            etmpQueryUrl(etmpQuery),
+            statusCode,
+            responseBody = "invalid json response",
+            requestHeaders
+          )
 
-              testETMPConnector.getSubscriptionDetails(etmpQuery).failed.futureValue
-          }
+          testETMPConnector.getSubscriptionDetails(etmpQuery).failed.futureValue
         }
-
-        s"return a failed future when ETMP returns an invalid json with statusCode $statusCode" in {
-          ScalaCheckPropertyChecks.forAll(queryGen) {
-            etmpQuery =>
-              stubGet(
-                etmpQueryUrl(etmpQuery),
-                statusCode,
-                responseBody = "invalid json response",
-                requestHeaders
-              )
-
-              testETMPConnector.getSubscriptionDetails(etmpQuery).failed.futureValue
-          }
-        }
+      }
     }
   }
 }

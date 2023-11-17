@@ -17,7 +17,7 @@ object AppDependencies {
     "uk.gov.hmrc"             %% "crypto-json-play-28"          % "7.6.0"
   )
 
-  val test: Seq[ModuleID] = Seq(
+  val test: Seq[ModuleID]    = Seq(
     "uk.gov.hmrc"         %% "bootstrap-test-play-28"  % bootstrapVersion,
     "com.vladsch.flexmark" % "flexmark-all"            % "0.64.8",
     "org.scalatest"       %% "scalatest"               % "3.2.17",

@@ -44,20 +44,18 @@ class UserAnswersInternalController @Inject() (
 
   private def authorised(action: IAAction) = auth.authorizedAction(predicate(action))
 
-  def get(draftId: DraftId): Action[AnyContent] = authorised(IAAction("READ")).async {
-    implicit request =>
-      repository
-        .get(draftId)
-        .map {
-          _.map(answers => Ok(Json.toJson(answers)))
-            .getOrElse(NotFound)
-        }
+  def get(draftId: DraftId): Action[AnyContent] = authorised(IAAction("READ")).async { implicit request =>
+    repository
+      .get(draftId)
+      .map {
+        _.map(answers => Ok(Json.toJson(answers)))
+          .getOrElse(NotFound)
+      }
   }
 
-  def set(): Action[UserAnswers] = authorised(IAAction("WRITE"))(parse.json[UserAnswers]).async {
-    implicit request =>
-      repository
-        .set(request.body)
-        .map(_ => NoContent)
+  def set(): Action[UserAnswers] = authorised(IAAction("WRITE"))(parse.json[UserAnswers]).async { implicit request =>
+    repository
+      .set(request.body)
+      .map(_ => NoContent)
   }
 }

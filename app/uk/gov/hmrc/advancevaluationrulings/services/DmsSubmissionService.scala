@@ -16,12 +16,8 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import java.io.IOException
-import java.nio.file.{Files, Paths}
-import javax.inject.{Inject, Singleton}
-
-import scala.concurrent.{ExecutionContext, Future}
-
+import akka.stream.scaladsl.Source
+import akka.util.ByteString
 import play.api.Logging
 import play.api.i18n.{Messages, MessagesApi}
 import uk.gov.hmrc.advancevaluationrulings.connectors.DmsSubmissionConnector
@@ -30,8 +26,10 @@ import uk.gov.hmrc.advancevaluationrulings.models.application.Application
 import uk.gov.hmrc.advancevaluationrulings.views.xml.ApplicationPdf
 import uk.gov.hmrc.http.HeaderCarrier
 
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
+import java.io.IOException
+import java.nio.file.{Files, Paths}
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 abstract class DmsSubmissionService {
 

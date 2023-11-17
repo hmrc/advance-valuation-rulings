@@ -1,15 +1,14 @@
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
-import uk.gov.hmrc.advancevaluationrulings.models.application.{CounterId, CounterWrapper}
-import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
-
 import org.mongodb.scala.model.{Filters, FindOneAndUpdateOptions, Updates}
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import uk.gov.hmrc.advancevaluationrulings.models.application.{CounterId, CounterWrapper}
+import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class CounterRepositorySpec
     extends AnyFreeSpec

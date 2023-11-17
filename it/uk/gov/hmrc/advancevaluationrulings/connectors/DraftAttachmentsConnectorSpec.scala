@@ -1,23 +1,21 @@
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
+import akka.stream.Materializer
+import akka.stream.scaladsl.Sink
+import akka.util.ByteString
+import cats.implicits.toFoldableOps
+import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.http.Fault
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import play.api.Application
 import play.api.http.Status.{NOT_FOUND, OK}
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.advancevaluationrulings.connectors.DraftAttachmentsConnector.DraftAttachmentsConnectorException
 import uk.gov.hmrc.advancevaluationrulings.utils.WireMockHelper
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
-
-import cats.implicits.toFoldableOps
-
-import akka.stream.Materializer
-import akka.stream.scaladsl.Sink
-import akka.util.ByteString
-import com.github.tomakehurst.wiremock.client.WireMock._
-import com.github.tomakehurst.wiremock.http.Fault
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
 
 class DraftAttachmentsConnectorSpec
     extends AnyFreeSpec

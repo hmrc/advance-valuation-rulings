@@ -1,9 +1,14 @@
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
-import java.time.{LocalDateTime, ZoneId}
-
-import scala.concurrent.ExecutionContext.Implicits.global
-
+import akka.actor.ActorSystem
+import akka.stream.scaladsl.Source
+import akka.util.ByteString
+import com.github.tomakehurst.wiremock.client.WireMock._
+import org.mockito.MockitoSugar
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import play.api.Application
 import play.api.http.Status.{ACCEPTED, INTERNAL_SERVER_ERROR}
 import play.api.inject.bind
@@ -20,15 +25,8 @@ import uk.gov.hmrc.objectstore.client.play.Implicits._
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
 import uk.gov.hmrc.objectstore.client.play.test.stub
 
-import akka.actor.ActorSystem
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
-import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.MockitoSugar
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
+import java.time.{LocalDateTime, ZoneId}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class DmsSubmissionConnectorSpec
     extends AnyFreeSpec

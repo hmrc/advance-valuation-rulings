@@ -86,12 +86,11 @@ class DmsSubmissionConnector @Inject() (
       LocalDateTime.ofInstant(timestamp.truncatedTo(ChronoUnit.SECONDS), ZoneOffset.UTC)
     )
 
-    val dmsAttachments = attachments.map(
-      attachment =>
-        DmsAttachment(
-          attachment,
-          isLetterOfAuthority = false
-        )
+    val dmsAttachments = attachments.map(attachment =>
+      DmsAttachment(
+        attachment,
+        isLetterOfAuthority = false
+      )
     ) ++ letterOfAuthority.map(loa => DmsAttachment(loa, isLetterOfAuthority = true))
 
     val dataParts = Seq(
@@ -114,51 +113,47 @@ class DmsSubmissionConnector @Inject() (
       )
     )
 
-    val attachmentParts = dmsAttachments.traverse {
-      attachment =>
-        objectStoreClient.getObject(Path.File(attachment.location)).flatMap {
-          _.map {
-            o =>
-              Future.successful(
-                MultipartFormData.FilePart(
-                  key = "attachment",
-                  filename = fileName(attachment, o.location.fileName),
-                  contentType = Some(o.metadata.contentType),
-                  ref = o.content
-                )
-              )
-          }.getOrElse(Future.failed(AttachmentNotFoundException(attachment.location)))
-        }
-    }
-
-    attachmentParts.flatMap {
-      attachmentParts =>
-        httpClient
-          .post(url"$dmsSubmission/dms-submission/submit")
-          .setHeader("Authorization" -> internalAuthToken)
-          .withBody(
-            Source(
-              dataParts ++ fileParts ++ attachmentParts
+    val attachmentParts = dmsAttachments.traverse { attachment =>
+      objectStoreClient.getObject(Path.File(attachment.location)).flatMap {
+        _.map { o =>
+          Future.successful(
+            MultipartFormData.FilePart(
+              key = "attachment",
+              filename = fileName(attachment, o.location.fileName),
+              contentType = Some(o.metadata.contentType),
+              ref = o.content
             )
           )
-          .execute[HttpResponse]
-          .flatMap {
-            response =>
-              if (response.status == ACCEPTED) {
-                Future.successful(Done)
-              } else {
-                logger.warn(
-                  s"[DmsSubmissionConnector][submitApplication] dms-submission failed with response body: ${response.body}"
-                )
-                Future.failed(
-                  UpstreamErrorResponse(
-                    "Unexpected response from dms-submission",
-                    response.status,
-                    reportAs = INTERNAL_SERVER_ERROR
-                  )
-                )
-              }
+        }.getOrElse(Future.failed(AttachmentNotFoundException(attachment.location)))
+      }
+    }
+
+    attachmentParts.flatMap { attachmentParts =>
+      httpClient
+        .post(url"$dmsSubmission/dms-submission/submit")
+        .setHeader("Authorization" -> internalAuthToken)
+        .withBody(
+          Source(
+            dataParts ++ fileParts ++ attachmentParts
+          )
+        )
+        .execute[HttpResponse]
+        .flatMap { response =>
+          if (response.status == ACCEPTED) {
+            Future.successful(Done)
+          } else {
+            logger.warn(
+              s"[DmsSubmissionConnector][submitApplication] dms-submission failed with response body: ${response.body}"
+            )
+            Future.failed(
+              UpstreamErrorResponse(
+                "Unexpected response from dms-submission",
+                response.status,
+                reportAs = INTERNAL_SERVER_ERROR
+              )
+            )
           }
+        }
     }
   }
 

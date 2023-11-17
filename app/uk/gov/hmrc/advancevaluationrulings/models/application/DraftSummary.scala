@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
-import java.time.Instant
-
 import play.api.libs.json._
 import uk.gov.hmrc.advancevaluationrulings.models.{DraftId, UserAnswers}
+
+import java.time.Instant
 
 final case class DraftSummary(
   id: DraftId,

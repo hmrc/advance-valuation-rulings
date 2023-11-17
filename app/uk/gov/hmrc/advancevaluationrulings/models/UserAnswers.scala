@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models
 
-import java.time.Instant
-
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
 import uk.gov.hmrc.crypto.Sensitive.SensitiveString
 import uk.gov.hmrc.crypto.json.JsonEncryption
+import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
+
+import java.time.Instant
 
 final case class UserAnswers(
   userId: String,
@@ -47,9 +47,8 @@ object UserAnswers {
           (__ \ "draftId").read[DraftId] and
           (__ \ "data").read[SensitiveString] and
           (__ \ "lastUpdated").read(MongoJavatimeFormats.instantFormat)
-      )(
-        (userId, draftId, data, lastUpdated) =>
-          UserAnswers(userId, draftId, Json.parse(data.decryptedValue).as[JsObject], lastUpdated)
+      )((userId, draftId, data, lastUpdated) =>
+        UserAnswers(userId, draftId, Json.parse(data.decryptedValue).as[JsObject], lastUpdated)
       )
 
     val encryptedWrites: OWrites[UserAnswers] =

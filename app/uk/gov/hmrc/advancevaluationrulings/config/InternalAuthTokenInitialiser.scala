@@ -76,14 +76,13 @@ class InternalAuthTokenInitialiserImpl @Inject() (
   } yield Done
 
   private def ensureAuthToken(): Future[Done] =
-    authTokenIsValid.flatMap {
-      isValid =>
-        if (isValid) {
-          logger.info("[InternalAuthTokenInitialiser][ensureAuthToken] Auth token is already valid")
-          Future.successful(Done)
-        } else {
-          createClientAuthToken()
-        }
+    authTokenIsValid.flatMap { isValid =>
+      if (isValid) {
+        logger.info("[InternalAuthTokenInitialiser][ensureAuthToken] Auth token is already valid")
+        Future.successful(Done)
+      } else {
+        createClientAuthToken()
+      }
     }
 
   private def createClientAuthToken(): Future[Done] = {
@@ -109,19 +108,18 @@ class InternalAuthTokenInitialiserImpl @Inject() (
         )
       )
       .execute
-      .flatMap {
-        response =>
-          if (response.status == CREATED) {
-            logger.info(
-              "[InternalAuthTokenInitialiser][createClientAuthToken] Auth token initialised"
-            )
-            Future.successful(Done)
-          } else {
-            logger.error(
-              "[InternalAuthTokenInitialiser][createClientAuthToken] Unable to initialise internal-auth token"
-            )
-            Future.failed(new RuntimeException("Unable to initialise internal-auth token"))
-          }
+      .flatMap { response =>
+        if (response.status == CREATED) {
+          logger.info(
+            "[InternalAuthTokenInitialiser][createClientAuthToken] Auth token initialised"
+          )
+          Future.successful(Done)
+        } else {
+          logger.error(
+            "[InternalAuthTokenInitialiser][createClientAuthToken] Unable to initialise internal-auth token"
+          )
+          Future.failed(new RuntimeException("Unable to initialise internal-auth token"))
+        }
       }
   }
 
@@ -145,19 +143,18 @@ class InternalAuthTokenInitialiserImpl @Inject() (
         )
       )
       .execute
-      .flatMap {
-        response =>
-          if (response.status == CREATED) {
-            logger.info(
-              "[InternalAuthTokenInitialiser][addDmsSubmissionAttachmentGrants] dms-submission grants added"
-            )
-            Future.successful(Done)
-          } else {
-            logger.error(
-              "[InternalAuthTokenInitialiser][addDmsSubmissionAttachmentGrants] Unable to add dms-submission grants"
-            )
-            Future.failed(new RuntimeException("Unable to add dms-submission grants"))
-          }
+      .flatMap { response =>
+        if (response.status == CREATED) {
+          logger.info(
+            "[InternalAuthTokenInitialiser][addDmsSubmissionAttachmentGrants] dms-submission grants added"
+          )
+          Future.successful(Done)
+        } else {
+          logger.error(
+            "[InternalAuthTokenInitialiser][addDmsSubmissionAttachmentGrants] Unable to add dms-submission grants"
+          )
+          Future.failed(new RuntimeException("Unable to add dms-submission grants"))
+        }
       }
   }
 
