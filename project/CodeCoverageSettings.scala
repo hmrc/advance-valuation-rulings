@@ -11,14 +11,13 @@ object CodeCoverageSettings {
     "prod.*",
     ".*Routes.*",
     "testOnly.*",
-    "testOnlyDoNotUseInAppConf.*",
-    "uk.gov.hmrc.advancevaluationrulings.logging.RequestAwareLogger"
+    "testOnlyDoNotUseInAppConf.*"
   )
 
-  val settings: Seq[Setting[_]] = Seq(
+  val settings: Seq[Setting[?]] = Seq(
     ScoverageKeys.coverageExcludedPackages := excludedPackages.mkString(";"),
-    ScoverageKeys.coverageMinimumStmtTotal := 90,
-    ScoverageKeys.coverageFailOnMinimum := false,
+    ScoverageKeys.coverageMinimumStmtTotal := 87,
+    ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true
   )
 }

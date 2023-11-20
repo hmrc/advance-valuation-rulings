@@ -43,6 +43,10 @@ class ApplicationIdSpec
       }
     }
 
+    "must fail to bind invalid applicationId" in {
+      pathBindable.bind("value", "INVALID").left.value mustEqual "Invalid application Id"
+    }
+
     "must unbind to a url" in {
 
       forAll(arbitrary[String], applicationIdGen) { (key, value) =>

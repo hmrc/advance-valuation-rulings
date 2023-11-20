@@ -28,13 +28,12 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
 
   val integrationFrameworkBaseUrl: String = servicesConfig.baseUrl("integration-framework")
   val integrationFrameworkToken: String   = getConfigString("integration-framework.token")
-  val integrationFrameworkEnv: String     = getConfigString("integration-framework.env")
 
   val etmpSubscriptionDisplayEndpoint: String = getConfigString(
     "integration-framework.etmp.subscription-display-endpoint"
   )
 
-  private def getConfigString(confKey: String) =
+  def getConfigString(confKey: String): String =
     servicesConfig
       .getConfString(confKey, throw new RuntimeException(s"Could not find config key '$confKey'"))
 

@@ -1,3 +1,5 @@
+import uk.gov.hmrc.DefaultBuildSettings.addTestReportOption
+
 lazy val microservice = Project("advance-valuation-rulings", file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
   .disablePlugins(JUnitXmlReportPlugin)
@@ -23,7 +25,6 @@ lazy val microservice = Project("advance-valuation-rulings", file("."))
   .configs(IntegrationTest)
   .settings(inConfig(IntegrationTest)(itSettings))
   .settings(CodeCoverageSettings.settings)
-  .settings(scoverageSettings)
   .settings(
     play.sbt.routes.RoutesKeys.routesImport ++= Seq(
       "uk.gov.hmrc.advancevaluationrulings.models.application.ApplicationId",
@@ -37,6 +38,7 @@ lazy val testSettings: Seq[Def.Setting[_]] = Seq(
 )
 
 lazy val itSettings = Defaults.itSettings ++ Seq(
+  addTestReportOption(IntegrationTest, "int-test-reports"),
   unmanagedSourceDirectories := Seq(
     baseDirectory.value / "it",
     baseDirectory.value / "test-utils"
@@ -47,15 +49,6 @@ lazy val itSettings = Defaults.itSettings ++ Seq(
   parallelExecution := false,
   fork := true
 )
-
-lazy val scoverageSettings =
-  Seq(
-    coverageExcludedPackages := """;uk\.gov\.hmrc\.BuildInfo;.*\.Routes;.*\.RoutesPrefix;.*\.Reverse[^.]*;testonly""",
-    coverageExcludedFiles := "<empty>;.*javascript.*;.*Routes.*;.*testonly.*",
-    coverageFailOnMinimum := true,
-    coverageHighlighting := true,
-    coverageMinimumStmtTotal := 50
-  )
 
 addCommandAlias("scalafmtAll", "all scalafmtSbt scalafmt Test/scalafmt IntegrationTest/scalafmt")
 addCommandAlias("scalastyleAll", "all scalastyle Test/scalastyle IntegrationTest/scalastyle")

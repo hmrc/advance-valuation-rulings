@@ -27,16 +27,13 @@ final case class DraftId(value: Long) {
 
 object DraftId {
 
-  def apply(valueString: String): Try[DraftId] =
-    Try(DraftId(valueString.toInt))
-
   def fromString(string: String): Option[DraftId] = {
 
     val pattern = "DRAFT(\\d{9})".r.anchored
 
     string match {
       case pattern(value) =>
-        DraftId(value).toOption
+        Try(DraftId(value.toInt)).toOption
 
       case _ =>
         None

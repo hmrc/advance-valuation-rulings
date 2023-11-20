@@ -17,19 +17,17 @@
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
 import generators.Generators
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.libs.json.{JsSuccess, Json}
+import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 
-class ApplicationRequestSpec extends AnyWordSpec with Matchers with ScalaCheckPropertyChecks {
+class ApplicationRequestSpec extends SpecBase {
 
   import ApplicationRequestSpec._
 
-  "ApplicationRequest" should {
+  "ApplicationRequest" - {
     "be able to deserialize successful body" in {
-      ApplicationRequest.format.reads(Json.parse(body)) shouldBe JsSuccess(
+      ApplicationRequest.format.reads(Json.parse(body)) mustBe JsSuccess(
         ApplicationRequest(
           draftId = draftId,
           trader = eoriDetails,
@@ -57,7 +55,7 @@ class ApplicationRequestSpec extends AnyWordSpec with Matchers with ScalaCheckPr
           whatIsYourRole = WhatIsYourRole.EmployeeOrg,
           letterOfAuthority = None
         )
-      ) shouldBe Json.parse(body)
+      ) mustBe Json.parse(body)
     }
   }
 }

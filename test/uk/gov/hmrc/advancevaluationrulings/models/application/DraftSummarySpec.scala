@@ -51,5 +51,27 @@ class DraftSummarySpec extends AnyFreeSpec with Matchers {
 
       DraftSummary(answers) mustEqual DraftSummary(draftId, Some("goods"), now, Some("eori"))
     }
+
+    "must return a DraftSummary when optional field 'goodsDescription' and 'checkRegisteredDetails' have not been answered" in {
+
+      val draftId = DraftId(0)
+      val data    = Json.obj()
+
+      val answers = UserAnswers("userId", draftId, data, now)
+
+      DraftSummary(answers) mustEqual DraftSummary(draftId, None, now, None)
+    }
+
+    "must return a DraftSummary when optional field 'goodsDescription' and 'checkRegisteredDetails' have been answered as int" in {
+
+      val draftId = DraftId(0)
+      val data    = Json.obj(
+        "goodsDescription"       -> 1,
+        "checkRegisteredDetails" -> 2
+      )
+      val answers = UserAnswers("userId", draftId, data, now)
+
+      DraftSummary(answers) mustEqual DraftSummary(draftId, None, now, None)
+    }
   }
 }

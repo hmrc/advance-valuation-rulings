@@ -101,6 +101,8 @@ class DraftAttachmentsConnectorSpec
         .asInstanceOf[DraftAttachmentsConnectorException]
         .errors
         .toList must contain only "Content-Type header missing"
+
+      error.asInstanceOf[DraftAttachmentsConnectorException].getMessage mustBe "Errors: Content-Type header missing"
     }
 
     "must fail when the server doesn't return a digest header" in {

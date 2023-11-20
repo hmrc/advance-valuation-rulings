@@ -20,10 +20,8 @@ import java.time.{Instant, LocalDateTime, ZoneOffset}
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import javax.inject.{Inject, Singleton}
-
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
-
 import play.api.{Configuration, Logging}
 import play.api.http.Status.{ACCEPTED, INTERNAL_SERVER_ERROR}
 import play.api.mvc.MultipartFormData
@@ -36,13 +34,11 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.objectstore.client.Path
 import uk.gov.hmrc.objectstore.client.play.Implicits._
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
-
 import cats.implicits._
-
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
-import config.Service
 import org.apache.commons.io.FilenameUtils
+import uk.gov.hmrc.advancevaluationrulings.config.Service
 
 @Singleton
 class DmsSubmissionConnector @Inject() (
