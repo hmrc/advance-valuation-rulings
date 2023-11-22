@@ -1,20 +1,5 @@
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
-import java.security.SecureRandom
-import java.time.{Clock, Instant, ZoneId}
-import java.time.temporal.ChronoUnit
-import java.util.Base64
-
-import scala.concurrent.ExecutionContext.Implicits.global
-
-import play.api.Configuration
-import play.api.libs.json.Json
-import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
-import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
-import uk.gov.hmrc.advancevaluationrulings.models.application.DraftSummary
-import uk.gov.hmrc.crypto.{Decrypter, Encrypter, SymmetricCryptoFactory}
-import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
-
 import com.fasterxml.jackson.core.JsonParseException
 import org.mockito.MockitoSugar
 import org.mongodb.scala.bson.BsonDocument
@@ -23,6 +8,19 @@ import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import play.api.Configuration
+import play.api.libs.json.Json
+import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
+import uk.gov.hmrc.advancevaluationrulings.models.application.DraftSummary
+import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
+import uk.gov.hmrc.crypto.{Decrypter, Encrypter, SymmetricCryptoFactory}
+import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
+
+import java.security.SecureRandom
+import java.time.temporal.ChronoUnit
+import java.time.{Clock, Instant, ZoneId}
+import java.util.Base64
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class UserAnswersRepositorySpec
     extends AnyFreeSpec
@@ -52,7 +50,7 @@ class UserAnswersRepositorySpec
   private implicit val crypto: Encrypter with Decrypter =
     SymmetricCryptoFactory.aesGcmCryptoFromConfig("crypto", configuration.underlying)
 
-  protected override val repository = new UserAnswersRepository(
+  protected override val repository: UserAnswersMongoRepository = new UserAnswersMongoRepository(
     mongoComponent = mongoComponent,
     appConfig = mockAppConfig,
     clock = stubClock

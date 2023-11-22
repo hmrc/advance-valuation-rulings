@@ -20,13 +20,11 @@ import generators.ModelGenerators
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.MockitoSugar
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import play.api.inject
-import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.{Application, inject}
+import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 import uk.gov.hmrc.advancevaluationrulings.connectors.ETMPConnector
 import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.Regime.CDS
@@ -39,9 +37,7 @@ import scala.concurrent.Future
 
 class TraderDetailsServiceSpec
     extends AnyFreeSpec
-    with Matchers
-    with ScalaFutures
-    with OptionValues
+    with SpecBase
     with MockitoSugar
     with BeforeAndAfterEach
     with ModelGenerators
@@ -57,7 +53,7 @@ class TraderDetailsServiceSpec
     reset(mockConnector)
   }
 
-  private val app = GuiceApplicationBuilder()
+  private val app: Application = applicationBuilder
     .overrides(inject.bind[ETMPConnector].toInstance(mockConnector))
     .build()
 

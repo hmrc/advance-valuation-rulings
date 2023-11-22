@@ -17,12 +17,12 @@
 package uk.gov.hmrc.advancevaluationrulings.services
 
 import org.apache.pdfbox.pdmodel.PDDocument
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
+import play.api
 import play.api.i18n.MessagesApi
-import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
+import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 import uk.gov.hmrc.advancevaluationrulings.models.application.Privacy.{Confidential, Public}
 import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.views.xml.ApplicationPdf
@@ -31,10 +31,10 @@ import java.nio.file.{Files, Paths}
 import java.time.Instant
 import scala.io.Source
 
-class FopServiceSpec extends AnyFreeSpec with Matchers with ScalaFutures with IntegrationPatience {
+class FopServiceSpec extends AnyFreeSpec with SpecBase with IntegrationPatience {
 
-  private val app        = GuiceApplicationBuilder().build()
-  private val fopService = app.injector.instanceOf[FopService]
+  private val app: api.Application   = applicationBuilder.build()
+  private val fopService: FopService = app.injector.instanceOf[FopService]
 
   private val attmts: Seq[Attachment] = Seq(
     Attachment(

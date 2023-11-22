@@ -21,13 +21,12 @@ import akka.stream.scaladsl.{Keep, Sink, Source}
 import akka.util.ByteString
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.{ArgumentCaptor, MockitoSugar}
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import play.api
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
-import play.api.inject.guice.GuiceApplicationBuilder
+import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 import uk.gov.hmrc.advancevaluationrulings.connectors.DmsSubmissionConnector
 import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application._
@@ -38,23 +37,12 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import scala.concurrent.Future
 
-class DmsSubmissionServiceSpec
-    extends AnyFreeSpec
-    with Matchers
-    with ScalaFutures
-    with OptionValues
-    with MockitoSugar
-    with BeforeAndAfterEach {
-
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-    reset(mockFopService, mockDmsSubmissionConnector)
-  }
+class DmsSubmissionServiceSpec extends AnyFreeSpec with SpecBase with MockitoSugar with BeforeAndAfterEach {
 
   private val mockFopService             = mock[FopService]
   private val mockDmsSubmissionConnector = mock[DmsSubmissionConnector]
 
-  private lazy val app = GuiceApplicationBuilder()
+  private lazy val app: api.Application = applicationBuilder
     .overrides(
       bind[FopService].toInstance(mockFopService),
       bind[DmsSubmissionConnector].toInstance(mockDmsSubmissionConnector)
@@ -69,6 +57,11 @@ class DmsSubmissionServiceSpec
   private implicit lazy val mat: Materializer  = app.injector.instanceOf[Materializer]
   private implicit lazy val messages: Messages =
     app.injector.instanceOf[MessagesApi].preferred(Seq.empty)
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockFopService, mockDmsSubmissionConnector)
+  }
 
   "submitApplication" - {
 

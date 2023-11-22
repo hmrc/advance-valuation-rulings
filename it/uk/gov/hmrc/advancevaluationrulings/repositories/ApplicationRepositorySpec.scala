@@ -23,7 +23,8 @@ class ApplicationRepositorySpec
   private val mockAppConfig = mock[AppConfig]
   when(mockAppConfig.applicationTtlInDays) thenReturn 1
 
-  protected override val repository = new ApplicationRepository(mongoComponent, mockAppConfig)
+  protected override val repository: ApplicationMongoRepository =
+    new ApplicationMongoRepository(mongoComponent, mockAppConfig)
 
   private val trader              =
     TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None, Some(true))

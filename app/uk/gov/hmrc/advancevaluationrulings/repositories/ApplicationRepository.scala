@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
+import com.google.inject.ImplementedBy
 import org.mongodb.scala.model._
 import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
 import uk.gov.hmrc.advancevaluationrulings.models.Done
@@ -28,8 +29,17 @@ import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
+@ImplementedBy(classOf[ApplicationMongoRepository])
+trait ApplicationRepository {
+  def set(application: Application): Future[Done]
+
+  def get(id: ApplicationId, applicantEori: String): Future[Option[Application]]
+
+  def summaries(eori: String): Future[Seq[ApplicationSummary]]
+}
+
 @Singleton
-class ApplicationRepository @Inject() (
+class ApplicationMongoRepository @Inject() (
   mongoComponent: MongoComponent,
   appConfig: AppConfig
 )(implicit ec: ExecutionContext)
@@ -61,17 +71,18 @@ class ApplicationRepository @Inject() (
         Codecs.playFormatCodec(ApplicationId.format),
         Codecs.playFormatCodec(ApplicationSummary.mongoFormat)
       )
-    ) {
+    )
+    with ApplicationRepository {
 
   override lazy val requiresTtlIndex: Boolean = false
 
-  def set(application: Application): Future[Done] =
+  override def set(application: Application): Future[Done] =
     collection
       .insertOne(application)
       .toFuture()
       .map(_ => Done)
 
-  def get(id: ApplicationId, applicantEori: String): Future[Option[Application]] = {
+  override def get(id: ApplicationId, applicantEori: String): Future[Option[Application]] = {
 
     val filter = Filters.and(
       Filters.eq("id", id),
@@ -84,7 +95,7 @@ class ApplicationRepository @Inject() (
       .map(_.headOption)
   }
 
-  def summaries(eori: String): Future[Seq[ApplicationSummary]] =
+  override def summaries(eori: String): Future[Seq[ApplicationSummary]] =
     collection
       .find[ApplicationSummary](Filters.eq("applicantEori", eori))
       .toFuture()

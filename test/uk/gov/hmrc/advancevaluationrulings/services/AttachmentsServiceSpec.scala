@@ -22,13 +22,12 @@ import akka.util.ByteString
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.MockitoSugar
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, OptionValues}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import play.api.Application
 import play.api.inject.bind
-import play.api.inject.guice.GuiceApplicationBuilder
+import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 import uk.gov.hmrc.advancevaluationrulings.connectors.DraftAttachmentsConnector
 import uk.gov.hmrc.advancevaluationrulings.models.application.{ApplicationId, DraftAttachment}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -44,10 +43,8 @@ import scala.concurrent.Future
 
 class AttachmentsServiceSpec
     extends AnyFreeSpec
-    with Matchers
-    with ScalaFutures
+    with SpecBase
     with IntegrationPatience
-    with OptionValues
     with MockitoSugar
     with BeforeAndAfterEach
     with BeforeAndAfterAll {
@@ -72,7 +69,7 @@ class AttachmentsServiceSpec
 
   private val mockAttachmentsConnector = mock[DraftAttachmentsConnector]
 
-  private lazy val app: Application = GuiceApplicationBuilder()
+  private lazy val app: Application = applicationBuilder
     .overrides(
       bind[PlayObjectStoreClient].toInstance(objectStoreStub),
       bind[DraftAttachmentsConnector].toInstance(mockAttachmentsConnector)
