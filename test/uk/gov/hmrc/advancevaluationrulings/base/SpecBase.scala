@@ -26,7 +26,7 @@ import uk.gov.hmrc.advancevaluationrulings.repositories.{ApplicationRepository, 
 
 trait SpecBase extends Matchers with OptionValues with ScalaFutures {
   val mockApplicationRepository: ApplicationRepository = mock[ApplicationRepository]
-  val mockCounterRepository: CounterRepository = mock[CounterRepository]
+  val mockCounterRepository: CounterRepository         = mock[CounterRepository]
   val mockUserAnswersRepository: UserAnswersRepository = mock[UserAnswersRepository]
 
   def applicationBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder()

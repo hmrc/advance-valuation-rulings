@@ -1,11 +1,13 @@
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
+import com.mongodb.MongoWriteException
 import org.mockito.MockitoSugar.{mock, when}
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
+import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
@@ -54,7 +56,7 @@ class ApplicationRepositorySpec
         lastUpdated = now
       )
 
-      repository.set(application).futureValue
+      repository.set(application).futureValue mustBe Done
     }
 
     "must fail to insert a duplicate application" in {
@@ -75,8 +77,15 @@ class ApplicationRepositorySpec
         lastUpdated = now
       )
 
-      repository.set(application).futureValue
-      repository.set(application).failed.futureValue
+      repository.set(application).futureValue mustBe Done
+
+      val error: Throwable = intercept[Throwable] {
+        repository.set(application).futureValue
+      }
+
+      error.getCause.asInstanceOf[MongoWriteException].getCode mustBe 11000
+      error.getCause.asInstanceOf[MongoWriteException].getMessage must include("GBAVR000000001")
+
     }
   }
 
@@ -100,8 +109,10 @@ class ApplicationRepositorySpec
         lastUpdated = now
       )
 
-      insert(application).futureValue
+      insert(application).futureValue.wasAcknowledged() mustBe true
+
       val result = repository.get(ApplicationId(1), "applicantEori").futureValue
+
       result.value mustEqual application
     }
 
@@ -123,14 +134,17 @@ class ApplicationRepositorySpec
         lastUpdated = now
       )
 
-      insert(application).futureValue
+      insert(application).futureValue.wasAcknowledged() mustBe true
+
       val result = repository.get(ApplicationId(1), "otherEori").futureValue
+
       result must not be defined
     }
 
     "must return None when an application does not exist" in {
 
       val result = repository.get(ApplicationId(1), "applicantEori").futureValue
+
       result must not be defined
     }
   }
@@ -139,7 +153,7 @@ class ApplicationRepositorySpec
 
     "must return summaries of all applications for the given eori" in {
 
-      val eori1        = "eori 1"
+      val eori1        = "eori1"
       val eori2        = "eori2"
       val application1 = Application(
         ApplicationId(1),
@@ -187,9 +201,9 @@ class ApplicationRepositorySpec
         now
       )
 
-      insert(application1).futureValue
-      insert(application2).futureValue
-      insert(application3).futureValue
+      insert(application1).futureValue.wasAcknowledged() mustBe true
+      insert(application2).futureValue.wasAcknowledged() mustBe true
+      insert(application3).futureValue.wasAcknowledged() mustBe true
 
       val result = repository.summaries(eori1).futureValue
 
