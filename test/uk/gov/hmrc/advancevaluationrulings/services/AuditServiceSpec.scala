@@ -21,9 +21,9 @@ import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
+import play.api
 import play.api.inject.bind
-import play.api.inject.guice.GuiceApplicationBuilder
+import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.models.audit.ApplicationSubmissionEvent
@@ -34,7 +34,7 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
-class AuditServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar with BeforeAndAfterEach {
+class AuditServiceSpec extends AnyFreeSpec with SpecBase with MockitoSugar with BeforeAndAfterEach {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -43,7 +43,7 @@ class AuditServiceSpec extends AnyFreeSpec with Matchers with MockitoSugar with 
 
   private val mockAuditConnector = mock[AuditConnector]
 
-  private lazy val app = GuiceApplicationBuilder()
+  private lazy val app: api.Application = applicationBuilder
     .overrides(
       bind[AuditConnector].toInstance(mockAuditConnector)
     )

@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
+import com.google.inject.ImplementedBy
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model._
 import play.api.libs.json.Format
@@ -32,8 +33,24 @@ import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
+@ImplementedBy(classOf[UserAnswersMongoRepository])
+trait UserAnswersRepository {
+  def keepAlive(userId: String, draftId: DraftId): Future[Done]
+
+  def get(userId: String, draftId: DraftId): Future[Option[UserAnswers]]
+
+  def get(draftId: DraftId): Future[Option[UserAnswers]]
+
+  def set(answers: UserAnswers): Future[Done]
+
+  def clear(userId: String, draftId: DraftId): Future[Done]
+
+  def summaries(userId: String): Future[Seq[DraftSummary]]
+
+}
+
 @Singleton
-class UserAnswersRepository @Inject() (
+class UserAnswersMongoRepository @Inject() (
   mongoComponent: MongoComponent,
   appConfig: AppConfig,
   clock: Clock
@@ -63,7 +80,8 @@ class UserAnswersRepository @Inject() (
         )
       ),
       extraCodecs = Seq(Codecs.playFormatCodec(DraftId.format))
-    ) {
+    )
+    with UserAnswersRepository {
 
   implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
 
@@ -73,7 +91,7 @@ class UserAnswersRepository @Inject() (
       Filters.eq("draftId", draftId)
     )
 
-  def keepAlive(userId: String, draftId: DraftId): Future[Done] =
+  override def keepAlive(userId: String, draftId: DraftId): Future[Done] =
     collection
       .updateOne(
         filter = byUserIdAndDraftId(userId, draftId),
@@ -82,19 +100,19 @@ class UserAnswersRepository @Inject() (
       .toFuture()
       .map(_ => Done)
 
-  def get(userId: String, draftId: DraftId): Future[Option[UserAnswers]] =
+  override def get(userId: String, draftId: DraftId): Future[Option[UserAnswers]] =
     keepAlive(userId, draftId).flatMap { _ =>
       collection
         .find(byUserIdAndDraftId(userId, draftId))
         .headOption()
     }
 
-  def get(draftId: DraftId): Future[Option[UserAnswers]] =
+  override def get(draftId: DraftId): Future[Option[UserAnswers]] =
     collection
       .find(Filters.eq("draftId", draftId))
       .headOption()
 
-  def set(answers: UserAnswers): Future[Done] = {
+  override def set(answers: UserAnswers): Future[Done] = {
 
     val updatedUserAnswers = answers copy (lastUpdated = Instant.now(clock))
 
@@ -108,13 +126,13 @@ class UserAnswersRepository @Inject() (
       .map(_ => Done)
   }
 
-  def clear(userId: String, draftId: DraftId): Future[Done] =
+  override def clear(userId: String, draftId: DraftId): Future[Done] =
     collection
       .deleteOne(byUserIdAndDraftId(userId, draftId))
       .toFuture()
       .map(_ => Done)
 
-  def summaries(userId: String): Future[Seq[DraftSummary]] =
+  override def summaries(userId: String): Future[Seq[DraftSummary]] =
     collection
       .find(Filters.eq("userId", userId))
       .toFuture()

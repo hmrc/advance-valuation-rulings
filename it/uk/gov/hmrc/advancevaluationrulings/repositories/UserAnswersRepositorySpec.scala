@@ -1,20 +1,5 @@
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
-import java.security.SecureRandom
-import java.time.{Clock, Instant, ZoneId}
-import java.time.temporal.ChronoUnit
-import java.util.Base64
-
-import scala.concurrent.ExecutionContext.Implicits.global
-
-import play.api.Configuration
-import play.api.libs.json.Json
-import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
-import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
-import uk.gov.hmrc.advancevaluationrulings.models.application.DraftSummary
-import uk.gov.hmrc.crypto.{Decrypter, Encrypter, SymmetricCryptoFactory}
-import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
-
 import com.fasterxml.jackson.core.JsonParseException
 import org.mockito.MockitoSugar
 import org.mongodb.scala.bson.BsonDocument
@@ -23,6 +8,19 @@ import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import play.api.Configuration
+import play.api.libs.json.Json
+import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
+import uk.gov.hmrc.advancevaluationrulings.models.application.DraftSummary
+import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
+import uk.gov.hmrc.crypto.{Decrypter, Encrypter, SymmetricCryptoFactory}
+import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
+
+import java.security.SecureRandom
+import java.time.temporal.ChronoUnit
+import java.time.{Clock, Instant, ZoneId}
+import java.util.Base64
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class UserAnswersRepositorySpec
     extends AnyFreeSpec
@@ -52,7 +50,7 @@ class UserAnswersRepositorySpec
   private implicit val crypto: Encrypter with Decrypter =
     SymmetricCryptoFactory.aesGcmCryptoFromConfig("crypto", configuration.underlying)
 
-  protected override val repository = new UserAnswersRepository(
+  protected override val repository: UserAnswersMongoRepository = new UserAnswersMongoRepository(
     mongoComponent = mongoComponent,
     appConfig = mockAppConfig,
     clock = stubClock
@@ -78,7 +76,7 @@ class UserAnswersRepositorySpec
 
     "must store the data section as encrypted bytes" in {
 
-      repository.set(answers).futureValue
+      repository.set(answers).futureValue mustBe Done
 
       val record = repository.collection
         .find[BsonDocument](
@@ -106,7 +104,7 @@ class UserAnswersRepositorySpec
 
       "must update the lastUpdated time and get the record" in {
 
-        insert(answers).futureValue
+        insert(answers).futureValue.wasAcknowledged() mustBe true
 
         val result         = repository.get(answers.userId, answers.draftId).futureValue
         val expectedResult = answers copy (lastUpdated = instant)
@@ -121,7 +119,7 @@ class UserAnswersRepositorySpec
 
         val differentAnswers = answers.copy(draftId = DraftId(2))
 
-        insert(differentAnswers).futureValue
+        insert(differentAnswers).futureValue.wasAcknowledged() mustBe true
 
         repository.get("userId", DraftId(1)).futureValue must not be defined
       }
@@ -133,7 +131,7 @@ class UserAnswersRepositorySpec
 
         val differentAnswers = answers.copy(userId = "another user id")
 
-        insert(differentAnswers).futureValue
+        insert(differentAnswers).futureValue.wasAcknowledged() mustBe true
 
         repository.get("userId", DraftId(1)).futureValue must not be defined
       }
@@ -154,7 +152,7 @@ class UserAnswersRepositorySpec
 
       "must get the record" in {
 
-        insert(answers).futureValue
+        insert(answers).futureValue.wasAcknowledged() mustBe true
 
         val result = repository.get(answers.draftId).futureValue
 
@@ -175,7 +173,7 @@ class UserAnswersRepositorySpec
 
     "must remove a record" in {
 
-      insert(answers).futureValue
+      insert(answers).futureValue.wasAcknowledged() mustBe true
 
       val result = repository.clear(answers.userId, answers.draftId).futureValue
 
@@ -185,7 +183,7 @@ class UserAnswersRepositorySpec
 
     "must return Done when there is no record to remove" in {
 
-      repository.clear("user id that does not exist", DraftId(2)).futureValue
+      repository.clear("user id that does not exist", DraftId(2)).futureValue mustEqual Done
     }
   }
 
@@ -195,9 +193,9 @@ class UserAnswersRepositorySpec
 
       "must update its lastUpdated to `now`" in {
 
-        insert(answers).futureValue
+        insert(answers).futureValue.wasAcknowledged() mustBe true
 
-        repository.keepAlive(answers.userId, answers.draftId).futureValue
+        repository.keepAlive(answers.userId, answers.draftId).futureValue mustBe Done
 
         val expectedUpdatedAnswers = answers copy (lastUpdated = instant)
 
@@ -215,7 +213,7 @@ class UserAnswersRepositorySpec
 
       "must succeed" in {
 
-        repository.keepAlive("user id that does not exist", DraftId(2)).futureValue
+        repository.keepAlive("user id that does not exist", DraftId(2)).futureValue mustEqual Done
       }
     }
   }
@@ -227,9 +225,9 @@ class UserAnswersRepositorySpec
       val answers2 = answers.copy(draftId = DraftId(2))
       val answers3 = answers.copy(userId = "other user id", draftId = DraftId(3))
 
-      insert(answers).futureValue
-      insert(answers2).futureValue
-      insert(answers3).futureValue
+      insert(answers).futureValue.wasAcknowledged() mustBe true
+      insert(answers2).futureValue.wasAcknowledged() mustBe true
+      insert(answers3).futureValue.wasAcknowledged() mustBe true
 
       val result = repository.summaries("userId").futureValue
 

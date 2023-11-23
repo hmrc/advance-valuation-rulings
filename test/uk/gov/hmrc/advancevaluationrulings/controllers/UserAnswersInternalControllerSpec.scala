@@ -19,17 +19,15 @@ package uk.gov.hmrc.advancevaluationrulings.controllers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.{Mockito, MockitoSugar}
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import play.api.Application
 import play.api.inject.bind
-import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
-import uk.gov.hmrc.advancevaluationrulings.repositories.UserAnswersRepository
 import uk.gov.hmrc.internalauth.client._
 import uk.gov.hmrc.internalauth.client.test.{BackendAuthComponentsStub, StubBehaviour}
 
@@ -38,28 +36,20 @@ import java.time.{Clock, Instant, ZoneId}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class UserAnswersInternalControllerSpec
-    extends AnyFreeSpec
-    with Matchers
-    with MockitoSugar
-    with OptionValues
-    with ScalaFutures
-    with BeforeAndAfterEach {
+class UserAnswersInternalControllerSpec extends AnyFreeSpec with SpecBase with MockitoSugar with BeforeAndAfterEach {
 
-  private val mockRepo                  = mock[UserAnswersRepository]
   private val mockStubBehaviour         = mock[StubBehaviour]
   private val stubBackendAuthComponents =
     BackendAuthComponentsStub(mockStubBehaviour)(stubControllerComponents(), implicitly)
 
-  private val app = GuiceApplicationBuilder()
+  private val app: Application = applicationBuilder
     .overrides(
-      bind[BackendAuthComponents].toInstance(stubBackendAuthComponents),
-      bind[UserAnswersRepository].toInstance(mockRepo)
+      bind[BackendAuthComponents].toInstance(stubBackendAuthComponents)
     )
     .build()
 
   override def beforeEach(): Unit = {
-    Mockito.reset(mockRepo)
+    Mockito.reset(mockUserAnswersRepository)
     Mockito.reset(mockStubBehaviour)
     super.beforeEach()
   }
@@ -83,7 +73,7 @@ class UserAnswersInternalControllerSpec
 
     "must return a draft when one exists for this draft id" in {
 
-      when(mockRepo.get(draftId)).thenReturn(Future.successful(Some(userAnswers)))
+      when(mockUserAnswersRepository.get(draftId)).thenReturn(Future.successful(Some(userAnswers)))
       when(mockStubBehaviour.stubAuth[Unit](any(), any())).thenReturn(Future.unit)
 
       val request = FakeRequest(GET, routes.UserAnswersInternalController.get(draftId).url)
@@ -99,7 +89,7 @@ class UserAnswersInternalControllerSpec
 
     "must return not found when no record exists for this draft id" in {
 
-      when(mockRepo.get(draftId)).thenReturn(Future.successful(None))
+      when(mockUserAnswersRepository.get(draftId)).thenReturn(Future.successful(None))
       when(mockStubBehaviour.stubAuth[Unit](any(), any())).thenReturn(Future.unit)
 
       val request = FakeRequest(GET, routes.UserAnswersInternalController.get(draftId).url)
@@ -136,7 +126,7 @@ class UserAnswersInternalControllerSpec
 
     "must save the given answers and return NO_CONTENT" in {
 
-      when(mockRepo.set(any())).thenReturn(Future.successful(Done))
+      when(mockUserAnswersRepository.set(any())).thenReturn(Future.successful(Done))
       when(mockStubBehaviour.stubAuth[Unit](any(), any())).thenReturn(Future.unit)
 
       val request = FakeRequest(POST, routes.UserAnswersInternalController.set().url)
@@ -148,7 +138,7 @@ class UserAnswersInternalControllerSpec
       status(result) mustEqual NO_CONTENT
 
       verify(mockStubBehaviour).stubAuth(Some(writePredicate), Retrieval.EmptyRetrieval)
-      verify(mockRepo, times(1)).set(eqTo(userAnswers))
+      verify(mockUserAnswersRepository, times(1)).set(eqTo(userAnswers))
     }
 
     "must return BAD_REQUEST when invalid data is received" in {

@@ -20,26 +20,25 @@ import generators.ModelGenerators
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.MockitoSugar
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import play.api.Application
 import play.api.inject.bind
-import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
 import uk.gov.hmrc.advancevaluationrulings.services.TraderDetailsService
-import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.retrieve.~
 
 import scala.concurrent.Future
 
 class TraderDetailsControllerSpec
     extends AnyFreeSpec
-    with Matchers
-    with OptionValues
+    with SpecBase
     with ModelGenerators
     with MockitoSugar
     with BeforeAndAfterEach
@@ -61,8 +60,8 @@ class TraderDetailsControllerSpec
       )
     )
 
-  private val app =
-    GuiceApplicationBuilder()
+  private val app: Application =
+    applicationBuilder
       .overrides(
         bind[AuthConnector].toInstance(mockAuthConnector),
         bind[TraderDetailsService].toInstance(mockTraderDetailsService)

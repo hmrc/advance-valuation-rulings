@@ -18,22 +18,21 @@ package uk.gov.hmrc.advancevaluationrulings.controllers.actions
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar
-import org.scalatest.OptionValues
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.Application
 import play.api.libs.json.Json
 import play.api.mvc.Results.Ok
 import play.api.mvc.{Action, AnyContent, BodyParsers}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.auth.core.retrieve.~
+import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.retrieve.~
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class IdentifierActionSpec extends AnyFreeSpec with Matchers with MockitoSugar with OptionValues {
+class IdentifierActionSpec extends AnyFreeSpec with SpecBase with MockitoSugar {
 
   class Harness(identify: IdentifierAction) {
     def onPageLoad(): Action[AnyContent] = identify { request =>
@@ -48,8 +47,8 @@ class IdentifierActionSpec extends AnyFreeSpec with Matchers with MockitoSugar w
     }
   }
 
-  private val app         = new GuiceApplicationBuilder().build()
-  private val bodyParsers = app.injector.instanceOf[BodyParsers.Default]
+  private val app: Application = applicationBuilder.build()
+  private val bodyParsers      = app.injector.instanceOf[BodyParsers.Default]
 
   private val mockAuthConnector: AuthConnector = mock[AuthConnector]
 

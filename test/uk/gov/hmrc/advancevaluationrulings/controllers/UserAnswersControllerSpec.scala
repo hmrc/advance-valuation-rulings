@@ -19,18 +19,16 @@ package uk.gov.hmrc.advancevaluationrulings.controllers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.MockitoSugar
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import play.api.Application
 import play.api.inject.bind
-import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 import uk.gov.hmrc.advancevaluationrulings.models.application.{DraftSummary, DraftSummaryResponse}
 import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
-import uk.gov.hmrc.advancevaluationrulings.repositories.UserAnswersRepository
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.http.HeaderNames
@@ -39,15 +37,8 @@ import java.time.temporal.ChronoUnit
 import java.time.{Clock, Instant, ZoneId}
 import scala.concurrent.Future
 
-class UserAnswersControllerSpec
-    extends AnyFreeSpec
-    with Matchers
-    with MockitoSugar
-    with OptionValues
-    with ScalaFutures
-    with BeforeAndAfterEach {
+class UserAnswersControllerSpec extends AnyFreeSpec with SpecBase with MockitoSugar with BeforeAndAfterEach {
 
-  private val mockRepo          = mock[UserAnswersRepository]
   private val mockAuthConnector = mock[AuthConnector]
 
   private val instant       = Instant.now.truncatedTo(ChronoUnit.MILLIS)
@@ -63,23 +54,21 @@ class UserAnswersControllerSpec
   )
 
   override def beforeEach(): Unit = {
-    reset(mockRepo, mockAuthConnector)
+    reset(mockUserAnswersRepository, mockAuthConnector)
     super.beforeEach()
   }
 
-  private val app =
-    new GuiceApplicationBuilder()
-      .overrides(
-        bind[UserAnswersRepository].toInstance(mockRepo),
-        bind[AuthConnector].toInstance(mockAuthConnector)
-      )
-      .build()
+  private val app: Application = applicationBuilder
+    .overrides(
+      bind[AuthConnector].toInstance(mockAuthConnector)
+    )
+    .build()
 
   ".get" - {
 
     "must return data when it exists for this userId and draftId" in {
 
-      when(mockRepo.get(eqTo(userId), eqTo(draftId))) thenReturn Future.successful(
+      when(mockUserAnswersRepository.get(eqTo(userId), eqTo(draftId))) thenReturn Future.successful(
         Some(userAnswers)
       )
       when(
@@ -110,7 +99,7 @@ class UserAnswersControllerSpec
 
     "must return Not Found when data cannot be found for this user id and draft id" in {
 
-      when(mockRepo.get(eqTo(userId), eqTo(draftId))) thenReturn Future.successful(None)
+      when(mockUserAnswersRepository.get(eqTo(userId), eqTo(draftId))) thenReturn Future.successful(None)
       when(
         mockAuthConnector
           .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](
@@ -141,7 +130,7 @@ class UserAnswersControllerSpec
 
     "must return No Content when the data is successfully saved" in {
 
-      when(mockRepo.set(any())) thenReturn Future.successful(Done)
+      when(mockUserAnswersRepository.set(any())) thenReturn Future.successful(Done)
       when(
         mockAuthConnector
           .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](
@@ -168,7 +157,7 @@ class UserAnswersControllerSpec
       val result = route(app, request).value
 
       status(result) mustEqual NO_CONTENT
-      verify(mockRepo, times(1)).set(eqTo(userAnswers))
+      verify(mockUserAnswersRepository, times(1)).set(eqTo(userAnswers))
     }
 
     "must return BadRequest when the data cannot be parsed as UserAnswers" in {
@@ -206,7 +195,7 @@ class UserAnswersControllerSpec
 
     "must return NoContent and keep the data alive" in {
 
-      when(mockRepo.keepAlive(any(), any())) thenReturn Future.successful(Done)
+      when(mockUserAnswersRepository.keepAlive(any(), any())) thenReturn Future.successful(Done)
       when(
         mockAuthConnector
           .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](
@@ -229,7 +218,7 @@ class UserAnswersControllerSpec
       val result = route(app, request).value
 
       status(result) mustEqual NO_CONTENT
-      verify(mockRepo, times(1)).keepAlive(eqTo(userId), eqTo(draftId))
+      verify(mockUserAnswersRepository, times(1)).keepAlive(eqTo(userId), eqTo(draftId))
     }
   }
 
@@ -237,7 +226,7 @@ class UserAnswersControllerSpec
 
     "must return NoContent and clear the data" in {
 
-      when(mockRepo.clear(any(), any())) thenReturn Future.successful(Done)
+      when(mockUserAnswersRepository.clear(any(), any())) thenReturn Future.successful(Done)
       when(
         mockAuthConnector
           .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](
@@ -260,7 +249,7 @@ class UserAnswersControllerSpec
       val result = route(app, request).value
 
       status(result) mustEqual NO_CONTENT
-      verify(mockRepo, times(1)).clear(eqTo(userId), eqTo(draftId))
+      verify(mockUserAnswersRepository, times(1)).clear(eqTo(userId), eqTo(draftId))
     }
   }
 
@@ -269,7 +258,7 @@ class UserAnswersControllerSpec
     "must return summaries" in {
 
       val summaries = Seq(DraftSummary(DraftId(1), None, Instant.now, None))
-      when(mockRepo.summaries(any())) thenReturn Future.successful(summaries)
+      when(mockUserAnswersRepository.summaries(any())) thenReturn Future.successful(summaries)
       when(
         mockAuthConnector
           .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](

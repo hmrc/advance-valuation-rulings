@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
+import com.google.inject.ImplementedBy
 import org.mongodb.scala.MongoBulkWriteException
 import org.mongodb.scala.model.{Filters, FindOneAndUpdateOptions, ReturnDocument, Updates}
 import uk.gov.hmrc.advancevaluationrulings.models.Done
@@ -28,8 +29,18 @@ import scala.annotation.nowarn
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
 
+@ImplementedBy(classOf[CounterMongoRepository])
+trait CounterRepository {
+  def ensureApplicationIdIsCorrect(): Future[Done]
+
+  def seed: Future[Done]
+
+  def nextId(id: CounterId): Future[Long]
+
+}
+
 @Singleton
-class CounterRepository @Inject() (
+class CounterMongoRepository @Inject() (
   mongoComponent: MongoComponent
 )(implicit ec: ExecutionContext)
     extends PlayMongoRepository[CounterWrapper](
@@ -37,7 +48,8 @@ class CounterRepository @Inject() (
       mongoComponent = mongoComponent,
       domainFormat = CounterWrapper.format,
       indexes = Nil
-    ) {
+    )
+    with CounterRepository {
 
   private val duplicateErrorCode  = 11000
   private def byId(id: CounterId) = Filters.eq("_id", id.toString)
@@ -55,7 +67,7 @@ class CounterRepository @Inject() (
   private val seedDatabase =
     seed // Eagerly call seed to ensure records are created on startup if needed
 
-  def ensureApplicationIdIsCorrect(): Future[Done] =
+  override def ensureApplicationIdIsCorrect(): Future[Done] =
     collection
       .find(byId(CounterId.ApplicationId))
       .headOption()
@@ -76,7 +88,7 @@ class CounterRepository @Inject() (
         }
       }.getOrElse(Future.successful(Done)))
 
-  def seed: Future[Done] =
+  override def seed: Future[Done] =
     collection
       .insertMany(seeds)
       .toFuture()
@@ -86,7 +98,7 @@ class CounterRepository @Inject() (
           ensureApplicationIdIsCorrect()
       }
 
-  def nextId(id: CounterId): Future[Long] =
+  override def nextId(id: CounterId): Future[Long] =
     collection
       .findOneAndUpdate(
         filter = byId(id),

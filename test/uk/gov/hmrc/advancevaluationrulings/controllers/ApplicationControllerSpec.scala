@@ -20,18 +20,17 @@ import generators.ModelGenerators
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.MockitoSugar
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import play.api
 import play.api.inject.bind
-import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.models.audit.AuditMetadata
-import uk.gov.hmrc.advancevaluationrulings.repositories.ApplicationRepository
 import uk.gov.hmrc.advancevaluationrulings.services.ApplicationService
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.~
@@ -41,16 +40,14 @@ import scala.concurrent.Future
 
 class ApplicationControllerSpec
     extends AnyFreeSpec
-    with Matchers
-    with OptionValues
+    with SpecBase
     with ModelGenerators
     with MockitoSugar
     with BeforeAndAfterEach {
 
-  private val fixedClock                = Clock.fixed(Instant.now, ZoneId.systemDefault)
-  private val mockApplicationService    = mock[ApplicationService]
-  private val mockApplicationRepository = mock[ApplicationRepository]
-  private val mockAuthConnector         = mock[AuthConnector]
+  private val fixedClock             = Clock.fixed(Instant.now, ZoneId.systemDefault)
+  private val mockApplicationService = mock[ApplicationService]
+  private val mockAuthConnector      = mock[AuthConnector]
 
   private val applicantEori       = "applicantEori"
   private val atarEnrolment       = Enrolments(
@@ -65,12 +62,11 @@ class ApplicationControllerSpec
   private val method              = MethodOne(None, None, None)
   private val contact             = ContactDetails("name", "email", None, None, None)
 
-  private val app =
-    GuiceApplicationBuilder()
+  private val app: api.Application =
+    applicationBuilder
       .overrides(
         bind[Clock].toInstance(fixedClock),
         bind[ApplicationService].toInstance(mockApplicationService),
-        bind[ApplicationRepository].toInstance(mockApplicationRepository),
         bind[AuthConnector].toInstance(mockAuthConnector)
       )
       .build()

@@ -18,7 +18,7 @@ class CounterRepositorySpec
     with ScalaFutures
     with BeforeAndAfterEach {
 
-  protected override val repository = new CounterRepository(mongoComponent)
+  protected override val repository = new CounterMongoRepository(mongoComponent)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
