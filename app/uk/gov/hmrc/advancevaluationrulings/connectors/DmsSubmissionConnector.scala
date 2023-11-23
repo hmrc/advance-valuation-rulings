@@ -142,7 +142,7 @@ class DmsSubmissionConnector @Inject() (
           if (response.status == ACCEPTED) {
             Future.successful(Done)
           } else {
-            logger.warn(
+            logger.error(
               s"[DmsSubmissionConnector][submitApplication] dms-submission failed with response body: ${response.body}"
             )
             Future.failed(
