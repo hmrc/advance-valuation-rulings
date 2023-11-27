@@ -15,18 +15,16 @@
  */
 
 package uk.gov.hmrc.advancevaluationrulings.utils
-import java.net.ServerSocket
-
-import scala.jdk.CollectionConverters._
-import scala.util.Using
-
-import uk.gov.hmrc.advancevaluationrulings.utils.WireMockHelper.{MappingBuilderExt, ResponseDefinitionBuilderExt, wireMockPort}
-
-import com.github.tomakehurst.wiremock.{WireMockServer, client}
-import com.github.tomakehurst.wiremock.client.{MappingBuilder, ResponseDefinitionBuilder, WireMock}
 import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.{MappingBuilder, ResponseDefinitionBuilder, WireMock}
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.github.tomakehurst.wiremock.http.{HttpHeader, HttpHeaders}
+import com.github.tomakehurst.wiremock.{WireMockServer, client}
+import uk.gov.hmrc.advancevaluationrulings.utils.WireMockHelper.{MappingBuilderExt, ResponseDefinitionBuilderExt, wireMockPort}
+
+import java.net.ServerSocket
+import scala.jdk.CollectionConverters._
+import scala.util.Using
 
 trait WireMockHelper {
   val wireMockServer = new WireMockServer(wireMockConfig.port(wireMockPort))

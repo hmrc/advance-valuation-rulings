@@ -316,6 +316,10 @@ class DmsSubmissionConnectorSpec
       error
         .asInstanceOf[DmsSubmissionConnector.AttachmentNotFoundException]
         .file mustEqual "foo/bar.pdf"
+
+      error
+        .asInstanceOf[DmsSubmissionConnector.AttachmentNotFoundException]
+        .getMessage mustEqual None.orNull
     }
 
     "must fail when the server returns another status" in {

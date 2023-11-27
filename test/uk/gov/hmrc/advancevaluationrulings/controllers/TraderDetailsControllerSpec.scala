@@ -104,5 +104,32 @@ class TraderDetailsControllerSpec
         contentAsJson(result) mustEqual Json.toJson(traderDetails)
       }
     }
+
+    "must return not found" in {
+      val authResult =
+        new ~(
+          new ~(new ~(atarEnrolment, Some("internalId")), Some(AffinityGroup.Organisation)),
+          Some(Assistant)
+        )
+
+      when(mockAuthConnector.authorise[authResult.type](any(), any())(any(), any()))
+        .thenReturn(Future.successful(authResult))
+      when(
+        mockTraderDetailsService.getTraderDetails(eqTo(ackRef), eqTo(eoriNumber))(any(), any())
+      )
+        .thenReturn(Future.successful(None))
+
+      val request =
+        FakeRequest(
+          GET,
+          routes.TraderDetailsController
+            .retrieveTraderDetails(ackRef.value, eoriNumber.value)
+            .url
+        )
+
+      val result = route(app, request).value
+
+      status(result) mustEqual NOT_FOUND
+    }
   }
 }

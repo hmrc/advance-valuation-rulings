@@ -16,52 +16,49 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import akka.stream.Materializer
-import akka.stream.scaladsl.{Keep, Sink, Source}
-import akka.util.ByteString
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.{ArgumentCaptor, MockitoSugar}
+import org.mockito.Mockito.{reset, verify, when}
+import org.mockito.MockitoSugar.mock
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.freespec.AnyFreeSpec
-import play.api
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
 import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
-import uk.gov.hmrc.advancevaluationrulings.connectors.DmsSubmissionConnector
-import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.views.xml.ApplicationPdf
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.nio.file.{Files, Paths}
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import scala.concurrent.Future
 
-class DmsSubmissionServiceSpec extends AnyFreeSpec with SpecBase with MockitoSugar with BeforeAndAfterEach {
+class SaveFileDmsSubmissionServiceSpec extends SpecBase with BeforeAndAfterEach {
 
-  private val mockFopService             = mock[FopService]
-  private val mockDmsSubmissionConnector = mock[DmsSubmissionConnector]
+  val fileName: String = "applications/" + "application.pdf"
 
-  private lazy val app: api.Application = applicationBuilder
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+
+    reset(mockFopService)
+
+    Paths.get(fileName).toFile.delete()
+  }
+
+  private val mockFopService = mock[FopService]
+
+  private lazy val app = applicationBuilder
     .overrides(
-      bind[FopService].toInstance(mockFopService),
-      bind[DmsSubmissionConnector].toInstance(mockDmsSubmissionConnector)
+      bind[FopService].toInstance(mockFopService)
     )
     .configure(
-      "dms-submission.enabled" -> true
+      "dms-submission.enabled" -> false
     )
     .build()
 
   private lazy val service                     = app.injector.instanceOf[DmsSubmissionService]
   private lazy val applicationTemplate         = app.injector.instanceOf[ApplicationPdf]
-  private implicit lazy val mat: Materializer  = app.injector.instanceOf[Materializer]
   private implicit lazy val messages: Messages =
     app.injector.instanceOf[MessagesApi].preferred(Seq.empty)
-
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-    reset(mockFopService, mockDmsSubmissionConnector)
-  }
 
   "submitApplication" - {
 
@@ -111,41 +108,21 @@ class DmsSubmissionServiceSpec extends AnyFreeSpec with SpecBase with MockitoSug
 
     val hc: HeaderCarrier = HeaderCarrier()
 
-    "must create a PDF from the application and send it to DMS Submission" in {
+    "must create a PDF from the application and save it on disk" in {
 
-      val bytes                                               = "Hello, World!".getBytes("UTF-8")
-      val sourceCaptor: ArgumentCaptor[Source[ByteString, _]] =
-        ArgumentCaptor.forClass(classOf[Source[ByteString, _]])
+      val bytes = "Hello, World!".getBytes("UTF-8")
 
       when(mockFopService.render(any())).thenReturn(Future.successful(bytes))
-      when(
-        mockDmsSubmissionConnector.submitApplication(any(), any(), any(), any(), any(), any())(
-          any()
-        )
-      )
-        .thenReturn(Future.successful(Done))
 
       val expectedXml = applicationTemplate(application).body
 
       service.submitApplication(application, submissionReference)(hc).futureValue
 
       verify(mockFopService).render(eqTo(expectedXml))
-      verify(mockDmsSubmissionConnector).submitApplication(
-        eqTo("applicantEori"),
-        sourceCaptor.capture(),
-        eqTo(application.created),
-        eqTo(submissionReference),
-        eqTo(application.attachments),
-        eqTo(application.letterOfAuthority)
-      )(eqTo(hc))
 
-      val result = sourceCaptor
-        .getValue()
-        .toMat(Sink.fold(ByteString.emptyByteString)(_ ++ _))(Keep.right)
-        .run()
-        .futureValue
+      val result = Files.readAllBytes(Paths.get(fileName))
 
-      result.decodeString("UTF-8") mustEqual "Hello, World!"
+      result mustEqual bytes
     }
 
     "must fail if the fop service fails" in {
@@ -154,27 +131,7 @@ class DmsSubmissionServiceSpec extends AnyFreeSpec with SpecBase with MockitoSug
 
       service.submitApplication(application, submissionReference)(hc).failed.futureValue
 
-      verify(mockDmsSubmissionConnector, never).submitApplication(
-        any(),
-        any(),
-        any(),
-        any(),
-        any(),
-        any()
-      )(any())
     }
 
-    "must fail if the dms submission connector fails" in {
-
-      when(mockFopService.render(any())).thenReturn(Future.successful(Array.emptyByteArray))
-      when(
-        mockDmsSubmissionConnector.submitApplication(any(), any(), any(), any(), any(), any())(
-          any()
-        )
-      )
-        .thenReturn(Future.failed(new RuntimeException()))
-
-      service.submitApplication(application, submissionReference)(hc).failed.futureValue
-    }
   }
 }

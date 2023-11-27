@@ -107,5 +107,19 @@ class DmsSubmissionCallbackControllerSpec extends AnyFreeSpec with SpecBase with
 
       route(app, request).value.failed.futureValue
     }
+
+    "must return OK when a valid request is received but notification is FAILED" in {
+
+      when(mockStubBehaviour.stubAuth[Unit](any(), any())).thenReturn(Future.unit)
+
+      val request = FakeRequest(POST, routes.DmsSubmissionCallbackController.callback.url)
+        .withHeaders(AUTHORIZATION -> "Some auth token")
+        .withBody(Json.toJson(notification.copy(status = SubmissionItemStatus.Failed)))
+
+      val result = route(app, request).value
+      status(result) mustEqual OK
+
+      verify(mockStubBehaviour).stubAuth(Some(predicate), Retrieval.EmptyRetrieval)
+    }
   }
 }

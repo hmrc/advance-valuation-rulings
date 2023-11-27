@@ -18,21 +18,17 @@ package uk.gov.hmrc.advancevaluationrulings.connectors
 
 import java.net.URL
 import javax.inject.{Inject, Singleton}
-
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
-
 import play.api.Configuration
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.advancevaluationrulings.connectors.DraftAttachmentsConnector._
 import uk.gov.hmrc.advancevaluationrulings.models.application.DraftAttachment
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.http.client.HttpClientV2
-
 import cats.data.{EitherNec, NonEmptyChain}
 import cats.implicits._
-
-import config.Service
+import uk.gov.hmrc.advancevaluationrulings.config.Service
 
 @Singleton
 class DraftAttachmentsConnector @Inject() (
