@@ -55,7 +55,7 @@ class AuditServiceSpec extends AnyFreeSpec with SpecBase with MockitoSugar with 
 
   private val trader       =
     TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None, Some(false))
-  private val goodsDetails = GoodsDetails("name", "description", None, None, None, None, None)
+  private val goodsDetails = GoodsDetails("description", None, None, None, None, None)
   private val method       = MethodOne(None, None, None)
   private val contact      = ContactDetails("name", "email", None, None, None)
   private val now          = Instant.now.truncatedTo(ChronoUnit.MILLIS)

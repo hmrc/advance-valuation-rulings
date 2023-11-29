@@ -91,7 +91,6 @@ object ApplicationRequestSpec extends Generators {
   )
 
   val goodsDetails: GoodsDetails = GoodsDetails(
-    goodsName = randomString,
     goodsDescription = randomString,
     similarRulingGoodsInfo = Some(randomString),
     similarRulingMethodInfo = Some(randomString),
@@ -101,7 +100,6 @@ object ApplicationRequestSpec extends Generators {
   )
 
   val goodsDetailsNoDetails: GoodsDetails = GoodsDetails(
-    goodsName = randomString,
     goodsDescription = randomString,
     similarRulingGoodsInfo = None,
     similarRulingMethodInfo = None,
@@ -136,7 +134,6 @@ object ApplicationRequestSpec extends Generators {
     |  "type" : "MethodThree"
     |},
     |"goodsDetails": {
-    |  "goodsName": "$randomString",
     |  "goodsDescription": "$randomString",
     |  "envisagedCommodityCode": "$randomString",
     |  "knownLegalProceedings": "$randomString",

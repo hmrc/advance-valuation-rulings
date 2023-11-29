@@ -23,7 +23,7 @@ import java.time.Instant
 
 final case class DraftSummary(
   id: DraftId,
-  goodsName: Option[String],
+  goodsDescription: Option[String],
   lastUpdated: Instant,
   eoriNumber: Option[String]
 )
@@ -35,7 +35,7 @@ object DraftSummary {
   def apply(answers: UserAnswers): DraftSummary =
     DraftSummary(
       id = answers.draftId,
-      goodsName = Reads
+      goodsDescription = Reads
         .optionNoError(Reads.at[String](JsPath \ "goodsDescription"))
         .reads(answers.data)
         .getOrElse(None),

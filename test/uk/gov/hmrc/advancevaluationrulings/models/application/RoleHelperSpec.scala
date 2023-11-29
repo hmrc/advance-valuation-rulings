@@ -26,7 +26,7 @@ class RoleHelperSpec extends AnyFreeSpec with Matchers {
 
   private val trader: TraderDetail       =
     TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None, Some(true))
-  private val goodsDetails: GoodsDetails = GoodsDetails("name", "description", None, None, None, None, None)
+  private val goodsDetails: GoodsDetails = GoodsDetails("description", None, None, None, None, None)
   private val method: MethodOne          = MethodOne(None, None, None)
   private val contact: ContactDetails    = ContactDetails("name", "email", None, None, None)
   private val now: Instant               = Instant.now.truncatedTo(ChronoUnit.MILLIS)

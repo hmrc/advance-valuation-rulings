@@ -19,7 +19,6 @@ package uk.gov.hmrc.advancevaluationrulings.models.application
 import play.api.libs.json.{Json, OFormat}
 
 final case class GoodsDetails(
-  goodsName: String,
   goodsDescription: String,
   envisagedCommodityCode: Option[String],
   knownLegalProceedings: Option[String],
