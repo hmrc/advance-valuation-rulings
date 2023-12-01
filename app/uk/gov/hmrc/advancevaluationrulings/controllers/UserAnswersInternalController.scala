@@ -44,7 +44,7 @@ class UserAnswersInternalController @Inject() (
 
   private def authorised(action: IAAction) = auth.authorizedAction(predicate(action))
 
-  def get(draftId: DraftId): Action[AnyContent] = authorised(IAAction("READ")).async { implicit request =>
+  def get(draftId: DraftId): Action[AnyContent] = authorised(IAAction("READ")).async {
     repository
       .get(draftId)
       .map {

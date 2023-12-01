@@ -36,45 +36,56 @@ class FopServiceSpec extends AnyFreeSpec with SpecBase with IntegrationPatience 
   private val app: api.Application   = applicationBuilder.build()
   private val fopService: FopService = app.injector.instanceOf[FopService]
 
-  private val attmts: Seq[Attachment] = Seq(
+  private val attachmentId: Int    = 12345
+  private val attachmentSize: Long = 12345L
+
+  private val attachments: Seq[Attachment] = Seq(
     Attachment(
-      12345,
+      attachmentId,
       "SomeFile1",
       Some("description of file"),
       "someLocation",
       Confidential,
       "pdf",
-      12345
+      attachmentSize
     ),
     Attachment(
-      12345,
+      attachmentId,
       "SomeFile2",
       Some("description of file"),
       "someLocation",
       Public,
       "pdf",
-      12345
+      attachmentSize
     ),
     Attachment(
-      12345,
+      attachmentId,
       "SomeFile3",
       Some("description of file"),
       "someLocation",
       Confidential,
       "pdf",
-      12345
+      attachmentSize
     )
   )
 
   private val letterOfAuthority: Attachment = Attachment(
-    12345,
+    attachmentId,
     "SomeFile3",
     Some("description of file"),
     "someLocation",
     Confidential,
     "pdf",
-    12345
+    attachmentSize
   )
+
+  private val longSampleText: String =
+    """Lorem ipsum dolor sit amet. Sed internos corporis qui quod ipsum sit saepe dolores ab
+      | quas similique ut commodi tempora et facilis porro ut officiis nihil.
+      |
+      |Ut eveniet assumenda sit quod fugit ut quae illo est amet iste. Ab nulla quia aut ipsam
+      | cumque aut aspernatur enim hic maiores voluptas aut dolores repudiandae eum maxim
+      | odio. In nesciunt mollitia quo reprehenderit natus qui soluta sequi.""".stripMargin
 
   "render" - {
 
@@ -87,7 +98,7 @@ class FopServiceSpec extends AnyFreeSpec with SpecBase with IntegrationPatience 
     "must generate a test PDF" in {
 
       val application = Application(
-        id = ApplicationId(25467987),
+        id = ApplicationId(attachmentId),
         applicantEori = "GB905360708861",
         trader = TraderDetail(
           eori = "GB905360708861",
@@ -121,28 +132,19 @@ class FopServiceSpec extends AnyFreeSpec with SpecBase with IntegrationPatience 
           jobTitle = Some("CEO")
         ),
         requestedMethod = MethodOne(
-          saleBetweenRelatedParties = Some(
-            "Lorem ipsum dolor sit amet. Sed internos corporis qui quod ipsum sit saepe dolores ab quas similique ut commodi tempora et facilis porro ut officiis nihil.\n\nUt eveniet assumenda sit quod fugit ut quae illo est amet iste. Ab nulla quia aut ipsam cumque aut aspernatur enim hic maiores voluptas aut dolores repudiandae eum maxime odio. In nesciunt mollitia quo reprehenderit natus qui soluta sequi."
-          ),
-          goodsRestrictions = Some(
-            "Lorem ipsum dolor sit amet. Sed internos corporis qui quod ipsum sit saepe dolores ab quas similique ut commodi tempora et facilis porro ut officiis nihil.\n\nUt eveniet assumenda sit quod fugit ut quae illo est amet iste. Ab nulla quia aut ipsam cumque aut aspernatur enim hic maiores voluptas aut dolores repudiandae eum maxime odio. In nesciunt mollitia quo reprehenderit natus qui soluta sequi."
-          ),
-          saleConditions = Some(
-            "Lorem ipsum dolor sit amet. Sed internos corporis qui quod ipsum sit saepe dolores ab quas similique ut commodi tempora et facilis porro ut officiis nihil."
-          )
+          saleBetweenRelatedParties = Some(longSampleText),
+          goodsRestrictions = Some(longSampleText),
+          saleConditions = Some(longSampleText)
         ),
         goodsDetails = GoodsDetails(
-          goodsName = "The name for the goods",
           goodsDescription = "A short description of the goods",
           similarRulingMethodInfo = Some("method info"),
           similarRulingGoodsInfo = Some("goods info"),
           envisagedCommodityCode = Some("070190"),
-          knownLegalProceedings = Some(
-            "Lorem ipsum dolor sit amet. Sed internos corporis qui quod ipsum sit saepe dolores ab quas similique ut commodi tempora et facilis porro ut officiis nihil.\n\nUt eveniet assumenda sit quod fugit ut quae illo est amet iste. Ab nulla quia aut ipsam cumque aut aspernatur enim hic maiores voluptas aut dolores repudiandae eum maxime odio. In nesciunt mollitia quo reprehenderit natus qui soluta sequi."
-          ),
+          knownLegalProceedings = Some(longSampleText),
           confidentialInformation = Some("Some confidential information")
         ),
-        attachments = attmts,
+        attachments = attachments,
         whatIsYourRoleResponse = Some(WhatIsYourRole.EmployeeOrg),
         letterOfAuthority = Some(letterOfAuthority),
         submissionReference = "submissionReference",

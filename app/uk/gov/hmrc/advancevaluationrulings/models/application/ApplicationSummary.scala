@@ -24,7 +24,7 @@ import java.time.Instant
 
 final case class ApplicationSummary(
   id: ApplicationId,
-  goodsName: String,
+  goodsDescription: String,
   dateSubmitted: Instant,
   eoriNumber: String
 )
@@ -34,7 +34,7 @@ object ApplicationSummary {
   val mongoReads: Reads[ApplicationSummary] =
     (
       (__ \ "id").read[ApplicationId] and
-        (__ \ "goodsDetails" \ "goodsName").read[String] and
+        (__ \ "goodsDetails" \ "goodsDescription").read[String] and
         (__ \ "created").read[Instant](MongoJavatimeFormats.instantFormat) and
         (__ \ "trader" \ "eori").read[String]
     )(ApplicationSummary.apply _)
