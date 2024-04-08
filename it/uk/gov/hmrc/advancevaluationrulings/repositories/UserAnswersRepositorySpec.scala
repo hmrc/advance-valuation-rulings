@@ -23,17 +23,17 @@ import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class UserAnswersRepositorySpec
-    extends AnyFreeSpec
+  extends AnyFreeSpec
     with Matchers
     with DefaultPlayMongoRepositorySupport[UserAnswers]
     with MockitoSugar
     with OptionValues
     with ScalaFutures {
 
-  private val instant          = Instant.now.truncatedTo(ChronoUnit.MILLIS)
+  private val instant = Instant.now.truncatedTo(ChronoUnit.MILLIS)
   private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-  private val answers       =
+  private val answers =
     UserAnswers("userId", DraftId(1), Json.obj("foo" -> "bar"), Instant.ofEpochSecond(1))
 
   private val mockAppConfig = mock[AppConfig]
@@ -50,11 +50,12 @@ class UserAnswersRepositorySpec
   private implicit val crypto: Encrypter with Decrypter =
     SymmetricCryptoFactory.aesGcmCryptoFromConfig("crypto", configuration.underlying)
 
-  protected override val repository: UserAnswersMongoRepository = new UserAnswersMongoRepository(
-    mongoComponent = mongoComponent,
-    appConfig = mockAppConfig,
-    clock = stubClock
-  )
+  protected override val repository: UserAnswersMongoRepository =
+    new UserAnswersMongoRepository(
+      mongoComponent = mongoComponent,
+      appConfig = mockAppConfig,
+      clock = stubClock
+    )
 
   ".set" - {
 
@@ -62,7 +63,7 @@ class UserAnswersRepositorySpec
 
       val expectedResult = answers copy (lastUpdated = instant)
 
-      val setResult     = repository.set(answers).futureValue
+      val setResult = repository.set(answers).futureValue
       val updatedRecord = find(
         Filters.and(
           Filters.equal("userId", answers.userId),
@@ -106,7 +107,7 @@ class UserAnswersRepositorySpec
 
         insert(answers).futureValue.wasAcknowledged() mustBe true
 
-        val result         = repository.get(answers.userId, answers.draftId).futureValue
+        val result = repository.get(answers.userId, answers.draftId).futureValue
         val expectedResult = answers copy (lastUpdated = instant)
 
         result.value mustEqual expectedResult

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import akka.stream.Materializer
+import org.apache.pekko.stream.Materializer
 import cats.implicits._
 import uk.gov.hmrc.advancevaluationrulings.connectors.DraftAttachmentsConnector
 import uk.gov.hmrc.advancevaluationrulings.models.application.{ApplicationId, DraftAttachment}
@@ -34,15 +34,20 @@ class AttachmentsService @Inject() (
   objectStoreClient: PlayObjectStoreClient
 )(implicit ec: ExecutionContext, mat: Materializer) {
 
-  def copyAttachment(applicationId: ApplicationId, path: String)(implicit
-    hc: HeaderCarrier
-  ): Future[Path] =
+  def copyAttachment(
+    applicationId: ApplicationId,
+    path: String
+  )(implicit hc: HeaderCarrier): Future[Path] =
     for {
       attachment <- draftAttachmentsConnector.get(path)
       path       <- putAttachment(applicationId.toString, path, attachment)
     } yield path
 
-  private def putAttachment(applicationId: String, path: String, attachment: DraftAttachment)(implicit
+  private def putAttachment(
+    applicationId: String,
+    path: String,
+    attachment: DraftAttachment
+  )(implicit
     hc: HeaderCarrier
   ): Future[Path] = {
     val objectStorePath =

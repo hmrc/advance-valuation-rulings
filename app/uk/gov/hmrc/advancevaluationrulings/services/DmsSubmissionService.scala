@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
+import org.apache.pekko.stream.scaladsl.Source
+import org.apache.pekko.util.ByteString
 import play.api.Logging
 import play.api.i18n.{Messages, MessagesApi}
 import uk.gov.hmrc.advancevaluationrulings.connectors.DmsSubmissionConnector

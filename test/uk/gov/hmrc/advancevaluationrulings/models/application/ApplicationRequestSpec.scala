@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
-import generators.Generators
 import play.api.libs.json.{JsSuccess, Json}
 import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 import uk.gov.hmrc.advancevaluationrulings.models.DraftId
+import uk.gov.hmrc.advancevaluationrulings.utils.generators.Generators
 
 class ApplicationRequestSpec extends SpecBase {
 
@@ -110,38 +110,38 @@ object ApplicationRequestSpec extends Generators {
 
   val body: String =
     s"""{
-    |"draftId": "$draftId",
-    |"trader": {
-    |  "eori": "$randomString",
-    |  "businessName": "$randomString",
-    |  "addressLine1": "$randomString",
-    |  "addressLine2": "$randomString",
-    |  "postcode": "$randomString",
-    |  "countryCode": "$randomString",
-    |  "phoneNumber": "$randomString",
-    |  "isPrivate": true
-    |},
-    |"contact": {
-    |  "name": "$randomString",
-    |  "email": "$randomString",
-    |  "phone": "$randomString",
-    |  "companyName": "$randomString",
-    |  "jobTitle": "$randomString"
-    |},
-    |"requestedMethod" : {
-    |  "whyNotOtherMethods" : "$randomString",
-    |  "previousSimilarGoods" : "$randomString",
-    |  "type" : "MethodThree"
-    |},
-    |"goodsDetails": {
-    |  "goodsDescription": "$randomString",
-    |  "envisagedCommodityCode": "$randomString",
-    |  "knownLegalProceedings": "$randomString",
-    |  "confidentialInformation": "$randomString",
-    |  "similarRulingGoodsInfo": "$randomString",
-    |  "similarRulingMethodInfo": "$randomString"
-    |},
-    |"attachments": [],
-    |"whatIsYourRole": "${WhatIsYourRole.EmployeeOrg.entryName}"
+       |"draftId": "$draftId",
+       |"trader": {
+       |  "eori": "$randomString",
+       |  "businessName": "$randomString",
+       |  "addressLine1": "$randomString",
+       |  "addressLine2": "$randomString",
+       |  "postcode": "$randomString",
+       |  "countryCode": "$randomString",
+       |  "phoneNumber": "$randomString",
+       |  "isPrivate": true
+       |},
+       |"contact": {
+       |  "name": "$randomString",
+       |  "email": "$randomString",
+       |  "phone": "$randomString",
+       |  "companyName": "$randomString",
+       |  "jobTitle": "$randomString"
+       |},
+       |"requestedMethod" : {
+       |  "whyNotOtherMethods" : "$randomString",
+       |  "previousSimilarGoods" : "$randomString",
+       |  "type" : "MethodThree"
+       |},
+       |"goodsDetails": {
+       |  "goodsDescription": "$randomString",
+       |  "envisagedCommodityCode": "$randomString",
+       |  "knownLegalProceedings": "$randomString",
+       |  "confidentialInformation": "$randomString",
+       |  "similarRulingGoodsInfo": "$randomString",
+       |  "similarRulingMethodInfo": "$randomString"
+       |},
+       |"attachments": [],
+       |"whatIsYourRole": "${WhatIsYourRole.EmployeeOrg.entryName}"
     }""".stripMargin
 }

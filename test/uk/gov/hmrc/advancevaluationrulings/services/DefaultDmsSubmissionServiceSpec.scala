@@ -16,12 +16,14 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import akka.stream.Materializer
-import akka.stream.scaladsl.{Keep, Sink, Source}
-import akka.util.ByteString
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.{Keep, Sink, Source}
+import org.apache.pekko.util.ByteString
+import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.{ArgumentCaptor, MockitoSugar}
+import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatest.BeforeAndAfterEach
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
 import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
@@ -151,14 +153,15 @@ class DefaultDmsSubmissionServiceSpec extends SpecBase with MockitoSugar with Be
 
       service.submitApplication(application, submissionReference)(hc).failed.futureValue
 
-      verify(mockDmsSubmissionConnector, never).submitApplication(
-        any(),
-        any(),
-        any(),
-        any(),
-        any(),
-        any()
-      )(any())
+      verify(mockDmsSubmissionConnector, times(0))
+        .submitApplication(
+          any(),
+          any(),
+          any(),
+          any(),
+          any(),
+          any()
+        )(any())
     }
 
     "must fail if the dms submission connector fails" in {

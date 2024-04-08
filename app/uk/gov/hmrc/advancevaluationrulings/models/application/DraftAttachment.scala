@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
+import org.apache.pekko.stream.scaladsl.Source
+import org.apache.pekko.util.ByteString
 
 final case class DraftAttachment(
   content: Source[ByteString, _],

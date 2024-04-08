@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-package generators
+package uk.gov.hmrc.advancevaluationrulings.utils.generators
 
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-
+import org.scalacheck.{Arbitrary, Gen}
 import play.api.http.Status.OK
 import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 import uk.gov.hmrc.advancevaluationrulings.models.application.ApplicationId
 import uk.gov.hmrc.advancevaluationrulings.models.etmp._
 import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
-
-import org.scalacheck.{Arbitrary, Gen}
 import wolfendale.scalacheck.regexp.RegexpGen
+
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 trait ModelGenerators extends Generators {
 
@@ -50,7 +49,7 @@ trait ModelGenerators extends Generators {
     eori                     <- eoriNumberGen
   } yield Query(regime, acknowledgementReference, taxPayerID = None, EORI = Option(eori))
 
-  def CDSEstablishmentAddressGen: Gen[CDSEstablishmentAddress] = for {
+  def cdsEstablishmentAddressGen: Gen[CDSEstablishmentAddress] = for {
     streetAndNumber <- stringsWithMaxLength(70)
     city            <- stringsWithMaxLength(35)
     countryCode     <- stringsWithMaxLength(2)
@@ -85,7 +84,7 @@ trait ModelGenerators extends Generators {
   def responseDetailGen: Gen[ResponseDetail] = for {
     eoriNo                            <- eoriNumberGen
     cdsFullName                       <- stringsWithMaxLength(512)
-    cdsEstablishmentAddressGen        <- CDSEstablishmentAddressGen
+    cdsEstablishmentAddressGen        <- cdsEstablishmentAddressGen
     contactInformation                <- Gen.option(contactInformationGen)
     consentToDisclosureOfPersonalData <- Gen.option(Gen.oneOf(Seq("0", "1")))
   } yield ResponseDetail(
@@ -99,11 +98,11 @@ trait ModelGenerators extends Generators {
   def subscriptionDisplayResponseGen: Gen[SubscriptionDisplayResponse] =
     responseDetailGen.map(rd => SubscriptionDisplayResponse(ResponseCommon(OK.toString), Some(rd)))
 
-  def ETMPSubscriptionDisplayResponseGen: Gen[ETMPSubscriptionDisplayResponse] =
+  def etmpSubscriptionDisplayResponseGen: Gen[ETMPSubscriptionDisplayResponse] =
     subscriptionDisplayResponseGen.map(ETMPSubscriptionDisplayResponse(_))
 
   def traderDetailsResponseGen: Gen[TraderDetailsResponse] = for {
-    registeredDetails                 <- ETMPSubscriptionDisplayResponseGen
+    registeredDetails                 <- etmpSubscriptionDisplayResponseGen
     consentToDisclosureOfPersonalData <- Arbitrary.arbitrary[Boolean]
   } yield {
     val responseDetail = registeredDetails.subscriptionDisplayResponse.responseDetail.get

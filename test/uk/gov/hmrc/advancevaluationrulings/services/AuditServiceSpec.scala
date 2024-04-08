@@ -18,9 +18,10 @@ package uk.gov.hmrc.advancevaluationrulings.services
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar
+import org.mockito.Mockito.{reset, verify}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.freespec.AnyFreeSpec
+import org.scalatestplus.mockito.MockitoSugar
 import play.api
 import play.api.inject.bind
 import uk.gov.hmrc.advancevaluationrulings.base.SpecBase

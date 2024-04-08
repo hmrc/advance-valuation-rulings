@@ -17,10 +17,11 @@
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.{Mockito, MockitoSugar}
+import org.mockito.Mockito
+import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.freespec.AnyFreeSpec
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
 import play.api.libs.json.Json
@@ -138,7 +139,7 @@ class UserAnswersInternalControllerSpec extends AnyFreeSpec with SpecBase with M
       status(result) mustEqual NO_CONTENT
 
       verify(mockStubBehaviour).stubAuth(Some(writePredicate), Retrieval.EmptyRetrieval)
-      verify(mockUserAnswersRepository, times(1)).set(eqTo(userAnswers))
+      verify(mockUserAnswersRepository, times(1)).set(userAnswers)
     }
 
     "must return BAD_REQUEST when invalid data is received" in {

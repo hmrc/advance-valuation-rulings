@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
-import generators.ModelGenerators
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar
+import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.freespec.AnyFreeSpec
+import org.scalatestplus.mockito.MockitoSugar
 import play.api
 import play.api.inject.bind
 import play.api.libs.json.Json
@@ -32,6 +32,7 @@ import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.models.audit.AuditMetadata
 import uk.gov.hmrc.advancevaluationrulings.services.ApplicationService
+import uk.gov.hmrc.advancevaluationrulings.utils.generators.ModelGenerators
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.~
 

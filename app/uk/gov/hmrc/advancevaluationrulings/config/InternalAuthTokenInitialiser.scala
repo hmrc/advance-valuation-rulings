@@ -30,7 +30,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 
 abstract class InternalAuthTokenInitialiser {
   val initialised: Future[Done]

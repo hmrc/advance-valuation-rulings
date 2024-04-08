@@ -1,8 +1,8 @@
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
-import akka.stream.Materializer
-import akka.stream.scaladsl.Sink
-import akka.util.ByteString
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.Sink
+import org.apache.pekko.util.ByteString
 import cats.implicits.toFoldableOps
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.Fault

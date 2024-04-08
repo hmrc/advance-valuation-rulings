@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import generators.ModelGenerators
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar
+import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.freespec.AnyFreeSpec
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.{Application, inject}
 import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
@@ -30,6 +30,7 @@ import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReferen
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.Regime.CDS
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.{ETMPSubscriptionDisplayResponse, Query, ResponseCommon, SubscriptionDisplayResponse}
 import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
+import uk.gov.hmrc.advancevaluationrulings.utils.generators.ModelGenerators
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global

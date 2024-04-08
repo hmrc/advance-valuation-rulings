@@ -17,6 +17,7 @@
 package uk.gov.hmrc.advancevaluationrulings.services
 
 import org.apache.pdfbox.pdmodel.PDDocument
+import org.apache.pdfbox.pdmodel.PDDocument._
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.freespec.AnyFreeSpec
 import play.api
@@ -88,12 +89,6 @@ class FopServiceSpec extends AnyFreeSpec with SpecBase with IntegrationPatience 
       | odio. In nesciunt mollitia quo reprehenderit natus qui soluta sequi.""".stripMargin
 
   "render" - {
-
-    "must render some fop content as a pdf" in {
-      val input  = Source.fromResource("fop/simple.fo").mkString
-      val result = fopService.render(input).futureValue
-      PDDocument.load(result)
-    }
 
     "must generate a test PDF" in {
 

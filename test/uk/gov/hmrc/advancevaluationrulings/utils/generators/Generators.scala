@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package generators
+package uk.gov.hmrc.advancevaluationrulings.utils.generators
 
 import java.time._
 

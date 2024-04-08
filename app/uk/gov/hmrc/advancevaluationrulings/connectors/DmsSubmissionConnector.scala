@@ -35,8 +35,8 @@ import uk.gov.hmrc.objectstore.client.Path
 import uk.gov.hmrc.objectstore.client.play.Implicits._
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
 import cats.implicits._
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
+import org.apache.pekko.stream.scaladsl.Source
+import org.apache.pekko.util.ByteString
 import org.apache.commons.io.FilenameUtils
 import uk.gov.hmrc.advancevaluationrulings.config.Service
 
@@ -46,7 +46,9 @@ class DmsSubmissionConnector @Inject() (
   objectStoreClient: PlayObjectStoreClient,
   httpClient: HttpClientV2
 )(implicit ec: ExecutionContext)
-    extends Logging {
+    extends Logging
+    // with DefaultBodyWritables
+    {
 
   private val internalAuthToken: String = configuration.get[String]("internal-auth.token")
 
