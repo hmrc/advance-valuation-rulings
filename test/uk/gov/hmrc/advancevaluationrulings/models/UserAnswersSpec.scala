@@ -31,7 +31,7 @@ import java.time.{LocalDateTime, ZoneOffset}
 import java.util.Base64
 
 class UserAnswersSpec
-  extends AnyFreeSpec
+    extends AnyFreeSpec
     with Matchers
     with ScalaCheckPropertyChecks
     with ModelGenerators
@@ -40,9 +40,9 @@ class UserAnswersSpec
 
   val userAnswersJson: JsObject =
     Json.obj(
-      "userId" -> "some_fake_id",
-      "draftId" -> "DRAFT000000001",
-      "data" -> Json.obj("some_json_field" -> "some_json_data"),
+      "userId"      -> "some_fake_id",
+      "draftId"     -> "DRAFT000000001",
+      "data"        -> Json.obj("some_json_field" -> "some_json_data"),
       "lastUpdated" -> "2024-01-01T00:00:00Z"
     )
 
@@ -51,35 +51,12 @@ class UserAnswersSpec
       "some_fake_id",
       DraftId(1),
       Json.obj("some_json_field" -> Json.toJson("some_json_data")),
-      lastUpdated =
-        LocalDateTime.of(2024, 1, 1, 0, 0, 0)
-          .toInstant(ZoneOffset.UTC)
+      lastUpdated = LocalDateTime
+        .of(2024, 1, 1, 0, 0, 0)
+        .toInstant(ZoneOffset.UTC)
     )
 
   "UserAnswers" - {
-
-//    ".encryptedFormat" - {
-//
-//      "should return" in {
-//
-//       val aesKey = {
-//          val aesKey = new Array[Byte](32)
-//          new SecureRandom().nextBytes(aesKey)
-//          Base64.getEncoder.encodeToString(aesKey)
-//        }
-//
-//        val configuration = Configuration("crypto.key" -> aesKey)
-//
-//        implicit val crypto: Encrypter with Decrypter =
-//          SymmetricCryptoFactory.aesGcmCryptoFromConfig("crypto", configuration.underlying)
-//
-//        val actual = UserAnswers.encryptedFormat
-//        val expected = ""
-//
-//        actual shouldBe expected
-//      }
-//
-//    }
 
     "reads" - {
 
@@ -106,4 +83,3 @@ class UserAnswersSpec
     }
   }
 }
-
