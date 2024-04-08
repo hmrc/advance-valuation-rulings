@@ -31,6 +31,7 @@ lazy val microservice =
 
 lazy val it = project
   .enablePlugins(PlayScala)
+  .dependsOn(microservice % "test->test")
   .settings(itSettings())
   .settings(libraryDependencies ++= AppDependencies.itDependencies)
 
