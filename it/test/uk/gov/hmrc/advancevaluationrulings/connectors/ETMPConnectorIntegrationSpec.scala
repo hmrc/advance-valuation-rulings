@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
+import generators.ITModelGenerators
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.libs.json.Json
-import uk.gov.hmrc.advancevaluationrulings.utils.{BaseIntegrationSpec, WireMockHelper}
+import uk.gov.hmrc.advancevaluationrulings.{BaseIntegrationSpec, WireMockHelper}
 
-class ETMPConnectorIntegrationSpec extends BaseIntegrationSpec with WireMockHelper {
+class ETMPConnectorIntegrationSpec extends BaseIntegrationSpec with WireMockHelper with ITModelGenerators {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -43,7 +44,7 @@ class ETMPConnectorIntegrationSpec extends BaseIntegrationSpec with WireMockHelp
     "get subscription details" in {
       ScalaCheckPropertyChecks.forAll(
         queryGen,
-        ETMPSubscriptionDisplayResponseGen
+        etmpSubscriptionDisplayResponseGen
       ) { (request, successResponse) =>
         val expectedResponse = Json.stringify(Json.toJson(successResponse))
         stubGet(

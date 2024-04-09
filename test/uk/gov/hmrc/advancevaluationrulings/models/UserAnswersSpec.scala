@@ -21,14 +21,10 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatest.{EitherValues, OptionValues}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import play.api.Configuration
 import play.api.libs.json.{JsObject, Json}
-import uk.gov.hmrc.advancevaluationrulings.utils.generators.ModelGenerators
-import uk.gov.hmrc.crypto.{Decrypter, Encrypter, SymmetricCryptoFactory}
+import uk.gov.hmrc.advancevaluationrulings.generators.ModelGenerators
 
-import java.security.SecureRandom
 import java.time.{LocalDateTime, ZoneOffset}
-import java.util.Base64
 
 class UserAnswersSpec
     extends AnyFreeSpec

@@ -31,9 +31,9 @@ lazy val microservice =
 
 lazy val it = project
   .enablePlugins(PlayScala)
-  .dependsOn(microservice % "test->test")
+  .dependsOn(microservice)
   .settings(itSettings())
-  .settings(libraryDependencies ++= AppDependencies.itDependencies)
+  .settings(libraryDependencies ++= AppDependencies())
 
 addCommandAlias("scalafmtAll", "all scalafmtSbt scalafmt Test/scalafmt it/Test/scalafmt")
 addCommandAlias("scalastyleAll", "all scalastyle Test/scalastyle it/Test/scalastyle")

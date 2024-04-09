@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.utils.generators
+package uk.gov.hmrc.advancevaluationrulings.generators
 
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.http.Status.OK

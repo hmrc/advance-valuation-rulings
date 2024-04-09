@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.utils.generators
+package generators
 
 import java.time._
 
 import org.scalacheck.{Gen, Shrink}
 import org.scalacheck.Gen._
 
-trait Generators {
+trait ITGenerators {
 
   implicit val noShrink: Shrink[String] = Shrink.shrinkAny
 

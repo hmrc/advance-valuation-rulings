@@ -23,7 +23,7 @@ import org.scalatest.{EitherValues, OptionValues}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.libs.json.{JsString, JsSuccess, Json}
 import play.api.mvc.PathBindable
-import uk.gov.hmrc.advancevaluationrulings.utils.generators.ModelGenerators
+import uk.gov.hmrc.advancevaluationrulings.generators.ModelGenerators
 
 class DraftIdSpec
     extends AnyFreeSpec

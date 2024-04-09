@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.utils
+package uk.gov.hmrc.advancevaluationrulings
 
-import generators.ModelGenerators
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor1}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, EitherValues}
@@ -42,8 +41,7 @@ trait BaseIntegrationSpec
     with GuiceOneServerPerSuite
     with BeforeAndAfterAll
     with TableDrivenPropertyChecks
-    with BeforeAndAfterEach
-    with ModelGenerators {
+    with BeforeAndAfterEach {
 
   implicit lazy val headerCarrier: HeaderCarrier = HeaderCarrier()
 

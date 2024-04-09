@@ -26,11 +26,11 @@ import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.{Application, inject}
 import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 import uk.gov.hmrc.advancevaluationrulings.connectors.ETMPConnector
+import uk.gov.hmrc.advancevaluationrulings.generators.ModelGenerators
 import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.Regime.CDS
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.{ETMPSubscriptionDisplayResponse, Query, ResponseCommon, SubscriptionDisplayResponse}
 import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
-import uk.gov.hmrc.advancevaluationrulings.utils.generators.ModelGenerators
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global

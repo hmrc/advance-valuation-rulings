@@ -16,7 +16,7 @@ object AppDependencies {
     "uk.gov.hmrc.objectstore" %% "object-store-client-play-30"  % "1.3.0"
   )
 
-  private val test: Seq[ModuleID]   = Seq(
+  private val test: Seq[ModuleID] = Seq(
     "uk.gov.hmrc"       %% "bootstrap-test-play-30"  % hmrcBootstrapPlayVersion,
     "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-30" % hmrcMongoPlayVersion,
     "org.mockito"       %% "mockito-scala"           % "1.17.31",
@@ -25,8 +25,5 @@ object AppDependencies {
     "org.apache.pdfbox"  % "pdfbox"                  % "3.0.2"
   ).map(_ % Test)
 
-  // only add additional dependencies here - it test inherit test dependencies above already
-  val itDependencies: Seq[ModuleID] = Seq()
-
-  def apply(): Seq[ModuleID] = compile ++ test
+  def apply(): Seq[ModuleID]      = compile ++ test
 }

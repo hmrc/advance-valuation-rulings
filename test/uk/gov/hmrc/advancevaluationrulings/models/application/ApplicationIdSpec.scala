@@ -23,7 +23,7 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.libs.json.{JsString, JsSuccess, Json}
 import play.api.mvc.PathBindable
-import uk.gov.hmrc.advancevaluationrulings.utils.generators.ModelGenerators
+import uk.gov.hmrc.advancevaluationrulings.generators.ModelGenerators
 
 class ApplicationIdSpec
     extends AnyFreeSpec

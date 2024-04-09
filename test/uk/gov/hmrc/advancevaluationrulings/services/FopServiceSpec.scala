@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import org.apache.pdfbox.pdmodel.PDDocument
-import org.apache.pdfbox.pdmodel.PDDocument._
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.freespec.AnyFreeSpec
 import play.api
@@ -30,7 +28,6 @@ import uk.gov.hmrc.advancevaluationrulings.views.xml.ApplicationPdf
 
 import java.nio.file.{Files, Paths}
 import java.time.Instant
-import scala.io.Source
 
 class FopServiceSpec extends AnyFreeSpec with SpecBase with IntegrationPatience {
 

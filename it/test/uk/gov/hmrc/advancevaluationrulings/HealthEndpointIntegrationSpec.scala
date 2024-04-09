@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.advancevaluationrulings
 
-import uk.gov.hmrc.advancevaluationrulings.utils.BaseIntegrationSpec
-
 class HealthEndpointIntegrationSpec extends BaseIntegrationSpec {
 
   "service health endpoint" should {

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2024 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
 import com.fasterxml.jackson.core.JsonParseException
@@ -23,17 +39,17 @@ import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class UserAnswersRepositorySpec
-  extends AnyFreeSpec
+    extends AnyFreeSpec
     with Matchers
     with DefaultPlayMongoRepositorySupport[UserAnswers]
     with MockitoSugar
     with OptionValues
     with ScalaFutures {
 
-  private val instant = Instant.now.truncatedTo(ChronoUnit.MILLIS)
+  private val instant          = Instant.now.truncatedTo(ChronoUnit.MILLIS)
   private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-  private val answers =
+  private val answers       =
     UserAnswers("userId", DraftId(1), Json.obj("foo" -> "bar"), Instant.ofEpochSecond(1))
 
   private val mockAppConfig = mock[AppConfig]
@@ -63,7 +79,7 @@ class UserAnswersRepositorySpec
 
       val expectedResult = answers copy (lastUpdated = instant)
 
-      val setResult = repository.set(answers).futureValue
+      val setResult     = repository.set(answers).futureValue
       val updatedRecord = find(
         Filters.and(
           Filters.equal("userId", answers.userId),
@@ -107,7 +123,7 @@ class UserAnswersRepositorySpec
 
         insert(answers).futureValue.wasAcknowledged() mustBe true
 
-        val result = repository.get(answers.userId, answers.draftId).futureValue
+        val result         = repository.get(answers.userId, answers.draftId).futureValue
         val expectedResult = answers copy (lastUpdated = instant)
 
         result.value mustEqual expectedResult

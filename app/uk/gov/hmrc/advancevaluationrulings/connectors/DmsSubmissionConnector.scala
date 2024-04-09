@@ -39,6 +39,7 @@ import java.time.temporal.ChronoUnit
 import java.time.{Instant, LocalDateTime, ZoneOffset}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+import scala.language.existentials
 import scala.util.control.NoStackTrace
 
 @Singleton
@@ -101,14 +102,15 @@ class DmsSubmissionConnector @Inject() (
       MultipartFormData.DataPart("metadata.businessArea", businessArea)
     )
 
-    val fileParts = Seq(
-      MultipartFormData.FilePart(
-        key = "form",
-        filename = "application.pdf",
-        contentType = Some("application/pdf"),
-        ref = pdf
+    val fileParts: Seq[MultipartFormData.FilePart[Source[ByteString, _]]] =
+      Seq(
+        MultipartFormData.FilePart(
+          key = "form",
+          filename = "application.pdf",
+          contentType = Some("application/pdf"),
+          ref = pdf
+        )
       )
-    )
 
     val attachmentParts = dmsAttachments.traverse { attachment =>
       objectStoreClient.getObject(Path.File(attachment.location)).flatMap {
