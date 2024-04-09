@@ -8,11 +8,6 @@ val appName = "advance-valuation-ruling"
 lazy val microservice =
   Project(appName, file("."))
     .enablePlugins(PlayScala, SbtDistributablesPlugin)
-    .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
-    .settings(
-      // To resolve a bug with version 2.x.x of the scoverage plugin - https://github.com/sbt/sbt/issues/6997
-      libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
-    )
     .settings(PlayKeys.playDefaultPort := 12601)
     .settings(CodeCoverageSettings.settings)
     .settings(
