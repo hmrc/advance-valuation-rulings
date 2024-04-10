@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package generators
+package uk.gov.hmrc.advancevaluationrulings.generators
 
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.http.Status.OK
@@ -28,16 +28,6 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 trait ITModelGenerators extends ITGenerators {
-
-  def applicationIdGen: Gen[ApplicationId] =
-    for {
-      value <- Gen.choose(1, 999999999)
-    } yield ApplicationId(value)
-
-  def draftIdGen: Gen[DraftId] =
-    for {
-      value <- Gen.choose(1, 999999999)
-    } yield DraftId(value)
 
   def regimeGen: Gen[Regime] = Gen.oneOf(Regime.values)
 
@@ -100,18 +90,4 @@ trait ITModelGenerators extends ITGenerators {
 
   def etmpSubscriptionDisplayResponseGen: Gen[ETMPSubscriptionDisplayResponse] =
     subscriptionDisplayResponseGen.map(ETMPSubscriptionDisplayResponse(_))
-
-  def traderDetailsResponseGen: Gen[TraderDetailsResponse] = for {
-    registeredDetails                 <- etmpSubscriptionDisplayResponseGen
-    consentToDisclosureOfPersonalData <- Arbitrary.arbitrary[Boolean]
-  } yield {
-    val responseDetail = registeredDetails.subscriptionDisplayResponse.responseDetail.get
-    TraderDetailsResponse(
-      EORINo = responseDetail.EORINo,
-      CDSFullName = responseDetail.CDSFullName,
-      CDSEstablishmentAddress = responseDetail.CDSEstablishmentAddress,
-      consentToDisclosureOfPersonalData = consentToDisclosureOfPersonalData,
-      contactInformation = responseDetail.contactInformation
-    )
-  }
 }

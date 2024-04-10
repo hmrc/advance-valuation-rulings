@@ -216,7 +216,6 @@ class ApplicationRepositorySpec
         now,
         now
       )
-
       insert(application1).futureValue.wasAcknowledged() mustBe true
       insert(application2).futureValue.wasAcknowledged() mustBe true
       insert(application3).futureValue.wasAcknowledged() mustBe true

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,19 @@
  * limitations under the License.
  */
 
-package generators
+package uk.gov.hmrc.advancevaluationrulings.generators
+
+import org.scalacheck.Gen
+import org.scalacheck.Gen._
 
 import java.time._
 
-import org.scalacheck.{Gen, Shrink}
-import org.scalacheck.Gen._
-
 trait ITGenerators {
-
-  implicit val noShrink: Shrink[String] = Shrink.shrinkAny
-
-  def intsBelowValue(value: Int): Gen[Int] = Gen.chooseNum(0, value)
 
   def stringsWithMaxLength(maxLength: Int): Gen[String] =
     for {
       length <- choose(1, maxLength)
-      chars  <- listOfN(length, Gen.alphaNumChar)
+      chars <- listOfN(length, Gen.alphaNumChar)
     } yield chars.mkString
 
   def localDateTimeGen: Gen[LocalDateTime] = {
