@@ -36,10 +36,10 @@ import scala.io.Source
 
 class FopServiceSpec extends AnyFreeSpec with SpecBase with IntegrationPatience {
 
-  private val app: api.Application = applicationBuilder.build()
+  private val app: api.Application   = applicationBuilder.build()
   private val fopService: FopService = app.injector.instanceOf[FopService]
 
-  private val attachmentId: Int = 12345
+  private val attachmentId: Int    = 12345
   private val attachmentSize: Long = 12345L
 
   private val attachments: Seq[Attachment] = Seq(
@@ -94,9 +94,9 @@ class FopServiceSpec extends AnyFreeSpec with SpecBase with IntegrationPatience 
 
     "must render some fop content as a pdf" in {
 
-      val input = Source.fromResource("fop/simple.fo").mkString
-      val result = fopService.render(input).futureValue
-      val pdd = Loader.loadPDF(result)
+      val input        = Source.fromResource("fop/simple.fo").mkString
+      val result       = fopService.render(input).futureValue
+      val pdd          = Loader.loadPDF(result)
       val textStripper = new PDFTextStripper
 
       textStripper.getText(pdd) must include
@@ -165,20 +165,20 @@ class FopServiceSpec extends AnyFreeSpec with SpecBase with IntegrationPatience 
         lastUpdated = Instant.now
       )
 
-      val view = app.injector.instanceOf[ApplicationPdf]
-      val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
+      val view      = app.injector.instanceOf[ApplicationPdf]
+      val messages  = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
       val xmlString = view.render(application, messages).body
-      val result = fopService.render(xmlString).futureValue
+      val result    = fopService.render(xmlString).futureValue
 
       val fileName = "test/resources/fop/test.pdf"
       Files.write(Paths.get(fileName), result)
 
       "must generate a test PDF" in {
 
-        val file = new File("test/resources/fop/test.pdf")
-        val document = Loader.loadPDF(file)
-        val textStripper = new PDFTextStripper
-        val text: String = textStripper.getText(document)
+        val file                = new File("test/resources/fop/test.pdf")
+        val document            = Loader.loadPDF(file)
+        val textStripper        = new PDFTextStripper
+        val text: String        = textStripper.getText(document)
         val lines: List[String] = text.split("\n").toList.map(_.trim)
 
         lines.headOption mustBe Some("Advance Valuation Ruling")

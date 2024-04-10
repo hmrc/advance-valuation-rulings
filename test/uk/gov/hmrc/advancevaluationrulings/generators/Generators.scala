@@ -23,10 +23,6 @@ import org.scalacheck.Gen._
 
 trait Generators {
 
-  implicit val noShrink: Shrink[String] = Shrink.shrinkAny
-
-  def intsBelowValue(value: Int): Gen[Int] = Gen.chooseNum(0, value)
-
   def stringsWithMaxLength(maxLength: Int): Gen[String] =
     for {
       length <- choose(1, maxLength)

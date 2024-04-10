@@ -43,12 +43,6 @@ trait ModelGenerators extends Generators {
 
   def eoriNumberGen: Gen[String] = RegexpGen.from("^[A-Z]{2}[0-9A-Z]{12}$")
 
-  def queryGen: Gen[Query] = for {
-    regime                   <- regimeGen
-    acknowledgementReference <- stringsWithMaxLength(32)
-    eori                     <- eoriNumberGen
-  } yield Query(regime, acknowledgementReference, taxPayerID = None, EORI = Option(eori))
-
   def cdsEstablishmentAddressGen: Gen[CDSEstablishmentAddress] = for {
     streetAndNumber <- stringsWithMaxLength(70)
     city            <- stringsWithMaxLength(35)
