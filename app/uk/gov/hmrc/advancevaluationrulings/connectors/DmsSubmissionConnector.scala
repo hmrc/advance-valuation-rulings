@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,29 +16,30 @@
 
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
-import java.time.{Instant, LocalDateTime, ZoneOffset}
-import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.control.NoStackTrace
-import play.api.{Configuration, Logging}
+import cats.implicits._
+import org.apache.commons.io.FilenameUtils
+import org.apache.pekko.stream.scaladsl.Source
+import org.apache.pekko.util.ByteString
 import play.api.http.Status.{ACCEPTED, INTERNAL_SERVER_ERROR}
 import play.api.mvc.MultipartFormData
+import play.api.{Configuration, Logging}
+import uk.gov.hmrc.advancevaluationrulings.config.Service
 import uk.gov.hmrc.advancevaluationrulings.connectors.DmsSubmissionConnector._
 import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application.{Attachment, Privacy}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.objectstore.client.Path
 import uk.gov.hmrc.objectstore.client.play.Implicits._
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
-import cats.implicits._
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
-import org.apache.commons.io.FilenameUtils
-import uk.gov.hmrc.advancevaluationrulings.config.Service
+
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import java.time.{Instant, LocalDateTime, ZoneOffset}
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NoStackTrace
 
 @Singleton
 class DmsSubmissionConnector @Inject() (
@@ -100,14 +101,15 @@ class DmsSubmissionConnector @Inject() (
       MultipartFormData.DataPart("metadata.businessArea", businessArea)
     )
 
-    val fileParts = Seq(
-      MultipartFormData.FilePart(
-        key = "form",
-        filename = "application.pdf",
-        contentType = Some("application/pdf"),
-        ref = pdf
+    val fileParts: Seq[MultipartFormData.FilePart[Source[ByteString, _]]] =
+      Seq(
+        MultipartFormData.FilePart(
+          key = "form",
+          filename = "application.pdf",
+          contentType = Some("application/pdf"),
+          ref = pdf
+        )
       )
-    )
 
     val attachmentParts = dmsAttachments.traverse { attachment =>
       objectStoreClient.getObject(Path.File(attachment.location)).flatMap {

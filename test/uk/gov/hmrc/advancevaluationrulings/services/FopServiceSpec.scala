@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import org.apache.pdfbox.pdmodel.PDDocument
+import org.apache.pdfbox.Loader
+import org.apache.pdfbox.text.PDFTextStripper
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.freespec.AnyFreeSpec
 import play.api
@@ -27,6 +28,7 @@ import uk.gov.hmrc.advancevaluationrulings.models.application.Privacy.{Confident
 import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.views.xml.ApplicationPdf
 
+import java.io.File
 import java.nio.file.{Files, Paths}
 import java.time.Instant
 import scala.io.Source
@@ -90,12 +92,22 @@ class FopServiceSpec extends AnyFreeSpec with SpecBase with IntegrationPatience 
   "render" - {
 
     "must render some fop content as a pdf" in {
-      val input  = Source.fromResource("fop/simple.fo").mkString
-      val result = fopService.render(input).futureValue
-      PDDocument.load(result)
+
+      val input        = Source.fromResource("fop/simple.fo").mkString
+      val result       = fopService.render(input).futureValue
+      val pdd          = Loader.loadPDF(result)
+      val textStripper = new PDFTextStripper
+
+      textStripper.getText(pdd) must include
+      """Extensible Markup Language (XML) 1.0
+        |The Extensible Markup Language (XML) is a subset of SGML that is completely
+        |described in this document. Its goal is to enable generic SGML to be served, received,
+        |and processed on the Web in the way that is now possible with HTML. XML has been
+        |designed for ease of implementation and for interoperability with both SGML and HTML.
+        |""".stripMargin
     }
 
-    "must generate a test PDF" in {
+    "after finishing setup pdf for test" - {
 
       val application = Application(
         id = ApplicationId(attachmentId),
@@ -159,6 +171,18 @@ class FopServiceSpec extends AnyFreeSpec with SpecBase with IntegrationPatience 
 
       val fileName = "test/resources/fop/test.pdf"
       Files.write(Paths.get(fileName), result)
+
+      "must generate a test PDF" in {
+
+        val file                = new File("test/resources/fop/test.pdf")
+        val document            = Loader.loadPDF(file)
+        val textStripper        = new PDFTextStripper
+        val text: String        = textStripper.getText(document)
+        val lines: List[String] = text.split("\n").toList.map(_.trim)
+
+        lines.headOption mustBe Some("Advance Valuation Ruling")
+        lines.length mustBe 136
+      }
     }
   }
 }

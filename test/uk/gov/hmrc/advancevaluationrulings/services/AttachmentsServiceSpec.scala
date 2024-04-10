@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import akka.actor.ActorSystem
-import akka.stream.scaladsl.{Sink, Source}
-import akka.util.ByteString
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.scaladsl.{Sink, Source}
+import org.apache.pekko.util.ByteString
 import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar
+import org.mockito.Mockito.{reset, verify, when}
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
 import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
@@ -99,7 +99,7 @@ class AttachmentsServiceSpec
         .copyAttachment(applicationId, "path/to/file.pdf")(hc)
         .futureValue mustEqual expectedPath
 
-      verify(mockAttachmentsConnector).get(eqTo("path/to/file.pdf"))(eqTo(hc))
+      verify(mockAttachmentsConnector).get("path/to/file.pdf")(hc)
 
       val savedObject = objectStoreStub.getObject(expectedPath).futureValue.value
       savedObject.metadata.contentLength mustEqual ByteString.fromString(fileContent).length

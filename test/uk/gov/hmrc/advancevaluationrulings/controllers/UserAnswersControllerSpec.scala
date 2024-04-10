@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar
+import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.freespec.AnyFreeSpec
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
 import play.api.libs.json.Json
@@ -68,7 +68,7 @@ class UserAnswersControllerSpec extends AnyFreeSpec with SpecBase with MockitoSu
 
     "must return data when it exists for this userId and draftId" in {
 
-      when(mockUserAnswersRepository.get(eqTo(userId), eqTo(draftId))) thenReturn Future.successful(
+      when(mockUserAnswersRepository.get(userId, draftId)) thenReturn Future.successful(
         Some(userAnswers)
       )
       when(
@@ -99,7 +99,7 @@ class UserAnswersControllerSpec extends AnyFreeSpec with SpecBase with MockitoSu
 
     "must return Not Found when data cannot be found for this user id and draft id" in {
 
-      when(mockUserAnswersRepository.get(eqTo(userId), eqTo(draftId))) thenReturn Future.successful(None)
+      when(mockUserAnswersRepository.get(userId, draftId)) thenReturn Future.successful(None)
       when(
         mockAuthConnector
           .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](
@@ -157,7 +157,7 @@ class UserAnswersControllerSpec extends AnyFreeSpec with SpecBase with MockitoSu
       val result = route(app, request).value
 
       status(result) mustEqual NO_CONTENT
-      verify(mockUserAnswersRepository, times(1)).set(eqTo(userAnswers))
+      verify(mockUserAnswersRepository, times(1)).set(userAnswers)
     }
 
     "must return BadRequest when the data cannot be parsed as UserAnswers" in {
@@ -218,7 +218,7 @@ class UserAnswersControllerSpec extends AnyFreeSpec with SpecBase with MockitoSu
       val result = route(app, request).value
 
       status(result) mustEqual NO_CONTENT
-      verify(mockUserAnswersRepository, times(1)).keepAlive(eqTo(userId), eqTo(draftId))
+      verify(mockUserAnswersRepository, times(1)).keepAlive(userId, draftId)
     }
   }
 
@@ -249,7 +249,7 @@ class UserAnswersControllerSpec extends AnyFreeSpec with SpecBase with MockitoSu
       val result = route(app, request).value
 
       status(result) mustEqual NO_CONTENT
-      verify(mockUserAnswersRepository, times(1)).clear(eqTo(userId), eqTo(draftId))
+      verify(mockUserAnswersRepository, times(1)).clear(userId, draftId)
     }
   }
 

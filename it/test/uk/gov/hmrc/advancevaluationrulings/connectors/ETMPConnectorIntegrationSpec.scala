@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,10 @@ package uk.gov.hmrc.advancevaluationrulings.connectors
 
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.libs.json.Json
-import uk.gov.hmrc.advancevaluationrulings.utils.{BaseIntegrationSpec, WireMockHelper}
+import uk.gov.hmrc.advancevaluationrulings.generators.ITModelGenerators
+import uk.gov.hmrc.advancevaluationrulings.{BaseIntegrationSpec, WireMockHelper}
 
-class ETMPConnectorIntegrationSpec extends BaseIntegrationSpec with WireMockHelper {
+class ETMPConnectorIntegrationSpec extends BaseIntegrationSpec with WireMockHelper with ITModelGenerators {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -43,7 +44,7 @@ class ETMPConnectorIntegrationSpec extends BaseIntegrationSpec with WireMockHelp
     "get subscription details" in {
       ScalaCheckPropertyChecks.forAll(
         queryGen,
-        ETMPSubscriptionDisplayResponseGen
+        etmpSubscriptionDisplayResponseGen
       ) { (request, successResponse) =>
         val expectedResponse = Json.stringify(Json.toJson(successResponse))
         stubGet(

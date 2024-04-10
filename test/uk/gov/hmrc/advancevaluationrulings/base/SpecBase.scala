@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,17 @@
 
 package uk.gov.hmrc.advancevaluationrulings.base
 
-import org.mockito.MockitoSugar.mock
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.advancevaluationrulings.repositories.{ApplicationRepository, CounterRepository, UserAnswersRepository}
 
 trait SpecBase extends AnyFreeSpec with Matchers with OptionValues with ScalaFutures {
+
   val mockApplicationRepository: ApplicationRepository = mock[ApplicationRepository]
   val mockCounterRepository: CounterRepository         = mock[CounterRepository]
   val mockUserAnswersRepository: UserAnswersRepository = mock[UserAnswersRepository]
