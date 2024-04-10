@@ -16,12 +16,9 @@
 
 package uk.gov.hmrc.advancevaluationrulings.generators
 
-import org.scalacheck.{Arbitrary, Gen}
+import org.scalacheck.Gen
 import play.api.http.Status.OK
-import uk.gov.hmrc.advancevaluationrulings.models.DraftId
-import uk.gov.hmrc.advancevaluationrulings.models.application.ApplicationId
 import uk.gov.hmrc.advancevaluationrulings.models.etmp._
-import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
 import wolfendale.scalacheck.regexp.RegexpGen
 
 import java.time.ZoneOffset

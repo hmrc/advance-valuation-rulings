@@ -31,7 +31,6 @@ import uk.gov.hmrc.advancevaluationrulings.views.xml.ApplicationPdf
 import java.io.File
 import java.nio.file.{Files, Paths}
 import java.time.Instant
-import java.util.stream
 import scala.io.Source
 
 class FopServiceSpec extends AnyFreeSpec with SpecBase with IntegrationPatience {

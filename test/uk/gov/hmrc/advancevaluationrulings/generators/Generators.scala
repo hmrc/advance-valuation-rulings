@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.generators
 
-import java.time._
-
-import org.scalacheck.{Gen, Shrink}
+import org.scalacheck.Gen
 import org.scalacheck.Gen._
+
+import java.time._
 
 trait Generators {
 
