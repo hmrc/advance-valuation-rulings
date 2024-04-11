@@ -3,7 +3,7 @@ import uk.gov.hmrc.DefaultBuildSettings.itSettings
 ThisBuild / scalaVersion := "2.13.13"
 ThisBuild / majorVersion := 0
 
-val appName = "advance-valuation-ruling"
+val appName = "advance-valuation-rulings"
 
 lazy val microservice =
   Project(appName, file("."))
