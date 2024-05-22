@@ -72,9 +72,8 @@ class IdentifierActionSpec extends AnyFreeSpec with SpecBase with MockitoSugar {
           )
 
           when(
-            mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[
-              AffinityGroup
-            ] ~ Option[CredentialRole]](any(), any())(any(), any())
+            mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup]
+              ~ Option[CredentialRole]](any(), any())(any(), any())
           )
             .thenReturn(
               Future.successful(
@@ -114,9 +113,8 @@ class IdentifierActionSpec extends AnyFreeSpec with SpecBase with MockitoSugar {
           )
 
           when(
-            mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[
-              AffinityGroup
-            ] ~ Option[CredentialRole]](any(), any())(any(), any())
+            mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup]
+              ~ Option[CredentialRole]](any(), any())(any(), any())
           )
             .thenReturn(
               Future.successful(
@@ -151,9 +149,8 @@ class IdentifierActionSpec extends AnyFreeSpec with SpecBase with MockitoSugar {
         )
 
         when(
-          mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[
-            CredentialRole
-          ]](any(), any())(any(), any())
+          mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup]
+            ~ Option[CredentialRole]](any(), any())(any(), any())
         )
           .thenReturn(
             Future.successful(
@@ -183,9 +180,8 @@ class IdentifierActionSpec extends AnyFreeSpec with SpecBase with MockitoSugar {
         )
 
         when(
-          mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[
-            CredentialRole
-          ]](any(), any())(any(), any())
+          mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup]
+            ~ Option[CredentialRole]](any(), any())(any(), any())
         )
           .thenReturn(
             Future.successful(new ~(new ~(new ~(atarEnrolment, Some("internalId")), None), None))
@@ -210,9 +206,8 @@ class IdentifierActionSpec extends AnyFreeSpec with SpecBase with MockitoSugar {
         )
 
         when(
-          mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[
-            CredentialRole
-          ]](any(), any())(any(), any())
+          mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup]
+            ~ Option[CredentialRole]](any(), any())(any(), any())
         )
           .thenReturn(
             Future.successful(
@@ -233,9 +228,8 @@ class IdentifierActionSpec extends AnyFreeSpec with SpecBase with MockitoSugar {
       "must return Unauthorized" in {
 
         when(
-          mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[
-            CredentialRole
-          ]](any(), any())(any(), any())
+          mockAuthConnector.authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup]
+            ~ Option[CredentialRole]](any(), any())(any(), any())
         )
           .thenReturn(
             Future.successful(

@@ -64,6 +64,7 @@ class AttachmentsServiceSpec
   private val baseUrl         = "baseUrl"
   private val owner           = "owner"
   private val token           = "token"
+  private val appId           = 1337
   private val config          = ObjectStoreClientConfig(baseUrl, owner, token, OneWeek)
   private val objectStoreStub = new stub.StubPlayObjectStoreClient(config)
 
@@ -84,7 +85,7 @@ class AttachmentsServiceSpec
   private val source             = Source.single(ByteString.fromString(fileContent))
   private val frontendAttachment =
     DraftAttachment(source, "application/pdf", "grtBN0au5C+J3qK1lhT57w==")
-  private val applicationId      = ApplicationId(1337)
+  private val applicationId      = ApplicationId(appId)
 
   "copyAttachment" - {
 
