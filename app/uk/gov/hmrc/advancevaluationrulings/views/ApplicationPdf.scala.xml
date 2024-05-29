@@ -1,30 +1,249 @@
-@import uk.gov.hmrc.advancevaluationrulings.models.application.Application
+@import uk.gov.hmrc.advancevaluationrulings.models.application._
+        @import uk.gov.hmrc.advancevaluationrulings.views.xml.TraderDetail
+        @import java.time.format.DateTimeFormatter
+        @import java.time.ZoneId
 
-@this(
-    layout: Layout,
-    bookmarkTree: BookmarkTree,
-    summary: ApplicationSummary,
-    goodsDetails: GoodsDetails
-)
+        @this(
+        traderDetail: TraderDetail,
+        agentDetail: AgentDetail,
+        traderInfo: TraderInfo,
+        agentInfo: AgentInfo,
+        roleHelper: RoleHelper,
+        header: PageHeader,
+        footer: PageFooter,
+        methodOneSnippet: MethodOneSnippet,
+        methodTwoSnippet: MethodTwoSnippet,
+        methodThreeSnippet: MethodThreeSnippet,
+        methodFourSnippet: MethodFourSnippet,
+        methodFiveSnippet: MethodFiveSnippet,
+        methodSixSnippet: MethodSixSnippet,
+        line: Line,
+        attachmentLine: AttachmentLine
+        )
 
-@(application: Application)(implicit messages: Messages)
+        @(application: Application)(implicit messages: Messages)
 
-<fo:root xml:lang="en" xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:fox="http://xmlgraphics.apache.org/fop/extensions" font-family="sans-serif">
+<!--TODO Testing this document in this space as it is easy to generate samples at /test/resources/fop/test.pdf-->
+<!--TODO Run this to generate sbt 'testOnly *FopServiceSpec*'-->
 
-    @layout()
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="2.0">
 
-    <fo:declarations>
-        <pdf:catalog xmlns:pdf="http://xmlgraphics.apache.org/fop/extensions/pdf">
-            <pdf:dictionary type="normal" key="ViewerPreferences">
-                <pdf:boolean key="DisplayDocTitle">true</pdf:boolean>
-            </pdf:dictionary>
-        </pdf:catalog>
-    </fo:declarations>
+<!--TODO making stylesheets for common components we can potentially write tests that compare the content of our XSL stylesheet to hmrc-frontend-->
+    <xsl:attribute-set name="govuk-body">
+        <xsl:attribute name="color">#0b0c0c</xsl:attribute>
+        <xsl:attribute name="font-family">DM Sans,arial,sans-serif</xsl:attribute>
+        <xsl:attribute name="font-weight">400</xsl:attribute>
+        <xsl:attribute name="font-size">1em</xsl:attribute>
+        <xsl:attribute name="line-height">1.25</xsl:attribute>
+        <xsl:attribute name="margin-top">0cm</xsl:attribute>
+        <xsl:attribute name="margin-bottom">15px</xsl:attribute>
+    </xsl:attribute-set>
 
-    @bookmarkTree(application)
+    <xsl:attribute-set name="govuk-heading-m">
+        <xsl:attribute name="color">#0b0c0c</xsl:attribute>
+        <xsl:attribute name="font-family">DM Sans,arial,sans-serif</xsl:attribute>
+        <xsl:attribute name="font-weight">700</xsl:attribute>
+        <xsl:attribute name="font-size">1.125em</xsl:attribute>
+        <xsl:attribute name="line-height">1.11111</xsl:attribute>
+        <xsl:attribute name="space-before">0cm</xsl:attribute>
+        <xsl:attribute name="space-after">15px</xsl:attribute>
+    </xsl:attribute-set>
 
-    @summary(application)
+    <xsl:attribute-set name="govuk-i-font-weight-bold">
+        <xsl:attribute name="font-weight">700</xsl:attribute>
+    </xsl:attribute-set>
 
-    @goodsDetails(application)
+    <xsl:attribute-set name="govuk-summary-list">
+        <xsl:attribute name="color">#0b0c0c</xsl:attribute>
+        <xsl:attribute name="font-family">GDS Transport,arial,sans-serif</xsl:attribute>
+        <xsl:attribute name="font-weight">400</xsl:attribute>
+        <xsl:attribute name="font-size">1em</xsl:attribute>
+        <xsl:attribute name="line-height">1.25</xsl:attribute>
+        <xsl:attribute name="margin">0 0 20px</xsl:attribute>
+    </xsl:attribute-set>
 
-</fo:root>
+    <xsl:attribute-set name="govuk-summary-list__row">
+        <xsl:attribute name="border-bottom">1px solid #b1b4b6</xsl:attribute>
+    </xsl:attribute-set>
+
+    <xsl:attribute-set name="govuk-summary-list__key">
+        <xsl:attribute name="width">30%</xsl:attribute>
+        <xsl:attribute name="font-weight">700</xsl:attribute>
+        <xsl:attribute name="margin-bottom">5px</xsl:attribute>
+    </xsl:attribute-set>
+
+    <xsl:attribute-set name="govuk-summary-list__value">
+        <xsl:attribute name="padding-top">10px</xsl:attribute>
+        <xsl:attribute name="padding-right">20px</xsl:attribute>
+        <xsl:attribute name="padding-bottom">10px</xsl:attribute>
+        <xsl:attribute name="margin">0</xsl:attribute>
+    </xsl:attribute-set>
+
+<!--TODO custom styles for fields like is done in current ATaR sheets work fine. You can still add multiple CSS styles to each fo:-->
+    <xsl:attribute-set name="print-heading">
+        <xsl:attribute name="color">#00703C</xsl:attribute>
+        <xsl:attribute name="font-family">GDS Transport,arial,sans-serif</xsl:attribute>
+        <xsl:attribute name="font-weight">600</xsl:attribute>
+        <xsl:attribute name="font-size">1.2em</xsl:attribute>
+        <xsl:attribute name="text-align">right</xsl:attribute>
+        <xsl:attribute name="margin-top">2em</xsl:attribute>
+        <xsl:attribute name="margin-right">15px</xsl:attribute>
+    </xsl:attribute-set>
+
+    <xsl:attribute-set name="information-box">
+        <xsl:attribute name="width">100%</xsl:attribute>
+        <xsl:attribute name="border">2px solid #00703C</xsl:attribute>
+        <xsl:attribute name="background-color">#e1f3f1</xsl:attribute>
+        <xsl:attribute name="text-align">center</xsl:attribute>
+        <xsl:attribute name="font-weight">700</xsl:attribute>
+        <xsl:attribute name="padding">5px 10px</xsl:attribute>
+        <xsl:attribute name="margin-left">auto</xsl:attribute>
+        <xsl:attribute name="margin-right">auto</xsl:attribute>
+        <xsl:attribute name="margin-bottom">1em</xsl:attribute>
+<!--TODO Some styles like this for example are unavailable due to CSS versions or no direct equivalent-->
+<!--<xsl:attribute name="box-sizing">border-box</xsl:attribute>-->
+    </xsl:attribute-set>
+
+
+    <xsl:attribute-set name="hero-text">
+        <xsl:attribute name="font-weight">700</xsl:attribute>
+        <xsl:attribute name="font-size">1.4em</xsl:attribute>
+        <xsl:attribute name="margin-bottom">0.26316em</xsl:attribute>
+    </xsl:attribute-set>
+
+    <xsl:attribute-set name="reference-number">
+        <xsl:attribute name="font-size">2.25em</xsl:attribute>
+    </xsl:attribute-set>
+
+    <xsl:template match = "/">
+
+        <fo:root xml:lang="en" xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:fox="http://xmlgraphics.apache.org/fop/extensions">
+
+            <fo:layout-master-set>
+                <fo:simple-page-master master-name="main" page-height="297mm" page-width="210mm" margin-top="1.5cm"
+                                       margin-bottom="1.5cm" margin-left="1.5cm" margin-right="1.5cm">
+                    <fo:region-body region-name="xsl-region-body" margin-top="3cm" margin-bottom="0.5cm"/>
+                    <fo:region-before region-name="xsl-region-before"/>
+                    <fo:region-after region-name="xsl-region-after"/>
+                </fo:simple-page-master>
+            </fo:layout-master-set>
+
+            <fo:declarations>
+                <pdf:catalog xmlns:pdf="http://xmlgraphics.apache.org/fop/extensions/pdf">
+                    <pdf:dictionary type="normal" key="ViewerPreferences">
+                        <pdf:boolean key="DisplayDocTitle">true</pdf:boolean>
+                    </pdf:dictionary>
+                </pdf:catalog>
+            </fo:declarations>
+
+            <fo:bookmark-tree>
+                <fo:bookmark internal-destination="title">
+                    <fo:bookmark-title>SomeTitle</fo:bookmark-title>
+                </fo:bookmark>
+            </fo:bookmark-tree>
+
+            <fo:page-sequence master-reference="main">
+
+                <fo:flow flow-name="xsl-region-body" font-size="11pt" text-align="left">
+
+                    <fo:block xsl:use-attribute-sets="govuk-heading-m print-heading">
+                        Your Advance Tariff Ruling application
+                    </fo:block>
+                    <fo:block xsl:use-attribute-sets="govuk-heading-m">
+                        For your records
+                    </fo:block>
+                    <fo:block xsl:use-attribute-sets="govuk-i-font-weight-bold">
+                        EORI: GB6723190
+                        Account name: Test Business
+                        Account address: Lorem Ipsum, Lorem Ipsum, Afghanistan
+                        Contact name: Lorem Ipsum
+                        Contact email: lorem@@ipsum.com
+                        Contact Phone: 07777777777
+                        Date submitted: 22 May 2024
+                    </fo:block>
+                    <fo:block xsl:use-attribute-sets="govuk-heading-m">
+                        What happens next
+                    </fo:block>
+                    <fo:block xsl:use-attribute-sets="govuk-body">
+                        We try to issue ATaR decisions within 30 working days from the date that the application is
+                        accepted. Although it can take up to 120 days, as per UK law. You can sign in to Advance Tariff
+                        Rulings check the status of your application.
+                    </fo:block>
+                    <fo:block font-size="10pt">
+                        Warning: Your application will not be processed until we receive your samples.
+                    </fo:block>
+                    <fo:block font-size="12pt" space-before="5mm">
+                        Sending samples
+                    </fo:block>
+                    <fo:block font-size="10pt">
+                        You must label your sample with the application reference number: 600000001
+                        Send your samples to: Tariff Classification Service, COVT, HM Revenue and Customs
+                    </fo:block>
+                    <fo:block xsl:use-attribute-sets="information-box">
+                        <fo:block xsl:use-attribute-sets="govuk-body hero-text">
+                            Your application reference number is
+                        </fo:block>
+
+                        <fo:block xsl:use-attribute-sets="govuk-body reference-number">
+                            600000001
+                        </fo:block>
+                    </fo:block>
+                    <fo:block font-size="14pt" space-after="5mm">
+                        Your Advance Tariff Ruling application
+                    </fo:block>
+                    <fo:block xsl:use-attribute-sets="govuk-heading-m">
+                        About the goods
+                    </fo:block>
+
+                    <fo:block>
+                        <fo:block>
+<!--TODO govuk-summary-list 's are created from a display type of table so in fop it actually makes more sense to use the fo:table with appropriate css rather than list item-->
+                            <fo:table xsl:use-attribute-sets="govuk-summary-list">
+                                <fo:table-body>
+                                <fo:table-row xsl:use-attribute-sets="govuk-summary-list__row">
+                                    <fo:table-cell>
+                                        <fo:block xsl:use-attribute-sets="govuk-summary-list__key">Goods name:</fo:block>
+                                    </fo:table-cell>
+                                    <fo:table-cell>
+                                        <fo:block>Testing</fo:block>
+                                    </fo:table-cell>
+                                </fo:table-row>
+                                <fo:table-row xsl:use-attribute-sets="govuk-summary-list__row">
+                                    <fo:table-cell>
+                                        <fo:block xsl:use-attribute-sets="govuk-summary-list__key">Goods details:</fo:block>
+                                    </fo:table-cell>
+                                    <fo:table-cell>
+                                        <fo:block xsl:use-attribute-sets="govuk-summary-list__value">Lorem ipsum dolor sit amet, consectetur adipiscing elit...</fo:block>
+                                    </fo:table-cell>
+                                </fo:table-row>
+                                    <fo:table-row xsl:use-attribute-sets="govuk-summary-list__row">
+                                        <fo:table-cell>
+                                            <fo:block xsl:use-attribute-sets="govuk-summary-list__key">Confidential information:</fo:block>
+                                        </fo:table-cell>
+                                        <fo:table-cell>
+                                        <!--TODO Example using page-break-inside to push content onto the next page-->
+                                            <fo:block xsl:use-attribute-sets="govuk-summary-list__value" page-break-inside="avoid">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut lacinia tincidunt luctus. Duis id neque sit amet mauris mollis pharetra. Aenean vitae elit a risus accumsan dictum. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Etiam gravida quam ac nibh pharetra semper. Cras non nunc et ex luctus facilisis at vel arcu. Aliquam venenatis molestie turpis. Fusce cursus metus finibus eros molestie finibus. Fusce eget magna quis sem laoreet ultricies a ac dolor. Vivamus vitae odio sed magna pellentesque bibendum a nec quam.</fo:block>
+                                        </fo:table-cell>
+                                    </fo:table-row>
+                                </fo:table-body>
+                            </fo:table>
+                        </fo:block>
+                        Uploaded documents: No
+                        Sending samples?: Yes
+                        Hazardous samples?: No
+                        Return the samples?: No
+                        Have you found a commodity code for the item?: No
+                        Legal challenges: Lorem ipsum dolor sit amet, consectetur adipiscing elit...
+                    </fo:block>
+                    <fo:block xsl:use-attribute-sets="govuk-heading-m">
+                        About other rulings
+                    </fo:block>
+                    <fo:block font-size="10pt">
+                        Previous ruling reference: No
+                        Similar ruling references: No
+                    </fo:block>
+                </fo:flow>
+            </fo:page-sequence>
+        </fo:root>
+    </xsl:template>
+</xsl:stylesheet>

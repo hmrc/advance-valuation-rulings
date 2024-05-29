@@ -37,16 +37,21 @@ class FopService @Inject() (
 
     Using.resource(new ByteArrayOutputStream()) { out =>
       // Turn on accessibility features
-      val userAgent = fopFactory.newFOUserAgent();
-      userAgent.setAccessibility(true);
+      val userAgent = fopFactory.newFOUserAgent()
+      userAgent.setAccessibility(true)
+
+      //TODO from lib Note: Due to their internal use of either a Reader or InputStream instance, StreamSource instances may only be used once.
+      //TODO this has been done to add the xslt to the transformerFactory.newTransformer()
+      val xslt = new StreamSource(new StringReader(input))
 
       val fop = fopFactory.newFop(MimeConstants.MIME_PDF, userAgent, out)
 
-      val transformerFactory = TransformerFactory.newInstance()
-      val transformer        = transformerFactory.newTransformer()
-
-      val source = new StreamSource(new StringReader(input))
+      val source: StreamSource = new StreamSource(new StringReader(input))
       val result = new SAXResult(fop.getDefaultHandler)
+
+      val transformerFactory = TransformerFactory.newInstance()
+      //TODO Attach the xslt here allows to create CSS-like styling
+      val transformer = transformerFactory.newTransformer(xslt)
 
       transformer.transform(source, result)
 

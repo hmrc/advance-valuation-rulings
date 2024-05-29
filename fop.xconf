@@ -1,0 +1,9 @@
+//TODO To setup custom fonts we will need to create a .ttf version of the GDS Transport fonts (Light & Bold), provide the mapping for it here
+//TODO This config will need adding to the FopFactory. Currently this doesn't work so just an example below
+
+<fonts>
+    <directory>/fonts</directory>
+    <font kerning="yes" embed-url="GDS-Transport-Light.ttf">
+        <font-triplet name="GDS Transport" style="Regular" weight="Book"/>
+    </font>
+</fonts>

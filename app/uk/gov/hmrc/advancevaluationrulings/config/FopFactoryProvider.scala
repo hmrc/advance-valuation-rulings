@@ -17,6 +17,7 @@
 package uk.gov.hmrc.advancevaluationrulings.config
 
 import javax.inject.{Inject, Provider, Singleton}
+import java.net.URI
 
 import play.api.Environment
 
@@ -26,7 +27,8 @@ import org.apache.fop.apps.{FopFactory, FopFactoryBuilder}
 class FopFactoryProvider @Inject() (
   environment: Environment
 ) extends Provider[FopFactory] {
+  //TODO unfinished but to add fonts initial reading suggested we need to add an .xconf file when building the fop factory
   override def get(): FopFactory =
-    new FopFactoryBuilder(environment.rootPath.toURI)
+    new FopFactoryBuilder(environment.rootPath.toURI).setBaseURI(URI.create("test/resources/fop"))
       .build()
 }
