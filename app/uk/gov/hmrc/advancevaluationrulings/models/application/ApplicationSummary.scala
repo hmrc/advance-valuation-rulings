@@ -31,7 +31,7 @@ final case class ApplicationSummary(
 
 object ApplicationSummary {
 
-  val mongoReads: Reads[ApplicationSummary] =
+  private val mongoReads: Reads[ApplicationSummary] =
     (
       (__ \ "id").read[ApplicationId] and
         (__ \ "goodsDetails" \ "goodsDescription").read[String] and
