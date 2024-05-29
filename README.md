@@ -18,7 +18,7 @@ JRE/JDK 11 is recommended.
 The service also depends on mongodb.
 
 ## Running the service
-Using service manager (sm or sm2)
+Using service manager
 Use the ARS_ALL profile to bring up all services using the latest tagged releases
 
 ```bash
