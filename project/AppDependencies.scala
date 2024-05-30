@@ -9,7 +9,7 @@ object AppDependencies {
     "uk.gov.hmrc"             %% "bootstrap-backend-play-30"    % hmrcBootstrapPlayVersion,
     "uk.gov.hmrc.mongo"       %% "hmrc-mongo-play-30"           % hmrcMongoPlayVersion,
     "com.beachape"            %% "enumeratum-play-json"         % "1.8.0",
-    "org.typelevel"           %% "cats-core"                    % "2.10.0",
+    "org.typelevel"           %% "cats-core"                    % "2.12.0",
     "org.apache.xmlgraphics"   % "fop"                          % "2.9",
     "uk.gov.hmrc"             %% "crypto-json-play-30"          % "8.0.0",
     "uk.gov.hmrc"             %% "internal-auth-client-play-30" % "2.0.0",

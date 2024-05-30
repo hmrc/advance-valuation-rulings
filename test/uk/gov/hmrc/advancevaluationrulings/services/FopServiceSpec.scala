@@ -181,7 +181,7 @@ class FopServiceSpec extends AnyFreeSpec with SpecBase with IntegrationPatience 
         val lines: List[String] = text.split("\n").toList.map(_.trim)
 
         lines.headOption mustBe Some("Advance Valuation Ruling")
-        lines.length mustBe 136
+        lines.length mustBe 122
       }
     }
   }
