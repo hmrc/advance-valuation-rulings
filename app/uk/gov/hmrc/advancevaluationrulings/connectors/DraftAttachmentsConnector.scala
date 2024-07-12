@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
-import java.net.URL
+import java.net.{MalformedURLException, URI, URL}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
@@ -36,10 +36,51 @@ class DraftAttachmentsConnector @Inject() (
   configuration: Configuration
 )(implicit ec: ExecutionContext) {
 
-  private val advanceValuationRulingsFrontend =
+  private val advanceValuationRulingsFrontend                                   =
     configuration.get[Service]("microservice.services.advance-valuation-rulings-frontend")
 
-  def get(path: String)(implicit hc: HeaderCarrier): Future[DraftAttachment] =
+  def get(path: String)(implicit hc: HeaderCarrier): Future[DraftAttachment] = {
+
+    val urlEither: Either[NonEmptyChain[String], URL] = for {
+      uri <- try Right(new URI(s"$advanceValuationRulingsFrontend/attachments/$path"))
+             catch {
+               case e: IllegalArgumentException => Left(NonEmptyChain(e.getMessage))
+             }
+      url <- try Right(uri.toURL)
+             catch {
+               case e: MalformedURLException => Left(NonEmptyChain(e.getMessage))
+             }
+    } yield url
+
+    urlEither match {
+      case Left(errors) => Future.failed(DraftAttachmentsConnectorException(errors))
+      case Right(url)   =>
+        httpClient
+          .get(url)
+          .stream[HttpResponse]
+          .flatMap { response =>
+            if (response.status == 200) {
+
+              val result = (getContentType(response), getContentMd5(response)).parMapN {
+                DraftAttachment(response.bodyAsSource, _, _)
+              }
+
+              result.fold(
+                errors => Future.failed(DraftAttachmentsConnectorException(errors)),
+                result => Future.successful(result)
+              )
+            } else {
+              Future.failed(
+                UpstreamErrorResponse(
+                  "Unexpected response from advance-valuation-rulings-frontend",
+                  response.status,
+                  INTERNAL_SERVER_ERROR
+                )
+              )
+            }
+          }
+    }
+
     httpClient
       .get(new URL(s"$advanceValuationRulingsFrontend/attachments/$path"))
       .stream[HttpResponse]
@@ -64,7 +105,7 @@ class DraftAttachmentsConnector @Inject() (
           )
         }
       }
-
+  }
   private def getContentType(response: HttpResponse): EitherNec[String, String] =
     response.header("Content-Type").toRightNec("Content-Type header missing")
 
