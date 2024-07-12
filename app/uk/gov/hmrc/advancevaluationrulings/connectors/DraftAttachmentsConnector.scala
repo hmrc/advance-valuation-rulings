@@ -76,31 +76,6 @@ class DraftAttachmentsConnector @Inject() (
             }
           }
     }
-
-    httpClient
-      .get(new URL(s"$advanceValuationRulingsFrontend/attachments/$path"))
-      .stream[HttpResponse]
-      .flatMap { response =>
-        if (response.status == 200) {
-
-          val result = (getContentType(response), getContentMd5(response)).parMapN {
-            DraftAttachment(response.bodyAsSource, _, _)
-          }
-
-          result.fold(
-            errors => Future.failed(DraftAttachmentsConnectorException(errors)),
-            result => Future.successful(result)
-          )
-        } else {
-          Future.failed(
-            UpstreamErrorResponse(
-              "Unexpected response from advance-valuation-rulings-frontend",
-              response.status,
-              INTERNAL_SERVER_ERROR
-            )
-          )
-        }
-      }
   }
   private def getContentType(response: HttpResponse): EitherNec[String, String] =
     response.header("Content-Type").toRightNec("Content-Type header missing")
