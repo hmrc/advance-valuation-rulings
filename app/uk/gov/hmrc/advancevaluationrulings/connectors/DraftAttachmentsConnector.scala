@@ -42,14 +42,10 @@ class DraftAttachmentsConnector @Inject() (
   def get(path: String)(implicit hc: HeaderCarrier): Future[DraftAttachment] = {
 
     val urlEither: Either[NonEmptyChain[String], URL] = for {
-      uri <- try Right(new URI(s"$advanceValuationRulingsFrontend/attachments/$path"))
-             catch {
-               case e: IllegalArgumentException => Left(NonEmptyChain(e.getMessage))
-             }
-      url <- try Right(uri.toURL)
-             catch {
-               case e: MalformedURLException => Left(NonEmptyChain(e.getMessage))
-             }
+      uri <- Either
+               .catchOnly[IllegalArgumentException](new URI(s"$advanceValuationRulingsFrontend/attachments/$path"))
+               .leftMap(e => NonEmptyChain.one(e.getMessage))
+      url <- Either.catchOnly[java.net.MalformedURLException](uri.toURL).leftMap(e => NonEmptyChain.one(e.getMessage))
     } yield url
 
     urlEither match {
