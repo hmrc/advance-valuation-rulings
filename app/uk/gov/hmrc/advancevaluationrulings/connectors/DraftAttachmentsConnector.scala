@@ -21,7 +21,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
 import play.api.Configuration
-import play.api.http.Status.INTERNAL_SERVER_ERROR
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
 import uk.gov.hmrc.advancevaluationrulings.connectors.DraftAttachmentsConnector._
 import uk.gov.hmrc.advancevaluationrulings.models.application.DraftAttachment
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
@@ -36,26 +36,37 @@ class DraftAttachmentsConnector @Inject() (
   configuration: Configuration
 )(implicit ec: ExecutionContext) {
 
-  private val advanceValuationRulingsFrontend                                   =
+  private val advanceValuationRulingsFrontend =
     configuration.get[Service]("microservice.services.advance-valuation-rulings-frontend")
 
-  def get(path: String)(implicit hc: HeaderCarrier): Future[DraftAttachment] = {
+  private def convertUriToUrl(uri: URI): Either[MalformedURLException, URL] =
+    Either.catchOnly[MalformedURLException] {
+      uri.toURL
+    }
 
-    val urlEither: Either[NonEmptyChain[String], URL] = for {
-      uri <- Either
-               .catchOnly[IllegalArgumentException](new URI(s"$advanceValuationRulingsFrontend/attachments/$path"))
-               .leftMap(e => NonEmptyChain.one(e.getMessage))
-      url <- Either.catchOnly[java.net.MalformedURLException](uri.toURL).leftMap(e => NonEmptyChain.one(e.getMessage))
-    } yield url
+  private def getUrl(path: String): Either[NonEmptyChain[String], URL] = {
+    val uriEither = Either
+      .catchOnly[IllegalArgumentException] {
+        URI.create(s"$advanceValuationRulingsFrontend/attachments/$path")
+      }
+      .leftMap(e => NonEmptyChain(e.getMessage))
 
-    urlEither match {
+    val urlEither = uriEither.flatMap { uri =>
+      convertUriToUrl(uri).leftMap(e => NonEmptyChain(e.getMessage))
+    }
+
+    urlEither
+  }
+
+  def get(path: String)(implicit hc: HeaderCarrier): Future[DraftAttachment]    =
+    getUrl(path) match {
       case Left(errors) => Future.failed(DraftAttachmentsConnectorException(errors))
       case Right(url)   =>
         httpClient
           .get(url)
           .stream[HttpResponse]
           .flatMap { response =>
-            if (response.status == 200) {
+            if (response.status == OK) {
 
               val result = (getContentType(response), getContentMd5(response)).parMapN {
                 DraftAttachment(response.bodyAsSource, _, _)
@@ -76,7 +87,6 @@ class DraftAttachmentsConnector @Inject() (
             }
           }
     }
-  }
   private def getContentType(response: HttpResponse): EitherNec[String, String] =
     response.header("Content-Type").toRightNec("Content-Type header missing")
 

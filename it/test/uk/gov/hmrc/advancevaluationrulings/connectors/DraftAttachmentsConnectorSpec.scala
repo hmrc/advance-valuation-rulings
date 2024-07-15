@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
+import cats.data.NonEmptyChain
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.Sink
 import org.apache.pekko.util.ByteString
@@ -26,12 +27,17 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+import org.scalatest.PrivateMethodTester
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import play.api.Application
 import play.api.http.Status.{NOT_FOUND, OK}
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.advancevaluationrulings.WireMockHelper
 import uk.gov.hmrc.advancevaluationrulings.connectors.DraftAttachmentsConnector.DraftAttachmentsConnectorException
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+
+import java.net.{MalformedURLException, URI, URL}
+import scala.Left
 
 class DraftAttachmentsConnectorSpec
     extends AnyFreeSpec
@@ -40,6 +46,7 @@ class DraftAttachmentsConnectorSpec
     with Matchers
     with IntegrationPatience
     with BeforeAndAfterEach
+    with PrivateMethodTester
     with BeforeAndAfterAll {
 
   override def beforeAll(): Unit = {
@@ -67,9 +74,13 @@ class DraftAttachmentsConnectorSpec
       )
       .build()
 
+  private val invalidPath = "invalid path"
+
   private lazy val connector: DraftAttachmentsConnector =
     app.injector.instanceOf[DraftAttachmentsConnector]
   private implicit lazy val mat: Materializer           = app.injector.instanceOf[Materializer]
+  private val getUrl                                    = PrivateMethod[Either[NonEmptyChain[String], URL]](Symbol("getUrl"))
+  private val convertUriToUrl                           = PrivateMethod[Either[MalformedURLException, URL]](Symbol("convertUriToUrl"))
 
   "get" - {
 
@@ -189,6 +200,37 @@ class DraftAttachmentsConnectorSpec
       )
 
       connector.get("foo/bar").failed.futureValue
+    }
+
+    "must fail when URI contains an illegal character" in {
+
+      wireMockServer.stubFor(
+        get(urlPathEqualTo(""))
+          .willReturn(
+            aResponse()
+              .withStatus(OK)
+          )
+      )
+
+      val result = connector.invokePrivate(getUrl(invalidPath))
+      result mustBe a[Left[_, _]]
+      result.left.foreach(errors => errors.head should include("Illegal character in path"))
+    }
+
+    "must fail when URI to URL conversation fails with a MalformedURLException" in {
+
+      wireMockServer.stubFor(
+        get(urlPathEqualTo(""))
+          .willReturn(
+            aResponse()
+              .withStatus(OK)
+          )
+      )
+
+      val malformedUri = URI.create("tp://example.com")
+      val result       = connector.invokePrivate(convertUriToUrl(malformedUri))
+      result shouldBe a[Left[_, _]]
+      result.left.foreach(error => error.getMessage should include("unknown protocol"))
     }
   }
 }
