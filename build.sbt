@@ -1,6 +1,6 @@
 import uk.gov.hmrc.DefaultBuildSettings.itSettings
 
-ThisBuild / scalaVersion := "2.13.13"
+ThisBuild / scalaVersion := "2.13.14"
 ThisBuild / majorVersion := 0
 
 val appName = "advance-valuation-rulings"
@@ -34,4 +34,3 @@ lazy val it = project
   .settings(libraryDependencies ++= AppDependencies())
 
 addCommandAlias("scalafmtAll", "all scalafmtSbt scalafmt Test/scalafmt it/Test/scalafmt")
-addCommandAlias("scalastyleAll", "all scalastyle Test/scalastyle it/Test/scalastyle")
