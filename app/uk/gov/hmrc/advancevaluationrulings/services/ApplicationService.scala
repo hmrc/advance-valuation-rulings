@@ -125,9 +125,6 @@ class ApplicationService @Inject() (
       internalId = auditMetadata.internalId,
       affinityGroup = auditMetadata.affinityGroup,
       credentialRole = auditMetadata.credentialRole,
-      isAgent = Option.when(auditMetadata.affinityGroup == AffinityGroup.Organisation)(
-        application.agent.isDefined
-      ),
       application = application,
       draftId = draftId
     )

@@ -132,7 +132,6 @@ class ApplicationServiceSpec
         internalId = "internalId",
         affinityGroup = AffinityGroup.Individual,
         credentialRole = None,
-        isAgent = None,
         application = expectedApplication,
         draftId = applicationRequest.draftId
       )
@@ -308,7 +307,6 @@ class ApplicationServiceSpec
         internalId = "internalId",
         affinityGroup = AffinityGroup.Organisation,
         credentialRole = Some(Assistant),
-        isAgent = Some(true),
         application = expectedApplication,
         draftId = applicationRequest.draftId
       )
@@ -368,7 +366,6 @@ class ApplicationServiceSpec
         internalId = "internalId",
         affinityGroup = AffinityGroup.Organisation,
         credentialRole = Some(Assistant),
-        isAgent = Some(false),
         application = expectedApplication,
         draftId = applicationRequest.draftId
       )

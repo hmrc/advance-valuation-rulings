@@ -85,7 +85,6 @@ class AuditServiceSpec extends AnyFreeSpec with SpecBase with MockitoSugar with 
         internalId = "internalId",
         affinityGroup = AffinityGroup.Organisation,
         credentialRole = Some(Assistant),
-        isAgent = Some(false),
         application = application,
         draftId = DraftId(1)
       )
