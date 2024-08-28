@@ -21,6 +21,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application.{CounterId, CounterWrapper}
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
@@ -34,7 +35,7 @@ class CounterRepositorySpec
     with ScalaFutures
     with BeforeAndAfterEach {
 
-  protected override val repository = new CounterMongoRepository(mongoComponent)
+  protected override val repository: CounterMongoRepository = new CounterMongoRepository(mongoComponent)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -80,7 +81,7 @@ class CounterRepositorySpec
 
       find(
         Filters.eq("_id", CounterId.ApplicationId.toString)
-      ).futureValue.head.index mustEqual repository.applicationStartingIndex
+      ).futureValue.head.index mustBe repository.applicationStartingIndex
     }
 
     "must not update the application Id index when it is equal to or greater than the intended starting index" in {
@@ -102,7 +103,23 @@ class CounterRepositorySpec
 
       find(
         Filters.eq("_id", CounterId.ApplicationId.toString)
-      ).futureValue.head.index mustEqual repository.applicationStartingIndex + 1
+      ).futureValue.head.index mustBe repository.applicationStartingIndex + 1
+    }
+
+    "must return Done when no document with application ID exists in the collection" in {
+
+      repository.seed.futureValue
+
+      repository.collection
+        .deleteOne(Filters.eq("_id", CounterId.ApplicationId.toString))
+        .toFuture()
+        .futureValue
+
+      repository.ensureApplicationIdIsCorrect().futureValue mustBe Done
+
+      find(
+        Filters.eq("_id", CounterId.ApplicationId.toString)
+      ).futureValue mustBe empty
     }
   }
 
@@ -110,24 +127,24 @@ class CounterRepositorySpec
 
     "must return sequential ids from the correct record" in {
 
-      val applicationIdStartingValue =
+      val applicationIdStartingValue: Long =
         repository.seeds.find(_._id == CounterId.ApplicationId).head.index
-      val attachmentIdStartingValue  =
+      val attachmentIdStartingValue: Long  =
         repository.seeds.find(_._id == CounterId.AttachmentId).head.index
 
       repository
         .nextId(CounterId.ApplicationId)
-        .futureValue mustEqual applicationIdStartingValue + 1
+        .futureValue mustBe applicationIdStartingValue + 1
       repository
         .nextId(CounterId.ApplicationId)
-        .futureValue mustEqual applicationIdStartingValue + 2
+        .futureValue mustBe applicationIdStartingValue + 2
       repository
         .nextId(CounterId.ApplicationId)
-        .futureValue mustEqual applicationIdStartingValue + 3
+        .futureValue mustBe applicationIdStartingValue + 3
 
-      repository.nextId(CounterId.AttachmentId).futureValue mustEqual attachmentIdStartingValue + 1
-      repository.nextId(CounterId.AttachmentId).futureValue mustEqual attachmentIdStartingValue + 2
-      repository.nextId(CounterId.AttachmentId).futureValue mustEqual attachmentIdStartingValue + 3
+      repository.nextId(CounterId.AttachmentId).futureValue mustBe attachmentIdStartingValue + 1
+      repository.nextId(CounterId.AttachmentId).futureValue mustBe attachmentIdStartingValue + 2
+      repository.nextId(CounterId.AttachmentId).futureValue mustBe attachmentIdStartingValue + 3
     }
   }
 }

@@ -19,7 +19,6 @@ package uk.gov.hmrc.advancevaluationrulings.generators
 import org.scalacheck.Gen
 import play.api.http.Status.OK
 import uk.gov.hmrc.advancevaluationrulings.models.etmp._
-import wolfendale.scalacheck.regexp.RegexpGen
 
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -28,7 +27,10 @@ trait ITModelGenerators extends ITGenerators {
 
   def regimeGen: Gen[Regime] = Gen.oneOf(Regime.values)
 
-  def eoriNumberGen: Gen[String] = RegexpGen.from("^[A-Z]{2}[0-9A-Z]{12}$")
+  def eoriNumberGen: Gen[String] = for {
+    countryCode <- Gen.buildableOfN[String, Char](2, Gen.alphaUpperChar)
+    digits      <- Gen.buildableOfN[String, Char](12, Gen.numChar)
+  } yield s"$countryCode$digits"
 
   def queryGen: Gen[Query] = for {
     regime                   <- regimeGen

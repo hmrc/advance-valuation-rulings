@@ -20,11 +20,10 @@ import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.scaladsl.{Sink, Source}
 import org.apache.pekko.util.ByteString
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{reset, verify, when}
+import org.mockito.Mockito._
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
 import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
@@ -45,7 +44,6 @@ class AttachmentsServiceSpec
     extends AnyFreeSpec
     with SpecBase
     with IntegrationPatience
-    with MockitoSugar
     with BeforeAndAfterEach
     with BeforeAndAfterAll {
 
@@ -68,7 +66,7 @@ class AttachmentsServiceSpec
   private val config          = ObjectStoreClientConfig(baseUrl, owner, token, OneWeek)
   private val objectStoreStub = new stub.StubPlayObjectStoreClient(config)
 
-  private val mockAttachmentsConnector = mock[DraftAttachmentsConnector]
+  private val mockAttachmentsConnector = mock(classOf[DraftAttachmentsConnector])
 
   private lazy val app: Application = applicationBuilder
     .overrides(

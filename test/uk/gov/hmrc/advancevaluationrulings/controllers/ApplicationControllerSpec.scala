@@ -16,12 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.Mockito.{reset, times, verify, when}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatestplus.mockito.MockitoSugar
 import play.api
 import play.api.inject.bind
 import play.api.libs.json.Json
@@ -39,16 +37,11 @@ import uk.gov.hmrc.auth.core.retrieve.~
 import java.time.{Clock, Instant, ZoneId}
 import scala.concurrent.Future
 
-class ApplicationControllerSpec
-    extends AnyFreeSpec
-    with SpecBase
-    with ModelGenerators
-    with MockitoSugar
-    with BeforeAndAfterEach {
+class ApplicationControllerSpec extends AnyFreeSpec with SpecBase with ModelGenerators with BeforeAndAfterEach {
 
   private val fixedClock             = Clock.fixed(Instant.now, ZoneId.systemDefault)
-  private val mockApplicationService = mock[ApplicationService]
-  private val mockAuthConnector      = mock[AuthConnector]
+  private val mockApplicationService = mock(classOf[ApplicationService])
+  private val mockAuthConnector      = mock(classOf[AuthConnector])
 
   private val applicantEori       = "applicantEori"
   private val atarEnrolment       = Enrolments(
@@ -73,7 +66,9 @@ class ApplicationControllerSpec
       .build()
 
   override def beforeEach(): Unit = {
-    reset(mockApplicationService, mockApplicationRepository, mockAuthConnector)
+    reset(mockApplicationService)
+    reset(mockApplicationRepository)
+    reset(mockAuthConnector)
     super.beforeEach()
   }
 

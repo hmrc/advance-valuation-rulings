@@ -17,7 +17,7 @@
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
 import com.fasterxml.jackson.core.JsonParseException
-import org.mockito.MockitoSugar
+import org.mockito.Mockito.{mock, when}
 import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.model.Filters
 import org.scalatest.OptionValues
@@ -42,7 +42,6 @@ class UserAnswersRepositorySpec
     extends AnyFreeSpec
     with Matchers
     with DefaultPlayMongoRepositorySupport[UserAnswers]
-    with MockitoSugar
     with OptionValues
     with ScalaFutures {
 
@@ -52,7 +51,7 @@ class UserAnswersRepositorySpec
   private val answers       =
     UserAnswers("userId", DraftId(1), Json.obj("foo" -> "bar"), Instant.ofEpochSecond(1))
 
-  private val mockAppConfig = mock[AppConfig]
+  private val mockAppConfig = mock(classOf[AppConfig])
   when(mockAppConfig.userAnswersTtlInDays) thenReturn 1
 
   private val aesKey = {

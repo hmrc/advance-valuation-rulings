@@ -1,5 +1,5 @@
 import sbt.Setting
-import scoverage.ScoverageKeys
+import scoverage.ScoverageKeys.*
 
 object CodeCoverageSettings {
 
@@ -10,9 +10,9 @@ object CodeCoverageSettings {
   )
 
   val settings: Seq[Setting[?]] = Seq(
-    ScoverageKeys.coverageExcludedPackages := excludedPackages.mkString(";"),
-    ScoverageKeys.coverageMinimumStmtTotal := 86,
-    ScoverageKeys.coverageFailOnMinimum := true,
-    ScoverageKeys.coverageHighlighting := true
+    coverageExcludedPackages := excludedPackages.mkString(";"),
+    coverageMinimumStmtTotal := 100,
+    coverageFailOnMinimum := true,
+    coverageHighlighting := true
   )
 }

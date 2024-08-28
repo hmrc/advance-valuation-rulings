@@ -17,9 +17,8 @@
 package uk.gov.hmrc.advancevaluationrulings.controllers.actions
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{mock, when}
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.libs.json.Json
 import play.api.mvc.Results.Ok
@@ -33,7 +32,7 @@ import uk.gov.hmrc.auth.core.retrieve.~
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class IdentifierActionSpec extends AnyFreeSpec with SpecBase with MockitoSugar {
+class IdentifierActionSpec extends AnyFreeSpec with SpecBase {
 
   class Harness(identify: IdentifierAction) {
     def onPageLoad(): Action[AnyContent] = identify { request =>
@@ -51,7 +50,7 @@ class IdentifierActionSpec extends AnyFreeSpec with SpecBase with MockitoSugar {
   private val app: Application = applicationBuilder.build()
   private val bodyParsers      = app.injector.instanceOf[BodyParsers.Default]
 
-  private val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  private val mockAuthConnector: AuthConnector = mock(classOf[AuthConnector])
 
   "Identifier action" - {
 

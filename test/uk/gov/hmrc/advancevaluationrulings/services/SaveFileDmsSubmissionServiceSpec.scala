@@ -17,36 +17,38 @@
 package uk.gov.hmrc.advancevaluationrulings.services
 
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.Mockito.{reset, verify, when}
+import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatestplus.mockito.MockitoSugar.mock
+import play.api.{Application => FakeApplication}
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
 import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
+import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.views.xml.ApplicationPdf
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.nio.file.{Files, Paths}
+import java.nio.file.attribute.PosixFilePermission
+import java.nio.file.{Files, Path, Paths}
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import java.util
 import scala.concurrent.Future
 
 class SaveFileDmsSubmissionServiceSpec extends SpecBase with BeforeAndAfterEach {
 
-  val fileName: String = "applications/" + "application.pdf"
+  private val pdfFileName: String = "applications/application.pdf"
+  private val pdfFilePath: Path   = Paths.get(pdfFileName)
+
+  private val mockFopService: FopService = mock(classOf[FopService])
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-
     reset(mockFopService)
-
-    Paths.get(fileName).toFile.delete()
+    pdfFilePath.toFile.delete()
   }
 
-  private val mockFopService = mock[FopService]
-
-  private lazy val app = applicationBuilder
+  private lazy val app: FakeApplication = applicationBuilder
     .overrides(
       bind[FopService].toInstance(mockFopService)
     )
@@ -55,22 +57,22 @@ class SaveFileDmsSubmissionServiceSpec extends SpecBase with BeforeAndAfterEach 
     )
     .build()
 
-  private lazy val service                     = app.injector.instanceOf[DmsSubmissionService]
-  private lazy val applicationTemplate         = app.injector.instanceOf[ApplicationPdf]
-  private implicit lazy val messages: Messages =
+  private lazy val service: DmsSubmissionService       = app.injector.instanceOf[DmsSubmissionService]
+  private lazy val applicationTemplate: ApplicationPdf = app.injector.instanceOf[ApplicationPdf]
+  private implicit lazy val messages: Messages         =
     app.injector.instanceOf[MessagesApi].preferred(Seq.empty)
 
   "submitApplication" - {
 
-    val trader              =
+    val trader: TraderDetail        =
       TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None, Some(false))
-    val goodsDetails        = GoodsDetails("description", None, None, None, None, None)
-    val method              = MethodOne(None, None, None)
-    val contact             = ContactDetails("name", "email", None, Some("Bob Inc"), Some("CEO"))
-    val submissionReference = "submissionReference"
-    val now                 = Instant.now.truncatedTo(ChronoUnit.MILLIS)
+    val goodsDetails: GoodsDetails  = GoodsDetails("description", None, None, None, None, None)
+    val method: MethodOne           = MethodOne(None, None, None)
+    val contact: ContactDetails     = ContactDetails("name", "email", None, Some("Bob Inc"), Some("CEO"))
+    val submissionReference: String = "submissionReference"
+    val now: Instant                = Instant.now.truncatedTo(ChronoUnit.MILLIS)
 
-    val attachment = Attachment(
+    val attachment: Attachment = Attachment(
       id = 1,
       name = "attachment",
       description = None,
@@ -80,7 +82,7 @@ class SaveFileDmsSubmissionServiceSpec extends SpecBase with BeforeAndAfterEach 
       size = 1337
     )
 
-    val letterOfAuthority = Attachment(
+    val letterOfAuthority: Attachment = Attachment(
       id = 2,
       name = "loa",
       description = None,
@@ -90,7 +92,7 @@ class SaveFileDmsSubmissionServiceSpec extends SpecBase with BeforeAndAfterEach 
       size = 1323
     )
 
-    val application = Application(
+    val application: Application = Application(
       id = ApplicationId(1),
       applicantEori = "applicantEori",
       trader = trader,
@@ -106,32 +108,44 @@ class SaveFileDmsSubmissionServiceSpec extends SpecBase with BeforeAndAfterEach 
       lastUpdated = now
     )
 
+    val bytes: Array[Byte] = "Hello, World!".getBytes("UTF-8")
+
     val hc: HeaderCarrier = HeaderCarrier()
 
     "must create a PDF from the application and save it on disk" in {
 
-      val bytes = "Hello, World!".getBytes("UTF-8")
-
       when(mockFopService.render(any())).thenReturn(Future.successful(bytes))
 
-      val expectedXml = applicationTemplate(application).body
+      val expectedXml: String = applicationTemplate(application).body
 
       service.submitApplication(application, submissionReference)(hc).futureValue
 
       verify(mockFopService).render(eqTo(expectedXml))
 
-      val result = Files.readAllBytes(Paths.get(fileName))
+      val result: Array[Byte] = Files.readAllBytes(pdfFilePath)
 
-      result mustEqual bytes
+      result mustBe bytes
     }
 
     "must fail if the fop service fails" in {
 
       when(mockFopService.render(any())).thenReturn(Future.failed(new RuntimeException()))
 
-      service.submitApplication(application, submissionReference)(hc).failed.futureValue
+      val result: Throwable = service.submitApplication(application, submissionReference)(hc).failed.futureValue
 
+      result mustBe a[RuntimeException]
     }
 
+    "must return Done to handle IOException when file writing fails" in {
+
+      when(mockFopService.render(any())).thenReturn(Future.successful(bytes))
+
+      Files.write(pdfFilePath, bytes)
+      Files.setPosixFilePermissions(pdfFilePath, util.Set.of(PosixFilePermission.OWNER_READ))
+
+      val result: Done = service.submitApplication(application, submissionReference)(hc).futureValue
+
+      result mustBe Done
+    }
   }
 }

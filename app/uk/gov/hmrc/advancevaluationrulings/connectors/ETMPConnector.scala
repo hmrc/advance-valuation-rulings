@@ -20,6 +20,7 @@ import play.api.http.MimeTypes
 import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
 import uk.gov.hmrc.advancevaluationrulings.models.common.HeaderNames
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.{ETMPSubscriptionDisplayResponse, Query}
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 

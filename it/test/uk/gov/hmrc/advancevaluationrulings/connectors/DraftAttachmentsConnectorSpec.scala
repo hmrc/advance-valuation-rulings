@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
-import cats.data.NonEmptyChain
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.Sink
 import org.apache.pekko.util.ByteString
@@ -27,17 +26,13 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-import org.scalatest.PrivateMethodTester
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import play.api.Application
 import play.api.http.Status.{NOT_FOUND, OK}
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.advancevaluationrulings.WireMockHelper
 import uk.gov.hmrc.advancevaluationrulings.connectors.DraftAttachmentsConnector.DraftAttachmentsConnectorException
+import uk.gov.hmrc.advancevaluationrulings.models.application.DraftAttachment
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
-
-import java.net.{MalformedURLException, URI, URL}
-import scala.Left
 
 class DraftAttachmentsConnectorSpec
     extends AnyFreeSpec
@@ -46,7 +41,6 @@ class DraftAttachmentsConnectorSpec
     with Matchers
     with IntegrationPatience
     with BeforeAndAfterEach
-    with PrivateMethodTester
     with BeforeAndAfterAll {
 
   override def beforeAll(): Unit = {
@@ -74,13 +68,9 @@ class DraftAttachmentsConnectorSpec
       )
       .build()
 
-  private val invalidPath = "invalid path"
-
   private lazy val connector: DraftAttachmentsConnector =
     app.injector.instanceOf[DraftAttachmentsConnector]
   private implicit lazy val mat: Materializer           = app.injector.instanceOf[Materializer]
-  private val getUrl                                    = PrivateMethod[Either[NonEmptyChain[String], URL]](Symbol("getUrl"))
-  private val convertUriToUrl                           = PrivateMethod[Either[MalformedURLException, URL]](Symbol("convertUriToUrl"))
 
   "get" - {
 
@@ -97,16 +87,17 @@ class DraftAttachmentsConnectorSpec
           )
       )
 
-      val result = connector.get("foobar").futureValue
+      val result: DraftAttachment = connector.get("foobar").futureValue
 
-      result.contentType mustEqual "application/pdf"
-      result.contentMd5 mustEqual "grtBN0au5C+J3qK1lhT57w=="
+      result.contentType mustBe "application/pdf"
+      result.contentMd5 mustBe "grtBN0au5C+J3qK1lhT57w=="
 
-      val content = result.content
+      val content: String = result.content
         .runWith(Sink.reduce[ByteString](_ ++ _))
         .futureValue
         .decodeString("UTF-8")
-      content mustEqual "Hello, World!"
+
+      content mustBe "Hello, World!"
     }
 
     "must fail when the server doesn't return a content-type header" in {
@@ -121,14 +112,13 @@ class DraftAttachmentsConnectorSpec
           )
       )
 
-      val error = connector.get("foobar").failed.futureValue
-      error mustBe an[DraftAttachmentsConnectorException]
+      val error: Throwable = connector.get("foobar").failed.futureValue
 
+      error mustBe a[DraftAttachmentsConnectorException]
       error
         .asInstanceOf[DraftAttachmentsConnectorException]
         .errors
         .toList must contain only "Content-Type header missing"
-
       error.asInstanceOf[DraftAttachmentsConnectorException].getMessage mustBe "Errors: Content-Type header missing"
     }
 
@@ -144,9 +134,9 @@ class DraftAttachmentsConnectorSpec
           )
       )
 
-      val error = connector.get("foobar").failed.futureValue
-      error mustBe an[DraftAttachmentsConnectorException]
+      val error: Throwable = connector.get("foobar").failed.futureValue
 
+      error mustBe a[DraftAttachmentsConnectorException]
       error
         .asInstanceOf[DraftAttachmentsConnectorException]
         .errors
@@ -166,13 +156,35 @@ class DraftAttachmentsConnectorSpec
           )
       )
 
-      val error = connector.get("foobar").failed.futureValue
-      error mustBe an[DraftAttachmentsConnectorException]
+      val error: Throwable = connector.get("foobar").failed.futureValue
 
+      error mustBe a[DraftAttachmentsConnectorException]
       error
         .asInstanceOf[DraftAttachmentsConnectorException]
         .errors
         .toList must contain only "Digest algorithm must be md5"
+    }
+
+    "must fail when the server returns a digest header that does not match the regex pattern" in {
+
+      wireMockServer.stubFor(
+        get(urlPathEqualTo("/attachments/foobar"))
+          .willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withHeader("Content-Type", "application/pdf")
+              .withHeader("Digest", "md5contentMd5")
+              .withBody("Hello, World!")
+          )
+      )
+
+      val error: Throwable = connector.get("foobar").failed.futureValue
+
+      error mustBe a[DraftAttachmentsConnectorException]
+      error
+        .asInstanceOf[DraftAttachmentsConnectorException]
+        .errors
+        .toList must contain only "Digest header format does not match the expected regex pattern"
     }
 
     "must fail when the server returns NOT_FOUND" in {
@@ -185,7 +197,9 @@ class DraftAttachmentsConnectorSpec
           )
       )
 
-      val error = connector.get("foo/bar").failed.futureValue
+      val error: Throwable = connector.get("foo/bar").failed.futureValue
+
+      error.getMessage mustBe "Unexpected response from advance-valuation-rulings-frontend"
       error mustBe an[UpstreamErrorResponse]
     }
 
@@ -199,38 +213,10 @@ class DraftAttachmentsConnectorSpec
           )
       )
 
-      connector.get("foo/bar").failed.futureValue
-    }
+      val error: Throwable = connector.get("foo/bar").failed.futureValue
 
-    "must fail when URI contains an illegal character" in {
-
-      wireMockServer.stubFor(
-        get(urlPathEqualTo(""))
-          .willReturn(
-            aResponse()
-              .withStatus(OK)
-          )
-      )
-
-      val result = connector.invokePrivate(getUrl(invalidPath))
-      result mustBe a[Left[_, _]]
-      result.left.foreach(errors => errors.head should include("Illegal character in path"))
-    }
-
-    "must fail when URI to URL conversation fails with a MalformedURLException" in {
-
-      wireMockServer.stubFor(
-        get(urlPathEqualTo(""))
-          .willReturn(
-            aResponse()
-              .withStatus(OK)
-          )
-      )
-
-      val malformedUri = URI.create("tp://example.com")
-      val result       = connector.invokePrivate(convertUriToUrl(malformedUri))
-      result shouldBe a[Left[_, _]]
-      result.left.foreach(error => error.getMessage should include("unknown protocol"))
+      error.getMessage mustBe "Unexpected response from advance-valuation-rulings-frontend"
+      error mustBe an[UpstreamErrorResponse]
     }
   }
 }

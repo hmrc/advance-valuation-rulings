@@ -1,8 +1,6 @@
-@import uk.gov.hmrc.advancevaluationrulings.models.application.Application
-
 @this()
 
-@(application: Application)(implicit messages: Messages)
+@()(implicit messages: Messages)
 
 <fo:bookmark-tree>
     <fo:bookmark internal-destination="title">

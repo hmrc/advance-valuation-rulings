@@ -21,9 +21,8 @@ import org.apache.pekko.stream.scaladsl.{Keep, Sink, Source}
 import org.apache.pekko.util.ByteString
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.Mockito.{reset, times, verify, when}
+import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatestplus.mockito.MockitoSugar
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
 import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
@@ -37,10 +36,10 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import scala.concurrent.Future
 
-class DefaultDmsSubmissionServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
+class DefaultDmsSubmissionServiceSpec extends SpecBase with BeforeAndAfterEach {
 
-  private val mockFopService             = mock[FopService]
-  private val mockDmsSubmissionConnector = mock[DmsSubmissionConnector]
+  private val mockFopService             = mock(classOf[FopService])
+  private val mockDmsSubmissionConnector = mock(classOf[DmsSubmissionConnector])
 
   private lazy val app = applicationBuilder
     .overrides(
@@ -60,7 +59,8 @@ class DefaultDmsSubmissionServiceSpec extends SpecBase with MockitoSugar with Be
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(mockFopService, mockDmsSubmissionConnector)
+    reset(mockFopService)
+    reset(mockDmsSubmissionConnector)
   }
 
   "submitApplication" - {

@@ -20,7 +20,6 @@ import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.util.ByteString
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.MockitoSugar
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -47,7 +46,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class DmsSubmissionConnectorSpec
     extends AnyFreeSpec
     with WireMockHelper
-    with MockitoSugar
     with ScalaFutures
     with Matchers
     with IntegrationPatience

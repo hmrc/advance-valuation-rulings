@@ -21,7 +21,6 @@ import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 import uk.gov.hmrc.advancevaluationrulings.models.application._
 import uk.gov.hmrc.advancevaluationrulings.models.audit.{ApplicationSubmissionEvent, AuditMetadata}
 import uk.gov.hmrc.advancevaluationrulings.repositories.{ApplicationRepository, CounterRepository}
-import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.{Clock, Instant}

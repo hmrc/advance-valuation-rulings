@@ -16,12 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.Mockito.{reset, when}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.{Application, inject}
 import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
@@ -39,12 +37,11 @@ import scala.concurrent.Future
 class TraderDetailsServiceSpec
     extends AnyFreeSpec
     with SpecBase
-    with MockitoSugar
     with BeforeAndAfterEach
     with ModelGenerators
     with ScalaCheckPropertyChecks {
 
-  private val mockConnector = mock[ETMPConnector]
+  private val mockConnector = mock(classOf[ETMPConnector])
   private val ackRef        = AcknowledgementReference("achRef")
 
   implicit val hc: HeaderCarrier = HeaderCarrier()

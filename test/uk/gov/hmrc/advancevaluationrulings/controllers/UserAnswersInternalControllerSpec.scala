@@ -17,18 +17,18 @@
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
 import play.api.libs.json.Json
+import play.api.mvc.{AnyContentAsEmpty, AnyContentAsJson, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 import uk.gov.hmrc.advancevaluationrulings.models.{Done, DraftId, UserAnswers}
+import uk.gov.hmrc.http.UpstreamErrorResponse
+import uk.gov.hmrc.internalauth.client.Predicate.Permission
 import uk.gov.hmrc.internalauth.client._
 import uk.gov.hmrc.internalauth.client.test.{BackendAuthComponentsStub, StubBehaviour}
 
@@ -37,10 +37,10 @@ import java.time.{Clock, Instant, ZoneId}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class UserAnswersInternalControllerSpec extends AnyFreeSpec with SpecBase with MockitoSugar with BeforeAndAfterEach {
+class UserAnswersInternalControllerSpec extends SpecBase with BeforeAndAfterEach {
 
-  private val mockStubBehaviour         = mock[StubBehaviour]
-  private val stubBackendAuthComponents =
+  private val mockStubBehaviour: StubBehaviour                 = mock(classOf[StubBehaviour])
+  private val stubBackendAuthComponents: BackendAuthComponents =
     BackendAuthComponentsStub(mockStubBehaviour)(stubControllerComponents(), implicitly)
 
   private val app: Application = applicationBuilder
@@ -50,25 +50,25 @@ class UserAnswersInternalControllerSpec extends AnyFreeSpec with SpecBase with M
     .build()
 
   override def beforeEach(): Unit = {
-    Mockito.reset(mockUserAnswersRepository)
-    Mockito.reset(mockStubBehaviour)
+    reset(mockUserAnswersRepository)
+    reset(mockStubBehaviour)
     super.beforeEach()
   }
 
-  private val writePredicate = Predicate.Permission(
+  private val writePredicate: Permission = Permission(
     Resource(ResourceType("advance-valuation-rulings"), ResourceLocation("user-answers")),
     IAAction("WRITE")
   )
-  private val readPredicate  = Predicate.Permission(
+  private val readPredicate: Permission  = Permission(
     Resource(ResourceType("advance-valuation-rulings"), ResourceLocation("user-answers")),
     IAAction("READ")
   )
 
-  private val instant     = Instant.now.truncatedTo(ChronoUnit.MILLIS)
-  private val stubClock   = Clock.fixed(instant, ZoneId.systemDefault)
-  private val userId      = "foo"
-  private val draftId     = DraftId(0)
-  private val userAnswers = UserAnswers(userId, draftId, Json.obj(), Instant.now(stubClock))
+  private val instant: Instant         = Instant.now.truncatedTo(ChronoUnit.MILLIS)
+  private val stubClock: Clock         = Clock.fixed(instant, ZoneId.systemDefault)
+  private val userId: String           = "foo"
+  private val draftId: DraftId         = DraftId(0)
+  private val userAnswers: UserAnswers = UserAnswers(userId, draftId, Json.obj(), Instant.now(stubClock))
 
   ".get" - {
 
@@ -77,13 +77,14 @@ class UserAnswersInternalControllerSpec extends AnyFreeSpec with SpecBase with M
       when(mockUserAnswersRepository.get(draftId)).thenReturn(Future.successful(Some(userAnswers)))
       when(mockStubBehaviour.stubAuth[Unit](any(), any())).thenReturn(Future.unit)
 
-      val request = FakeRequest(GET, routes.UserAnswersInternalController.get(draftId).url)
-        .withHeaders(AUTHORIZATION -> "Some auth token")
+      val request: FakeRequest[AnyContentAsEmpty.type] =
+        FakeRequest(GET, routes.UserAnswersInternalController.get(draftId).url)
+          .withHeaders(AUTHORIZATION -> "Some auth token")
 
-      val result  = route(app, request).value
+      val result: Future[Result]                       = route(app, request).value
 
-      status(result) mustEqual OK
-      contentAsJson(result) mustEqual Json.toJson(userAnswers)
+      status(result) mustBe OK
+      contentAsJson(result) mustBe Json.toJson(userAnswers)
 
       verify(mockStubBehaviour).stubAuth(Some(readPredicate), Retrieval.EmptyRetrieval)
     }
@@ -93,22 +94,26 @@ class UserAnswersInternalControllerSpec extends AnyFreeSpec with SpecBase with M
       when(mockUserAnswersRepository.get(draftId)).thenReturn(Future.successful(None))
       when(mockStubBehaviour.stubAuth[Unit](any(), any())).thenReturn(Future.unit)
 
-      val request = FakeRequest(GET, routes.UserAnswersInternalController.get(draftId).url)
-        .withHeaders(AUTHORIZATION -> "Some auth token")
+      val request: FakeRequest[AnyContentAsEmpty.type] =
+        FakeRequest(GET, routes.UserAnswersInternalController.get(draftId).url)
+          .withHeaders(AUTHORIZATION -> "Some auth token")
 
-      val result  = route(app, request).value
+      val result: Future[Result]                       = route(app, request).value
 
-      status(result) mustEqual NOT_FOUND
+      status(result) mustBe NOT_FOUND
 
       verify(mockStubBehaviour).stubAuth(Some(readPredicate), Retrieval.EmptyRetrieval)
     }
 
-    "must fail for an unauthenticated call" in {
+    "must fail for an unauthenticated call i.e. no Authorization header" in {
 
-      val request =
-        FakeRequest(GET, routes.UserAnswersInternalController.get(draftId).url) // No auth token
+      val request: FakeRequest[AnyContentAsEmpty.type] =
+        FakeRequest(GET, routes.UserAnswersInternalController.get(draftId).url)
 
-      route(app, request).value.failed.futureValue
+      val result: Throwable = route(app, request).value.failed.futureValue
+
+      result.getMessage mustBe "Unauthorized"
+      result mustBe an[UpstreamErrorResponse]
     }
 
     "must fail for an unauthorised call" in {
@@ -116,10 +121,33 @@ class UserAnswersInternalControllerSpec extends AnyFreeSpec with SpecBase with M
       when(mockStubBehaviour.stubAuth[Unit](any(), any()))
         .thenReturn(Future.failed(new RuntimeException()))
 
-      val request = FakeRequest(GET, routes.UserAnswersInternalController.get(draftId).url)
-        .withHeaders(AUTHORIZATION -> "Some auth token")
+      val request: FakeRequest[AnyContentAsEmpty.type] =
+        FakeRequest(GET, routes.UserAnswersInternalController.get(draftId).url)
+          .withHeaders(AUTHORIZATION -> "Some auth token")
 
-      route(app, request).value.failed.futureValue
+      val result: Throwable                            = route(app, request).value.failed.futureValue
+
+      result mustBe a[RuntimeException]
+    }
+
+    Seq(
+      UpstreamErrorResponse("Unauthorized", UNAUTHORIZED),
+      UpstreamErrorResponse("Forbidden", FORBIDDEN)
+    ).foreach { response =>
+      s"must fail if auth.authorizedAction fails and returns ${response.statusCode}" in {
+
+        when(mockStubBehaviour.stubAuth[Unit](any(), any()))
+          .thenReturn(Future.failed(response))
+
+        val request: FakeRequest[AnyContentAsEmpty.type] =
+          FakeRequest(GET, routes.UserAnswersInternalController.get(draftId).url)
+            .withHeaders(AUTHORIZATION -> "Some auth token")
+
+        val result: Throwable                            = route(app, request).value.failed.futureValue
+
+        result.getMessage mustBe response.message
+        result mustBe an[UpstreamErrorResponse]
+      }
     }
   }
 
@@ -130,13 +158,13 @@ class UserAnswersInternalControllerSpec extends AnyFreeSpec with SpecBase with M
       when(mockUserAnswersRepository.set(any())).thenReturn(Future.successful(Done))
       when(mockStubBehaviour.stubAuth[Unit](any(), any())).thenReturn(Future.unit)
 
-      val request = FakeRequest(POST, routes.UserAnswersInternalController.set().url)
+      val request: FakeRequest[AnyContentAsJson] = FakeRequest(POST, routes.UserAnswersInternalController.set().url)
         .withHeaders(AUTHORIZATION -> "Some auth token")
         .withJsonBody(Json.toJson(userAnswers))
 
-      val result = route(app, request).value
+      val result: Future[Result] = route(app, request).value
 
-      status(result) mustEqual NO_CONTENT
+      status(result) mustBe NO_CONTENT
 
       verify(mockStubBehaviour).stubAuth(Some(writePredicate), Retrieval.EmptyRetrieval)
       verify(mockUserAnswersRepository, times(1)).set(userAnswers)
@@ -144,21 +172,24 @@ class UserAnswersInternalControllerSpec extends AnyFreeSpec with SpecBase with M
 
     "must return BAD_REQUEST when invalid data is received" in {
 
-      val request = FakeRequest(POST, routes.UserAnswersInternalController.set().url)
+      val request: FakeRequest[AnyContentAsJson] = FakeRequest(POST, routes.UserAnswersInternalController.set().url)
         .withHeaders(AUTHORIZATION -> "Some auth token")
         .withJsonBody(Json.obj("foo" -> "bar"))
 
-      val result  = route(app, request).value
+      val result: Future[Result]                 = route(app, request).value
 
-      status(result) mustEqual BAD_REQUEST
+      status(result) mustBe BAD_REQUEST
     }
 
-    "must fail for an unauthenticated call" in {
+    "must fail for an unauthenticated call i.e. no Authorization header" in {
 
-      val request = FakeRequest(POST, routes.UserAnswersInternalController.set().url)
-        .withJsonBody(Json.toJson(userAnswers)) // No auth token
+      val request: FakeRequest[AnyContentAsJson] = FakeRequest(POST, routes.UserAnswersInternalController.set().url)
+        .withJsonBody(Json.toJson(userAnswers))
 
-      route(app, request).value.failed.futureValue
+      val result: Throwable = route(app, request).value.failed.futureValue
+
+      result.getMessage mustBe "Unauthorized"
+      result mustBe an[UpstreamErrorResponse]
     }
 
     "must fail for an unauthorised call" in {
@@ -166,11 +197,33 @@ class UserAnswersInternalControllerSpec extends AnyFreeSpec with SpecBase with M
       when(mockStubBehaviour.stubAuth[Unit](any(), any()))
         .thenReturn(Future.failed(new RuntimeException()))
 
-      val request = FakeRequest(POST, routes.UserAnswersInternalController.set().url)
+      val request: FakeRequest[AnyContentAsJson] = FakeRequest(POST, routes.UserAnswersInternalController.set().url)
         .withHeaders(AUTHORIZATION -> "Some auth token")
         .withJsonBody(Json.toJson(userAnswers))
 
-      route(app, request).value.failed.futureValue
+      val result: Throwable = route(app, request).value.failed.futureValue
+
+      result mustBe a[RuntimeException]
+    }
+
+    Seq(
+      UpstreamErrorResponse("Unauthorized", UNAUTHORIZED),
+      UpstreamErrorResponse("Forbidden", FORBIDDEN)
+    ).foreach { response =>
+      s"must fail if auth.authorizedAction fails and returns ${response.statusCode}" in {
+
+        when(mockStubBehaviour.stubAuth[Unit](any(), any()))
+          .thenReturn(Future.failed(response))
+
+        val request: FakeRequest[AnyContentAsJson] = FakeRequest(POST, routes.UserAnswersInternalController.set().url)
+          .withHeaders(AUTHORIZATION -> "Some auth token")
+          .withJsonBody(Json.toJson(userAnswers))
+
+        val result: Throwable = route(app, request).value.failed.futureValue
+
+        result.getMessage mustBe response.message
+        result mustBe an[UpstreamErrorResponse]
+      }
     }
   }
 }

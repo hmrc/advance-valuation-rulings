@@ -17,45 +17,47 @@
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{reset, verify, when}
+import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatestplus.mockito.MockitoSugar
+import play.api.Application
 import play.api.inject.bind
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 import uk.gov.hmrc.advancevaluationrulings.models.dms.{NotificationRequest, SubmissionItemStatus}
+import uk.gov.hmrc.http.UpstreamErrorResponse
+import uk.gov.hmrc.internalauth.client.Predicate.Permission
 import uk.gov.hmrc.internalauth.client._
 import uk.gov.hmrc.internalauth.client.test.{BackendAuthComponentsStub, StubBehaviour}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class DmsSubmissionCallbackControllerSpec extends AnyFreeSpec with SpecBase with MockitoSugar with BeforeAndAfterEach {
+class DmsSubmissionCallbackControllerSpec extends SpecBase with BeforeAndAfterEach {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockStubBehaviour)
   }
 
-  private val mockStubBehaviour         = mock[StubBehaviour]
-  private val stubBackendAuthComponents =
+  private val mockStubBehaviour: StubBehaviour                 = mock(classOf[StubBehaviour])
+  private val stubBackendAuthComponents: BackendAuthComponents =
     BackendAuthComponentsStub(mockStubBehaviour)(stubControllerComponents(), implicitly)
 
-  private val app = applicationBuilder
+  private val app: Application = applicationBuilder
     .overrides(
       bind[BackendAuthComponents].toInstance(stubBackendAuthComponents)
     )
     .build()
 
-  private val predicate = Predicate.Permission(
+  private val predicate: Permission = Permission(
     Resource(ResourceType("advance-valuation-rulings"), ResourceLocation("dms/callback")),
     IAAction("WRITE")
   )
 
-  private val notification = NotificationRequest(
+  private val notification: NotificationRequest = NotificationRequest(
     id = "id",
     status = SubmissionItemStatus.Processed,
     failureReason = None
@@ -67,12 +69,13 @@ class DmsSubmissionCallbackControllerSpec extends AnyFreeSpec with SpecBase with
 
       when(mockStubBehaviour.stubAuth[Unit](any(), any())).thenReturn(Future.unit)
 
-      val request = FakeRequest(POST, routes.DmsSubmissionCallbackController.callback.url)
+      val request: FakeRequest[JsValue] = FakeRequest(POST, routes.DmsSubmissionCallbackController.callback.url)
         .withHeaders(AUTHORIZATION -> "Some auth token")
         .withBody(Json.toJson(notification))
 
-      val result = route(app, request).value
-      status(result) mustEqual OK
+      val result: Future[Result] = route(app, request).value
+
+      status(result) mustBe OK
 
       verify(mockStubBehaviour).stubAuth(Some(predicate), Retrieval.EmptyRetrieval)
     }
@@ -81,20 +84,24 @@ class DmsSubmissionCallbackControllerSpec extends AnyFreeSpec with SpecBase with
 
       when(mockStubBehaviour.stubAuth[Unit](any(), any())).thenReturn(Future.unit)
 
-      val request = FakeRequest(POST, routes.DmsSubmissionCallbackController.callback.url)
+      val request: FakeRequest[JsValue] = FakeRequest(POST, routes.DmsSubmissionCallbackController.callback.url)
         .withHeaders(AUTHORIZATION -> "Some auth token")
         .withBody(Json.obj())
 
-      val result = route(app, request).value
-      status(result) mustEqual BAD_REQUEST
+      val result: Future[Result] = route(app, request).value
+
+      status(result) mustBe BAD_REQUEST
     }
 
-    "must fail for an unauthenticated user" in {
+    "must fail for an unauthenticated user i.e. no Authorization header" in {
 
-      val request = FakeRequest(POST, routes.DmsSubmissionCallbackController.callback.url)
-        .withBody(Json.toJson(notification)) // No Authorization header
+      val request: FakeRequest[JsValue] = FakeRequest(POST, routes.DmsSubmissionCallbackController.callback.url)
+        .withBody(Json.toJson(notification))
 
-      route(app, request).value.failed.futureValue
+      val result: Throwable = route(app, request).value.failed.futureValue
+
+      result.getMessage mustBe "Unauthorized"
+      result mustBe an[UpstreamErrorResponse]
     }
 
     "must fail when the user is not authorised" in {
@@ -102,25 +109,48 @@ class DmsSubmissionCallbackControllerSpec extends AnyFreeSpec with SpecBase with
       when(mockStubBehaviour.stubAuth[Unit](any(), any()))
         .thenReturn(Future.failed(new RuntimeException()))
 
-      val request = FakeRequest(POST, routes.DmsSubmissionCallbackController.callback.url)
+      val request: FakeRequest[JsValue] = FakeRequest(POST, routes.DmsSubmissionCallbackController.callback.url)
         .withHeaders(AUTHORIZATION -> "Some auth token")
         .withBody(Json.toJson(notification))
 
-      route(app, request).value.failed.futureValue
+      val result: Throwable = route(app, request).value.failed.futureValue
+
+      result mustBe a[RuntimeException]
     }
 
     "must return OK when a valid request is received but notification is FAILED" in {
 
       when(mockStubBehaviour.stubAuth[Unit](any(), any())).thenReturn(Future.unit)
 
-      val request = FakeRequest(POST, routes.DmsSubmissionCallbackController.callback.url)
+      val request: FakeRequest[JsValue] = FakeRequest(POST, routes.DmsSubmissionCallbackController.callback.url)
         .withHeaders(AUTHORIZATION -> "Some auth token")
         .withBody(Json.toJson(notification.copy(status = SubmissionItemStatus.Failed)))
 
-      val result = route(app, request).value
-      status(result) mustEqual OK
+      val result: Future[Result] = route(app, request).value
+
+      status(result) mustBe OK
 
       verify(mockStubBehaviour).stubAuth(Some(predicate), Retrieval.EmptyRetrieval)
+    }
+
+    Seq(
+      UpstreamErrorResponse("Unauthorized", UNAUTHORIZED),
+      UpstreamErrorResponse("Forbidden", FORBIDDEN)
+    ).foreach { response =>
+      s"must fail if auth.authorizedAction fails and returns ${response.statusCode}" in {
+
+        when(mockStubBehaviour.stubAuth[Unit](any(), any()))
+          .thenReturn(Future.failed(response))
+
+        val request: FakeRequest[JsValue] = FakeRequest(POST, routes.DmsSubmissionCallbackController.callback.url)
+          .withHeaders(AUTHORIZATION -> "Some auth token")
+          .withBody(Json.toJson(notification))
+
+        val result: Throwable = route(app, request).value.failed.futureValue
+
+        result.getMessage mustBe response.message
+        result mustBe an[UpstreamErrorResponse]
+      }
     }
   }
 }
