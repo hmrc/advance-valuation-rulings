@@ -17,7 +17,7 @@
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
 import com.mongodb.MongoWriteException
-import org.mockito.MockitoSugar.{mock, when}
+import org.mockito.Mockito.{mock, when}
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
@@ -38,7 +38,7 @@ class ApplicationRepositorySpec
     with OptionValues
     with ScalaFutures {
 
-  private val mockAppConfig = mock[AppConfig]
+  private val mockAppConfig = mock(classOf[AppConfig])
   when(mockAppConfig.applicationTtlInDays) thenReturn 1
 
   protected override val repository: ApplicationMongoRepository =

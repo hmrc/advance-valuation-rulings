@@ -38,11 +38,13 @@ object DraftSummary {
       goodsDescription = Reads
         .optionNoError(Reads.at[String](JsPath \ "goodsDescription"))
         .reads(answers.data)
-        .getOrElse(None),
+        .asOpt
+        .flatten,
       lastUpdated = answers.lastUpdated,
       eoriNumber = Reads
         .optionNoError(Reads.at[String](JsPath \ "checkRegisteredDetails" \ "eori"))
         .reads(answers.data)
-        .getOrElse(None)
+        .asOpt
+        .flatten
     )
 }

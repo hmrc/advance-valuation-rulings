@@ -16,12 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.Mockito.{reset, when}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application
 import play.api.inject.bind
@@ -41,12 +39,11 @@ class TraderDetailsControllerSpec
     extends AnyFreeSpec
     with SpecBase
     with ModelGenerators
-    with MockitoSugar
     with BeforeAndAfterEach
     with ScalaCheckPropertyChecks {
 
-  private val mockAuthConnector        = mock[AuthConnector]
-  private val mockTraderDetailsService = mock[TraderDetailsService]
+  private val mockAuthConnector        = mock(classOf[AuthConnector])
+  private val mockTraderDetailsService = mock(classOf[TraderDetailsService])
 
   private val ackRef        = AcknowledgementReference("ackRef")
   private val eoriNumber    = EoriNumber("applicantEori")
@@ -71,7 +68,8 @@ class TraderDetailsControllerSpec
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(mockTraderDetailsService, mockAuthConnector)
+    reset(mockTraderDetailsService)
+    reset(mockAuthConnector)
   }
 
   ".retrieveTraderDetails" - {
@@ -87,7 +85,10 @@ class TraderDetailsControllerSpec
         when(mockAuthConnector.authorise[authResult.type](any(), any())(any(), any()))
           .thenReturn(Future.successful(authResult))
         when(
-          mockTraderDetailsService.getTraderDetails(eqTo(ackRef), eqTo(eoriNumber))(any(), any())
+          mockTraderDetailsService.getTraderDetails(
+            AcknowledgementReference(eqTo(ackRef.value)),
+            EoriNumber(eqTo(eoriNumber.value))
+          )(any(), any())
         )
           .thenReturn(Future.successful(Some(traderDetails)))
 
@@ -116,7 +117,10 @@ class TraderDetailsControllerSpec
       when(mockAuthConnector.authorise[authResult.type](any(), any())(any(), any()))
         .thenReturn(Future.successful(authResult))
       when(
-        mockTraderDetailsService.getTraderDetails(eqTo(ackRef), eqTo(eoriNumber))(any(), any())
+        mockTraderDetailsService.getTraderDetails(
+          AcknowledgementReference(eqTo(ackRef.value)),
+          EoriNumber(eqTo(eoriNumber.value))
+        )(any(), any())
       )
         .thenReturn(Future.successful(None))
 

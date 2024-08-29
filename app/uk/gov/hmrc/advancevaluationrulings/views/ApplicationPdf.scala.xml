@@ -21,7 +21,7 @@
         </pdf:catalog>
     </fo:declarations>
 
-    @bookmarkTree(application)
+    @bookmarkTree()
 
     @summary(application)
 

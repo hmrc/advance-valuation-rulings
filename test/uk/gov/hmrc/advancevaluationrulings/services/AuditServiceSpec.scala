@@ -16,12 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.Mockito.{reset, verify}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatestplus.mockito.MockitoSugar
 import play.api
 import play.api.inject.bind
 import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
@@ -35,14 +33,14 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
-class AuditServiceSpec extends AnyFreeSpec with SpecBase with MockitoSugar with BeforeAndAfterEach {
+class AuditServiceSpec extends AnyFreeSpec with SpecBase with BeforeAndAfterEach {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockAuditConnector)
   }
 
-  private val mockAuditConnector = mock[AuditConnector]
+  private val mockAuditConnector = mock(classOf[AuditConnector])
 
   private lazy val app: api.Application = applicationBuilder
     .overrides(

@@ -16,9 +16,8 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -38,17 +37,16 @@ import scala.concurrent.Future
 class ApplicationServiceSpec
     extends AnyFreeSpec
     with Matchers
-    with MockitoSugar
     with BeforeAndAfterEach
     with ScalaFutures
     with IntegrationPatience {
 
-  private val mockCounterRepo                = mock[CounterRepository]
-  private val mockApplicationRepo            = mock[ApplicationRepository]
-  private val mockDmsSubmissionService       = mock[DmsSubmissionService]
-  private val mockSubmissionReferenceService = mock[SubmissionReferenceService]
-  private val mockAttachmentsService         = mock[AttachmentsService]
-  private val mockAuditService               = mock[AuditService]
+  private val mockCounterRepo                = mock(classOf[CounterRepository])
+  private val mockApplicationRepo            = mock(classOf[ApplicationRepository])
+  private val mockDmsSubmissionService       = mock(classOf[DmsSubmissionService])
+  private val mockSubmissionReferenceService = mock(classOf[SubmissionReferenceService])
+  private val mockAttachmentsService         = mock(classOf[AttachmentsService])
+  private val mockAuditService               = mock(classOf[AuditService])
   private val fixedInstant                   = Instant.now
   private val fixedClock                     = Clock.fixed(fixedInstant, ZoneId.systemDefault())
   private val trader                         =
@@ -70,14 +68,12 @@ class ApplicationServiceSpec
   )
 
   override def beforeEach(): Unit = {
-    reset(
-      mockCounterRepo,
-      mockApplicationRepo,
-      mockDmsSubmissionService,
-      mockSubmissionReferenceService,
-      mockAttachmentsService,
-      mockAuditService
-    )
+    reset(mockCounterRepo)
+    reset(mockApplicationRepo)
+    reset(mockDmsSubmissionService)
+    reset(mockSubmissionReferenceService)
+    reset(mockAttachmentsService)
+    reset(mockAuditService)
     super.beforeEach()
   }
 

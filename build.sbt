@@ -23,6 +23,7 @@ lazy val microservice =
       libraryDependencies ++= AppDependencies(),
       scalacOptions ++= List(
         "-feature",
+        "-Wconf:cat=unused-imports&src=views/.*:s",
         "-Wconf:src=routes/.*:s"
       )
     )

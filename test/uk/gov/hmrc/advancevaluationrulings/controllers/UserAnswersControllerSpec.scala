@@ -17,10 +17,9 @@
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{reset, times, verify, when}
+import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
 import play.api.libs.json.Json
@@ -37,9 +36,9 @@ import java.time.temporal.ChronoUnit
 import java.time.{Clock, Instant, ZoneId}
 import scala.concurrent.Future
 
-class UserAnswersControllerSpec extends AnyFreeSpec with SpecBase with MockitoSugar with BeforeAndAfterEach {
+class UserAnswersControllerSpec extends AnyFreeSpec with SpecBase with BeforeAndAfterEach {
 
-  private val mockAuthConnector = mock[AuthConnector]
+  private val mockAuthConnector = mock(classOf[AuthConnector])
 
   private val instant       = Instant.now.truncatedTo(ChronoUnit.MILLIS)
   private val stubClock     = Clock.fixed(instant, ZoneId.systemDefault)
@@ -54,7 +53,8 @@ class UserAnswersControllerSpec extends AnyFreeSpec with SpecBase with MockitoSu
   )
 
   override def beforeEach(): Unit = {
-    reset(mockUserAnswersRepository, mockAuthConnector)
+    reset(mockUserAnswersRepository)
+    reset(mockAuthConnector)
     super.beforeEach()
   }
 

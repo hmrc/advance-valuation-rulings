@@ -22,7 +22,6 @@ import uk.gov.hmrc.advancevaluationrulings.models.DraftId
 import uk.gov.hmrc.advancevaluationrulings.models.application.ApplicationId
 import uk.gov.hmrc.advancevaluationrulings.models.etmp._
 import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
-import wolfendale.scalacheck.regexp.RegexpGen
 
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -41,7 +40,10 @@ trait ModelGenerators extends Generators {
 
   def regimeGen: Gen[Regime] = Gen.oneOf(Regime.values)
 
-  def eoriNumberGen: Gen[String] = RegexpGen.from("^[A-Z]{2}[0-9A-Z]{12}$")
+  def eoriNumberGen: Gen[String] = for {
+    countryCode <- Gen.buildableOfN[String, Char](2, Gen.alphaUpperChar)
+    digits      <- Gen.buildableOfN[String, Char](12, Gen.numChar)
+  } yield s"$countryCode$digits"
 
   def cdsEstablishmentAddressGen: Gen[CDSEstablishmentAddress] = for {
     streetAndNumber <- stringsWithMaxLength(70)

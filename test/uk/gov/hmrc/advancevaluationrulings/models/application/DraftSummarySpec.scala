@@ -18,60 +18,63 @@ package uk.gov.hmrc.advancevaluationrulings.models.application
 
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.advancevaluationrulings.models.{DraftId, UserAnswers}
 
 import java.time.Instant
 
 class DraftSummarySpec extends AnyFreeSpec with Matchers {
 
-  private val now = Instant.now
+  private val now: Instant     = Instant.now
+  private val draftId: DraftId = DraftId(0)
 
   ".apply" - {
 
-    "must return a DraftSummary when optional fields have not been answered" in {
+    "must return a DraftSummary when optional fields 'goodsDescription' and 'eori' have not been answered" in {
 
-      val draftId = DraftId(0)
-      val answers = UserAnswers("userId", draftId, Json.obj(), now)
+      val answers: UserAnswers = UserAnswers("userId", draftId, Json.obj(), now)
 
-      DraftSummary(answers) mustEqual DraftSummary(draftId, None, now, None)
+      DraftSummary(answers) mustBe DraftSummary(draftId, None, now, None)
     }
 
-    "must return a DraftSummary when optional fields have been answered" in {
+    "must return a DraftSummary when optional fields have been answered correctly" in {
 
-      val draftId = DraftId(0)
-      val data    = Json.obj(
+      val data: JsObject = Json.obj(
         "goodsDescription"       -> "goods",
         "checkRegisteredDetails" -> Json.obj(
           "eori" -> "eori"
         )
       )
 
-      val answers = UserAnswers("userId", draftId, data, now)
+      val answers: UserAnswers = UserAnswers("userId", draftId, data, now)
 
-      DraftSummary(answers) mustEqual DraftSummary(draftId, Some("goods"), now, Some("eori"))
+      DraftSummary(answers) mustBe DraftSummary(draftId, Some("goods"), now, Some("eori"))
     }
 
-    "must return a DraftSummary when optional field 'goodsDescription' and 'checkRegisteredDetails' have not been answered" in {
+    "must return a DraftSummary when optional field 'goodsDescription' and 'checkRegisteredDetails' object have been answered as int" in {
 
-      val draftId = DraftId(0)
-      val data    = Json.obj()
-
-      val answers = UserAnswers("userId", draftId, data, now)
-
-      DraftSummary(answers) mustEqual DraftSummary(draftId, None, now, None)
-    }
-
-    "must return a DraftSummary when optional field 'goodsDescription' and 'checkRegisteredDetails' have been answered as int" in {
-
-      val draftId = DraftId(0)
-      val data    = Json.obj(
+      val data: JsObject = Json.obj(
         "goodsDescription"       -> 1,
         "checkRegisteredDetails" -> 2
       )
-      val answers = UserAnswers("userId", draftId, data, now)
 
-      DraftSummary(answers) mustEqual DraftSummary(draftId, None, now, None)
+      val answers: UserAnswers = UserAnswers("userId", draftId, data, now)
+
+      DraftSummary(answers) mustBe DraftSummary(draftId, None, now, None)
+    }
+
+    "must return a DraftSummary when optional fields 'goodsDescription' and 'eori' have been answered as int" in {
+
+      val data: JsObject = Json.obj(
+        "goodsDescription"       -> 1,
+        "checkRegisteredDetails" -> Json.obj(
+          "eori" -> 2
+        )
+      )
+
+      val answers: UserAnswers = UserAnswers("userId", draftId, data, now)
+
+      DraftSummary(answers) mustBe DraftSummary(draftId, None, now, None)
     }
   }
 }
