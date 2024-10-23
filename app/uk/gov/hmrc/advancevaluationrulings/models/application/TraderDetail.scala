@@ -43,5 +43,5 @@ final case class TraderDetail(
 
 object TraderDetail {
 
-  implicit lazy val format: OFormat[TraderDetail] = Json.format
+  given format: OFormat[TraderDetail] = Json.format
 }

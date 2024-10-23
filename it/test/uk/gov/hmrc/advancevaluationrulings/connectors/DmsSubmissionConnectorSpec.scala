@@ -325,14 +325,14 @@ class DmsSubmissionConnectorSpec
         .submitApplication(eori, source, timestamp, submissionReference, Seq(attachment), None)(hc)
         .failed
         .futureValue
-      error mustBe an[DmsSubmissionConnector.AttachmentNotFoundException]
+      error mustBe an[AttachmentNotFoundException]
 
       error
-        .asInstanceOf[DmsSubmissionConnector.AttachmentNotFoundException]
+        .asInstanceOf[AttachmentNotFoundException]
         .file mustEqual "foo/bar.pdf"
 
       error
-        .asInstanceOf[DmsSubmissionConnector.AttachmentNotFoundException]
+        .asInstanceOf[AttachmentNotFoundException]
         .getMessage mustEqual None.orNull
     }
 

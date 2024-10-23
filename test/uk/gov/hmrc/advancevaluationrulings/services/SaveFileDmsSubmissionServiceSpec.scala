@@ -59,7 +59,7 @@ class SaveFileDmsSubmissionServiceSpec extends SpecBase with BeforeAndAfterEach 
 
   private lazy val service: DmsSubmissionService       = app.injector.instanceOf[DmsSubmissionService]
   private lazy val applicationTemplate: ApplicationPdf = app.injector.instanceOf[ApplicationPdf]
-  private implicit lazy val messages: Messages         =
+  private given messages: Messages                     =
     app.injector.instanceOf[MessagesApi].preferred(Seq.empty)
 
   "submitApplication" - {

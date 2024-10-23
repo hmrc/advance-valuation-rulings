@@ -51,5 +51,6 @@ class TraderDetailViewSpec extends BaseViewSpec {
 
   "TraderDetailView" - {
     normalPage(expectedContent)
+    view.ref must not be None.orNull
   }
 }

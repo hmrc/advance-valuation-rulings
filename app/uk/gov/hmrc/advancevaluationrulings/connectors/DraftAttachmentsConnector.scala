@@ -28,6 +28,7 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import cats.data.{EitherNec, NonEmptyChain}
 import cats.implicits._
 import uk.gov.hmrc.advancevaluationrulings.config.Service
+import uk.gov.hmrc.http.client.readStreamHttpResponse
 
 @Singleton
 class DraftAttachmentsConnector @Inject() (

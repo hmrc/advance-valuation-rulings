@@ -31,5 +31,5 @@ case class ContactInformation(
   emailVerificationTimestamp: Option[String]
 )
 object ContactInformation {
-  implicit val format: OFormat[ContactInformation] = Json.format[ContactInformation]
+  given format: OFormat[ContactInformation] = Json.format[ContactInformation]
 }

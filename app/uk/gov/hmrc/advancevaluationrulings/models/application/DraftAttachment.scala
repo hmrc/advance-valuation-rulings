@@ -20,7 +20,7 @@ import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.util.ByteString
 
 final case class DraftAttachment(
-  content: Source[ByteString, _],
+  content: Source[ByteString, ?],
   contentType: String,
   contentMd5: String
 )

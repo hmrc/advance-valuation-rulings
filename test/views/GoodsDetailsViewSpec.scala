@@ -108,7 +108,9 @@ class GoodsDetailsViewSpec extends BaseViewSpec {
   ).foreach { case (requestedMethod, expectedContent) =>
     s"must display correct content for RequestedMethod $requestedMethod" - {
       val renderedView: Xml = view.apply(application.copy(requestedMethod = requestedMethod))
-      checkRenderedContent(renderedView, expectedContent)
+      checkRenderedContent(renderedView, expectedContent, ".apply")
     }
   }
+
+  view.ref must not be None.orNull
 }

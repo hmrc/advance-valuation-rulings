@@ -22,5 +22,5 @@ final case class DraftSummaryResponse(summaries: Seq[DraftSummary])
 
 object DraftSummaryResponse {
 
-  implicit lazy val format: OFormat[DraftSummaryResponse] = Json.format
+  given format: OFormat[DraftSummaryResponse] = Json.format
 }

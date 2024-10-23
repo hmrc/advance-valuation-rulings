@@ -24,6 +24,6 @@ case class ResponseCommon(
 )
 
 object ResponseCommon {
-  implicit val format: OFormat[ResponseCommon] =
+  given format: OFormat[ResponseCommon] =
     Json.format[ResponseCommon]
 }

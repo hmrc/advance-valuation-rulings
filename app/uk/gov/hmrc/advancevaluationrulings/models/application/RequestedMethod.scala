@@ -22,8 +22,7 @@ import play.api.libs.json.{Json, OFormat}
 sealed trait RequestedMethod
 
 object RequestedMethod {
-
-  implicit lazy val format: OFormat[RequestedMethod] = Json.configured(jsonConfig).format
+  given format: OFormat[RequestedMethod] = Json.configured(jsonConfig).format
 }
 
 final case class MethodOne(
@@ -34,7 +33,7 @@ final case class MethodOne(
 
 object MethodOne {
 
-  implicit lazy val format: OFormat[MethodOne] = Json.format
+  given format: OFormat[MethodOne] = Json.format
 }
 
 final case class MethodTwo(
@@ -44,7 +43,7 @@ final case class MethodTwo(
 
 object MethodTwo {
 
-  implicit lazy val format: OFormat[MethodTwo] = Json.format
+  given format: OFormat[MethodTwo] = Json.format
 }
 
 final case class MethodThree(
@@ -54,7 +53,7 @@ final case class MethodThree(
 
 object MethodThree {
 
-  implicit lazy val format: OFormat[MethodThree] = Json.format
+  given format: OFormat[MethodThree] = Json.format
 }
 
 final case class MethodFour(
@@ -64,7 +63,7 @@ final case class MethodFour(
 
 object MethodFour {
 
-  implicit lazy val format: OFormat[MethodFour] = Json.format
+  given format: OFormat[MethodFour] = Json.format
 }
 
 final case class MethodFive(
@@ -74,7 +73,7 @@ final case class MethodFive(
 
 object MethodFive {
 
-  implicit lazy val format: OFormat[MethodFive] = Json.format
+  given format: OFormat[MethodFive] = Json.format
 }
 
 final case class MethodSix(
@@ -85,7 +84,7 @@ final case class MethodSix(
 
 object MethodSix {
 
-  implicit lazy val format: OFormat[MethodSix] = Json.format
+  given format: OFormat[MethodSix] = Json.format
 }
 
 sealed abstract class AdaptedMethod(override val entryName: String) extends EnumEntry

@@ -24,6 +24,7 @@ import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, Appl
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
+import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
@@ -52,7 +53,7 @@ class ApplicationMongoRepository @Inject() (
           Indexes.ascending("lastUpdated"),
           IndexOptions()
             .name("last-updated-index-applications")
-            .expireAfter(appConfig.applicationTtlInDays, TimeUnit.DAYS)
+            .expireAfter(appConfig.applicationTtlInDays.toLong, TimeUnit.DAYS)
         ),
         IndexModel(
           Indexes.ascending("id"),

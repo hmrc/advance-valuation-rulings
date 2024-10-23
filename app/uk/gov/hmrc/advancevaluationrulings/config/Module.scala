@@ -30,7 +30,7 @@ class Module extends play.api.inject.Module {
   override def bindings(
     environment: Environment,
     configuration: Configuration
-  ): collection.Seq[Binding[_]] = {
+  ): collection.Seq[Binding[?]] = {
 
     val authTokenInitialiserBinding: Binding[InternalAuthTokenInitialiser] =
       if (configuration.get[Boolean]("internal-auth-token-initialiser.enabled")) {
@@ -50,7 +50,7 @@ class Module extends play.api.inject.Module {
       bind[AppConfig].toSelf.eagerly(),
       bind[Clock].toInstance(Clock.systemUTC()),
       bind[FopFactory].toProvider[FopFactoryProvider].eagerly(),
-      bind[Encrypter with Decrypter].toProvider[CryptoProvider],
+      bind[Encrypter & Decrypter].toProvider[CryptoProvider],
       authTokenInitialiserBinding,
       dmsSubmissionServiceBinding
     )

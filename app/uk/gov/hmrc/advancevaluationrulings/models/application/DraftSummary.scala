@@ -30,7 +30,7 @@ final case class DraftSummary(
 
 object DraftSummary {
 
-  implicit lazy val format: OFormat[DraftSummary] = Json.format
+  given format: OFormat[DraftSummary] = Json.format
 
   def apply(answers: UserAnswers): DraftSummary =
     DraftSummary(

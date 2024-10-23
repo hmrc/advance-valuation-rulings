@@ -38,5 +38,6 @@ class LineViewSpec extends BaseViewSpec {
 
   "LineView" - {
     normalPage(expectedContent)
+    view.ref must not be None.orNull
   }
 }

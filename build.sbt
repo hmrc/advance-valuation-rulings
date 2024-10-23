@@ -1,6 +1,6 @@
 import uk.gov.hmrc.DefaultBuildSettings.itSettings
 
-ThisBuild / scalaVersion := "2.13.14"
+ThisBuild / scalaVersion := "3.5.1"
 ThisBuild / majorVersion := 0
 
 val appName = "advance-valuation-rulings"
@@ -8,9 +8,8 @@ val appName = "advance-valuation-rulings"
 lazy val microservice =
   Project(appName, file("."))
     .enablePlugins(PlayScala, SbtDistributablesPlugin)
-    .disablePlugins(
-      JUnitXmlReportPlugin
-    ) // Required to prevent https://github.com/scalatest/scalatest/issues/1427
+    // Required to prevent https://github.com/scalatest/scalatest/issues/1427
+    .disablePlugins(JUnitXmlReportPlugin)
     .settings(PlayKeys.playDefaultPort := 12601)
     .settings(CodeCoverageSettings.settings)
     .settings(
@@ -23,7 +22,8 @@ lazy val microservice =
       libraryDependencies ++= AppDependencies(),
       scalacOptions ++= List(
         "-feature",
-        "-Wconf:cat=unused-imports&src=views/.*:s",
+        "-Wconf:msg=unused import&src=conf/.*:s",
+        "-Wconf:msg=unused import&src=views/.*:s",
         "-Wconf:src=routes/.*:s"
       )
     )

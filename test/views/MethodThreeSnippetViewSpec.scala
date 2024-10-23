@@ -37,5 +37,6 @@ class MethodThreeSnippetViewSpec extends BaseViewSpec {
 
   "MethodThreeSnippetView" - {
     normalPage(expectedContent)
+    view.ref must not be None.orNull
   }
 }

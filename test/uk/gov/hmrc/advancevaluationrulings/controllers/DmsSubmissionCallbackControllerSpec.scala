@@ -17,19 +17,19 @@
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import org.scalatest.BeforeAndAfterEach
 import play.api.Application
 import play.api.inject.bind
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 import uk.gov.hmrc.advancevaluationrulings.models.dms.{NotificationRequest, SubmissionItemStatus}
 import uk.gov.hmrc.http.UpstreamErrorResponse
+import uk.gov.hmrc.internalauth.client.*
 import uk.gov.hmrc.internalauth.client.Predicate.Permission
-import uk.gov.hmrc.internalauth.client._
 import uk.gov.hmrc.internalauth.client.test.{BackendAuthComponentsStub, StubBehaviour}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -65,19 +65,21 @@ class DmsSubmissionCallbackControllerSpec extends SpecBase with BeforeAndAfterEa
 
   "callback" - {
 
-    "must return OK when a valid request is received" in {
+    SubmissionItemStatus.values.foreach { notificationsStatus =>
+      s"must return OK when a valid request is received with status $notificationsStatus" in {
 
-      when(mockStubBehaviour.stubAuth[Unit](any(), any())).thenReturn(Future.unit)
+        when(mockStubBehaviour.stubAuth[Unit](any(), any())).thenReturn(Future.unit)
 
-      val request: FakeRequest[JsValue] = FakeRequest(POST, routes.DmsSubmissionCallbackController.callback.url)
-        .withHeaders(AUTHORIZATION -> "Some auth token")
-        .withBody(Json.toJson(notification))
+        val request: FakeRequest[JsValue] = FakeRequest(POST, routes.DmsSubmissionCallbackController.callback.url)
+          .withHeaders(AUTHORIZATION -> "Some auth token")
+          .withBody(Json.toJson(notification.copy(status = notificationsStatus)))
 
-      val result: Future[Result] = route(app, request).value
+        val result: Future[Result] = route(app, request).value
 
-      status(result) mustBe OK
+        status(result) mustBe OK
 
-      verify(mockStubBehaviour).stubAuth(Some(predicate), Retrieval.EmptyRetrieval)
+        verify(mockStubBehaviour).stubAuth(Some(predicate), Retrieval.EmptyRetrieval)
+      }
     }
 
     "must return BAD_REQUEST when an invalid request is received" in {

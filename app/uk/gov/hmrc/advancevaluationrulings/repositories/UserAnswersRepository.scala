@@ -27,6 +27,7 @@ import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
+import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 
 import java.time.{Clock, Instant}
 import java.util.concurrent.TimeUnit
@@ -54,7 +55,7 @@ class UserAnswersMongoRepository @Inject() (
   mongoComponent: MongoComponent,
   appConfig: AppConfig,
   clock: Clock
-)(implicit ec: ExecutionContext, crypto: Encrypter with Decrypter)
+)(implicit ec: ExecutionContext, crypto: Encrypter & Decrypter)
     extends PlayMongoRepository[UserAnswers](
       collectionName = "user-answers",
       mongoComponent = mongoComponent,
@@ -64,7 +65,7 @@ class UserAnswersMongoRepository @Inject() (
           Indexes.ascending("lastUpdated"),
           IndexOptions()
             .name("last-updated-index")
-            .expireAfter(appConfig.userAnswersTtlInDays, TimeUnit.DAYS)
+            .expireAfter(appConfig.userAnswersTtlInDays.toLong, TimeUnit.DAYS)
         ),
         IndexModel(
           Indexes.ascending("userId", "draftId"),
@@ -114,7 +115,7 @@ class UserAnswersMongoRepository @Inject() (
 
   override def set(answers: UserAnswers): Future[Done] = {
 
-    val updatedUserAnswers = answers copy (lastUpdated = Instant.now(clock))
+    val updatedUserAnswers = answers.copy(lastUpdated = Instant.now(clock))
 
     collection
       .replaceOne(

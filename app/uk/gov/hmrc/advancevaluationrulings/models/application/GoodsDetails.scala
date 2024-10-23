@@ -29,5 +29,5 @@ final case class GoodsDetails(
 
 object GoodsDetails {
 
-  implicit val format: OFormat[GoodsDetails] = Json.format
+  given format: OFormat[GoodsDetails] = Json.format
 }

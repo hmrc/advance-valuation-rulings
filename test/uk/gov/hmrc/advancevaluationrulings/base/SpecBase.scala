@@ -17,15 +17,24 @@
 package uk.gov.hmrc.advancevaluationrulings.base
 
 import org.mockito.Mockito.mock
-import org.scalatest.OptionValues
+import org.scalatest.{EitherValues, OptionValues}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
+import uk.gov.hmrc.advancevaluationrulings.generators.ModelGenerators
 import uk.gov.hmrc.advancevaluationrulings.repositories.{ApplicationRepository, CounterRepository, UserAnswersRepository}
 
-trait SpecBase extends AnyFreeSpec with Matchers with OptionValues with ScalaFutures {
+trait SpecBase
+    extends AnyFreeSpec
+    with Matchers
+    with OptionValues
+    with EitherValues
+    with ScalaFutures
+    with ScalaCheckPropertyChecks
+    with ModelGenerators {
 
   val mockApplicationRepository: ApplicationRepository = mock(classOf[ApplicationRepository])
   val mockCounterRepository: CounterRepository         = mock(classOf[CounterRepository])

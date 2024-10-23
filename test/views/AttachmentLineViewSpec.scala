@@ -39,5 +39,6 @@ class AttachmentLineViewSpec extends BaseViewSpec {
 
   "AttachmentLineView" - {
     normalPage(expectedContent)
+    view.ref must not be None.orNull
   }
 }

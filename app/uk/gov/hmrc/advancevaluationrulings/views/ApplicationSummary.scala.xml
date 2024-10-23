@@ -1,6 +1,6 @@
 @import java.time.format.DateTimeFormatter
 @import java.time.ZoneId
-@import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, RoleHelper, WhatIsYourRole}
+@import uk.gov.hmrc.advancevaluationrulings.models.application.{Application, WhatIsYourRole}
 
 @this(
     header: PageHeader,
@@ -9,8 +9,7 @@
     traderDetail: TraderDetail,
     agentDetail: AgentDetail,
     traderInfo: TraderInfo,
-    agentInfo: AgentInfo,
-    roleHelper: RoleHelper
+    agentInfo: AgentInfo
 )
 
 @(application: Application)(implicit messages: Messages)

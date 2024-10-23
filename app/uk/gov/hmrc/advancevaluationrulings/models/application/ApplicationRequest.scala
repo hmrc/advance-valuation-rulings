@@ -33,5 +33,5 @@ final case class ApplicationRequest(
 
 object ApplicationRequest {
 
-  implicit lazy val format: OFormat[ApplicationRequest] = Json.format
+  given format: OFormat[ApplicationRequest] = Json.format
 }

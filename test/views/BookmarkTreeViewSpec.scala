@@ -34,5 +34,6 @@ class BookmarkTreeViewSpec extends BaseViewSpec {
 
   "BookmarkTreeView" - {
     normalPage(expectedContent)
+    view.ref must not be None.orNull
   }
 }

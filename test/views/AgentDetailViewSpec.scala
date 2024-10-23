@@ -49,5 +49,6 @@ class AgentDetailViewSpec extends BaseViewSpec {
 
   "AgentDetailView" - {
     normalPage(expectedContent)
+    view.ref must not be None.orNull
   }
 }

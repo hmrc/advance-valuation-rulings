@@ -16,13 +16,12 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.should.Matchers
+import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
-class RoleHelperSpec extends AnyFreeSpec with Matchers {
+class RoleHelperSpec extends SpecBase {
 
   private val trader: TraderDetail       =
     TraderDetail("eori", "name", "line1", None, None, "postcode", "GB", None, Some(true))
@@ -57,7 +56,7 @@ class RoleHelperSpec extends AnyFreeSpec with Matchers {
 
         val result = roleHelper.messagesForAgentTraderOrOtherRole(application, messageForAgentTrader, messageForOther)
 
-        result should be(messageForAgentTrader)
+        result mustBe messageForAgentTrader
       }
 
       val roles = Seq(WhatIsYourRole.EmployeeOrg, WhatIsYourRole.AgentOrg, WhatIsYourRole.UnansweredLegacySupport)
@@ -72,7 +71,7 @@ class RoleHelperSpec extends AnyFreeSpec with Matchers {
 
           val result = roleHelper.messagesForAgentTraderOrOtherRole(application, messageForAgentTrader, messageForOther)
 
-          result should be(messageForOther)
+          result mustBe messageForOther
         }
       }
 

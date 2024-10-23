@@ -24,6 +24,7 @@ import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application.{CounterId, CounterWrapper}
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
+import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

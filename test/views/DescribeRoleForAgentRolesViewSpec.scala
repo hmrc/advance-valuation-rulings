@@ -52,8 +52,10 @@ class DescribeRoleForAgentRolesViewSpec extends BaseViewSpec {
     ).foreach { case (role, expectedContent) =>
       s"must display correct content for role $role" - {
         val renderedView: Xml = view.apply(role)
-        checkRenderedContent(renderedView, expectedContent)
+        checkRenderedContent(renderedView, expectedContent, ".apply")
       }
     }
+
+    view.ref must not be None.orNull
   }
 }

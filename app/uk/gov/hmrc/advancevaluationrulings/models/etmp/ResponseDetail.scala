@@ -27,5 +27,5 @@ final case class ResponseDetail(
 )
 
 object ResponseDetail {
-  implicit val format: OFormat[ResponseDetail] = Json.format[ResponseDetail]
+  given format: OFormat[ResponseDetail] = Json.format[ResponseDetail]
 }

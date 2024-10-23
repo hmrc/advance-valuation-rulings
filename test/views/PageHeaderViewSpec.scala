@@ -36,5 +36,6 @@ class PageHeaderViewSpec extends BaseViewSpec {
 
   "PageHeaderView" - {
     normalPage(expectedContent)
+    view.ref must not be None.orNull
   }
 }
