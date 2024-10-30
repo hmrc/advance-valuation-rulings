@@ -28,7 +28,6 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 import uk.gov.hmrc.advancevaluationrulings.generators.ModelGenerators
-import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
 import uk.gov.hmrc.advancevaluationrulings.services.TraderDetailsService
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.~
@@ -45,14 +44,14 @@ class TraderDetailsControllerSpec
   private val mockAuthConnector        = mock(classOf[AuthConnector])
   private val mockTraderDetailsService = mock(classOf[TraderDetailsService])
 
-  private val ackRef        = AcknowledgementReference("ackRef")
-  private val eoriNumber    = EoriNumber("applicantEori")
+  private val ackRef        = "ackRef"
+  private val eoriNumber    = "applicantEori"
   private val atarEnrolment =
     Enrolments(
       Set(
         Enrolment(
           "HMRC-ATAR-ORG",
-          Seq(EnrolmentIdentifier("EORINumber", eoriNumber.value)),
+          Seq(EnrolmentIdentifier("EORINumber", eoriNumber)),
           "Activated"
         )
       )
@@ -86,8 +85,8 @@ class TraderDetailsControllerSpec
           .thenReturn(Future.successful(authResult))
         when(
           mockTraderDetailsService.getTraderDetails(
-            AcknowledgementReference(eqTo(ackRef.value)),
-            EoriNumber(eqTo(eoriNumber.value))
+            eqTo(ackRef),
+            eqTo(eoriNumber)
           )(any(), any())
         )
           .thenReturn(Future.successful(Some(traderDetails)))
@@ -96,7 +95,7 @@ class TraderDetailsControllerSpec
           FakeRequest(
             GET,
             routes.TraderDetailsController
-              .retrieveTraderDetails(ackRef.value, eoriNumber.value)
+              .retrieveTraderDetails(ackRef, eoriNumber)
               .url
           )
 
@@ -118,8 +117,8 @@ class TraderDetailsControllerSpec
         .thenReturn(Future.successful(authResult))
       when(
         mockTraderDetailsService.getTraderDetails(
-          AcknowledgementReference(eqTo(ackRef.value)),
-          EoriNumber(eqTo(eoriNumber.value))
+          eqTo(ackRef),
+          eqTo(eoriNumber)
         )(any(), any())
       )
         .thenReturn(Future.successful(None))
@@ -128,7 +127,7 @@ class TraderDetailsControllerSpec
         FakeRequest(
           GET,
           routes.TraderDetailsController
-            .retrieveTraderDetails(ackRef.value, eoriNumber.value)
+            .retrieveTraderDetails(ackRef, eoriNumber)
             .url
         )
 

@@ -84,9 +84,9 @@ class ApplicationServiceSpec
       val id            = 123L
       val applicantEori = "applicantEori"
 
-      when(mockCounterRepo.nextId(eqTo(CounterId.ApplicationId))) thenReturn Future.successful(id)
+      when(mockCounterRepo.nextId(eqTo(CounterId.ApplicationId))).thenReturn(Future.successful(id))
       when(mockSubmissionReferenceService.random()).thenReturn(submissionReference)
-      when(mockApplicationRepo.set(any())) thenReturn Future.successful(Done)
+      when(mockApplicationRepo.set(any())).thenReturn(Future.successful(Done))
       when(mockDmsSubmissionService.submitApplication(any(), any())(any()))
         .thenReturn(Future.successful(Done))
 
@@ -259,9 +259,9 @@ class ApplicationServiceSpec
       val id            = 123L
       val applicantEori = "applicantEori"
 
-      when(mockCounterRepo.nextId(eqTo(CounterId.ApplicationId))) thenReturn Future.successful(id)
+      when(mockCounterRepo.nextId(eqTo(CounterId.ApplicationId))).thenReturn(Future.successful(id))
       when(mockSubmissionReferenceService.random()).thenReturn(submissionReference)
-      when(mockApplicationRepo.set(any())) thenReturn Future.successful(Done)
+      when(mockApplicationRepo.set(any())).thenReturn(Future.successful(Done))
       when(mockDmsSubmissionService.submitApplication(any(), any())(any()))
         .thenReturn(Future.successful(Done))
 
@@ -318,9 +318,9 @@ class ApplicationServiceSpec
       val id            = 123L
       val applicantEori = "applicantEori"
 
-      when(mockCounterRepo.nextId(eqTo(CounterId.ApplicationId))) thenReturn Future.successful(id)
+      when(mockCounterRepo.nextId(eqTo(CounterId.ApplicationId))).thenReturn(Future.successful(id))
       when(mockSubmissionReferenceService.random()).thenReturn(submissionReference)
-      when(mockApplicationRepo.set(any())) thenReturn Future.successful(Done)
+      when(mockApplicationRepo.set(any())).thenReturn(Future.successful(Done))
       when(mockDmsSubmissionService.submitApplication(any(), any())(any()))
         .thenReturn(Future.successful(Done))
 

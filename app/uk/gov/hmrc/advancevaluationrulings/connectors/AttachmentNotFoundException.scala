@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.advancevaluationrulings.models.common
+package uk.gov.hmrc.advancevaluationrulings.connectors
 
-import play.api.libs.json.{Format, Json}
+import scala.util.control.NoStackTrace
 
-final case class AcknowledgementReference(value: String) extends AnyVal
-
-object AcknowledgementReference {
-  implicit val format: Format[AcknowledgementReference] = Json.valueFormat[AcknowledgementReference]
+final case class AttachmentNotFoundException(file: String) extends Exception with NoStackTrace {
+  override def getMessage: String = super.getMessage
 }

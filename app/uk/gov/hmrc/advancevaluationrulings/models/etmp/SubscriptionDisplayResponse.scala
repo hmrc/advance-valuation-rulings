@@ -24,6 +24,6 @@ final case class SubscriptionDisplayResponse(
 )
 
 object SubscriptionDisplayResponse {
-  implicit val format: OFormat[SubscriptionDisplayResponse] =
+  given format: OFormat[SubscriptionDisplayResponse] =
     Json.format[SubscriptionDisplayResponse]
 }

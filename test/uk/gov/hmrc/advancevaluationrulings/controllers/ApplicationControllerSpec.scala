@@ -16,22 +16,22 @@
 
 package uk.gov.hmrc.advancevaluationrulings.controllers
 
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.Mockito._
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.Mockito.*
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.freespec.AnyFreeSpec
 import play.api
 import play.api.inject.bind
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 import uk.gov.hmrc.advancevaluationrulings.generators.ModelGenerators
 import uk.gov.hmrc.advancevaluationrulings.models.DraftId
-import uk.gov.hmrc.advancevaluationrulings.models.application._
+import uk.gov.hmrc.advancevaluationrulings.models.application.*
 import uk.gov.hmrc.advancevaluationrulings.models.audit.AuditMetadata
 import uk.gov.hmrc.advancevaluationrulings.services.ApplicationService
-import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.retrieve.~
 
 import java.time.{Clock, Instant, ZoneId}
@@ -93,9 +93,7 @@ class ApplicationControllerSpec extends AnyFreeSpec with SpecBase with ModelGene
             )
           )
         )
-      when(mockApplicationService.save(any(), any(), any())(any())) thenReturn Future.successful(
-        ApplicationId(id)
-      )
+      when(mockApplicationService.save(any(), any(), any())(any())).thenReturn(Future.successful(ApplicationId(id)))
 
       val expectedMetadata = AuditMetadata(
         internalId = "internalId",

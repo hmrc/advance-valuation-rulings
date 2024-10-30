@@ -22,5 +22,5 @@ final case class ApplicationSubmissionResponse(applicationId: ApplicationId)
 
 object ApplicationSubmissionResponse {
 
-  implicit lazy val format: OFormat[ApplicationSubmissionResponse] = Json.format
+  given format: OFormat[ApplicationSubmissionResponse] = Json.format
 }

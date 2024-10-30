@@ -36,5 +36,6 @@ class LayoutViewSpec extends BaseViewSpec {
 
   "LayoutView" - {
     normalPage(expectedContent)
+    view.ref must not be None.orNull
   }
 }

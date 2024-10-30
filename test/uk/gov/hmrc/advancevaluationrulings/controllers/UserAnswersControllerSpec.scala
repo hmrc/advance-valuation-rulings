@@ -68,9 +68,7 @@ class UserAnswersControllerSpec extends AnyFreeSpec with SpecBase with BeforeAnd
 
     "must return data when it exists for this userId and draftId" in {
 
-      when(mockUserAnswersRepository.get(userId, draftId)) thenReturn Future.successful(
-        Some(userAnswers)
-      )
+      when(mockUserAnswersRepository.get(userId, draftId)).thenReturn(Future.successful(Some(userAnswers)))
       when(
         mockAuthConnector
           .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](
@@ -91,7 +89,7 @@ class UserAnswersControllerSpec extends AnyFreeSpec with SpecBase with BeforeAnd
         FakeRequest(GET, routes.UserAnswersController.get(draftId).url)
           .withHeaders(HeaderNames.xSessionId -> userId)
 
-      val result  = route(app, request).value
+      val result = route(app, request).value
 
       status(result) mustEqual OK
       contentAsJson(result) mustEqual Json.toJson(userAnswers)
@@ -99,7 +97,7 @@ class UserAnswersControllerSpec extends AnyFreeSpec with SpecBase with BeforeAnd
 
     "must return Not Found when data cannot be found for this user id and draft id" in {
 
-      when(mockUserAnswersRepository.get(userId, draftId)) thenReturn Future.successful(None)
+      when(mockUserAnswersRepository.get(userId, draftId)).thenReturn(Future.successful(None))
       when(
         mockAuthConnector
           .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](
@@ -120,7 +118,7 @@ class UserAnswersControllerSpec extends AnyFreeSpec with SpecBase with BeforeAnd
         FakeRequest(GET, routes.UserAnswersController.get(draftId).url)
           .withHeaders(HeaderNames.xSessionId -> userId)
 
-      val result  = route(app, request).value
+      val result = route(app, request).value
 
       status(result) mustEqual NOT_FOUND
     }
@@ -130,7 +128,7 @@ class UserAnswersControllerSpec extends AnyFreeSpec with SpecBase with BeforeAnd
 
     "must return No Content when the data is successfully saved" in {
 
-      when(mockUserAnswersRepository.set(any())) thenReturn Future.successful(Done)
+      when(mockUserAnswersRepository.set(any())).thenReturn(Future.successful(Done))
       when(
         mockAuthConnector
           .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](
@@ -185,7 +183,7 @@ class UserAnswersControllerSpec extends AnyFreeSpec with SpecBase with BeforeAnd
           )
           .withBody(Json.obj("foo" -> "bar").toString)
 
-      val result  = route(app, request).value
+      val result = route(app, request).value
 
       status(result) mustEqual BAD_REQUEST
     }
@@ -195,7 +193,7 @@ class UserAnswersControllerSpec extends AnyFreeSpec with SpecBase with BeforeAnd
 
     "must return NoContent and keep the data alive" in {
 
-      when(mockUserAnswersRepository.keepAlive(any(), any())) thenReturn Future.successful(Done)
+      when(mockUserAnswersRepository.keepAlive(any(), any())).thenReturn(Future.successful(Done))
       when(
         mockAuthConnector
           .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](
@@ -226,7 +224,7 @@ class UserAnswersControllerSpec extends AnyFreeSpec with SpecBase with BeforeAnd
 
     "must return NoContent and clear the data" in {
 
-      when(mockUserAnswersRepository.clear(any(), any())) thenReturn Future.successful(Done)
+      when(mockUserAnswersRepository.clear(any(), any())).thenReturn(Future.successful(Done))
       when(
         mockAuthConnector
           .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](
@@ -258,7 +256,7 @@ class UserAnswersControllerSpec extends AnyFreeSpec with SpecBase with BeforeAnd
     "must return summaries" in {
 
       val summaries = Seq(DraftSummary(DraftId(1), None, Instant.now, None))
-      when(mockUserAnswersRepository.summaries(any())) thenReturn Future.successful(summaries)
+      when(mockUserAnswersRepository.summaries(any())).thenReturn(Future.successful(summaries))
       when(
         mockAuthConnector
           .authorise[Enrolments ~ Option[String] ~ Option[AffinityGroup] ~ Option[CredentialRole]](

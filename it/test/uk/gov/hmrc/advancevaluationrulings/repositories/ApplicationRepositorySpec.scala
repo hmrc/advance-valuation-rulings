@@ -24,7 +24,7 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import uk.gov.hmrc.advancevaluationrulings.config.AppConfig
 import uk.gov.hmrc.advancevaluationrulings.models.Done
-import uk.gov.hmrc.advancevaluationrulings.models.application._
+import uk.gov.hmrc.advancevaluationrulings.models.application.*
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.time.Instant
@@ -39,7 +39,7 @@ class ApplicationRepositorySpec
     with ScalaFutures {
 
   private val mockAppConfig = mock(classOf[AppConfig])
-  when(mockAppConfig.applicationTtlInDays) thenReturn 1
+  when(mockAppConfig.applicationTtlInDays).thenReturn(1)
 
   protected override val repository: ApplicationMongoRepository =
     new ApplicationMongoRepository(mongoComponent, mockAppConfig)

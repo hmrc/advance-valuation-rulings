@@ -18,18 +18,16 @@ package uk.gov.hmrc.advancevaluationrulings.config
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
-
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
-
 import play.api.{Configuration, Logging}
 import play.api.http.Status.{CREATED, OK}
 import play.api.libs.json.Json
 import uk.gov.hmrc.advancevaluationrulings.models.Done
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
-
+import play.api.libs.ws.writeableOf_JsValue
 import org.apache.pekko.actor.ActorSystem
 
 abstract class InternalAuthTokenInitialiser {
@@ -62,8 +60,7 @@ class InternalAuthTokenInitialiserImpl @Inject() (
   private val delay: FiniteDuration =
     configuration.get[FiniteDuration]("internal-auth-token-initialiser.delay")
 
-  override lazy val initialised: Future[Done] =
-    setup()
+  override val initialised: Future[Done] = setup()
 
   actorSystem.scheduler.scheduleOnce(delay) {
     Await.result(setup(), 30.seconds)
@@ -106,7 +103,7 @@ class InternalAuthTokenInitialiserImpl @Inject() (
           )
         )
       )
-      .execute
+      .execute[HttpResponse]
       .flatMap { response =>
         if (response.status == CREATED) {
           logger.info(
@@ -141,7 +138,7 @@ class InternalAuthTokenInitialiserImpl @Inject() (
           )
         )
       )
-      .execute
+      .execute[HttpResponse]
       .flatMap { response =>
         if (response.status == CREATED) {
           logger.info(
@@ -162,7 +159,7 @@ class InternalAuthTokenInitialiserImpl @Inject() (
     httpClient
       .get(url"${internalAuthService.baseUrl}/test-only/token")(HeaderCarrier())
       .setHeader("Authorization" -> authToken)
-      .execute
+      .execute[HttpResponse]
       .map(_.status == OK)
   }
 }

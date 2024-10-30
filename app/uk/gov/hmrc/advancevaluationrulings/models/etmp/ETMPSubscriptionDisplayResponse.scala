@@ -23,6 +23,6 @@ final case class ETMPSubscriptionDisplayResponse(
 )
 
 object ETMPSubscriptionDisplayResponse {
-  implicit val format: OFormat[ETMPSubscriptionDisplayResponse] =
+  given format: OFormat[ETMPSubscriptionDisplayResponse] =
     Json.format[ETMPSubscriptionDisplayResponse]
 }

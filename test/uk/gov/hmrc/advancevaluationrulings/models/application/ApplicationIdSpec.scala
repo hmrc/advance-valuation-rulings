@@ -17,20 +17,12 @@
 package uk.gov.hmrc.advancevaluationrulings.models.application
 
 import org.scalacheck.Arbitrary.arbitrary
-import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.libs.json.{JsString, JsSuccess, Json}
 import play.api.mvc.PathBindable
-import uk.gov.hmrc.advancevaluationrulings.generators.ModelGenerators
+import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 
-class ApplicationIdSpec
-    extends AnyFreeSpec
-    with Matchers
-    with ScalaCheckPropertyChecks
-    with ModelGenerators
-    with EitherValues {
+class ApplicationIdSpec extends SpecBase {
 
   "an application Id" - {
 

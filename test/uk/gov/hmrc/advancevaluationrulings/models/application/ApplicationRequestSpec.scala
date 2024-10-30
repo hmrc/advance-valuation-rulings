@@ -20,10 +20,9 @@ import play.api.libs.json.{JsSuccess, Json}
 import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 import uk.gov.hmrc.advancevaluationrulings.generators.Generators
 import uk.gov.hmrc.advancevaluationrulings.models.DraftId
+import uk.gov.hmrc.advancevaluationrulings.models.application.ApplicationRequestSpec.*
 
 class ApplicationRequestSpec extends SpecBase {
-
-  import ApplicationRequestSpec._
 
   "ApplicationRequest" - {
     "be able to deserialize successful body" in {

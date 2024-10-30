@@ -51,10 +51,10 @@ class DefaultDmsSubmissionServiceSpec extends SpecBase with BeforeAndAfterEach {
     )
     .build()
 
-  private lazy val service                     = app.injector.instanceOf[DmsSubmissionService]
-  private lazy val applicationTemplate         = app.injector.instanceOf[ApplicationPdf]
-  private implicit lazy val mat: Materializer  = app.injector.instanceOf[Materializer]
-  private implicit lazy val messages: Messages =
+  private lazy val service             = app.injector.instanceOf[DmsSubmissionService]
+  private lazy val applicationTemplate = app.injector.instanceOf[ApplicationPdf]
+  private given mat: Materializer      = app.injector.instanceOf[Materializer]
+  private given messages: Messages     =
     app.injector.instanceOf[MessagesApi].preferred(Seq.empty)
 
   override def beforeEach(): Unit = {
@@ -114,8 +114,8 @@ class DefaultDmsSubmissionServiceSpec extends SpecBase with BeforeAndAfterEach {
     "must create a PDF from the application and send it to DMS Submission" in {
 
       val bytes                                               = "Hello, World!".getBytes("UTF-8")
-      val sourceCaptor: ArgumentCaptor[Source[ByteString, _]] =
-        ArgumentCaptor.forClass(classOf[Source[ByteString, _]])
+      val sourceCaptor: ArgumentCaptor[Source[ByteString, ?]] =
+        ArgumentCaptor.forClass(classOf[Source[ByteString, ?]])
 
       when(mockFopService.render(any())).thenReturn(Future.successful(bytes))
       when(

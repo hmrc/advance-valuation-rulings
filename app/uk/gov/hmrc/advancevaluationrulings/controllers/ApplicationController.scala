@@ -64,7 +64,7 @@ class ApplicationController @Inject() (
   private def seraliseApplicationToJSON(application: Application) =
     Ok(Json.toJson(application))
 
-  private def getAuditMetadata(request: IdentifierRequest[_]): AuditMetadata =
+  private def getAuditMetadata(request: IdentifierRequest[?]): AuditMetadata =
     AuditMetadata(
       internalId = request.internalId,
       affinityGroup = request.affinityGroup,

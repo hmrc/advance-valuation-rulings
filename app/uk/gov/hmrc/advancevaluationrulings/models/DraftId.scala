@@ -53,7 +53,7 @@ object DraftId {
         value.toString
     }
 
-  implicit lazy val format: Format[DraftId] = new Format[DraftId] {
+  given format: Format[DraftId] = new Format[DraftId] {
     override def reads(json: JsValue): JsResult[DraftId] =
       json match {
         case string: JsString =>

@@ -48,11 +48,11 @@ class UserAnswersRepositorySpec
   private val instant          = Instant.now.truncatedTo(ChronoUnit.MILLIS)
   private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-  private val answers       =
+  private val answers =
     UserAnswers("userId", DraftId(1), Json.obj("foo" -> "bar"), Instant.ofEpochSecond(1))
 
   private val mockAppConfig = mock(classOf[AppConfig])
-  when(mockAppConfig.userAnswersTtlInDays) thenReturn 1
+  when(mockAppConfig.userAnswersTtlInDays).thenReturn(1)
 
   private val aesKey = {
     val aesKey = new Array[Byte](32)
@@ -62,7 +62,7 @@ class UserAnswersRepositorySpec
 
   private val configuration = Configuration("crypto.key" -> aesKey)
 
-  private implicit val crypto: Encrypter with Decrypter =
+  private implicit val crypto: Encrypter & Decrypter =
     SymmetricCryptoFactory.aesGcmCryptoFromConfig("crypto", configuration.underlying)
 
   protected override val repository: UserAnswersMongoRepository =
@@ -76,7 +76,7 @@ class UserAnswersRepositorySpec
 
     "must set the last updated time on the supplied user answers to `now`, and save them" in {
 
-      val expectedResult = answers copy (lastUpdated = instant)
+      val expectedResult = answers.copy(lastUpdated = instant)
 
       val setResult     = repository.set(answers).futureValue
       val updatedRecord = find(
@@ -123,7 +123,7 @@ class UserAnswersRepositorySpec
         insert(answers).futureValue.wasAcknowledged() mustBe true
 
         val result         = repository.get(answers.userId, answers.draftId).futureValue
-        val expectedResult = answers copy (lastUpdated = instant)
+        val expectedResult = answers.copy(lastUpdated = instant)
 
         result.value mustEqual expectedResult
       }
@@ -213,7 +213,7 @@ class UserAnswersRepositorySpec
 
         repository.keepAlive(answers.userId, answers.draftId).futureValue mustBe Done
 
-        val expectedUpdatedAnswers = answers copy (lastUpdated = instant)
+        val expectedUpdatedAnswers = answers.copy(lastUpdated = instant)
 
         val updatedAnswers = find(
           Filters.and(

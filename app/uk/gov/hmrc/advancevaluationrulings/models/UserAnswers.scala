@@ -34,9 +34,9 @@ final case class UserAnswers(
 
 object UserAnswers {
 
-  implicit val format: OFormat[UserAnswers] = Json.format
+  given format: OFormat[UserAnswers] = Json.format
 
-  def encryptedFormat(implicit crypto: Encrypter with Decrypter): OFormat[UserAnswers] = {
+  def encryptedFormat(implicit crypto: Encrypter & Decrypter): OFormat[UserAnswers] = {
 
     implicit val sensitiveFormat: Format[SensitiveString] =
       JsonEncryption.sensitiveEncrypterDecrypter(SensitiveString.apply)

@@ -23,7 +23,6 @@ import scala.concurrent.ExecutionContext
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.advancevaluationrulings.controllers.actions.IdentifierAction
-import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
 import uk.gov.hmrc.advancevaluationrulings.services.TraderDetailsService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -42,10 +41,7 @@ class TraderDetailsController @Inject() (
   ): Action[AnyContent] =
     identify.async { implicit request =>
       traderDetailsService
-        .getTraderDetails(
-          AcknowledgementReference(acknowledgementReference),
-          eoriNumber = EoriNumber(eoriNumber)
-        )
+        .getTraderDetails(acknowledgementReference, eoriNumber)
         .map {
           case None                        => NotFound
           case Some(traderDetailsResponse) => Ok(Json.toJson(traderDetailsResponse))

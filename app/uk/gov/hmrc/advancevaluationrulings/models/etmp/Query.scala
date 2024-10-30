@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.advancevaluationrulings.models.etmp
 
-import play.api.libs.json.{Json, OFormat}
-
 final case class Query(
   regime: Regime,
   acknowledgementReference: String,
@@ -26,8 +24,6 @@ final case class Query(
 )
 
 object Query {
-  implicit val format: OFormat[Query] = Json.format[Query]
-
   implicit class QueryExt(query: Query) {
     def toQueryParameters: Seq[(String, String)] =
       Seq(

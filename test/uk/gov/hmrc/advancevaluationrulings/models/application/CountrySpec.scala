@@ -19,10 +19,9 @@ package uk.gov.hmrc.advancevaluationrulings.models.application
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 
-class CountrySpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyChecks {
+class CountrySpec extends SpecBase {
 
   ".fromCountryCode" - {
 

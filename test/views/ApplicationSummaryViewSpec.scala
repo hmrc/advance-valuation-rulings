@@ -59,8 +59,8 @@ class ApplicationSummaryViewSpec extends BaseViewSpec {
       """<fo:page-number-citation ref-id="FinalElement" /></fo:block>""",
     s"""<fo:block margin-bottom="3mm">${testApplication.id.toString}</fo:block>""",
     s"""<fo:block margin-bottom="3mm">${ofPattern("d MMMM yyyy")
-      .withZone(ZoneId.systemDefault())
-      .format(now)}</fo:block>""",
+        .withZone(ZoneId.systemDefault())
+        .format(now)}</fo:block>""",
     s"""<fo:block margin-bottom="3mm">${testApplication.trader.eori}</fo:block>""",
     s"""<fo:block margin-bottom="3mm">${testApplication.trader.businessName}</fo:block>""",
     s"""<fo:block margin-bottom="3mm">${testApplication.contact.name}</fo:block>""",
@@ -75,5 +75,6 @@ class ApplicationSummaryViewSpec extends BaseViewSpec {
 
   "ApplicationSummaryView" - {
     normalPage(expectedContent)
+    view.ref must not be None.orNull
   }
 }

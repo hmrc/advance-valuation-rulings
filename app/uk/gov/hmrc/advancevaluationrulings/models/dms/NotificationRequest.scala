@@ -26,5 +26,5 @@ final case class NotificationRequest(
 
 object NotificationRequest {
 
-  implicit lazy val format: OFormat[NotificationRequest] = Json.format
+  given format: OFormat[NotificationRequest] = Json.format
 }

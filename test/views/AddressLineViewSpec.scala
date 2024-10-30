@@ -38,5 +38,6 @@ class AddressLineViewSpec extends BaseViewSpec {
 
   "AddressLineView" - {
     normalPage(expectedContent)
+    view.ref must not be None.orNull
   }
 }

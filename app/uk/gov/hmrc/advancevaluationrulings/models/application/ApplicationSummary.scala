@@ -37,9 +37,9 @@ object ApplicationSummary {
         (__ \ "goodsDetails" \ "goodsDescription").read[String] and
         (__ \ "created").read[Instant](MongoJavatimeFormats.instantFormat) and
         (__ \ "trader" \ "eori").read[String]
-    )(ApplicationSummary.apply _)
+    )(ApplicationSummary.apply)
 
   val mongoFormat: OFormat[ApplicationSummary] = OFormat(mongoReads, format)
 
-  implicit lazy val format: OFormat[ApplicationSummary] = Json.format
+  given format: OFormat[ApplicationSummary] = Json.format
 }

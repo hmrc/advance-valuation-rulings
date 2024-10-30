@@ -22,7 +22,7 @@ final case class CounterWrapper(_id: CounterId, index: Long)
 
 object CounterWrapper {
 
-  implicit lazy val format: OFormat[CounterWrapper] = Json.format
+  given format: OFormat[CounterWrapper] = Json.format
 }
 
 sealed trait CounterId
@@ -37,7 +37,7 @@ object CounterId {
     override val toString: String = "attachmentId"
   }
 
-  implicit lazy val format: Format[CounterId] = new Format[CounterId] {
+  given format: Format[CounterId] = new Format[CounterId] {
     override def reads(json: JsValue): JsResult[CounterId] =
       json match {
         case JsString(ApplicationId.toString) => JsSuccess(ApplicationId)

@@ -31,5 +31,5 @@ final case class ApplicationSubmissionEvent(
 
 object ApplicationSubmissionEvent {
 
-  implicit lazy val format: OFormat[ApplicationSubmissionEvent] = Json.format
+  given format: OFormat[ApplicationSubmissionEvent] = Json.format
 }

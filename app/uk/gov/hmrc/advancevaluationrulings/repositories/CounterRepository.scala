@@ -17,7 +17,7 @@
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
 import com.google.inject.ImplementedBy
-import org.mongodb.scala.MongoBulkWriteException
+import org.mongodb.scala.{MongoBulkWriteException, SingleObservableFuture}
 import org.mongodb.scala.model.{Filters, FindOneAndUpdateOptions, ReturnDocument, Updates}
 import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application.{CounterId, CounterWrapper}
@@ -27,7 +27,7 @@ import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import javax.inject.{Inject, Singleton}
 import scala.annotation.nowarn
 import scala.concurrent.{ExecutionContext, Future}
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 @ImplementedBy(classOf[CounterMongoRepository])
 trait CounterRepository {

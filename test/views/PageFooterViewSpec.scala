@@ -35,5 +35,6 @@ class PageFooterViewSpec extends BaseViewSpec {
 
   "PageFooterView" - {
     normalPage(expectedContent)
+    view.ref must not be None.orNull
   }
 }

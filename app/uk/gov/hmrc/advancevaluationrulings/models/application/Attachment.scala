@@ -30,5 +30,5 @@ final case class Attachment(
 
 object Attachment {
 
-  implicit lazy val format: OFormat[Attachment] = Json.format
+  given format: OFormat[Attachment] = Json.format
 }

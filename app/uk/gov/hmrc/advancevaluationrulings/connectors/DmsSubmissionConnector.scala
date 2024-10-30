@@ -24,7 +24,6 @@ import play.api.http.Status.{ACCEPTED, INTERNAL_SERVER_ERROR}
 import play.api.mvc.MultipartFormData
 import play.api.{Configuration, Logging}
 import uk.gov.hmrc.advancevaluationrulings.config.Service
-import uk.gov.hmrc.advancevaluationrulings.connectors.DmsSubmissionConnector._
 import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application.{Attachment, Privacy}
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
@@ -33,13 +32,13 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, Upstream
 import uk.gov.hmrc.objectstore.client.Path
 import uk.gov.hmrc.objectstore.client.play.Implicits._
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
+import play.api.libs.ws.bodyWritableOf_Multipart
 
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.{Instant, LocalDateTime, ZoneOffset}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.control.NoStackTrace
 
 @Singleton
 class DmsSubmissionConnector @Inject() (
@@ -72,7 +71,7 @@ class DmsSubmissionConnector @Inject() (
 
   def submitApplication(
     eori: String,
-    pdf: Source[ByteString, _],
+    pdf: Source[ByteString, ?],
     timestamp: Instant,
     submissionReference: String,
     attachments: Seq[Attachment],
@@ -101,7 +100,7 @@ class DmsSubmissionConnector @Inject() (
       MultipartFormData.DataPart("metadata.businessArea", businessArea)
     )
 
-    val fileParts: Seq[MultipartFormData.FilePart[Source[ByteString, _]]] =
+    val fileParts: Seq[MultipartFormData.FilePart[Source[ByteString, ?]]] =
       Seq(
         MultipartFormData.FilePart(
           key = "form",
@@ -155,13 +154,6 @@ class DmsSubmissionConnector @Inject() (
     }
   }
 
-}
-
-object DmsSubmissionConnector {
-
-  final case class AttachmentNotFoundException(file: String) extends Exception with NoStackTrace {
-    override def getMessage: String = super.getMessage
-  }
 }
 
 case class DmsAttachment(

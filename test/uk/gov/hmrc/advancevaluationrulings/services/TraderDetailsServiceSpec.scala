@@ -25,7 +25,6 @@ import play.api.{Application, inject}
 import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 import uk.gov.hmrc.advancevaluationrulings.connectors.ETMPConnector
 import uk.gov.hmrc.advancevaluationrulings.generators.ModelGenerators
-import uk.gov.hmrc.advancevaluationrulings.models.common.{AcknowledgementReference, EoriNumber}
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.Regime.CDS
 import uk.gov.hmrc.advancevaluationrulings.models.etmp.{ETMPSubscriptionDisplayResponse, Query, ResponseCommon, SubscriptionDisplayResponse}
 import uk.gov.hmrc.advancevaluationrulings.models.traderdetails.TraderDetailsResponse
@@ -42,7 +41,7 @@ class TraderDetailsServiceSpec
     with ScalaCheckPropertyChecks {
 
   private val mockConnector = mock(classOf[ETMPConnector])
-  private val ackRef        = AcknowledgementReference("achRef")
+  private val ackRef        = "achRef"
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
@@ -74,8 +73,8 @@ class TraderDetailsServiceSpec
         s"when consentToDisclosureOfPersonalData is $stubValue" in {
 
           forAll(responseDetailGen) { responseDetail =>
-            val eoriNumber   = EoriNumber(responseDetail.EORINo)
-            val etmpRequest  = Query(CDS, ackRef.value, EORI = Option(eoriNumber.value))
+            val eoriNumber   = responseDetail.EORINo
+            val etmpRequest  = Query(CDS, ackRef, EORI = Option(eoriNumber))
             val etmpResponse = ETMPSubscriptionDisplayResponse(
               SubscriptionDisplayResponse(
                 responseCommon,

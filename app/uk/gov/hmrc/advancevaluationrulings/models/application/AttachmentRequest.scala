@@ -29,5 +29,5 @@ final case class AttachmentRequest(
 
 object AttachmentRequest {
 
-  implicit lazy val format: OFormat[AttachmentRequest] = Json.format
+  given format: OFormat[AttachmentRequest] = Json.format
 }

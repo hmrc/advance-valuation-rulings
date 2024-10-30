@@ -28,5 +28,5 @@ final case class TraderDetailsResponse(
 )
 
 object TraderDetailsResponse {
-  implicit val format: OFormat[TraderDetailsResponse] = Json.format[TraderDetailsResponse]
+  given format: OFormat[TraderDetailsResponse] = Json.format[TraderDetailsResponse]
 }

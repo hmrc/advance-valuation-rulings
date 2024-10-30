@@ -17,22 +17,12 @@
 package uk.gov.hmrc.advancevaluationrulings.models
 
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
-import org.scalatest.{EitherValues, OptionValues}
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.libs.json.{JsObject, Json}
-import uk.gov.hmrc.advancevaluationrulings.generators.ModelGenerators
+import uk.gov.hmrc.advancevaluationrulings.base.SpecBase
 
 import java.time.{LocalDateTime, ZoneOffset}
 
-class UserAnswersSpec
-    extends AnyFreeSpec
-    with Matchers
-    with ScalaCheckPropertyChecks
-    with ModelGenerators
-    with EitherValues
-    with OptionValues {
+class UserAnswersSpec extends SpecBase {
 
   val userAnswersJson: JsObject =
     Json.obj(
@@ -62,7 +52,7 @@ class UserAnswersSpec
 
         val expected = model
 
-        actual shouldBe expected
+        actual mustBe expected
       }
     }
 
@@ -74,7 +64,7 @@ class UserAnswersSpec
 
         val expected = userAnswersJson
 
-        actual shouldBe expected
+        actual mustBe expected
       }
     }
   }

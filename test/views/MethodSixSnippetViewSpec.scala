@@ -39,5 +39,6 @@ class MethodSixSnippetViewSpec extends BaseViewSpec {
 
   "MethodSixSnippetView" - {
     normalPage(expectedContent)
+    view.ref must not be None.orNull
   }
 }

@@ -47,7 +47,7 @@ class AttachmentsServiceSpec
     with BeforeAndAfterEach
     with BeforeAndAfterAll {
 
-  private implicit lazy val as: ActorSystem = ActorSystem()
+  private given as: ActorSystem = ActorSystem()
 
   override def beforeEach(): Unit = {
     super.beforeEach()

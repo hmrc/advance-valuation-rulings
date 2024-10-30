@@ -81,7 +81,7 @@ class UserAnswersInternalControllerSpec extends SpecBase with BeforeAndAfterEach
         FakeRequest(GET, routes.UserAnswersInternalController.get(draftId).url)
           .withHeaders(AUTHORIZATION -> "Some auth token")
 
-      val result: Future[Result]                       = route(app, request).value
+      val result: Future[Result] = route(app, request).value
 
       status(result) mustBe OK
       contentAsJson(result) mustBe Json.toJson(userAnswers)
@@ -98,7 +98,7 @@ class UserAnswersInternalControllerSpec extends SpecBase with BeforeAndAfterEach
         FakeRequest(GET, routes.UserAnswersInternalController.get(draftId).url)
           .withHeaders(AUTHORIZATION -> "Some auth token")
 
-      val result: Future[Result]                       = route(app, request).value
+      val result: Future[Result] = route(app, request).value
 
       status(result) mustBe NOT_FOUND
 
@@ -125,7 +125,7 @@ class UserAnswersInternalControllerSpec extends SpecBase with BeforeAndAfterEach
         FakeRequest(GET, routes.UserAnswersInternalController.get(draftId).url)
           .withHeaders(AUTHORIZATION -> "Some auth token")
 
-      val result: Throwable                            = route(app, request).value.failed.futureValue
+      val result: Throwable = route(app, request).value.failed.futureValue
 
       result mustBe a[RuntimeException]
     }
@@ -143,7 +143,7 @@ class UserAnswersInternalControllerSpec extends SpecBase with BeforeAndAfterEach
           FakeRequest(GET, routes.UserAnswersInternalController.get(draftId).url)
             .withHeaders(AUTHORIZATION -> "Some auth token")
 
-        val result: Throwable                            = route(app, request).value.failed.futureValue
+        val result: Throwable = route(app, request).value.failed.futureValue
 
         result.getMessage mustBe response.message
         result mustBe an[UpstreamErrorResponse]
@@ -176,7 +176,7 @@ class UserAnswersInternalControllerSpec extends SpecBase with BeforeAndAfterEach
         .withHeaders(AUTHORIZATION -> "Some auth token")
         .withJsonBody(Json.obj("foo" -> "bar"))
 
-      val result: Future[Result]                 = route(app, request).value
+      val result: Future[Result] = route(app, request).value
 
       status(result) mustBe BAD_REQUEST
     }

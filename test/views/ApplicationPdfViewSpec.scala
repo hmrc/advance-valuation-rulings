@@ -60,8 +60,8 @@ class ApplicationPdfViewSpec extends BaseViewSpec {
     s"""<fo:block margin-bottom="3mm">${application.trader.eori}</fo:block>""",
     s"""<fo:block margin-bottom="3mm">${application.id.toString}</fo:block>""",
     s"""<fo:block margin-bottom="3mm">${ofPattern("d MMMM yyyy")
-      .withZone(ZoneId.systemDefault())
-      .format(now)}</fo:block>""",
+        .withZone(ZoneId.systemDefault())
+        .format(now)}</fo:block>""",
     s"""<fo:block margin-bottom="3mm">${application.trader.businessName}</fo:block>""",
     s"""<fo:block margin-bottom="3mm">${application.contact.name}</fo:block>""",
     s"""<fo:block margin-bottom="3mm">${application.contact.email}</fo:block>""",
@@ -76,5 +76,6 @@ class ApplicationPdfViewSpec extends BaseViewSpec {
 
   "ApplicationPdfView" - {
     normalPage(expectedContent)
+    view.ref must not be None.orNull
   }
 }

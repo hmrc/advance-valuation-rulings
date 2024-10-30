@@ -70,7 +70,7 @@ class DraftAttachmentsConnectorSpec
 
   private lazy val connector: DraftAttachmentsConnector =
     app.injector.instanceOf[DraftAttachmentsConnector]
-  private implicit lazy val mat: Materializer           = app.injector.instanceOf[Materializer]
+  private given mat: Materializer                       = app.injector.instanceOf[Materializer]
 
   "get" - {
 

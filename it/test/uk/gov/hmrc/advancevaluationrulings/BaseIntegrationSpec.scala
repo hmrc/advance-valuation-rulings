@@ -43,7 +43,7 @@ trait BaseIntegrationSpec
     with TableDrivenPropertyChecks
     with BeforeAndAfterEach {
 
-  implicit lazy val headerCarrier: HeaderCarrier = HeaderCarrier()
+  given headerCarrier: HeaderCarrier = HeaderCarrier()
 
   val baseUrl               = s"http://localhost:$port"
   val traderDetailsEndpoint = s"$baseUrl/advance-valuation-rulings/trader-details"
@@ -56,11 +56,11 @@ trait BaseIntegrationSpec
       .configure("microservice.services.integration-framework.port" -> WireMockHelper.wireMockPort)
       .build()
 
-  implicit lazy val ec: ExecutionContext = fakeApplication().injector.instanceOf[ExecutionContext]
-  lazy val wsClient: WSClient            = fakeApplication().injector.instanceOf[WSClient]
-  lazy val httpClient: HttpClientV2      = fakeApplication().injector.instanceOf[HttpClientV2]
-  lazy val appConfig: AppConfig          = fakeApplication().injector.instanceOf[AppConfig]
-  lazy val ETMPEndpoint: String          = appConfig.etmpSubscriptionDisplayEndpoint
+  given ec: ExecutionContext        = fakeApplication().injector.instanceOf[ExecutionContext]
+  lazy val wsClient: WSClient       = fakeApplication().injector.instanceOf[WSClient]
+  lazy val httpClient: HttpClientV2 = fakeApplication().injector.instanceOf[HttpClientV2]
+  lazy val appConfig: AppConfig     = fakeApplication().injector.instanceOf[AppConfig]
+  lazy val ETMPEndpoint: String     = appConfig.etmpSubscriptionDisplayEndpoint
 
   val requestHeaders: Set[(String, String)] = Set(
     ("Authorization", s"Bearer ${appConfig.integrationFrameworkToken}")
@@ -87,5 +87,5 @@ trait BaseIntegrationSpec
 
   def traderDetailsRequestUrl(acknowledgementReference: String, eoriNumber: String): String =
     s"$traderDetailsEndpoint/${URLEncoder.encode(acknowledgementReference, "UTF-8")}/${URLEncoder
-      .encode(eoriNumber, "UTF-8")}"
+        .encode(eoriNumber, "UTF-8")}"
 }

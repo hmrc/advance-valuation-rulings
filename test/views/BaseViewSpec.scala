@@ -36,7 +36,7 @@ trait BaseViewSpec extends SpecBase with GuiceOneAppPerSuite with ViewConstants 
 
   implicit val messages: Messages = app.injector.instanceOf[MessagesApi].preferred(fakeRequest)
 
-  protected def checkRenderedContent(view: Xml, expectedContent: Seq[String], method: String = ".apply"): Unit =
+  protected def checkRenderedContent(view: Xml, expectedContent: Seq[String], method: String): Unit =
     s"when rendered - using $method" in {
       expectedContent.foreach { content =>
         withClue(s"Expected content '$content' was not found in the rendered XML.") {
