@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import org.apache.commons.io.output.ByteArrayOutputStream
 import org.apache.fop.apps.FopFactory
 import org.apache.xmlgraphics.util.MimeConstants
 
-import java.io.StringReader
+import java.io.{OutputStream, StringReader}
 import javax.inject.{Inject, Singleton}
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.sax.SAXResult
 import javax.xml.transform.stream.StreamSource
+import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Using
 
@@ -35,7 +35,7 @@ class FopService @Inject() (
 
   def render(input: String): Future[Array[Byte]] = Future {
 
-    Using.resource(new ByteArrayOutputStream()) { out =>
+    Using.resource(new ByteArrayOutput()) { out =>
       // Turn on accessibility features
       val userAgent = fopFactory.newFOUserAgent()
       userAgent.setAccessibility(true)
@@ -53,4 +53,16 @@ class FopService @Inject() (
       out.toByteArray
     }
   }
+}
+class ByteArrayOutput extends OutputStream {
+  private val buffer = ArrayBuffer[Byte]()
+
+  // Override the write method to add a single byte
+  override def write(byte: Int): Unit = buffer += byte.toByte
+
+  // Convert the buffer to a byte array
+  def toByteArray: Array[Byte] = buffer.toArray
+
+  // Reset the buffer
+  def reset(): Unit = buffer.clear()
 }

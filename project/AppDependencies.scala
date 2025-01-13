@@ -11,7 +11,6 @@ object AppDependencies {
     "com.beachape"            %% "enumeratum-play-json"         % "1.8.2",
     "org.typelevel"           %% "cats-core"                    % "2.12.0",
     "org.apache.xmlgraphics"   % "fop"                          % "2.10",
-    "commons-io"               % "commons-io"                   % "2.18.0",
     "uk.gov.hmrc"             %% "crypto-json-play-30"          % "8.1.0",
     "uk.gov.hmrc"             %% "internal-auth-client-play-30" % "3.0.0",
     "uk.gov.hmrc.objectstore" %% "object-store-client-play-30"  % "2.0.0"
