@@ -69,19 +69,15 @@ class DmsSubmissionConnector @Inject() (
     }
 
   private def getExtension(filename: String): String =
-    if (filename == null || filename.trim.isEmpty) {
-      logger.error("[DmsSubmissionConnector][getExtension] Invaild file extension")
-      ""
-      // "invalid" // Handle null or empty filename
-    } else {
-      val dotIndex = filename.lastIndexOf('.')
-      if (dotIndex >= 0 && dotIndex < filename.length - 1) {
-        filename.substring(dotIndex + 1).toLowerCase
-      } else {
-        logger.error("[DmsSubmissionConnector][getExtension] Invaild file extension")
+    Option(filename)
+      .filter(_.trim.nonEmpty)
+      .map(_.lastIndexOf('.'))
+      .filter(dotIndex => dotIndex >= 0 && dotIndex < filename.length - 1)
+      .map(dotIndex => filename.substring(dotIndex + 1).toLowerCase)
+      .getOrElse {
+        logger.error("[DmsSubmissionConnector][getExtension] Invalid file extension")
         ""
       }
-    }
 
   def submitApplication(
     eori: String,
