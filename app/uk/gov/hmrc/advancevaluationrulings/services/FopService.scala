@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,10 @@
 
 package uk.gov.hmrc.advancevaluationrulings.services
 
-import org.apache.commons.io.output.ByteArrayOutputStream
 import org.apache.fop.apps.FopFactory
 import org.apache.xmlgraphics.util.MimeConstants
 
-import java.io.StringReader
+import java.io.{ByteArrayOutputStream, StringReader}
 import javax.inject.{Inject, Singleton}
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.sax.SAXResult

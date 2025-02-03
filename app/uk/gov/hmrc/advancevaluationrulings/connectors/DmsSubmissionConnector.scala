@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package uk.gov.hmrc.advancevaluationrulings.connectors
 
 import cats.implicits._
-import org.apache.commons.io.FilenameUtils
 import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.util.ByteString
 import play.api.http.Status.{ACCEPTED, INTERNAL_SERVER_ERROR}
@@ -64,10 +63,21 @@ class DmsSubmissionConnector @Inject() (
   private def fileName(attachment: DmsAttachment, name: String): String =
     (attachment.privacy, attachment.isLetterOfAuthority) match {
 
-      case (_, true)                 => "Letter_of_authority." + FilenameUtils.getExtension(name)
+      case (_, true)                 => "Letter_of_authority." + getExtension(name)
       case (Privacy.Confidential, _) => s"CONFIDENTIAL_$name"
       case _                         => name
     }
+
+  private def getExtension(filename: String): String =
+    Option(filename)
+      .filter(_.trim.nonEmpty)
+      .map(_.lastIndexOf('.'))
+      .filter(dotIndex => dotIndex >= 0 && dotIndex < filename.length - 1)
+      .map(dotIndex => filename.substring(dotIndex + 1).toLowerCase)
+      .getOrElse {
+        logger.error("[DmsSubmissionConnector][getExtension] Invalid file extension")
+        ""
+      }
 
   def submitApplication(
     eori: String,
