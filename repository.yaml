@@ -1,5 +1,8 @@
+digital-service: Advanced Valuation Rulings (AVR)
+description: This service provides the backend for the Advance Valuation Rulings Frontend.
 repoVisibility: public_0C3F0CE3E6E6448FAD341E7BFA50FCD333E06A20CFF05FCACE61154DDBBADF71
-type: service
+type: Service
+service-type: Backend
 test-repositories:
   - advance-valuation-rulings-ui-tests
   - advance-valuation-rulings-performance-tests
