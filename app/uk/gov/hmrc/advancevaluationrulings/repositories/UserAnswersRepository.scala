@@ -27,7 +27,6 @@ import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
-import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 
 import java.time.{Clock, Instant}
 import java.util.concurrent.TimeUnit

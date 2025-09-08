@@ -17,7 +17,7 @@
 package uk.gov.hmrc.advancevaluationrulings.repositories
 
 import com.google.inject.ImplementedBy
-import org.mongodb.scala.{MongoBulkWriteException, SingleObservableFuture}
+import org.mongodb.scala.MongoBulkWriteException
 import org.mongodb.scala.model.{Filters, FindOneAndUpdateOptions, ReturnDocument, Updates}
 import uk.gov.hmrc.advancevaluationrulings.models.Done
 import uk.gov.hmrc.advancevaluationrulings.models.application.{CounterId, CounterWrapper}
