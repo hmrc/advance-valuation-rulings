@@ -12,7 +12,7 @@ object AppDependencies {
     "org.typelevel"           %% "cats-core"                    % "2.13.0",
     "commons-io"               % "commons-io"                   % "2.20.0",
     "org.apache.xmlgraphics"   % "fop"                          % "2.11",
-    "uk.gov.hmrc"             %% "crypto-json-play-30"          % "8.3.0",
+    "uk.gov.hmrc"             %% "crypto-json-play-30"          % "8.4.0",
     "uk.gov.hmrc"             %% "internal-auth-client-play-30" % "4.3.0",
     "uk.gov.hmrc.objectstore" %% "object-store-client-play-30"  % "2.5.0"
   )
