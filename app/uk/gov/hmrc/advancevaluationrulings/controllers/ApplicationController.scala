@@ -44,9 +44,7 @@ class ApplicationController @Inject() (
   }
 
   def summaries: Action[AnyContent] = identify.async { implicit request =>
-    applicationRepository
-      .summaries(request.eori)
-      .map(summaries => Ok(Json.toJson(ApplicationSummaryResponse(summaries))))
+    applicationRepository.summaries(request.eori).map(summaries => Ok(Json.toJson(ApplicationSummaryResponse(summaries))))
   }
 
   def get(applicationId: ApplicationId): Action[AnyContent] = identify.async { implicit request =>
@@ -65,8 +63,7 @@ class ApplicationController @Inject() (
     Ok(Json.toJson(application))
 
   private def getAuditMetadata(request: IdentifierRequest[?]): AuditMetadata =
-    AuditMetadata(
-      internalId = request.internalId,
+    AuditMetadata(internalId = request.internalId,
       affinityGroup = request.affinityGroup,
       credentialRole = request.credentialRole
     )
