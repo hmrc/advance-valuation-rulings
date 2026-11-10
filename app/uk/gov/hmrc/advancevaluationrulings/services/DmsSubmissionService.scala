@@ -65,7 +65,7 @@ class SaveFileDmsSubmissionService @Inject() (
     } catch {
       case _: IOException =>
         logger.error(
-          "[SaveFileDmsSubmissionService][writeFile] Failed to write local file of application"
+          "Failed to write local file of application"
         )
         Done
     }

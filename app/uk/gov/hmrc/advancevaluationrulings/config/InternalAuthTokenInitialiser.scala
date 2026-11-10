@@ -74,7 +74,7 @@ class InternalAuthTokenInitialiserImpl @Inject() (
   private def ensureAuthToken(): Future[Done] =
     authTokenIsValid.flatMap { isValid =>
       if (isValid) {
-        logger.info("[InternalAuthTokenInitialiser][ensureAuthToken] Auth token is already valid")
+        logger.info("Auth token is already valid")
         Future.successful(Done)
       } else {
         createClientAuthToken()
@@ -82,7 +82,7 @@ class InternalAuthTokenInitialiserImpl @Inject() (
     }
 
   private def createClientAuthToken(): Future[Done] = {
-    logger.info("[InternalAuthTokenInitialiser][createClientAuthToken] Initialising auth token")
+    logger.info("Initialising auth token")
     httpClient
       .post(url"${internalAuthService.baseUrl}/test-only/token")(HeaderCarrier())
       .withBody(
@@ -107,12 +107,12 @@ class InternalAuthTokenInitialiserImpl @Inject() (
       .flatMap { response =>
         if (response.status == CREATED) {
           logger.info(
-            "[InternalAuthTokenInitialiser][createClientAuthToken] Auth token initialised"
+            "Auth token initialised"
           )
           Future.successful(Done)
         } else {
           logger.error(
-            "[InternalAuthTokenInitialiser][createClientAuthToken] Unable to initialise internal-auth token"
+            "Unable to initialise internal-auth token"
           )
           Future.failed(new RuntimeException("Unable to initialise internal-auth token"))
         }
@@ -121,7 +121,7 @@ class InternalAuthTokenInitialiserImpl @Inject() (
 
   private def addDmsSubmissionAttachmentGrants(): Future[Done] = {
     logger.info(
-      "[InternalAuthTokenInitialiser][addDmsSubmissionsAttachmentGrants] Initialising dms-submission grants"
+      "Initialising dms-submission grants"
     )
     httpClient
       .post(url"${internalAuthService.baseUrl}/test-only/token")(HeaderCarrier())
@@ -142,12 +142,12 @@ class InternalAuthTokenInitialiserImpl @Inject() (
       .flatMap { response =>
         if (response.status == CREATED) {
           logger.info(
-            "[InternalAuthTokenInitialiser][addDmsSubmissionAttachmentGrants] dms-submission grants added"
+            "dms-submission grants added"
           )
           Future.successful(Done)
         } else {
           logger.error(
-            "[InternalAuthTokenInitialiser][addDmsSubmissionAttachmentGrants] Unable to add dms-submission grants"
+            "Unable to add dms-submission grants"
           )
           Future.failed(new RuntimeException("Unable to add dms-submission grants"))
         }
@@ -155,7 +155,7 @@ class InternalAuthTokenInitialiserImpl @Inject() (
   }
 
   private def authTokenIsValid: Future[Boolean] = {
-    logger.info("[InternalAuthTokenInitialiser][authTokenIsValid] Checking auth token")
+    logger.info("Checking auth token")
     httpClient
       .get(url"${internalAuthService.baseUrl}/test-only/token")(HeaderCarrier())
       .setHeader("Authorization" -> authToken)

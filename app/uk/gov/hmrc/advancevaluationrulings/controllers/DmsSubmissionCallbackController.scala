@@ -48,11 +48,11 @@ class DmsSubmissionCallbackController @Inject() (
       val failedReason = notification.failureReason.getOrElse("Error details not provided")
 
       logger.error(
-        s"[DmsSubmissionCallbackController][callback] DMS notification received for ${notification.id} failed with error: $failedReason"
+        s"DMS notification received for ${notification.id} failed with error: $failedReason"
       )
     } else {
       logger.info(
-        s"[DmsSubmissionCallbackController][callback] DMS notification received for ${notification.id} with status ${notification.status}"
+        s"DMS notification received for ${notification.id} with status ${notification.status}"
       )
     }
 
