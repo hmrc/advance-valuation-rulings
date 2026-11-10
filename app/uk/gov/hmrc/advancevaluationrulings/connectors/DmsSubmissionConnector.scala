@@ -75,7 +75,7 @@ class DmsSubmissionConnector @Inject() (
       .filter(dotIndex => dotIndex >= 0 && dotIndex < filename.length - 1)
       .map(dotIndex => filename.substring(dotIndex + 1).toLowerCase)
       .getOrElse {
-        logger.error("[DmsSubmissionConnector][getExtension] Invalid file extension")
+        logger.error("Invalid file extension")
         ""
       }
 
@@ -150,7 +150,7 @@ class DmsSubmissionConnector @Inject() (
             Future.successful(Done)
           } else {
             logger.error(
-              s"[DmsSubmissionConnector][submitApplication] dms-submission failed with response body: ${response.body}"
+              s"dms-submission failed with response body: ${response.body}"
             )
             Future.failed(
               UpstreamErrorResponse(
